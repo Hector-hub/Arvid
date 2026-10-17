@@ -10,6 +10,8 @@ export type NotEvaluableReason = 'truncated' | 'paused' | 'grace' | 'open';
 export interface EvaluatedPeriod {
   /** Extremos reales del periodo; `end` es anterior al natural si está truncado (R-A9). */
   period: Period;
+  /** Categoría de la versión vigente en el periodo (R-AT8). */
+  categoryId: string;
   count: number;
   target: number;
   /** Puntos ganados y posibles en centésimas enteras (ENG-02). */
@@ -108,6 +110,7 @@ function evaluateOne(
 
   return {
     period,
+    categoryId: version.categoryId,
     count,
     target,
     earnedCents: earnedCents(value, count, target),

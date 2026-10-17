@@ -42,6 +42,7 @@ export interface Contribution {
 
 export interface MissionAnalysis {
   missionId: string;
+  categoryId: string;
   state: MissionState;
   /** Fecha límite vigente. */
   deadline?: LocalDate;
@@ -93,7 +94,7 @@ export function analyzeMission({ mission, events }: MissionRecord, today: LocalD
   if (status === 'open' && deadline && !expiredOn && compareDates(today, deadline) > 0) expiredOn = deadline;
 
   const value = DIFFICULTY_POINTS[mission.difficulty] * 100;
-  const base = { missionId: mission.id, deadline, expiredOn, completedOn, abandonedOn };
+  const base = { missionId: mission.id, categoryId: mission.categoryId, deadline, expiredOn, completedOn, abandonedOn };
 
   if (status === 'completed') {
     if (expiredOn) return { ...base, state: 'completedLate', xpCents: value };

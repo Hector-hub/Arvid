@@ -8,6 +8,8 @@ import { InstallGuideScreen } from './screens/InstallGuideScreen';
 import { MissionDetailScreen } from './screens/missions/MissionDetailScreen';
 import { MissionFormScreen } from './screens/missions/MissionFormScreen';
 import { MissionsScreen } from './screens/missions/MissionsScreen';
+import { CategoryFormScreen } from './screens/CategoryFormScreen';
+import { AttributeDetailScreen, DisciplineDetailScreen } from './screens/profile/AttributeDetailScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { TodayScreen } from './screens/TodayScreen';
 
@@ -27,8 +29,12 @@ export const routes: RouteObject[] = [
       { path: 'actividades/:id', element: <ActivityDetailScreen /> },
       { path: 'actividades/:id/editar', element: <ActivityFormScreen /> },
       { path: 'personaje', element: <CharacterScreen /> },
+      { path: 'personaje/atributo/:categoryId', element: <AttributeDetailScreen /> },
+      { path: 'personaje/disciplina', element: <DisciplineDetailScreen /> },
       { path: 'ajustes', element: <SettingsScreen /> },
       { path: 'ajustes/instalar', element: <InstallGuideScreen /> },
+      { path: 'ajustes/categorias/nueva', element: <CategoryFormScreen /> },
+      { path: 'ajustes/categorias/:id', element: <CategoryFormScreen /> },
       { path: '*', element: <Navigate to="/hoy" replace /> },
     ],
   },

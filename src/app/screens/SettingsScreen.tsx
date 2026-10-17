@@ -70,12 +70,15 @@ export function SettingsScreen() {
 
       <Panel className="stack">
         <h2>Categorías</h2>
-        <p className="small muted">Las categorías activas aparecen al crear actividades.</p>
+        <p className="small muted">Las categorías activas aparecen al crear actividades y en tu radar (máximo 8).</p>
         <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
           {categories?.map((c) => (
             <CategoryToggle key={c.id} category={c} />
           ))}
         </ul>
+        <Link to="/ajustes/categorias/nueva" className="btn">
+          Nueva categoría
+        </Link>
       </Panel>
 
       <Panel>
@@ -132,6 +135,9 @@ function CategoryToggle({ category }: { category: Category }) {
           {category.active ? 'Activa' : 'Inactiva'}
         </span>
       </label>
+      <Link to={`/ajustes/categorias/${category.id}`} className="small" style={{ alignSelf: 'flex-end' }} aria-label={`Editar ${category.name}`}>
+        Editar
+      </Link>
       {error && (
         <p role="alert" className="field-error">
           {error}

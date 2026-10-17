@@ -1,6 +1,6 @@
 # ARVID — Diseño del sistema de juego
 
-Estado: **aprobado** (D-035, 2026-10-17; enmiendas D-044, D-046) · Implementa: D-032–D-034, D-006, D-007, D-009, D-011–D-014, D-016–D-018, D-020b, D-021, D-025, D-026, C-002.
+Estado: **aprobado** (D-035, 2026-10-17; enmiendas D-044, D-046, D-048) · Implementa: D-032–D-034, D-006, D-007, D-009, D-011–D-014, D-016–D-018, D-020b, D-021, D-025, D-026, C-002.
 
 Este documento define las reglas exactas del motor (MVP-04). Los ejemplos de §12 se convertirán uno a uno en tests unitarios. Los valores marcados como *(ajustable)* son parámetros de configuración del motor, no constantes repartidas por el código.
 
@@ -107,6 +107,10 @@ Atributo_k = redondear(100 × ΣE / ΣP)      (0–100, redondeo a la mitad haci
 - **R-AT4 (periodo anterior).** La superposición usa la misma función con la referencia `hoy − W` y solo con registros de fecha ≤ esa referencia.
 - **R-AT5 (tendencia).** `Δ = actual − anterior` (ambos con datos). Si Δ ≥ +5 es "subiendo"; si Δ ≤ −5, "bajando"; en otro caso, "estable" *(umbral ajustable)*.
 - **Nota:** con la ventana de 7 días, una actividad semanal aporta como mucho 1 periodo y una mensual solo aporta si el mes en curso ya está completo. La interfaz lo explica.
+- **R-AT6 (D-048).** Con menos de 3 categorías activas no se dibuja el radar; se muestra solo la lista.
+- **R-AT7 (D-048).** Un eje sin datos no tiene vértice: el polígono (y la superposición anterior) solo une ejes consecutivos con datos; el eje sin datos se dibuja punteado con "?".
+- **R-AT8 (D-048).** Cada periodo cuenta para la categoría de la versión vigente en ese periodo (R-A1); cada misión, para su categoría.
+- **R-AT9 (D-048).** Las categorías desactivadas no aparecen en el radar ni en la lista, pero sus datos cuentan en Disciplina (R-D1).
 - **Lo que el atributo NO mide:** mide el **cumplimiento de lo que te propusiste** en esa área, no tu salud ni tu capacidad reales. La explicación de la interfaz lo dice expresamente.
 
 ## 6. Disciplina

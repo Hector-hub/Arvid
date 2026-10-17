@@ -62,6 +62,8 @@ Fuente de verdad de las decisiones de producto y técnicas. Cada spec debe refer
 | D-045 | Spec 02 (Backup y progreso básico) aprobada con S2-01 a S2-05 | A | 2026-10-17 |
 | D-046 | Aclaraciones de misiones R-M8 a R-M11 en game-design §8 (quitar la fecha, desmarcar tras vencer, no completar antes de la creación, vencimiento con la fecha vigente; antes GD-A3 a GD-A6) | A | 2026-10-17 |
 | D-047 | Spec 03 (Misiones) aprobada con S3-01 a S3-05 | A | 2026-10-17 |
+| D-048 | Aclaraciones de atributos y radar R-AT6 a R-AT9 en game-design §5 (sin radar con menos de 3 categorías, ejes sin datos sin vértice, categoría por versión, desactivadas cuentan en Disciplina; antes GD-A7 a GD-A10) | A | 2026-10-17 |
+| D-049 | Spec 04 (Hoja de personaje) aprobada con S4-01 a S4-04 | A | 2026-10-17 |
 | C-001 | El onboarding guía la instalación en la pantalla de inicio y solicita `navigator.storage.persist()` | C | 2026-10-17 |
 | C-002 | Una categoría sin datos suficientes se muestra como "sin datos", nunca como 0. El radar tiene una alternativa accesible en forma de lista | C | 2026-10-17 |
 | C-003 | Sonidos opcionales y desactivados por defecto; se respeta `prefers-reduced-motion` | C | 2026-10-17 |

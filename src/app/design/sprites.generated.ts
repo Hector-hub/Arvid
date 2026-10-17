@@ -1,6 +1,6 @@
 // Generado por scripts/build-sprites.sh. No editar a mano.
 export const SPRITE_TILE = 192;
-export const SPRITE_COUNT = 22;
+export const SPRITE_COUNT = 30;
 export const SPRITES = {
   'hero': 0,
   'cat-body': 1,
@@ -24,5 +24,13 @@ export const SPRITES = {
   'crown': 19,
   'flame': 20,
   'trophy': 21,
+  'cat-key': 22,
+  'cat-music': 23,
+  'cat-coin': 24,
+  'cat-apple': 25,
+  'cat-potion': 26,
+  'cat-gem': 27,
+  'cat-tree': 28,
+  'cat-sword': 29,
 } as const;
 export type SpriteName = keyof typeof SPRITES;

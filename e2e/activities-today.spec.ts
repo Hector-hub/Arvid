@@ -174,6 +174,6 @@ test.describe('navegación', () => {
     await page.getByRole('link', { name: 'Ajustes' }).click();
     await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
     await page.getByRole('link', { name: 'Personaje' }).first().click();
-    await expect(page.getByText('Próximamente')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Personaje' })).toBeVisible();
   });
 });

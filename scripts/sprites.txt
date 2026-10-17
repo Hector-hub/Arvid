@@ -21,3 +21,11 @@ hourglass 39 12
 crown 43 2
 flame 28 11
 trophy 40 16
+cat-key 33 11
+cat-music 39 16
+cat-coin 35 16
+cat-apple 33 18
+cat-potion 40 11
+cat-gem 33 10
+cat-tree 1 1
+cat-sword 36 8
