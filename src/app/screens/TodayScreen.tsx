@@ -1,6 +1,8 @@
 import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
-import { logCompletion, undoCompletion } from '../../data/repository';
+import { logCompletion, saveSetting, undoCompletion } from '../../data/repository';
+import { logDeltaCents } from '../../domain/activities/periods';
+import { shouldRemindBackup } from '../../domain/backupReminder';
 import { canLog, latestUndoableDate } from '../../domain/activities/rules';
 import { buildTodayView, forgottenYesterday, type TodayItem } from '../../domain/activities/today';
 import type { ActivityRecord } from '../../domain/activities/types';
@@ -8,8 +10,10 @@ import type { Category } from '../../domain/categories';
 import { addDays } from '../../domain/time/localDate';
 import { needsInstallForSafety } from '../../pwa/platform';
 import { useToday } from '../clock';
-import { useCategories, useData, useRecords } from '../data';
-import { CategoryIcon, Panel, Segments, Sprite, categoryColor } from '../design/components';
+import { useAnalysis } from '../analysis';
+import { exportData } from '../backupActions';
+import { useCategories, useData, useRecords, useSettings } from '../data';
+import { CategoryIcon, Panel, Segments, Sprite, XpBar, categoryColor } from '../design/components';
 import {
   LOG_DENIAL_TEXT,
   SECTION_TITLE,
@@ -17,6 +21,8 @@ import {
   longDate,
   pendingTodayText,
   progressText,
+  streakText,
+  xpDeltaText,
 } from '../text';
 
 /** Tras registrar, el botón ignora toques durante este tiempo: un doble toque no duplica (LOG-06). */
@@ -40,6 +46,7 @@ export function TodayScreen() {
     <div className="stack" style={{ gap: 'var(--s5)' }}>
       <header className="stack" style={{ gap: 'var(--s1)' }}>
         <h1>{longDate(today)}</h1>
+        <LevelStrip />
         {view.hasDaily && (
           <p className="pixel" style={{ color: view.pendingToday === 0 ? 'var(--success)' : 'var(--text-muted)' }}>
             {pendingTodayText(view.pendingToday)}
@@ -56,6 +63,8 @@ export function TodayScreen() {
           </Link>
         </div>
       )}
+
+      <BackupReminder records={records ?? []} />
 
       {view.isEmpty ? (
         <Panel className="stack">
@@ -91,11 +100,7 @@ export function TodayScreen() {
       )}
 
       {forgottenOpen && (
-        <ForgottenSheet
-          records={records ?? []}
-          categoryById={categoryById}
-          onClose={() => setForgottenOpen(false)}
-        />
+        <ForgottenSheet records={records ?? []} categoryById={categoryById} onClose={() => setForgottenOpen(false)} />
       )}
     </div>
   );
@@ -110,15 +115,17 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
   const [feedback, setFeedback] = useState<{ key: number; text: string }>();
 
   const undoDate = record ? latestUndoableDate(record, today) : undefined;
+  const streak = useAnalysis()?.byActivity.get(item.activityId)?.streak.current ?? 0;
   const loggable = record ? canLog(record, today, today).ok : false;
 
   async function run(action: () => Promise<string>) {
     if (inFlight.current) return;
     inFlight.current = true;
     setBusy(true);
+    const cooldown = new Promise((r) => setTimeout(r, TAP_COOLDOWN_MS));
     try {
-      const [text] = await Promise.all([action(), new Promise((r) => setTimeout(r, TAP_COOLDOWN_MS))]);
-      setFeedback({ key: Date.now(), text });
+      setFeedback({ key: Date.now(), text: await action() });
+      await cooldown;
     } finally {
       inFlight.current = false;
       setBusy(false);
@@ -127,19 +134,27 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
 
   const log = () =>
     run(async () => {
+      const delta = record ? logDeltaCents(record, today, 1) : 0;
       const result = await logCompletion(ctx, item.activityId, today);
       if (!result.ok) return LOG_DENIAL_TEXT[result.reason];
       if (navigator.vibrate) navigator.vibrate(15);
-      return `+1 · ${progressText(item.count + 1, item.target)}`;
+      return `+1 · ${progressText(item.count + 1, item.target)} · ${xpDeltaText(delta)}`;
     });
 
   const undo = () =>
     run(async () => {
-      if (!undoDate) return '';
-      return (await undoCompletion(ctx, item.activityId, undoDate)) ? 'Registro deshecho' : 'No se pudo deshacer';
+      if (!undoDate || !record) return '';
+      const delta = logDeltaCents(record, undoDate, -1);
+      return (await undoCompletion(ctx, item.activityId, undoDate))
+        ? `Registro deshecho · ${xpDeltaText(delta)}`
+        : 'No se pudo deshacer';
     });
 
-  const meta = [progressText(item.count, item.target), item.kind !== 'day' ? daysLeftText(item.daysRemaining) : undefined]
+  const meta = [
+    progressText(item.count, item.target),
+    item.kind !== 'day' ? daysLeftText(item.daysRemaining) : undefined,
+    streak > 0 ? streakText(streak, item.kind) : undefined,
+  ]
     .filter(Boolean)
     .join(' · ');
 
@@ -250,6 +265,65 @@ function ForgottenSheet({
           </ul>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Indicador compacto de nivel en Hoy; lleva a Personaje (PRG-04). */
+function LevelStrip() {
+  const progress = useAnalysis()?.progress;
+  if (!progress) return null;
+  return (
+    <Link
+      to="/personaje"
+      className="level-strip"
+      aria-label={`Nivel ${progress.level}, ${progress.title}. Ver personaje`}
+    >
+      <span className="pixel small" style={{ color: 'var(--level)', whiteSpace: 'nowrap' }}>
+        Nv {progress.level} · {progress.title}
+      </span>
+      <XpBar xp={progress.xp} start={progress.levelStartXp} next={progress.nextLevelXp} compact />
+    </Link>
+  );
+}
+
+/** Aviso de backup (BAK-07). */
+function BackupReminder({ records }: { records: ActivityRecord[] }) {
+  const ctx = useData();
+  const settings = useSettings();
+  const today = useToday();
+  const [busy, setBusy] = useState(false);
+  if (!settings) return null;
+  const show = shouldRemindBackup({
+    records,
+    now: ctx.now(),
+    today,
+    lastBackupAt: settings.lastBackupAt,
+    snoozedUntil: settings.backupReminderSnoozedUntil,
+  });
+  if (!show) return null;
+  return (
+    <div className="banner" role="region" aria-label="Copia de seguridad">
+      <Sprite name="info" color="var(--level)" />
+      <p className="grow small">Hace tiempo que no guardas una copia de tus datos.</p>
+      <button
+        type="button"
+        className="btn"
+        disabled={busy}
+        onClick={() => {
+          setBusy(true);
+          void exportData(ctx).finally(() => setBusy(false));
+        }}
+      >
+        Exportar
+      </button>
+      <button
+        type="button"
+        className="btn btn-ghost"
+        onClick={() => void saveSetting(ctx.db, 'backupReminderSnoozedUntil', addDays(today, 1))}
+      >
+        Más tarde
+      </button>
     </div>
   );
 }

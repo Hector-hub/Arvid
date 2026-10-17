@@ -3,11 +3,22 @@ import { Link, useParams } from 'react-router';
 import { changeStatus, logCompletion, undoCompletion } from '../../data/repository';
 import { canLog, detailDays, progressAt, statusAt, versionAt, type DayCell } from '../../domain/activities/rules';
 import type { ActivityRecord } from '../../domain/activities/types';
-import { daysRemaining } from '../../domain/time/period';
+import type { EvaluatedPeriod } from '../../domain/activities/periods';
+import { MAX_WILDCARDS, WILDCARD_EVERY, type StreakState } from '../../domain/progress/streaks';
+import { daysRemaining, type PeriodKind } from '../../domain/time/period';
+import { useAnalysis } from '../analysis';
 import { useToday } from '../clock';
 import { useCategories, useData, useRecord } from '../data';
 import { BackLink, CategoryIcon, Panel, Segments, Sprite, categoryColor } from '../design/components';
-import { LOG_DENIAL_TEXT, daysLeftText, difficultyText, frequencyText, progressText, shortDay } from '../text';
+import {
+  LOG_DENIAL_TEXT,
+  daysLeftText,
+  difficultyText,
+  frequencyText,
+  periodUnit,
+  progressText,
+  shortDay,
+} from '../text';
 
 const STATUS_CHIP = {
   active: null,
@@ -36,6 +47,7 @@ function Detail({ record }: { record: ActivityRecord }) {
   const days = useMemo(() => detailDays(record, today), [record, today]);
   const category = categories?.find((c) => c.id === version?.categoryId);
   const id = record.activity.id;
+  const analysis = useAnalysis()?.byActivity.get(id);
 
   async function add(day: DayCell) {
     const result = await logCompletion(ctx, id, day.date);
@@ -54,7 +66,9 @@ function Detail({ record }: { record: ActivityRecord }) {
         <div className="row">
           <CategoryIcon category={category} scale={3} />
           <h1 className="grow">{record.activity.name}</h1>
-          {STATUS_CHIP[status] && <span className={`chip ${STATUS_CHIP[status].className}`}>{STATUS_CHIP[status].label}</span>}
+          {STATUS_CHIP[status] && (
+            <span className={`chip ${STATUS_CHIP[status].className}`}>{STATUS_CHIP[status].label}</span>
+          )}
         </div>
         {version && (
           <p className="muted">
@@ -75,7 +89,11 @@ function Detail({ record }: { record: ActivityRecord }) {
             {version?.period !== 'day' && ` · ${daysLeftText(daysRemaining(progress.period, today))}`}
           </p>
 
-          <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 'var(--s2)' }} aria-label="Registros por día">
+          <ul
+            className="stack"
+            style={{ listStyle: 'none', margin: 0, padding: 0, gap: 'var(--s2)' }}
+            aria-label="Registros por día"
+          >
             {days.map((day) => {
               const loggable = status === 'active' && canLog(record, day.date, today).ok;
               return (
@@ -84,15 +102,29 @@ function Detail({ record }: { record: ActivityRecord }) {
                     {day.date === today ? 'hoy' : shortDay(day.date)}
                   </span>
                   <span className="grow small muted">
-                    {day.count > 0 ? `${day.count} ${day.count === 1 ? 'registro' : 'registros'}` : day.future ? '' : 'sin registro'}
+                    {day.count > 0
+                      ? `${day.count} ${day.count === 1 ? 'registro' : 'registros'}`
+                      : day.future
+                        ? ''
+                        : 'sin registro'}
                   </span>
                   {day.editable && day.count > 0 && (
-                    <button type="button" className="btn btn-icon" aria-label={`Quitar registro del ${shortDay(day.date)}`} onClick={() => void remove(day)}>
+                    <button
+                      type="button"
+                      className="btn btn-icon"
+                      aria-label={`Quitar registro del ${shortDay(day.date)}`}
+                      onClick={() => void remove(day)}
+                    >
                       <Sprite name="minus" />
                     </button>
                   )}
                   {day.editable && loggable && (
-                    <button type="button" className="btn btn-icon btn-primary" aria-label={`Registrar el ${shortDay(day.date)}`} onClick={() => void add(day)}>
+                    <button
+                      type="button"
+                      className="btn btn-icon btn-primary"
+                      aria-label={`Registrar el ${shortDay(day.date)}`}
+                      onClick={() => void add(day)}
+                    >
                       <Sprite name="plus" />
                     </button>
                   )}
@@ -108,6 +140,9 @@ function Detail({ record }: { record: ActivityRecord }) {
           )}
         </Panel>
       )}
+
+      {analysis && version && <StreakPanel streak={analysis.streak} kind={version.period} />}
+      {analysis && <RecentPeriods periods={analysis.periods} protectedStarts={analysis.streak.protectedPeriods} />}
 
       <div className="stack">
         <Link to={`/actividades/${id}/editar`} className="btn">
@@ -134,5 +169,75 @@ function Detail({ record }: { record: ActivityRecord }) {
         )}
       </div>
     </div>
+  );
+}
+
+/** Racha actual, mejor racha y comodines (STR-03). */
+function StreakPanel({ streak, kind }: { streak: StreakState; kind: PeriodKind }) {
+  return (
+    <Panel className="stack">
+      <h2>Racha</h2>
+      <div className="row">
+        <Sprite name="flame" color={streak.current > 0 ? 'var(--warning)' : 'var(--text-muted)'} />
+        <p className="pixel grow" style={{ fontSize: '1.25rem' }}>
+          {streak.current} {periodUnit(kind, streak.current)}
+        </p>
+        <p className="small muted">Mejor: {streak.best}</p>
+      </div>
+      <p className="small">
+        Comodines {streak.wildcards} de {MAX_WILDCARDS}
+      </p>
+      <p className="small muted">
+        Ganas un comodín cada {WILDCARD_EVERY} {periodUnit(kind, WILDCARD_EVERY)} cumplidos seguidos. Si fallas uno, se
+        usa solo y tu racha se mantiene.
+      </p>
+    </Panel>
+  );
+}
+
+const MONTH = new Intl.DateTimeFormat('es', { month: 'short', year: 'numeric' });
+const DAY_MONTH = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short' });
+const asDate = (date: string) => new Date(`${date}T12:00:00`);
+
+/** "lun 19", "sem. 12 oct", "oct 2026". */
+function periodLabel(p: EvaluatedPeriod): string {
+  if (p.period.kind === 'day') return shortDay(p.period.start);
+  if (p.period.kind === 'week') return `sem. ${DAY_MONTH.format(asDate(p.period.start)).replace('.', '')}`;
+  return MONTH.format(asDate(p.period.start)).replace('.', '');
+}
+
+const REASON_TEXT = { grace: 'Gracia', paused: 'Pausa', truncated: 'Cambio de frecuencia', open: '' } as const;
+
+/** Últimos periodos cerrados con su resultado (STR-04). */
+function RecentPeriods({ periods, protectedStarts }: { periods: EvaluatedPeriod[]; protectedStarts: string[] }) {
+  const recent = periods
+    .filter((p) => p.closed)
+    .slice(-8)
+    .reverse();
+  if (recent.length === 0) return null;
+  return (
+    <Panel className="stack">
+      <h2>Últimos periodos</h2>
+      <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 'var(--s2)' }}>
+        {recent.map((p) => {
+          const isProtected = protectedStarts.includes(p.period.start);
+          return (
+            <li key={p.period.start} className="row small">
+              <span className="pixel" style={{ width: 96 }}>
+                {periodLabel(p)}
+              </span>
+              <span className="grow muted">{progressText(Math.min(p.count, p.target), p.target)}</span>
+              {p.evaluable && p.fulfilled && <span className="chip chip-done">Cumplido</span>}
+              {isProtected && (
+                <span className="chip" style={{ background: 'var(--level)', color: 'var(--c-ink)' }}>
+                  Comodín usado
+                </span>
+              )}
+              {!p.evaluable && p.reason && <span className="chip chip-muted">{REASON_TEXT[p.reason]}</span>}
+            </li>
+          );
+        })}
+      </ul>
+    </Panel>
   );
 }

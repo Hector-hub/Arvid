@@ -296,6 +296,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
 /* ---------- Banner ---------- */
 .banner {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--s3);
   padding: var(--s3);
@@ -342,3 +343,31 @@ fieldset { border: 0; padding: 0; margin: 0; }
   transition: none !important;
 }
 :root[data-motion='reduced'] .toast-pop { opacity: 1; }
+
+/* ---------- XP (§7) ---------- */
+.xpbar {
+  width: 100%;
+  background: var(--surface-sunken);
+  border: 2px solid var(--border);
+}
+.xpbar span {
+  display: block;
+  height: 100%;
+  background: var(--xp);
+}
+.level-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  color: var(--text);
+  text-decoration: none;
+  padding: var(--s1) 0;
+}
+.level-strip .xpbar { max-width: 160px; }
+
+/* ---------- Modal de nivel (§7, §8) ---------- */
+@keyframes rise {
+  0% { transform: translateY(8px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.levelup { text-align: center; animation: rise var(--dur-celebrate) steps(4) 1; }

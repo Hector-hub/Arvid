@@ -5,6 +5,8 @@ import { useMotionPreference } from '../motion';
 import { Onboarding } from '../screens/Onboarding';
 import type { SpriteName } from '../design/sprites.generated';
 import { UpdateBanner } from './UpdateBanner';
+import { AnalysisProvider } from '../analysis';
+import { LevelUpWatcher } from './LevelUp';
 
 const TABS: { to: string; label: string; icon: SpriteName }[] = [
   { to: '/hoy', label: 'Hoy', icon: 'nav-today' },
@@ -22,19 +24,22 @@ export function AppLayout() {
   if (!settings.onboardingCompletedAt) return <Onboarding banner={<UpdateBanner />} />;
 
   return (
-    <div className="app">
-      <main className="main">
-        <UpdateBanner />
-        <Outlet />
-      </main>
-      <nav className="nav" aria-label="Principal">
-        {TABS.map((tab) => (
-          <NavLink key={tab.to} to={tab.to} className={({ isActive }) => (isActive ? 'active' : undefined)}>
-            <Sprite name={tab.icon} />
-            {tab.label}
-          </NavLink>
-        ))}
-      </nav>
-    </div>
+    <AnalysisProvider>
+      <div className="app">
+        <main className="main">
+          <UpdateBanner />
+          <Outlet />
+        </main>
+        <nav className="nav" aria-label="Principal">
+          {TABS.map((tab) => (
+            <NavLink key={tab.to} to={tab.to} className={({ isActive }) => (isActive ? 'active' : undefined)}>
+              <Sprite name={tab.icon} />
+              {tab.label}
+            </NavLink>
+          ))}
+        </nav>
+        <LevelUpWatcher />
+      </div>
+    </AnalysisProvider>
   );
 }

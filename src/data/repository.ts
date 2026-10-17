@@ -224,6 +224,10 @@ export interface Settings {
   radarWindow: 7 | 30 | 90;
   persistGranted?: boolean;
   installHintDismissedAt?: string;
+  /** Último nivel celebrado con el modal (PRG-06). */
+  lastCelebratedLevel?: number;
+  /** El aviso de backup no se muestra antes de esta fecha local (BAK-07). */
+  backupReminderSnoozedUntil?: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = { reducedMotion: 'system', vibration: true, radarWindow: 30 };

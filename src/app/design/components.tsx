@@ -72,3 +72,21 @@ export function BackLink({ to, label }: { to: string; label: string }) {
     </Link>
   );
 }
+
+/** Barra de XP del nivel actual (PRG-03, PRG-04). */
+export function XpBar({ xp, start, next, compact = false }: { xp: number; start: number; next: number; compact?: boolean }) {
+  const ratio = Math.max(0, Math.min(1, (xp - start) / (next - start)));
+  return (
+    <div
+      className="xpbar"
+      role="progressbar"
+      aria-label="Experiencia del nivel"
+      aria-valuemin={start}
+      aria-valuemax={next}
+      aria-valuenow={xp}
+      style={{ height: compact ? 8 : 14 }}
+    >
+      <span style={{ width: `${ratio * 100}%` }} />
+    </div>
+  );
+}

@@ -70,3 +70,38 @@ export function parseLocalDate(value: string | undefined): LocalDate | undefined
     return undefined;
   }
 }
+
+const STREAK_UNIT: Record<PeriodKind, [string, string]> = {
+  day: ['día', 'días'],
+  week: ['semana', 'semanas'],
+  month: ['mes', 'meses'],
+};
+
+export function periodUnit(kind: PeriodKind, n: number): string {
+  return STREAK_UNIT[kind][n === 1 ? 0 : 1];
+}
+
+/** "racha 6 días" (STR-02). */
+export function streakText(n: number, kind: PeriodKind): string {
+  return `racha ${n} ${periodUnit(kind, n)}`;
+}
+
+const XP_FORMAT = new Intl.NumberFormat('es', { maximumFractionDigits: 2 });
+const INT_FORMAT = new Intl.NumberFormat('es');
+
+/** "+2,5 XP" / "−2,5 XP" a partir de centésimas. */
+export function xpDeltaText(cents: number): string {
+  const sign = cents < 0 ? '−' : '+';
+  return `${sign}${XP_FORMAT.format(Math.abs(cents) / 100)} XP`;
+}
+
+export function intText(n: number): string {
+  return INT_FORMAT.format(n);
+}
+
+/** "hoy", "ayer", "hace 3 días". */
+export function daysAgoText(days: number): string {
+  if (days <= 0) return 'hoy';
+  if (days === 1) return 'ayer';
+  return `hace ${days} días`;
+}

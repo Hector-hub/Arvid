@@ -1,6 +1,6 @@
 # ARVID — Diseño del sistema de juego
 
-Estado: **aprobado** (D-035, 2026-10-17) · Implementa: D-032–D-034, D-006, D-007, D-009, D-011–D-014, D-016–D-018, D-020b, D-021, D-025, D-026, C-002.
+Estado: **aprobado** (D-035, 2026-10-17; enmiendas D-044) · Implementa: D-032–D-034, D-006, D-007, D-009, D-011–D-014, D-016–D-018, D-020b, D-021, D-025, D-026, C-002.
 
 Este documento define las reglas exactas del motor (MVP-04). Los ejemplos de §12 se convertirán uno a uno en tests unitarios. Los valores marcados como *(ajustable)* son parámetros de configuración del motor, no constantes repartidas por el código.
 
@@ -60,6 +60,7 @@ Estos periodos **aportan XP** por lo que se hizo, pero no cuentan en atributos, 
 - **R-A6 (gracia).** El periodo en que se crea, se reactiva o cambia de tipo una actividad es de gracia. Solo se evalúa si se completa al 100 % (`r = 1`); si no, se excluye. Así, crear una actividad semanal en domingo no penaliza.
 - **R-A7 (pausa).** Un periodo se excluye si la actividad estaba pausada o archivada en su último día. Los periodos completos dentro de una pausa no existen a efectos de evaluación.
 - **R-A8 (abierto).** Un periodo abierto solo se evalúa si ya está completo (`r = 1`). Así, completar algo hoy se refleja enseguida, pero un día a medias no penaliza antes de terminar.
+- **R-A9 (truncado, D-044).** Un periodo cortado por un cambio de tipo (p. ej. la semana del 28 sep al 4 oct cuando la versión mensual empieza el 1 oct) no se evalúa. Aporta XP por los registros de su tramo; los posteriores al corte pertenecen al periodo nuevo, que es de gracia (R-A2).
 
 ## 4. XP, niveles y títulos
 - **R-X1.** XP total = suma de `E` de **todos** los periodos de todas las actividades (incluidos los de gracia y pausa) + el valor `v` de cada misión completada (a tiempo, sin fecha límite o tarde, D-032).
@@ -127,7 +128,7 @@ Por actividad, contadas en periodos de esa actividad.
   - Si hay un comodín, se consume **automáticamente**: la racha se conserva (sin aumentar).
   - Si no hay, la racha vuelve a 0.
 - **R-S4.** El comodín protege **solo la racha**. El periodo sigue contando con sus puntos reales en atributos y Disciplina.
-- **R-S5.** La racha mostrada incluye el periodo abierto si ya está cumplido.
+- **R-S5.** Un periodo abierto **ya cumplido** cuenta como cumplido a todos los efectos: suma a la racha y puede ganar un comodín (D-044). Si se deshace el registro, el recálculo lo retira (R-S6).
 - **R-S6.** Como todo se deriva del historial (§0), un registro retroactivo de "ayer" puede devolver un comodín consumido o restaurar una racha. Es el comportamiento esperado.
 
 ## 8. Misiones

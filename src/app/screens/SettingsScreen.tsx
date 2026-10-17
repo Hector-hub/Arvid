@@ -5,6 +5,7 @@ import type { Category } from '../../domain/categories';
 import { currentPersistState, isIOS, requestPersistentStorage, type PersistState } from '../../pwa/platform';
 import { useCategories, useData, useSettings } from '../data';
 import { BackLink, CategoryIcon, Panel } from '../design/components';
+import { BackupPanel, DeletePanel } from './DataPanels';
 
 const PERSIST_TEXT: Record<PersistState, { title: string; body: string }> = {
   granted: { title: 'Protegido', body: 'El navegador no borrará tus datos para liberar espacio.' },
@@ -95,6 +96,9 @@ export function SettingsScreen() {
           </div>
         </fieldset>
       </Panel>
+
+      <BackupPanel />
+      <DeletePanel />
 
       <p className="small muted">ARVID {__APP_VERSION__}</p>
     </div>

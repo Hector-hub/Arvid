@@ -3,6 +3,7 @@ import { createMemoryRouter, type RouteObject } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 import { ArvidDB } from '../data/db';
 import { ensureSeed, saveSetting, type DataContext } from '../data/repository';
+import { AnalysisProvider } from './analysis';
 import { DataProvider } from './data';
 
 let n = 0;
@@ -21,7 +22,9 @@ export function renderRoutes(ctx: DataContext, routes: RouteObject[], path: stri
   const router = createMemoryRouter(routes, { initialEntries: [path] });
   return render(
     <DataProvider value={ctx}>
-      <RouterProvider router={router} />
+      <AnalysisProvider>
+        <RouterProvider router={router} />
+      </AnalysisProvider>
     </DataProvider>,
   );
 }

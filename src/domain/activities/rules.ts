@@ -22,15 +22,15 @@ export function versionAt(versions: readonly ActivityVersion[], date: LocalDate)
 }
 
 /** Orden total: fecha, instante y, ante empate, `created` primero. Los repositorios garantizan instantes crecientes. */
-function sortEvents(events: readonly ActivityStatusEvent[]): ActivityStatusEvent[] {
+export function sortEvents(events: readonly ActivityStatusEvent[]): ActivityStatusEvent[] {
   const rank = (e: ActivityStatusEvent) => (e.type === 'created' ? 0 : 1);
   return [...events].sort((a, b) => compareDates(a.date, b.date) || a.at.localeCompare(b.at) || rank(a) - rank(b));
 }
 
 /** Estado de la actividad al final de una fecha; `undefined` si aún no existía. */
-export function statusAt(events: readonly ActivityStatusEvent[], date: LocalDate): ActivityStatus | undefined {
+export function statusAt(events: readonly ActivityStatusEvent[], date: LocalDate, presorted = false): ActivityStatus | undefined {
   let status: ActivityStatus | undefined;
-  for (const e of sortEvents(events)) {
+  for (const e of presorted ? events : sortEvents(events)) {
     if (compareDates(e.date, date) > 0) break;
     switch (e.type) {
       case 'created':

@@ -64,7 +64,7 @@ describe('Hoy', () => {
     await add('Agua', 'day', 3);
     renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
     await userEvent.click(await screen.findByRole('button', { name: 'Registrar Agua' }));
-    expect(await screen.findByText('+1 · 1 de 3')).toBeInTheDocument();
+    expect(await screen.findByText('+1 · 1 de 3 · +3,33 XP')).toBeInTheDocument();
     await waitFor(() => expect(screen.getByText('1 de 3')).toBeInTheDocument());
     expect(screen.getByText('Te quedan 2 para hoy')).toBeInTheDocument();
   });
