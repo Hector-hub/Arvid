@@ -1,0 +1,23 @@
+# nombre columna fila   (Kenney 1-Bit Pack 1.2, Tilesheet/monochrome-transparent_packed.png)
+hero 28 4
+cat-body 40 10
+cat-rest 5 8
+cat-mind 35 14
+cat-learning 45 5
+cat-relationships 35 15
+cat-order 41 16
+nav-today 27 11
+nav-activities 33 15
+nav-character 25 10
+nav-settings 45 16
+plus 36 20
+minus 37 20
+arrow-up 28 20
+arrow-down 30 20
+close 38 20
+warning 35 21
+info 35 13
+hourglass 39 12
+crown 43 2
+flame 28 11
+trophy 40 16

@@ -1,0 +1,4 @@
+pnpm-lock.yaml
+docs
+vendor
+src/app/design/sprites.generated.ts

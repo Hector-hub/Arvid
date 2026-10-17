@@ -1,6 +1,6 @@
 # ARVID — Diseño del sistema de juego
 
-Estado: **borrador pendiente de aprobación** · Implementa: D-032–D-034, D-006, D-007, D-009, D-011–D-014, D-016–D-018, D-020b, D-021, D-025, D-026, C-002.
+Estado: **aprobado** (D-035, 2026-10-17) · Implementa: D-032–D-034, D-006, D-007, D-009, D-011–D-014, D-016–D-018, D-020b, D-021, D-025, D-026, C-002.
 
 Este documento define las reglas exactas del motor (MVP-04). Los ejemplos de §12 se convertirán uno a uno en tests unitarios. Los valores marcados como *(ajustable)* son parámetros de configuración del motor, no constantes repartidas por el código.
 
@@ -230,7 +230,8 @@ Toda cifra del perfil tiene un desglose accesible:
 
 **E-9 · Niveles.** 999 XP → nivel 4 (Recluta); 1 000 XP → nivel 5 (Aprendiz); 4 500 XP → nivel 10 (Vigía).
 
-## 13. Decisiones pendientes (necesitan tu respuesta)
+## 13. Parámetros a revisar tras uso real
+Aprobados con su propuesta por defecto (D-035); se revisarán tras 4 semanas de uso.
 | ID | Pregunta | Propuesta |
 |---|---|---|
 | P-006 | Nombres de los títulos y de los logros | Los de §4 y §9 (neutros en género), editables más adelante |

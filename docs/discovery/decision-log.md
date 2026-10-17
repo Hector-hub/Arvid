@@ -45,18 +45,26 @@ Fuente de verdad de las decisiones de producto y técnicas. Cada spec debe refer
 | D-032 | Completar tarde una misión vencida **sí da XP** (+v); en Disciplina solo anula el fallo (antes P-003) | A | 2026-10-17 |
 | D-033 | Abandonar una misión con fecha límite **antes** de vencer penaliza **la mitad** en Disciplina (E = 0, P = v/2); abandonar es definitivo (antes P-004) | A | 2026-10-17 |
 | D-034 | La racha exige completar el periodo al 100 %; un periodo parcial no la mantiene (antes P-005) | A | 2026-10-17 |
+| D-035 | `docs/design/game-design.md` aprobado, incluidos los títulos y logros propuestos (antes P-006) y los umbrales de "sin datos" = 3 y tendencia = ±5, revisables tras 4 semanas de uso (P-008) | A | 2026-10-17 |
+| D-036 | Assets: Kenney 1-Bit Pack (CC0) recoloreado con la paleta; paneles y botones dibujados con CSS (antes P-007) | A | 2026-10-17 |
+| D-037 | Paleta Sweetie 16 (antes P-007) | A | 2026-10-17 |
+| D-038 | Tipografía: Pixelify Sans en títulos, cifras y botones; Atkinson Hyperlegible Next en el resto; ambas autoalojadas | A | 2026-10-17 |
+| D-039 | Solo tema oscuro en el MVP; tema claro en P1 | A | 2026-10-17 |
+| D-040 | Aprobados `design-system.md`, `asset-licenses.md`, `architecture.md` (incluido el stack: Vite + React + TS + pnpm, Dexie, vite-plugin-pwa, Zod, React Router, Fontsource, Vitest, Testing Library, fake-indexeddb, Playwright; antes B-003), `data-model.md`, `offline-strategy.md` y `security-privacy.md`, incluida la navegación de 3 pestañas (Hoy · Actividades · Personaje; Ajustes desde Personaje; antes B-004) | A | 2026-10-17 |
+| D-041 | Hosting estático en Netlify, plan gratuito (antes P-010) | A | 2026-10-17 |
+| D-042 | Spec 01 (Actividades + Hoy + PWA offline) aprobada con S1-01 a S1-04; categorías predefinidas: Cuerpo, Descanso, Mente, Aprendizaje, Relaciones y Orden (antes P-009). Permiso para instalar dependencias y descargar el 1-Bit Pack | A | 2026-10-17 |
+| C-004 | TypeScript 6.0.3 en lugar de 7: `typescript-eslint` 8.71 solo admite `<6.1`. Reversible cuando lo soporte | C | 2026-10-17 |
+| C-005 | Sprites elegidos del 1-Bit Pack (`scripts/sprites.txt`); personaje = tile (28, 4). Atlas ampliado ×12 para mostrarse nítido a 32/48/64 px | C | 2026-10-17 |
+| C-006 | Tras registrar, el botón ignora toques durante 400 ms para evitar duplicados por doble toque (LOG-06) | C | 2026-10-17 |
+| C-007 | Enlaces de vuelta explícitos en pantallas secundarias: la PWA instalada en iPhone no tiene botón Atrás (UI-05) | C | 2026-10-17 |
 | C-001 | El onboarding guía la instalación en la pantalla de inicio y solicita `navigator.storage.persist()` | C | 2026-10-17 |
 | C-002 | Una categoría sin datos suficientes se muestra como "sin datos", nunca como 0. El radar tiene una alternativa accesible en forma de lista | C | 2026-10-17 |
 | C-003 | Sonidos opcionales y desactivados por defecto; se respeta `prefers-reduced-motion` | C | 2026-10-17 |
-| B-003 | Stack: Vite + React + TypeScript + pnpm · Dexie · vite-plugin-pwa · Zod · radar en SVG propio · Vitest + Testing Library + Playwright | B | 2026-10-17 |
-| B-004 | Navegación: barra inferior Hoy · Actividades · Personaje; Ajustes desde Personaje | B | 2026-10-17 |
 
 ## Decisiones pendientes
 
 | ID | Pregunta | Dónde se resuelve |
 |---|---|---|
-| P-006 | Nombres de títulos y logros (game-design §13) y de las categorías predefinidas (spec de perfil) | `docs/design/game-design.md` §13 |
-| P-007 | Selección de packs CC0 y paleta | `docs/design/design-system.md` (por crear) |
 
 ## Riesgos
 

@@ -1,0 +1,28 @@
+// Generado por scripts/build-sprites.sh. No editar a mano.
+export const SPRITE_TILE = 192;
+export const SPRITE_COUNT = 22;
+export const SPRITES = {
+  'hero': 0,
+  'cat-body': 1,
+  'cat-rest': 2,
+  'cat-mind': 3,
+  'cat-learning': 4,
+  'cat-relationships': 5,
+  'cat-order': 6,
+  'nav-today': 7,
+  'nav-activities': 8,
+  'nav-character': 9,
+  'nav-settings': 10,
+  'plus': 11,
+  'minus': 12,
+  'arrow-up': 13,
+  'arrow-down': 14,
+  'close': 15,
+  'warning': 16,
+  'info': 17,
+  'hourglass': 18,
+  'crown': 19,
+  'flame': 20,
+  'trophy': 21,
+} as const;
+export type SpriteName = keyof typeof SPRITES;
