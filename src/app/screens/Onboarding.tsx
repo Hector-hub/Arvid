@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { saveSetting, setCategoryActive } from '../../data/repository';
 import type { Category } from '../../domain/categories';
@@ -10,7 +10,7 @@ import { InstallGuide } from './InstallGuide';
 type Step = 'welcome' | 'categories' | 'install';
 
 /** ONB-01 a ONB-04. */
-export function Onboarding() {
+export function Onboarding({ banner }: { banner?: ReactNode }) {
   const ctx = useData();
   const categories = useCategories();
   const navigate = useNavigate();
@@ -44,6 +44,7 @@ export function Onboarding() {
 
   return (
     <main className="main stack" style={{ gap: 'var(--s5)' }}>
+      {banner}
       {step === 'welcome' && (
         <>
           <div className="row" style={{ justifyContent: 'center', paddingTop: 'var(--s6)' }}>

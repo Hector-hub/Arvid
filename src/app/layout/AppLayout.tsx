@@ -18,7 +18,8 @@ export function AppLayout() {
   useMotionPreference(settings?.reducedMotion);
 
   if (!settings) return null;
-  if (!settings.onboardingCompletedAt) return <Onboarding />;
+  // El service worker se registra desde UpdateBanner: debe montarse también durante el onboarding (PWA-02).
+  if (!settings.onboardingCompletedAt) return <Onboarding banner={<UpdateBanner />} />;
 
   return (
     <div className="app">

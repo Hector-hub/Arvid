@@ -57,6 +57,7 @@ Fuente de verdad de las decisiones de producto y técnicas. Cada spec debe refer
 | C-005 | Sprites elegidos del 1-Bit Pack (`scripts/sprites.txt`); personaje = tile (28, 4). Atlas ampliado ×12 para mostrarse nítido a 32/48/64 px | C | 2026-10-17 |
 | C-006 | Tras registrar, el botón ignora toques durante 400 ms para evitar duplicados por doble toque (LOG-06) | C | 2026-10-17 |
 | C-007 | Enlaces de vuelta explícitos en pantallas secundarias: la PWA instalada en iPhone no tiene botón Atrás (UI-05) | C | 2026-10-17 |
+| D-043 | Sitio de Netlify `arvid-app` (https://arvid-app.netlify.app) en el equipo Hecrey (`hector-hub`), con despliegue manual desde la CLI (`netlify deploy --prod`) | A | 2026-10-17 |
 | C-001 | El onboarding guía la instalación en la pantalla de inicio y solicita `navigator.storage.persist()` | C | 2026-10-17 |
 | C-002 | Una categoría sin datos suficientes se muestra como "sin datos", nunca como 0. El radar tiene una alternativa accesible en forma de lista | C | 2026-10-17 |
 | C-003 | Sonidos opcionales y desactivados por defecto; se respeta `prefers-reduced-motion` | C | 2026-10-17 |

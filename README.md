@@ -33,6 +33,14 @@ docs/         producto, diseño, técnica y specs por incremento
 Proceden del [Kenney 1-Bit Pack](https://kenney.nl/assets/1-bit-pack) (CC0). Para regenerarlos, descomprime el ZIP en `vendor/kenney/` (la carpeta está en `.gitignore`) y ejecuta `pnpm sprites`. Cada sprite usado figura en `docs/design/asset-licenses.md`.
 
 ## Despliegue en Netlify
+Producción: **https://arvid-app.netlify.app** (sitio `arvid-app`, equipo Hecrey). Este directorio está enlazado con la CLI (`.netlify/`, ignorado en git):
+
+```bash
+pnpm build && npx netlify-cli deploy --prod --dir dist --no-build
+```
+
+Si el proyecto es nuevo, Netlify inyecta la insignia "Powered by Netlify" (`/.netlify/scripts/hud`): desactívala en *Project configuration → General → Powered by Netlify badge*. Es código de terceros y la CSP lo bloquea parcialmente.
+
 `netlify.toml` define el build (`pnpm build` → `dist/`), la redirección SPA, la CSP y las cabeceras de caché del service worker.
 
 1. Crea un sitio en Netlify:

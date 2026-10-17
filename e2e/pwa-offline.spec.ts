@@ -10,6 +10,13 @@ test('PWA-01: el manifest es válido', async ({ request }) => {
   for (const icon of manifest.icons as { src: string }[]) expect((await request.get(icon.src)).ok()).toBe(true);
 });
 
+test('PWA-02: el service worker se instala en la primera visita, antes del onboarding', async ({ page, browserName }) => {
+  test.skip(browserName === 'webkit', 'Playwright WebKit no ejecuta service workers');
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: 'Empezar' })).toBeVisible();
+  await expect.poll(() => page.evaluate(async () => !!(await navigator.serviceWorker.getRegistration())?.active)).toBe(true);
+});
+
 test('OFF-T1/T2 · PWA-02: sin conexión abre, muestra datos y registra; persiste al reabrir', async ({ page, context, browserName }) => {
   test.skip(browserName === 'webkit', 'Playwright WebKit no ejecuta service workers; se verifica en dispositivo (M-04)');
   await completeOnboarding(page);
