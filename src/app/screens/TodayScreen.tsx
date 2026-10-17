@@ -12,6 +12,7 @@ import { needsInstallForSafety } from '../../pwa/platform';
 import { useToday } from '../clock';
 import { useAnalysis } from '../analysis';
 import { exportData } from '../backupActions';
+import { TodayMissionsSection, useTodayMissions } from './missions/TodayMissions';
 import { useCategories, useData, useRecords, useSettings } from '../data';
 import { CategoryIcon, Panel, Segments, Sprite, XpBar, categoryColor } from '../design/components';
 import {
@@ -19,6 +20,7 @@ import {
   SECTION_TITLE,
   daysLeftText,
   longDate,
+  missionsDueText,
   pendingTodayText,
   progressText,
   streakText,
@@ -39,17 +41,25 @@ export function TodayScreen() {
   const forgotten = useMemo(() => (records ? forgottenYesterday(records, today) : []), [records, today]);
   const byId = useMemo(() => new Map(records?.map((r) => [r.activity.id, r])), [records]);
   const categoryById = useMemo(() => new Map(categories?.map((c) => [c.id, c])), [categories]);
+  const missions = useTodayMissions();
 
-  if (!view) return null;
+  if (!view || !missions) return null;
+  const summary = [
+    view.hasDaily ? pendingTodayText(view.pendingToday) : undefined,
+    missions.dueCount > 0 ? missionsDueText(missions.dueCount) : undefined,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  const allDone = view.pendingToday === 0 && missions.dueCount === 0;
 
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
       <header className="stack" style={{ gap: 'var(--s1)' }}>
         <h1>{longDate(today)}</h1>
         <LevelStrip />
-        {view.hasDaily && (
-          <p className="pixel" style={{ color: view.pendingToday === 0 ? 'var(--success)' : 'var(--text-muted)' }}>
-            {pendingTodayText(view.pendingToday)}
+        {summary && (
+          <p className="pixel" style={{ color: allDone ? 'var(--success)' : 'var(--text-muted)' }}>
+            {summary}
           </p>
         )}
       </header>
@@ -92,6 +102,8 @@ export function TodayScreen() {
           </section>
         ))
       )}
+
+      <TodayMissionsSection view={missions} categoryById={categoryById} />
 
       {forgotten.length > 0 && (
         <button type="button" className="btn btn-ghost" onClick={() => setForgottenOpen(true)}>

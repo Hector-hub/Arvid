@@ -164,7 +164,9 @@ function ActivityForm({
       </fieldset>
 
       <div className="field">
-        <label htmlFor="target">Veces por {config.period === 'day' ? 'día' : config.period === 'week' ? 'semana' : 'mes'}</label>
+        <label htmlFor="target">
+          Veces por {config.period === 'day' ? 'día' : config.period === 'week' ? 'semana' : 'mes'}
+        </label>
         <input
           id="target"
           type="number"
@@ -208,7 +210,9 @@ function ActivityForm({
       </fieldset>
 
       {activityId && (
-        <p className="small muted">Los cambios de categoría, frecuencia o dificultad se aplican desde el inicio del periodo actual.</p>
+        <p className="small muted">
+          Los cambios de categoría, frecuencia o dificultad se aplican desde el inicio del periodo actual.
+        </p>
       )}
 
       <div className="row">

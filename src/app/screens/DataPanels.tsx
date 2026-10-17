@@ -41,7 +41,11 @@ export function BackupPanel() {
   async function onFile(file: File | undefined) {
     if (!file) return;
     const result = parseBackup(await file.text());
-    setState(result.ok ? { stage: 'confirm', backup: result.backup, summary: result.summary } : { stage: 'error', message: backupErrorText(result.error) });
+    setState(
+      result.ok
+        ? { stage: 'confirm', backup: result.backup, summary: result.summary }
+        : { stage: 'error', message: backupErrorText(result.error) },
+    );
     if (input.current) input.current.value = '';
   }
 
@@ -98,7 +102,12 @@ export function BackupPanel() {
         </p>
       )}
       {state.stage === 'confirm' && (
-        <div className="banner stack" role="alertdialog" aria-labelledby="import-title" style={{ alignItems: 'stretch' }}>
+        <div
+          className="banner stack"
+          role="alertdialog"
+          aria-labelledby="import-title"
+          style={{ alignItems: 'stretch' }}
+        >
           <h3 id="import-title">¿Reemplazar tus datos?</h3>
           <p className="small">
             Exportado el {LONG_DATE.format(new Date(state.summary.exportedAt))} · {state.summary.activities}{' '}
@@ -149,7 +158,9 @@ export function DeletePanel() {
         </button>
       ) : (
         <>
-          <p className="small">Se borrarán todas tus actividades y registros de este dispositivo. No se puede deshacer.</p>
+          <p className="small">
+            Se borrarán todas tus actividades y registros de este dispositivo. No se puede deshacer.
+          </p>
           <div className="field">
             <label htmlFor="delete-confirm">Escribe {CONFIRM_WORD} para confirmar</label>
             <input

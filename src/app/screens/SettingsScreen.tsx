@@ -72,7 +72,9 @@ export function SettingsScreen() {
         <h2>Categorías</h2>
         <p className="small muted">Las categorías activas aparecen al crear actividades.</p>
         <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-          {categories?.map((c) => <CategoryToggle key={c.id} category={c} />)}
+          {categories?.map((c) => (
+            <CategoryToggle key={c.id} category={c} />
+          ))}
         </ul>
       </Panel>
 
@@ -113,7 +115,9 @@ function CategoryToggle({ category }: { category: Category }) {
     const result = await setCategoryActive(ctx, category.id, active);
     if (result.ok) setError(undefined);
     else if (result.reason === 'in-use')
-      setError(`Tiene ${result.count} ${result.count === 1 ? 'actividad' : 'actividades'}. Archívalas o cámbialas de categoría primero.`);
+      setError(
+        `Tiene ${result.count} ${result.count === 1 ? 'actividad' : 'actividades'}. Archívalas o cámbialas de categoría primero.`,
+      );
     else if (result.reason === 'last-active') setError('Necesitas al menos una categoría activa.');
     else setError('Máximo 8 categorías activas.');
   }
@@ -124,7 +128,9 @@ function CategoryToggle({ category }: { category: Category }) {
         <input type="checkbox" checked={category.active} onChange={(e) => void toggle(e.target.checked)} />
         <CategoryIcon category={category} />
         <span className="grow">{category.name}</span>
-        <span className={`chip ${category.active ? 'chip-done' : 'chip-muted'}`}>{category.active ? 'Activa' : 'Inactiva'}</span>
+        <span className={`chip ${category.active ? 'chip-done' : 'chip-muted'}`}>
+          {category.active ? 'Activa' : 'Inactiva'}
+        </span>
       </label>
       {error && (
         <p role="alert" className="field-error">

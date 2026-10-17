@@ -1,6 +1,7 @@
 import { evaluatePeriods, type EvaluatedPeriod } from '../activities/periods';
 import type { ActivityRecord } from '../activities/types';
 import type { LocalDate } from '../time/localDate';
+import { analyzeMission, type MissionAnalysis, type MissionRecord } from '../missions/missions';
 import { computeStreak, type StreakState } from './streaks';
 
 /** Títulos por nivel (R-X4, D-035). */
@@ -54,7 +55,7 @@ export function progressFromCents(xpCents: number): Progress {
   };
 }
 
-/** XP de todas las actividades: Σ E de todos los periodos (R-X1, PRG-01). Las misiones se sumarán en el inc. 3. */
+/** XP de las actividades: Σ E de todos los periodos (R-X1, PRG-01). `analyze` añade la de las misiones. */
 export function computeXpCents(records: readonly ActivityRecord[], today: LocalDate): number {
   let total = 0;
   for (const record of records) for (const p of evaluatePeriods(record, today)) total += p.earnedCents;
@@ -74,16 +75,23 @@ export interface ActivityAnalysis {
 export interface Analysis {
   progress: Progress;
   byActivity: Map<string, ActivityAnalysis>;
+  byMission: Map<string, MissionAnalysis>;
 }
 
-/** Una sola pasada por actividad: periodos, rachas y XP total (NFR2-01). */
-export function analyze(records: readonly ActivityRecord[], today: LocalDate): Analysis {
+/** Una sola pasada: periodos, rachas, estado de misiones y XP total (NFR2-01, R-X1, INT-01). */
+export function analyze(records: readonly ActivityRecord[], today: LocalDate, missions: readonly MissionRecord[] = []): Analysis {
   const byActivity = new Map<string, ActivityAnalysis>();
+  const byMission = new Map<string, MissionAnalysis>();
   let xpCents = 0;
   for (const record of records) {
     const periods = evaluatePeriods(record, today);
     for (const p of periods) xpCents += p.earnedCents;
     byActivity.set(record.activity.id, { activityId: record.activity.id, periods, streak: computeStreak(periods) });
   }
-  return { progress: progressFromCents(xpCents), byActivity };
+  for (const mission of missions) {
+    const result = analyzeMission(mission, today);
+    xpCents += result.xpCents;
+    byMission.set(mission.mission.id, result);
+  }
+  return { progress: progressFromCents(xpCents), byActivity, byMission };
 }

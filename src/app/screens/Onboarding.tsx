@@ -56,8 +56,8 @@ export function Onboarding({ banner }: { banner?: ReactNode }) {
           </p>
           <Panel>
             <p>
-              No necesitas cambiar toda tu vida hoy. Define lo que quieres hacer cada día, semana o mes, márcalo
-              cuando lo hagas y deja que tu personaje refleje tu constancia.
+              No necesitas cambiar toda tu vida hoy. Define lo que quieres hacer cada día, semana o mes, márcalo cuando
+              lo hagas y deja que tu personaje refleje tu constancia.
             </p>
           </Panel>
           <button type="button" className="btn btn-primary btn-block" onClick={() => setStep('categories')}>

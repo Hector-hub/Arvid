@@ -8,6 +8,7 @@ import { useToday } from '../clock';
 import { useCategories, useData, useRecords } from '../data';
 import { CategoryIcon, Panel, Sprite } from '../design/components';
 import { frequencyText } from '../text';
+import { ActivitiesTabs } from './ActivitiesTabs';
 
 const GROUPS: { status: ActivityStatus; title: string }[] = [
   { status: 'active', title: 'Activas' },
@@ -35,9 +36,10 @@ export function ActivitiesScreen() {
         <h1 className="grow">Actividades</h1>
         <Link to="/actividades/nueva" className="btn btn-primary">
           <Sprite name="plus" />
-          Nueva
+          Nueva actividad
         </Link>
       </header>
+      <ActivitiesTabs />
 
       {records.length === 0 && (
         <Panel className="stack">
@@ -84,9 +86,17 @@ function ActivityItem({
   return (
     <li className="panel row" style={{ padding: 'var(--s3)' }}>
       <CategoryIcon category={category} />
-      <Link to={`/actividades/${record.activity.id}`} className="grow" style={{ color: 'var(--text)', textDecoration: 'none' }}>
+      <Link
+        to={`/actividades/${record.activity.id}`}
+        className="grow"
+        style={{ color: 'var(--text)', textDecoration: 'none' }}
+      >
         <span>{name}</span>
-        {version && <span className="small muted" style={{ display: 'block' }}>{frequencyText(version.target, version.period)}</span>}
+        {version && (
+          <span className="small muted" style={{ display: 'block' }}>
+            {frequencyText(version.target, version.period)}
+          </span>
+        )}
       </Link>
       {reorder && (
         <>

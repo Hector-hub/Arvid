@@ -1,6 +1,6 @@
 # ARVID — Diseño del sistema de juego
 
-Estado: **aprobado** (D-035, 2026-10-17; enmiendas D-044) · Implementa: D-032–D-034, D-006, D-007, D-009, D-011–D-014, D-016–D-018, D-020b, D-021, D-025, D-026, C-002.
+Estado: **aprobado** (D-035, 2026-10-17; enmiendas D-044, D-046) · Implementa: D-032–D-034, D-006, D-007, D-009, D-011–D-014, D-016–D-018, D-020b, D-021, D-025, D-026, C-002.
 
 Este documento define las reglas exactas del motor (MVP-04). Los ejemplos de §12 se convertirán uno a uno en tests unitarios. Los valores marcados como *(ajustable)* son parámetros de configuración del motor, no constantes repartidas por el código.
 
@@ -151,6 +151,10 @@ Por actividad, contadas en periodos de esa actividad.
 - **R-M6.** Abandonar es definitivo: una misión abandonada no puede completarse después. Si se quiere retomar, se crea una misión nueva.
 - **R-M7.** Abandonar una misión con fecha límite **antes** de vencer cuesta la mitad: `P = v / 2`, `E = 0` en Disciplina (D-033). Abandonar una misión sin fecha límite no penaliza (D-020b).
 - **R-M5.** Las misiones completadas pueden desmarcarse mientras su fecha de finalización sea editable.
+- **R-M8 (D-046).** Quitar la fecha límite a una misión pendiente equivale a reprogramarla (R-M3): desde entonces no puede vencer. A una misión vencida no le anula el fallo (como R-M4).
+- **R-M9 (D-046).** Desmarcar una misión completada a tiempo cuya fecha límite ya pasó la convierte en vencida, con el fallo en esa fecha límite. Desmarcar una completada tarde la devuelve a vencida.
+- **R-M10 (D-046).** La fecha de finalización nunca es anterior al día de creación de la misión.
+- **R-M11 (D-046).** Una misión vence al terminar el día de la fecha límite **vigente** en ese momento. Los eventos se procesan en orden de instante y se comparan con la fecha límite vigente por su fecha local (así, completar "ayer" una misión con fecha límite ayer cuenta a tiempo, R-M2).
 
 ## 9. Logros
 - **R-L1.** Se evalúan sobre el estado derivado. Al cumplirse la condición se guarda `unlockedAt` y el logro queda **permanente**, aunque luego se deshaga el registro que lo provocó (evita parpadeos).

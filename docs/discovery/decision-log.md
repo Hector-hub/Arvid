@@ -60,6 +60,8 @@ Fuente de verdad de las decisiones de producto y técnicas. Cada spec debe refer
 | D-043 | Sitio de Netlify `arvid-app` (https://arvid-app.netlify.app) en el equipo Hecrey (`hector-hub`), con despliegue manual desde la CLI (`netlify deploy --prod`) | A | 2026-10-17 |
 | D-044 | Enmiendas a game-design.md: R-A9 (un periodo truncado por un cambio de tipo no se evalúa pero da XP; antes GD-A1) y R-S5 (un periodo abierto ya cumplido cuenta también para ganar comodines; antes GD-A2) | A | 2026-10-17 |
 | D-045 | Spec 02 (Backup y progreso básico) aprobada con S2-01 a S2-05 | A | 2026-10-17 |
+| D-046 | Aclaraciones de misiones R-M8 a R-M11 en game-design §8 (quitar la fecha, desmarcar tras vencer, no completar antes de la creación, vencimiento con la fecha vigente; antes GD-A3 a GD-A6) | A | 2026-10-17 |
+| D-047 | Spec 03 (Misiones) aprobada con S3-01 a S3-05 | A | 2026-10-17 |
 | C-001 | El onboarding guía la instalación en la pantalla de inicio y solicita `navigator.storage.persist()` | C | 2026-10-17 |
 | C-002 | Una categoría sin datos suficientes se muestra como "sin datos", nunca como 0. El radar tiene una alternativa accesible en forma de lista | C | 2026-10-17 |
 | C-003 | Sonidos opcionales y desactivados por defecto; se respeta `prefers-reduced-motion` | C | 2026-10-17 |

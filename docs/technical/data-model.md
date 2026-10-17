@@ -70,6 +70,7 @@ Estado: **aprobado** (D-040, 2026-10-17) · Implementa: game-design §0 (todo se
 | categoryId | string | |
 | difficulty | `'easy' \| 'medium' \| 'hard'` | |
 | createdAt | Instant | |
+| createdOn | LocalDate | Fecha local de creación (R-M10; añadido en 0.3.0, sin migración porque la tabla estaba vacía) |
 
 ### `missionEvents` — historial de la misión (el estado de game-design §8 se deriva de aquí)
 | Campo | Tipo | Notas |

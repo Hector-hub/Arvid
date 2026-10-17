@@ -30,7 +30,9 @@ export function CharacterScreen() {
           <span className="grow pixel" style={{ color: 'var(--xp)' }}>
             {intText(p.xp)} / {intText(p.nextLevelXp)} XP
           </span>
-          <span className="muted">{intText(p.nextLevelXp - p.xp)} para el nivel {p.level + 1}</span>
+          <span className="muted">
+            {intText(p.nextLevelXp - p.xp)} para el nivel {p.level + 1}
+          </span>
         </p>
         {p.xpCents === 0 ? (
           <p className="muted">Registra tu primera actividad para ganar XP.</p>

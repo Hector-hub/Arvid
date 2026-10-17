@@ -60,8 +60,23 @@ export function Segments({ count, target, color }: { count: number; target: numb
   );
 }
 
-export function Panel({ children, className, as: Tag = 'section' }: { children: ReactNode; className?: string; as?: 'section' | 'div' | 'li' }) {
-  return <Tag className={`panel${className ? ` ${className}` : ''}`}>{children}</Tag>;
+export function Panel({
+  children,
+  className,
+  as: Tag = 'section',
+  labelledBy,
+}: {
+  children: ReactNode;
+  className?: string;
+  as?: 'section' | 'div' | 'li';
+  /** ID del encabezado que nombra la sección (la convierte en región accesible). */
+  labelledBy?: string;
+}) {
+  return (
+    <Tag className={`panel${className ? ` ${className}` : ''}`} aria-labelledby={labelledBy}>
+      {children}
+    </Tag>
+  );
 }
 
 /** Enlace de vuelta explícito: instalada en iPhone, la app no tiene botón Atrás del navegador. */

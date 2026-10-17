@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { createContext, useContext, type ReactNode } from 'react';
+import { loadMissions } from '../data/missions';
 import { loadCategories, loadRecord, loadRecords, loadSettings, type DataContext } from '../data/repository';
 
 const DataCtx = createContext<DataContext | null>(null);
@@ -33,4 +34,9 @@ export function useCategories() {
 export function useSettings() {
   const { db } = useData();
   return useLiveQuery(() => loadSettings(db), [db]);
+}
+
+export function useMissions() {
+  const { db } = useData();
+  return useLiveQuery(() => loadMissions(db), [db]);
 }

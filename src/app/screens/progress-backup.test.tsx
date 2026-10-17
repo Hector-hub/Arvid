@@ -32,10 +32,13 @@ async function addDaily(name: string, logsDaysAgo: number[] = []) {
   const categoryId = (await loadCategories(ctx.db))[0]!.id;
   // Creada hace 10 días para poder tener historial.
   const created = addDays(today(), -10);
-  const id = await createActivity({ ...ctx, now: () => new Date(`${created}T09:00:00`) }, {
-    name,
-    config: { period: 'day', target: 1, difficulty: 'medium', categoryId },
-  });
+  const id = await createActivity(
+    { ...ctx, now: () => new Date(`${created}T09:00:00`) },
+    {
+      name,
+      config: { period: 'day', target: 1, difficulty: 'medium', categoryId },
+    },
+  );
   for (const ago of logsDaysAgo) {
     const date = addDays(today(), -ago);
     await logCompletion({ ...ctx, now: () => new Date(`${date}T20:00:00`) }, id, date);
@@ -132,7 +135,10 @@ describe('Ajustes → copia de seguridad (BAK-02, BAK-03, BAK-05)', () => {
     await userEvent.upload(fileInput, new File(['{"hola":1}'], 'x.json', { type: 'application/json' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('no es una copia de seguridad de ARVID');
 
-    await userEvent.upload(fileInput, new File([JSON.stringify({ ...backup, formatVersion: 2 })], 'x.json', { type: 'application/json' }));
+    await userEvent.upload(
+      fileInput,
+      new File([JSON.stringify({ ...backup, formatVersion: 2 })], 'x.json', { type: 'application/json' }),
+    );
     expect(await screen.findByRole('alert')).toHaveTextContent('versión más nueva');
 
     await userEvent.upload(fileInput, new File([JSON.stringify(backup)], 'x.json', { type: 'application/json' }));
@@ -145,7 +151,14 @@ describe('Ajustes → copia de seguridad (BAK-02, BAK-03, BAK-05)', () => {
   it('DEL-01: sin escribir BORRAR no elimina', async () => {
     await addDaily('Caminar');
     await saveSetting(ctx.db, 'onboardingCompletedAt', new Date().toISOString());
-    renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }, { path: '/', element: <p>inicio</p> }], '/ajustes');
+    renderRoutes(
+      ctx,
+      [
+        { path: '/ajustes', element: <SettingsScreen /> },
+        { path: '/', element: <p>inicio</p> },
+      ],
+      '/ajustes',
+    );
     await userEvent.click(await screen.findByRole('button', { name: 'Eliminar todos mis datos' }));
     await userEvent.type(screen.getByLabelText('Escribe BORRAR para confirmar'), 'borrar no');
     await userEvent.click(screen.getByRole('button', { name: 'Eliminar' }));

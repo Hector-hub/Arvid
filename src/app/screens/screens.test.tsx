@@ -30,7 +30,10 @@ async function cat(name: string) {
 }
 
 async function add(name: string, period: 'day' | 'week' | 'month', target: number) {
-  return createActivity(ctx, { name, config: { period, target, difficulty: 'medium', categoryId: await cat('Cuerpo') } });
+  return createActivity(ctx, {
+    name,
+    config: { period, target, difficulty: 'medium', categoryId: await cat('Cuerpo') },
+  });
 }
 
 const today = () => toLocalDate(new Date());

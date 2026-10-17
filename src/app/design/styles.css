@@ -371,3 +371,22 @@ fieldset { border: 0; padding: 0; margin: 0; }
   100% { transform: translateY(0); opacity: 1; }
 }
 .levelup { text-align: center; animation: rise var(--dur-celebrate) steps(4) 1; }
+
+/* ---------- Selector de pestañas (S3-05) ---------- */
+.tabs {
+  display: flex;
+  border: var(--b) solid var(--border);
+}
+.tabs a {
+  flex: 1;
+  text-align: center;
+  padding: var(--s2) var(--s3);
+  min-height: 44px;
+  font-family: var(--font-pixel);
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.tabs a.active {
+  background: var(--surface-sunken);
+  color: var(--level);
+}

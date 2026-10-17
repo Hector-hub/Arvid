@@ -105,3 +105,24 @@ export function daysAgoText(days: number): string {
   if (days === 1) return 'ayer';
   return `hace ${days} días`;
 }
+
+const DAY_MONTH = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short' });
+
+/** "12 oct". */
+export function dayMonth(date: LocalDate): string {
+  return DAY_MONTH.format(new Date(`${date}T12:00:00`)).replace('.', '');
+}
+
+/** Plazo de una misión (MHOY-02): "vence hoy", "vence mañana", "vence el vie 23", "vence el 30 nov", "sin fecha". */
+export function missionDueText(deadline: LocalDate | undefined, today: LocalDate): string {
+  if (!deadline) return 'sin fecha';
+  const days = Math.round((Date.parse(`${deadline}T12:00:00Z`) - Date.parse(`${today}T12:00:00Z`)) / 86_400_000);
+  if (days === 0) return 'vence hoy';
+  if (days === 1) return 'vence mañana';
+  if (days > 1 && days <= 6) return `vence el ${shortDay(deadline)}`;
+  return `vence el ${dayMonth(deadline)}`;
+}
+
+export function missionsDueText(n: number): string {
+  return n === 1 ? '1 misión para hoy' : `${n} misiones para hoy`;
+}

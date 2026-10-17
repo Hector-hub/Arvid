@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { TARGET_LIMITS } from '../domain/config';
 import type { ActivityRecord, ActivityStatusEvent, ActivityVersion, Completion } from '../domain/activities/types';
+import type { MissionRecord } from '../domain/missions/missions';
 import { analyze } from '../domain/progress/progress';
 import { isLocalDate, toLocalDate } from '../domain/time/localDate';
 import { SCHEMA_VERSION, type ArvidDB } from './db';
@@ -55,15 +56,17 @@ const statusEvent = z.object({
 
 const completion = z.object({ id, activityId: id, date: localDate, at: instant, tzOffsetMin: z.number().int().min(-900).max(900) });
 
-const mission = z.object({ id, title: z.string().min(1).max(60), categoryId: id, difficulty, createdAt: instant });
-const missionEvent = z.object({
-  id,
-  missionId: id,
-  type: z.enum(['deadlineSet', 'deadlineCleared', 'completed', 'uncompleted', 'abandoned']),
-  date: localDate,
-  deadline: localDate.optional(),
-  at: instant,
-});
+const mission = z.object({ id, title: z.string().min(1).max(60), categoryId: id, difficulty, createdAt: instant, createdOn: localDate });
+const missionEvent = z
+  .object({
+    id,
+    missionId: id,
+    type: z.enum(['deadlineSet', 'deadlineCleared', 'completed', 'uncompleted', 'abandoned']),
+    date: localDate,
+    deadline: localDate.optional(),
+    at: instant,
+  })
+  .refine((e) => e.type !== 'deadlineSet' || !!e.deadline, 'deadlineSet sin fecha límite');
 const achievement = z.object({ id, unlockedAt: instant });
 const setting = z.object({ key: z.string().min(1).max(60), value: z.unknown() });
 
@@ -103,8 +106,8 @@ export async function buildBackup(db: ArvidDB, appVersion: string, now: Date): P
       activityVersions: await db.activityVersions.toArray(),
       activityStatusEvents: await db.activityStatusEvents.toArray(),
       completions: await db.completions.toArray(),
-      missions: (await db.missions.toArray()) as Backup['data']['missions'],
-      missionEvents: (await db.missionEvents.toArray()) as Backup['data']['missionEvents'],
+      missions: await db.missions.toArray(),
+      missionEvents: await db.missionEvents.toArray(),
       achievements: await db.achievements.toArray(),
       settings: (await db.settings.toArray()).filter((s) => !DEVICE_SETTINGS.has(s.key)),
     },
@@ -205,6 +208,10 @@ function findBrokenReference({ data }: Backup): string | undefined {
 
 // ---------- Reemplazar (BAK-06) ----------
 
+export function missionsFromBackup({ data }: Backup): MissionRecord[] {
+  return data.missions.map((mission) => ({ mission, events: data.missionEvents.filter((e) => e.missionId === mission.id) }));
+}
+
 export function recordsFromBackup({ data }: Backup): ActivityRecord[] {
   return data.activities.map((activity) => ({
     activity,
@@ -218,7 +225,7 @@ export function recordsFromBackup({ data }: Backup): ActivityRecord[] {
 export async function replaceAllData(ctx: DataContext, backup: Backup): Promise<void> {
   const { db } = ctx;
   const { data } = backup;
-  const level = analyze(recordsFromBackup(backup), toLocalDate(ctx.now())).progress.level;
+  const level = analyze(recordsFromBackup(backup), toLocalDate(ctx.now()), missionsFromBackup(backup)).progress.level;
   await db.transaction('rw', db.tables, async () => {
     const device = (await db.settings.toArray()).filter((s) => DEVICE_SETTINGS.has(s.key));
     await Promise.all(db.tables.map((t) => t.clear()));

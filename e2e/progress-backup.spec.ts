@@ -62,7 +62,8 @@ test('BAK · NFR2-03: exportar, borrar todo e importar recupera los mismos datos
   await completeOnboarding(page);
   await createActivity(page, { name: 'Leer', difficulty: 'Difícil' });
   await row(page, 'Leer').getByRole('button', { name: 'Registrar Leer' }).click();
-  await expect(page.getByRole('link', { name: /Nivel 1, Recluta/ })).toBeVisible();
+  // Esperar a que el registro se haya guardado antes de navegar.
+  await expect(row(page, 'Leer').getByText('Completada')).toBeVisible();
 
   await page.goto('/ajustes');
   const downloadPromise = page.waitForEvent('download');
