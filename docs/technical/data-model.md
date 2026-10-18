@@ -99,6 +99,8 @@ Guardar eventos (y no solo el estado) permite saber **cuándo** venció la misi�
 | vibration | boolean | Solo Android |
 | radarWindow | `7 \| 30 \| 90` | Último valor elegido (D-026) |
 | persistGranted | boolean? | Último resultado de `navigator.storage.persisted()` |
+| avatar | `{ cast, variant }` | Protagonista y variante (spec 05 §5). Por defecto `{ cast: 'ella', variant: 'original' }`; un valor desconocido se normaliza al cargar |
+| music | `{ enabled: boolean, volume: number }` | Música opcional (spec 05, MUS). Por defecto `{ enabled: false, volume: 0.4 }` |
 
 ## 3. Estado derivado (no se guarda)
 | Valor | Función del dominio | Entradas |

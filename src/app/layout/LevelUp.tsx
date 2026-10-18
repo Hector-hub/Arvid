@@ -3,7 +3,8 @@ import { saveSetting } from '../../data/repository';
 import { titleForLevel } from '../../domain/progress/progress';
 import { useAnalysis } from '../analysis';
 import { useData, useSettings } from '../data';
-import { Sprite } from '../design/components';
+import { AvatarPreview } from '../scene/Scene';
+import { celebrate } from '../scene/engine';
 
 /**
  * Celebra cada nivel una sola vez (PRG-06). Si no hay nivel celebrado guardado (primer uso o datos previos), se fija
@@ -33,6 +34,13 @@ export function LevelUpWatcher() {
 function LevelUpModal({ level, newTitle, onClose }: { level: number; newTitle?: string; onClose: () => void }) {
   const button = useRef<HTMLButtonElement>(null);
   useEffect(() => button.current?.focus(), []);
+  // Ráfaga grande en la escena (PAR-02); si la escena no está a la vista, espera a que vuelva (PAR-03)
+  const celebrated = useRef(0);
+  useEffect(() => {
+    if (celebrated.current === level) return;
+    celebrated.current = level;
+    celebrate('big');
+  }, [level]);
   return (
     <div className="sheet-backdrop" style={{ alignItems: 'center' }} onClick={onClose}>
       <div
@@ -47,7 +55,7 @@ function LevelUpModal({ level, newTitle, onClose }: { level: number; newTitle?: 
         }}
       >
         <div className="row" style={{ justifyContent: 'center' }}>
-          <Sprite name="hero" scale={6} color="var(--level)" />
+          <AvatarPreview scale={2} />
         </div>
         <h2 id="levelup-title" style={{ fontSize: '1.75rem', color: 'var(--level)' }}>
           ¡Nivel {level}!

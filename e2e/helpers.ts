@@ -3,10 +3,18 @@ import { expect, type Page } from '@playwright/test';
 export async function completeOnboarding(page: Page) {
   await page.goto('/');
   await page.getByRole('button', { name: 'Empezar' }).click();
+  await chooseDefaultAvatar(page);
   await page.getByRole('button', { name: 'Continuar' }).click();
   const later = page.getByRole('button', { name: 'Más tarde' });
   if (await later.waitFor({ state: 'visible', timeout: 1500 }).then(() => true, () => false)) await later.click();
   await expect(page).toHaveURL(/\/hoy$/);
+}
+
+/** Paso "Elige tu protagonista" del onboarding (spec 05, PRO-02): se acepta la opción preseleccionada. */
+export async function chooseDefaultAvatar(page: Page) {
+  await expect(page.getByRole('heading', { name: 'Elige tu protagonista' })).toBeVisible();
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await expect(page.getByRole('heading', { name: 'Tus áreas de vida' })).toBeVisible();
 }
 
 export interface NewActivity {

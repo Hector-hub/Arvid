@@ -6,6 +6,7 @@ import { useAnalysis } from '../analysis';
 import { useData, useSettings } from '../data';
 import { CategoryIcon, Panel, Sprite, XpBar, categoryColor } from '../design/components';
 import { Radar } from '../profile/Radar';
+import { Scene } from '../scene/Scene';
 import { scoreValueText, trendText } from '../profile/scoreText';
 import { useProfile } from '../profile/useProfile';
 import { intText } from '../text';
@@ -34,12 +35,13 @@ export function CharacterScreen() {
       </header>
 
       <Panel className="stack">
-        <div className="row" style={{ justifyContent: 'center', padding: 'var(--s3) 0' }}>
-          <Sprite name="hero" scale={6} color="var(--level)" label="Tu personaje" />
-        </div>
-        <h2 style={{ textAlign: 'center', color: 'var(--level)', fontSize: '1.5rem' }}>
-          Nivel {p.level} · {p.title}
-        </h2>
+        <Scene
+          overlay={
+            <h2>
+              Nivel {p.level} · {p.title}
+            </h2>
+          }
+        />
         <XpBar xp={p.xp} start={p.levelStartXp} next={p.nextLevelXp} />
         <p className="row small">
           <span className="grow pixel" style={{ color: 'var(--xp)' }}>

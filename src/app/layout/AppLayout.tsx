@@ -7,6 +7,7 @@ import type { SpriteName } from '../design/sprites.generated';
 import { UpdateBanner } from './UpdateBanner';
 import { AnalysisProvider } from '../analysis';
 import { LevelUpWatcher } from './LevelUp';
+import { MusicProvider } from '../music/MusicProvider';
 
 const TABS: { to: string; label: string; icon: SpriteName }[] = [
   { to: '/hoy', label: 'Hoy', icon: 'nav-today' },
@@ -25,6 +26,7 @@ export function AppLayout() {
 
   return (
     <AnalysisProvider>
+      <MusicProvider>
       <div className="app">
         <main className="main">
           <UpdateBanner />
@@ -40,6 +42,7 @@ export function AppLayout() {
         </nav>
         <LevelUpWatcher />
       </div>
+      </MusicProvider>
     </AnalysisProvider>
   );
 }

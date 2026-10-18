@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { saveSetting, setCategoryActive, type Settings } from '../../data/repository';
+import type { Avatar } from '../../domain/avatar/catalog';
 import type { Category } from '../../domain/categories';
 import { currentPersistState, isIOS, requestPersistentStorage, type PersistState } from '../../pwa/platform';
 import { useCategories, useData, useSettings } from '../data';
 import { BackLink, CategoryIcon, Panel } from '../design/components';
 import { BackupPanel, DeletePanel } from './DataPanels';
+import { useMusic } from '../music/MusicProvider';
+import { AvatarPicker } from '../scene/AvatarPicker';
 
 const PERSIST_TEXT: Record<PersistState, { title: string; body: string }> = {
   granted: { title: 'Protegido', body: 'El navegador no borrará tus datos para liberar espacio.' },
@@ -45,6 +48,10 @@ export function SettingsScreen() {
     <div className="stack" style={{ gap: 'var(--s5)' }}>
       <BackLink to="/personaje" label="Personaje" />
       <h1>Ajustes</h1>
+
+      <AppearancePanel initial={settings.avatar} />
+
+      <SoundPanel />
 
       <Panel className="stack">
         <h2>Almacenamiento</h2>
@@ -105,8 +112,76 @@ export function SettingsScreen() {
       <BackupPanel />
       <DeletePanel />
 
+      <Link to="/ajustes/creditos" className="btn">
+        Créditos
+      </Link>
+
       <p className="small muted">ARVID {__APP_VERSION__}</p>
     </div>
+  );
+}
+
+/**
+ * Ajustes → Apariencia (spec 05, PRO-03). Estado local: dos toques seguidos (protagonista y color) no deben
+ * pisarse mientras se relee el ajuste guardado.
+ */
+function AppearancePanel({ initial }: { initial: Avatar }) {
+  const { db } = useData();
+  const [avatar, setAvatar] = useState(initial);
+  return (
+    <Panel className="stack">
+      <h2>Apariencia</h2>
+      <AvatarPicker
+        value={avatar}
+        onChange={(next) => {
+          setAvatar(next);
+          void saveSetting(db, 'avatar', next);
+        }}
+      />
+    </Panel>
+  );
+}
+
+/** Ajustes → Sonido (spec 05, MUS-06). */
+function SoundPanel() {
+  const music = useMusic();
+  return (
+    <Panel className="stack">
+      <h2>Sonido</h2>
+      <label className="choice">
+        <input type="checkbox" checked={music.playing} onChange={music.toggle} data-music-control="" />
+        <span className="grow">Música de fondo</span>
+        <span className={`chip ${music.playing ? 'chip-done' : 'chip-muted'}`}>{music.playing ? 'Sonando' : 'Apagada'}</span>
+      </label>
+      <label className="field">
+        <span className="small muted">Volumen</span>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.05}
+          value={music.volume}
+          onChange={(e) => music.setVolume(Number(e.target.value))}
+          data-music-control=""
+        />
+      </label>
+      {music.track && (
+        <div className="row">
+          <p className="grow small" aria-live="polite">
+            {music.playing ? 'Sonando' : 'En pausa'}: {music.track.name}
+          </p>
+          <button type="button" className="btn" onClick={music.next} data-music-control="">
+            Siguiente
+          </button>
+        </div>
+      )}
+      {music.needsConnection && (
+        <p role="status" className="small field-error">
+          La música necesita conexión la primera vez.
+        </p>
+      )}
+      <p className="small muted">Desactivada por defecto. Una pista que ya ha sonado se puede escuchar sin conexión.</p>
+    </Panel>
   );
 }
 

@@ -1,6 +1,6 @@
 # Spec 05 — Escena neón, protagonistas y música
 
-Estado: **aprobada** (D-050, 2026-10-18) · Incremento 5 de implementation-plan.md (Logros y pulido pasa a ser el 6)
+Estado: **aprobada** (D-050, 2026-10-18; licencias D-051) · **implementada** 2026-10-18 en la versión 0.5.0 (pendiente: despliegue y checklist manual M5) · Incremento 5 de implementation-plan.md (Logros y pulido pasa a ser el 6)
 Cubre: MVP-10 (amplía el sistema de diseño), MVP-05 (personaje en Hoy y Personaje) y música opcional (adelantada de P1)
 Decisiones que modifica (§10): D-027, D-029, D-036, D-037 (regla de los 16 colores), C-003, design-system §6 y §12, mvp-scope (sonidos en P1)
 Prototipo de referencia: `prototypes/escena-warped/` (local, fuera de git), con `index.html` (escena), `variantes.html` (galería) y `exports/hoja-protagonistas.png`
@@ -89,7 +89,7 @@ La exploración se hizo con prototipos sucesivos.
 - **UB-04.** Las dos pantallas comparten la misma instancia de la escena. Al cambiar de pestaña, los vehículos, los peatones y el desplazamiento continúan donde estaban.
 
 ### 4.3 Partículas (PAR)
-- **PAR-01.** **Ráfaga pequeña** (≈30 partículas, 2 colores neón de la paleta) desde el protagonista al registrar progreso de una actividad, completar una misión o crear una actividad o misión.
+- **PAR-01.** **Ráfaga pequeña** (≈30 partículas en los 3 colores neón de la escena: cian, naranja y magenta) desde el protagonista al registrar progreso de una actividad, completar una misión o crear una actividad o misión.
 - **PAR-02.** **Ráfaga grande** (≈70 desde el protagonista y ≈30 en cada lado del cielo) al subir de nivel, junto al aviso actual de LevelUp.
 - **PAR-03.** Si el evento ocurre con la escena fuera de la pantalla (por ejemplo, al crear desde un formulario), la ráfaga se muestra al volver a ella, una sola vez y solo si han pasado menos de 10 s.
 - **PAR-04.** Deshacer, editar, pausar, archivar y abandonar no generan partículas.
@@ -113,7 +113,7 @@ La exploración se hizo con prototipos sucesivos.
 
 ### 4.5 Música (MUS)
 - **MUS-01.** Opcional y **desactivada por defecto** (C-003).
-- **MUS-02.** **Lista:** 7 pistas (§9). Orden aleatorio: se barajan todas, suenan todas una vez y se vuelve a barajar sin empezar por la última que sonó. Bucle indefinido.
+- **MUS-02.** **Lista:** las pistas verificadas de §9 (2 en la 0.5.0). Orden aleatorio: se barajan todas, suenan todas una vez y se vuelve a barajar sin empezar por la última que sonó. Bucle indefinido.
 - **MUS-03.** **Fundidos:** fundido de entrada de 1,2 s y de salida al final de cada pista. El volumen va por Web Audio (`GainNode`).
 - **MUS-04.** **Arranque:** solo con un gesto del usuario. Si la música quedó activada, empieza con la primera interacción de la sesión.
 - **MUS-05.** **App oculta:** se pausa y se reanuda al volver.
@@ -224,15 +224,15 @@ Comportamiento con valores ausentes o desconocidos:
 |---|---|---|
 | Warped City (Ansimuz): fondos, vehículos, protagonista Ella | Dominio público; atribución opcional | ✔ Verificada (`public-license.txt`, 2026-10-18) |
 | Streets of Fight (Ansimuz): Brawler Girl | CC0 | ✔ Verificada (`public-license.pdf`, 2026-10-18) |
-| Residents of the City (peatones) | OGA-BY 3.0 (copia de OpenGameArt); original de CraftPix | ☐ Confirmar la fuente exacta y el texto de atribución |
-| Free Drones Pack (CraftPix): dron | Licencia de CraftPix (craftpix.net/file-licenses) | ☐ Confirmar que permite incluirlo en una PWA pública |
-| Él y Él 2 (sprite-ai.art, IA) | Términos de sprite-ai.art | ☐ Confirmar el uso comercial y la titularidad |
-| 5 pistas de CombinaDos (Ascension, Curiosity, Descent, Fallen, Taurus) | Desconocida | ☐ Identificar la fuente y la licencia |
-| Midnight Sector Drive (descargada de Gemini, IA) | Términos de Google para contenido generado | ☐ Confirmar |
-| Glass Tower Horizon | Desconocida | ☐ Identificar la fuente y la licencia |
+| Free Townspeople Cyberpunk (CraftPix): peatones | Licencia gratuita de CraftPix: uso comercial sin atribución; prohíbe publicar los archivos originales | ✔ Verificada (2026-10-18). Se publican combinados en un atlas propio (`extras.png`) |
+| Free Drones Pack (CraftPix): dron | La misma licencia de CraftPix | ✔ Verificada (2026-10-18). En el mismo atlas |
+| Él y Él 2 (sprite-ai.art, IA) | Propios | ✔ Declaración del responsable (2026-10-18) |
+| 5 pistas de CombinaDos (Ascension, Curiosity, Descent, Fallen, Taurus) | Desconocida | ✘ No se incluyen hasta verificarlas |
+| Midnight Sector Drive (Gemini, IA) | Propia | ✔ Declaración del responsable (2026-10-18) |
+| Glass Tower Horizon (Gemini, IA) | Propia | ✔ Declaración del responsable (2026-10-18) |
 
 **Riesgos:**
-- **R5-1 · Licencias sin verificar.** Hoy, de los 4 protagonistas, solo 2 tienen licencia verificada, y ninguna pista de música la tiene. *Mitigación:* LIC-01 deja que el incremento se publique con lo que esté verificado.
+- **R5-1 · Licencias sin verificar.** Resuelto para todo salvo las 5 pistas de CombinaDos, que quedan fuera (D-051). *Mitigación:* LIC-01 deja que el incremento se publique con lo que esté verificado.
 - **R5-2 · Batería y rendimiento** de una animación continua en el móvil. *Mitigación:* ESC-10, NFR5-01 y NFR5-06.
 - **R5-3 · Coherencia visual** (R-005): Warped City y Streets of Fight son del mismo autor, pero los sprites de IA no. *Mitigación:* revisión visual en la escena; si desentonan, se retiran.
 - **R5-4 · Audio en iOS:** autoarranque, interruptor de silencio y peticiones por rangos en el service worker. *Mitigación:* MUS-04, MUS-07 y checklist manual.

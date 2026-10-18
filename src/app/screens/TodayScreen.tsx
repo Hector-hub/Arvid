@@ -12,6 +12,9 @@ import { needsInstallForSafety } from '../../pwa/platform';
 import { useToday } from '../clock';
 import { useAnalysis } from '../analysis';
 import { exportData } from '../backupActions';
+import { MusicButton } from '../music/MusicProvider';
+import { Scene } from '../scene/Scene';
+import { celebrate } from '../scene/engine';
 import { TodayMissionsSection, useTodayMissions } from './missions/TodayMissions';
 import { useCategories, useData, useRecords, useSettings } from '../data';
 import { CategoryIcon, Panel, Segments, Sprite, XpBar, categoryColor } from '../design/components';
@@ -54,7 +57,8 @@ export function TodayScreen() {
 
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
-      <header className="stack" style={{ gap: 'var(--s1)' }}>
+      <header className="stack" style={{ gap: 'var(--s2)' }}>
+        <Scene corner={<MusicButton />} />
         <h1>{longDate(today)}</h1>
         <LevelStrip />
         {summary && (
@@ -149,6 +153,7 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
       const delta = record ? logDeltaCents(record, today, 1) : 0;
       const result = await logCompletion(ctx, item.activityId, today);
       if (!result.ok) return LOG_DENIAL_TEXT[result.reason];
+      celebrate('small');
       if (navigator.vibrate) navigator.vibrate(15);
       return `+1 · ${progressText(item.count + 1, item.target)} · ${xpDeltaText(delta)}`;
     });
@@ -268,7 +273,9 @@ function ForgottenSheet({
                   type="button"
                   className="btn btn-primary btn-icon"
                   aria-label={`Registrar ${item.name} ayer`}
-                  onClick={() => void logCompletion(ctx, item.activityId, yesterday)}
+                  onClick={() =>
+                    void logCompletion(ctx, item.activityId, yesterday).then((r) => r.ok && celebrate('small'))
+                  }
                 >
                   <Sprite name="plus" />
                 </button>

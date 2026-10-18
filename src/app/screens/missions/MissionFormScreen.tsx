@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { createMission, updateMission } from '../../../data/missions';
+import { celebrate } from '../../scene/engine';
 import { DIFFICULTY_POINTS, type Difficulty } from '../../../domain/config';
 import { missionActions, type MissionInputErrors, type MissionRecord } from '../../../domain/missions/missions';
 import { isLocalDate, type LocalDate } from '../../../domain/time/localDate';
@@ -61,6 +62,7 @@ function MissionForm({ record, defaultCategoryId }: { record?: MissionRecord; de
           ?.focus();
         return;
       }
+      if (!record) celebrate('small');
       navigate(record ? `/actividades/misiones/${record.mission.id}` : '/actividades/misiones', { replace: !!record });
     } finally {
       setSaving(false);

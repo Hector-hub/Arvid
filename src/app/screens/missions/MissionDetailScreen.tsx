@@ -17,6 +17,13 @@ import { useCategories, useData, useMissions } from '../../data';
 import { BackLink, CategoryIcon, Panel } from '../../design/components';
 import { DIFFICULTY_LABEL, dayMonth, missionDueText } from '../../text';
 import { MISSION_STATE_CHIP } from './MissionRow';
+import { celebrate } from '../../scene/engine';
+
+/** Partículas solo si la acción salió bien (PAR-01). */
+const celebrateIf = (ok: boolean) => {
+  if (ok) celebrate('small');
+  return ok;
+};
 
 /** Detalle de misión: historial, acciones y confirmaciones (MUI-03 a MUI-05). */
 export function MissionDetailScreen() {
@@ -129,7 +136,7 @@ function Detail({ record, analysis }: { record: MissionRecord; analysis: Mission
           <button
             type="button"
             className="btn btn-primary"
-            onClick={() => void run(() => completeMission(ctx, id, today), 'Misión completada.')}
+            onClick={() => void run(() => completeMission(ctx, id, today).then(celebrateIf), 'Misión completada.')}
           >
             Completar
           </button>
@@ -138,7 +145,7 @@ function Detail({ record, analysis }: { record: MissionRecord; analysis: Mission
           <button
             type="button"
             className="btn"
-            onClick={() => void run(() => completeMission(ctx, id, addDays(today, -1)), 'Misión completada ayer.')}
+            onClick={() => void run(() => completeMission(ctx, id, addDays(today, -1)).then(celebrateIf), 'Misión completada ayer.')}
           >
             La hice ayer
           </button>

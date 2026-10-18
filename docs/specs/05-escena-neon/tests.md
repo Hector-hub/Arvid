@@ -1,6 +1,8 @@
 # Spec 05 — Pruebas
 
-Ubicación prevista: `src/domain/avatar/*.test.ts` y `src/domain/scene/*.test.ts` (U), `src/app/scene/*.test.tsx` y `src/app/music/*.test.ts` (C), `e2e/scene.spec.ts` (E).
+Ubicación: `src/domain/avatar/avatar.test.ts`, `src/domain/scene/scene.test.ts` y `src/domain/music/playlist.test.ts` (U), `src/app/scene/scene.test.tsx` (C) y `src/app/scene/licenses.test.ts` (U), `e2e/scene.spec.ts` (E).
+
+**Sin prueba automática en la 0.5.0** (se cubren en la checklist manual): ESC-10 y NFR5-06 (pausa con la app oculta; verificado a mano en el navegador del entorno de desarrollo), ESC-12 (fallo de carga), UB-04 (continuidad entre pestañas), MUS-05 y MUS-07 (pausa y música sin conexión: M5-02 y M5-05), PRO-04 por componente (la caché está en `app/scene/assets.ts`) y NFR5-04 (Lighthouse).
 
 Tipos: **U** unitario · **I** integración · **C** componente · **E** E2E (Chromium + WebKit) · **M** manual.
 

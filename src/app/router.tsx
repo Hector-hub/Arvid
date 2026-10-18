@@ -9,6 +9,7 @@ import { MissionDetailScreen } from './screens/missions/MissionDetailScreen';
 import { MissionFormScreen } from './screens/missions/MissionFormScreen';
 import { MissionsScreen } from './screens/missions/MissionsScreen';
 import { CategoryFormScreen } from './screens/CategoryFormScreen';
+import { CreditsScreen } from './screens/CreditsScreen';
 import { AttributeDetailScreen, DisciplineDetailScreen } from './screens/profile/AttributeDetailScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { TodayScreen } from './screens/TodayScreen';
@@ -33,6 +34,7 @@ export const routes: RouteObject[] = [
       { path: 'personaje/disciplina', element: <DisciplineDetailScreen /> },
       { path: 'ajustes', element: <SettingsScreen /> },
       { path: 'ajustes/instalar', element: <InstallGuideScreen /> },
+      { path: 'ajustes/creditos', element: <CreditsScreen /> },
       { path: 'ajustes/categorias/nueva', element: <CategoryFormScreen /> },
       { path: 'ajustes/categorias/:id', element: <CategoryFormScreen /> },
       { path: '*', element: <Navigate to="/hoy" replace /> },

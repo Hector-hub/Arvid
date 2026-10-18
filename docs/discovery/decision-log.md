@@ -64,6 +64,7 @@ Fuente de verdad de las decisiones de producto y técnicas. Cada spec debe refer
 | D-047 | Spec 03 (Misiones) aprobada con S3-01 a S3-05 | A | 2026-10-17 |
 | D-048 | Aclaraciones de atributos y radar R-AT6 a R-AT9 en game-design §5 (sin radar con menos de 3 categorías, ejes sin datos sin vértice, categoría por versión, desactivadas cuentan en Disciplina; antes GD-A7 a GD-A10) | A | 2026-10-17 |
 | D-049 | Spec 04 (Hoja de personaje) aprobada con S4-01 a S4-04 | A | 2026-10-17 |
+| D-051 | Licencias de la escena verificadas (spec 05 §9): Warped City (dominio público) y Streets of Fight (CC0); peatones y dron de CraftPix (licencia gratuita: se publican combinados en un atlas propio porque no se pueden publicar sus archivos originales); Él, Él 2 y las pistas Midnight Sector Drive y Glass Tower Horizon son propios (generados por el responsable con sprite-ai.art y Gemini). Las 5 pistas de CombinaDos quedan fuera hasta verificarlas (antes P-011) | A | 2026-10-18 |
 | D-050 | Spec 05 (Escena neón, protagonistas y música) aprobada con S5-01 a S5-09: escena de Warped City en Hoy y Personaje; Sweetie 16 + neón sutil, con la escena como excepción a los 16 colores; 4 protagonistas × 6 variantes (enmienda D-029 y D-036); partículas; música opcional desactivada por defecto y sin precache; la escena es el incremento 5 y Logros el 6; solo se publican assets con licencia verificada; nombres de protagonistas provisionales | A | 2026-10-18 |
 | C-001 | El onboarding guía la instalación en la pantalla de inicio y solicita `navigator.storage.persist()` | C | 2026-10-17 |
 | C-002 | Una categoría sin datos suficientes se muestra como "sin datos", nunca como 0. El radar tiene una alternativa accesible en forma de lista | C | 2026-10-17 |
@@ -73,7 +74,6 @@ Fuente de verdad de las decisiones de producto y técnicas. Cada spec debe refer
 
 | ID | Pregunta | Dónde se resuelve |
 |---|---|---|
-| P-011 | Licencias pendientes de verificar: Residents of the City, Free Drones Pack, sprites de sprite-ai.art (Él, Él 2) y las 7 pistas de música | Responsable del producto (spec 05, T00; R-006) |
 
 ## Riesgos
 
@@ -84,7 +84,7 @@ Fuente de verdad de las decisiones de producto y técnicas. Cada spec debe refer
 | R-003 | Sin límite de actividades + rachas → sobrecarga y desánimo | Rachas por actividad; los atributos por ventana se recuperan solos; comodines; logro "Regreso" |
 | R-004 | Los puntos acumulados miden volumen, no el estado actual | Resuelto con D-011 (atributos por ventana y por ratio) |
 | R-005 | Packs CC0 de distintos autores → estilo incoherente | Una familia principal de un solo autor, recolorear a la paleta propia, `asset-licenses.md` |
-| R-006 | Assets de la escena con licencia sin verificar: peatones, dron, 2 protagonistas generados con IA y las 7 pistas de música (spec 05 §9) | Solo se publica lo verificado (S5-08); la escena funciona con un catálogo reducido |
+| R-006 | Assets de la escena con licencia sin verificar (spec 05 §9) | Resuelto por D-051 salvo las 5 pistas de CombinaDos, que no se publican (S5-08); `licenses.test.ts` impide publicar un asset sin registrar |
 
 ## Hipótesis
 

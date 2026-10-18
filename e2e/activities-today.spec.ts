@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { completeOnboarding, createActivity, row } from './helpers';
+import { chooseDefaultAvatar, completeOnboarding, createActivity, row } from './helpers';
 
 // Fechas de referencia (Europe/Madrid): 14 oct 2026 es miércoles; 19 oct, lunes.
 const WED = new Date('2026-10-14T10:00:00+02:00');
@@ -8,6 +8,7 @@ test.describe('onboarding', () => {
   test('ONB-01/02: flujo completo y al menos una categoría', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Empezar' }).click();
+    await chooseDefaultAvatar(page);
     for (const name of ['Cuerpo', 'Descanso', 'Mente', 'Aprendizaje', 'Relaciones', 'Orden']) {
       await page.getByRole('checkbox', { name: new RegExp(name) }).uncheck();
     }
@@ -29,6 +30,7 @@ test.describe('onboarding', () => {
     test.skip(browserName !== 'webkit', 'Solo con el perfil de iPhone');
     await page.goto('/');
     await page.getByRole('button', { name: 'Empezar' }).click();
+    await chooseDefaultAvatar(page);
     await page.getByRole('button', { name: 'Continuar' }).click();
     await expect(page.getByRole('heading', { name: 'Instala ARVID en tu iPhone' })).toBeVisible();
     await page.getByRole('button', { name: 'Más tarde' }).click();
@@ -147,6 +149,8 @@ test.describe('fechas', () => {
   });
 
   test('HOY-07: al pasar la medianoche Hoy cambia de día', async ({ page }) => {
+    // Sin animación de la escena: el reloj simulado ejecutaría de golpe los ~10 800 fotogramas de 3 minutos
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.clock.install({ time: new Date('2026-10-17T23:58:00+02:00') });
     await completeOnboarding(page);
     await createActivity(page, { name: 'Caminar' });

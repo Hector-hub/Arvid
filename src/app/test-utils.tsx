@@ -5,6 +5,7 @@ import { ArvidDB } from '../data/db';
 import { ensureSeed, saveSetting, type DataContext } from '../data/repository';
 import { AnalysisProvider } from './analysis';
 import { DataProvider } from './data';
+import { MusicProvider } from './music/MusicProvider';
 
 let n = 0;
 
@@ -23,7 +24,9 @@ export function renderRoutes(ctx: DataContext, routes: RouteObject[], path: stri
   return render(
     <DataProvider value={ctx}>
       <AnalysisProvider>
-        <RouterProvider router={router} />
+        <MusicProvider>
+          <RouterProvider router={router} />
+        </MusicProvider>
       </AnalysisProvider>
     </DataProvider>,
   );

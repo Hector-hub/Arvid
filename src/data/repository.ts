@@ -5,6 +5,7 @@ import type {
   ActivityStatusType,
   ActivityStatusEvent,
 } from '../domain/activities/types';
+import { DEFAULT_AVATAR, normalizeAvatar, type Avatar } from '../domain/avatar/catalog';
 import { CATEGORY_PRESETS, checkCategoryToggle, type Category, type CategoryToggleCheck } from '../domain/categories';
 import { toLocalDate, tzOffsetMinutes, type LocalDate } from '../domain/time/localDate';
 import type { ArvidDB } from './db';
@@ -228,13 +229,42 @@ export interface Settings {
   lastCelebratedLevel?: number;
   /** El aviso de backup no se muestra antes de esta fecha local (BAK-07). */
   backupReminderSnoozedUntil?: string;
+  /** Protagonista y variante de color (spec 05, PRO). */
+  avatar: Avatar;
+  /** Música opcional, desactivada por defecto (spec 05, MUS-01). */
+  music: MusicSettings;
 }
 
-export const DEFAULT_SETTINGS: Settings = { reducedMotion: 'system', vibration: true, radarWindow: 30 };
+export interface MusicSettings {
+  enabled: boolean;
+  /** 0–1 */
+  volume: number;
+}
+
+export const DEFAULT_MUSIC: MusicSettings = { enabled: false, volume: 0.4 };
+
+export const DEFAULT_SETTINGS: Settings = {
+  reducedMotion: 'system',
+  vibration: true,
+  radarWindow: 30,
+  avatar: DEFAULT_AVATAR,
+  music: DEFAULT_MUSIC,
+};
+
+function normalizeMusic(value: unknown): MusicSettings {
+  if (typeof value !== 'object' || value === null) return DEFAULT_MUSIC;
+  const { enabled, volume } = value as Record<string, unknown>;
+  return {
+    enabled: enabled === true,
+    volume: typeof volume === 'number' && volume >= 0 && volume <= 1 ? volume : DEFAULT_MUSIC.volume,
+  };
+}
 
 export async function loadSettings(db: ArvidDB): Promise<Settings> {
   const rows = await db.settings.toArray();
-  return { ...DEFAULT_SETTINGS, ...Object.fromEntries(rows.map((r) => [r.key, r.value])) } as Settings;
+  const raw = { ...DEFAULT_SETTINGS, ...Object.fromEntries(rows.map((r) => [r.key, r.value])) } as Settings;
+  // Un backup antiguo o un protagonista retirado por licencia no deben romper la app (spec 05 §5)
+  return { ...raw, avatar: normalizeAvatar(raw.avatar), music: normalizeMusic(raw.music) };
 }
 
 export async function saveSetting<K extends keyof Settings>(db: ArvidDB, key: K, value: Settings[K]): Promise<void> {

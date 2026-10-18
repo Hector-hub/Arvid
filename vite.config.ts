@@ -42,6 +42,20 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,png,woff2,svg,webmanifest}'],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
+        // Música (spec 05, MUS-07): fuera del precache (≈5 MB); cada pista se guarda la primera vez que suena y
+        // después se sirve desde la caché, también por rangos como la pide el reproductor.
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith('/music/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'arvid-music',
+              rangeRequests: true,
+              cacheableResponse: { statuses: [200] },
+              expiration: { maxEntries: 20 },
+            },
+          },
+        ],
       },
     }),
   ],

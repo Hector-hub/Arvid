@@ -1,4 +1,4 @@
-/* Sistema de diseño ARVID (design-system.md). Solo los 16 colores de Sweetie 16. */
+/* Sistema de diseño ARVID (design-system.md). Solo los 16 colores de Sweetie 16 (la escena neón dibuja con los suyos). */
 :root {
   /* Paleta base */
   --c-ink: #1a1c2c;
@@ -61,6 +61,10 @@
   --dur-fast: 120ms;
   --dur-celebrate: 480ms;
 
+  /* Neón sutil (D-050, DIS-01): brillo suave que nunca sustituye al contraste */
+  --glow-cyan: 0 0 8px rgb(115 239 247 / 0.45);
+  --glow-gold: 0 0 8px rgb(255 205 117 / 0.45);
+
   color-scheme: dark;
 }
 
@@ -94,7 +98,7 @@ h3 {
   line-height: 1.2;
   margin: 0;
 }
-h1 { font-size: 1.75rem; }
+h1 { font-size: 1.75rem; text-shadow: var(--glow-cyan); }
 h2 { font-size: 1.25rem; }
 h3 { font-size: 1.0625rem; }
 
@@ -179,7 +183,7 @@ select {
   transform: translateY(3px);
 }
 .btn:disabled { cursor: default; color: var(--text-muted); border-color: var(--border); }
-.btn-primary { background: var(--primary-fill); border-color: var(--c-navy); color: var(--c-white); }
+.btn-primary { background: var(--primary-fill); border-color: var(--c-navy); color: var(--c-white); box-shadow: var(--glow-cyan); }
 .btn-icon { padding: var(--s1); }
 .btn-ghost { border-color: transparent; border-bottom-width: var(--b); }
 .btn-block { width: 100%; }
@@ -394,4 +398,49 @@ fieldset { border: 0; padding: 0; margin: 0; }
 .tabs button.active {
   background: var(--surface-sunken);
   color: var(--level);
+}
+
+/* ---------- Escena neón (spec 05) ---------- */
+.scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  background: var(--c-ink);
+  border: 2px solid var(--c-sky);
+  box-shadow: var(--glow-cyan);
+  overflow: hidden;
+}
+.scene-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.scene-overlay {
+  position: absolute;
+  left: var(--s2);
+  top: var(--s1);
+}
+.scene-overlay h2 {
+  font-size: 1rem;
+  color: var(--level);
+  text-shadow: var(--glow-gold), 0 1px 0 var(--c-ink);
+}
+.scene-corner {
+  position: absolute;
+  right: var(--s2);
+  bottom: var(--s2);
+}
+.scene-corner .btn {
+  background: rgb(26 28 44 / 0.75);
+  min-height: 36px;
+  padding: var(--s1) var(--s2);
+  font-size: 0.875rem;
+}
+.avatar-preview {
+  display: inline-block;
+}
+.avatar-canvas {
+  display: block;
+  image-rendering: pixelated;
 }

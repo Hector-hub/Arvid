@@ -6,6 +6,7 @@ import { DIFFICULTY_POINTS } from '../../../domain/config';
 import { selectTodayMissions, type MissionItem, type TodayMissions } from '../../../domain/missions/today';
 import type { LocalDate } from '../../../domain/time/localDate';
 import { useAnalysis } from '../../analysis';
+import { celebrate } from '../../scene/engine';
 import { useToday } from '../../clock';
 import { useData, useMissions } from '../../data';
 import { xpDeltaText } from '../../text';
@@ -86,6 +87,7 @@ function MissionTodayRow({ item, category, today }: { item: MissionItem; categor
     run(async () => {
       const wasExpired = analysis.state === 'expired';
       if (!(await completeMission(ctx, record.mission.id, today))) return 'No se pudo completar';
+      celebrate('small');
       return `${wasExpired ? 'Misión recuperada' : 'Misión cumplida'} · ${xpDeltaText(valueCents(item))}`;
     });
 

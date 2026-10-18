@@ -4,10 +4,13 @@ import { saveSetting, setCategoryActive } from '../../data/repository';
 import type { Category } from '../../domain/categories';
 import { needsInstallForSafety, requestPersistentStorage } from '../../pwa/platform';
 import { useCategories, useData } from '../data';
-import { CategoryIcon, Panel, Sprite } from '../design/components';
+import { CategoryIcon, Panel } from '../design/components';
+import { DEFAULT_AVATAR, type Avatar } from '../../domain/avatar/catalog';
+import { AvatarPicker } from '../scene/AvatarPicker';
+import { AvatarPreview } from '../scene/Scene';
 import { InstallGuide } from './InstallGuide';
 
-type Step = 'welcome' | 'categories' | 'install';
+type Step = 'welcome' | 'avatar' | 'categories' | 'install';
 
 /** ONB-01 a ONB-04. */
 export function Onboarding({ banner }: { banner?: ReactNode }) {
@@ -17,6 +20,7 @@ export function Onboarding({ banner }: { banner?: ReactNode }) {
   const [step, setStep] = useState<Step>('welcome');
   const [selection, setSelection] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string>();
+  const [avatar, setAvatar] = useState<Avatar>(DEFAULT_AVATAR);
 
   const isSelected = (c: Category) => selection[c.id] ?? c.active;
 
@@ -48,7 +52,7 @@ export function Onboarding({ banner }: { banner?: ReactNode }) {
       {step === 'welcome' && (
         <>
           <div className="row" style={{ justifyContent: 'center', paddingTop: 'var(--s6)' }}>
-            <Sprite name="hero" scale={6} color="var(--level)" />
+            <AvatarPreview avatar={DEFAULT_AVATAR} scale={2} />
           </div>
           <h1 style={{ textAlign: 'center' }}>ARVID</h1>
           <p className="pixel" style={{ textAlign: 'center', color: 'var(--xp)' }}>
@@ -60,8 +64,23 @@ export function Onboarding({ banner }: { banner?: ReactNode }) {
               lo hagas y deja que tu personaje refleje tu constancia.
             </p>
           </Panel>
-          <button type="button" className="btn btn-primary btn-block" onClick={() => setStep('categories')}>
+          <button type="button" className="btn btn-primary btn-block" onClick={() => setStep('avatar')}>
             Empezar
+          </button>
+        </>
+      )}
+
+      {step === 'avatar' && (
+        <>
+          <h1>Elige tu protagonista</h1>
+          <p className="muted">Te acompañará cada día. Podrás cambiarlo en Ajustes.</p>
+          <AvatarPicker value={avatar} onChange={setAvatar} />
+          <button
+            type="button"
+            className="btn btn-primary btn-block"
+            onClick={() => void saveSetting(ctx.db, 'avatar', avatar).then(() => setStep('categories'))}
+          >
+            Continuar
           </button>
         </>
       )}

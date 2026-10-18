@@ -41,11 +41,13 @@ test('CAT-04/05: categoría propia en el formulario y el radar; renombrar una pr
   await page.getByLabel('Nombre').fill('Música');
   await page.getByLabel('Nota musical').check();
   await page.getByRole('button', { name: 'Crear categoría' }).click();
-  await expect(page.getByRole('checkbox', { name: /Música/ })).toBeChecked();
+  await expect(page.getByRole('checkbox', { name: /^Música (Activa|Inactiva)$/ })).toBeChecked();
 
   await page.getByRole('link', { name: 'Editar Cuerpo' }).click();
   await page.getByLabel('Nombre').fill('Salud');
   await page.getByRole('button', { name: 'Guardar' }).click();
+  // Esperar a que se guarde antes de navegar
+  await expect(page.getByRole('link', { name: 'Editar Salud' })).toBeVisible();
 
   await createActivity(page, { name: 'Guitarra', category: 'Música' });
   await createActivity(page, { name: 'Correr', category: 'Salud' });

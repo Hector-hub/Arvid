@@ -2,7 +2,12 @@
 
 Derivadas de spec.md (aprobada, D-050).
 
-**Estado (2026-10-18):** T01 hecha. T00 pendiente del responsable del producto; condiciona qué assets entran (LIC-01).
+**Estado (2026-10-18):** T00–T13 hechas (versión 0.5.0). T00: todo verificado salvo las 5 pistas de CombinaDos, que quedan fuera (D-051). Notas de implementación:
+- Peatones y dron se publican en un atlas propio (`public/scene/extras.png`) porque la licencia de CraftPix no permite publicar sus PNG originales.
+- La simulación (`domain/scene`), el catálogo y el recoloreado (`domain/avatar`) y el barajado (`domain/music`) son puros; `app/scene` y `app/music` solo dibujan y reproducen.
+- El dibujo de la escena va en un trozo aparte que se carga bajo demanda (12,8 KB).
+
+T14: falta desplegar la 0.5.0 y pasar la checklist manual M5-01 a M5-07.
 
 | # | Tarea | Requisitos | Hecho cuando |
 |---|---|---|---|

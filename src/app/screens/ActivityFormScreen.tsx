@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { createActivity, renameActivity, updateActivityConfig } from '../../data/repository';
+import { celebrate } from '../scene/engine';
 import { validateActivityInput, versionAt, type ConfigErrors } from '../../domain/activities/rules';
 import type { ActivityConfig } from '../../domain/activities/types';
 import { TARGET_LIMITS, type Difficulty } from '../../domain/config';
@@ -85,6 +86,7 @@ function ActivityForm({
     try {
       if (!activityId) {
         await createActivity(ctx, { name, config });
+        celebrate('small');
         navigate('/hoy');
         return;
       }
