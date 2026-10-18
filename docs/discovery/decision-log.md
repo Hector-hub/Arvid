@@ -4,7 +4,7 @@ Fuente de verdad de las decisiones de producto y técnicas. Cada spec debe refer
 
 **Tipos:** A = decidida por el responsable del producto · B = recomendación pendiente de aprobación · C = decisión técnica reversible · D = bloqueante, requiere respuesta · E = hipótesis pendiente de validar.
 
-Última actualización: 2026-10-17.
+Última actualización: 2026-10-18.
 
 ## Decisiones
 
@@ -39,14 +39,14 @@ Fuente de verdad de las decisiones de producto y técnicas. Cada spec debe refer
 | D-026 | Radar: periodo por defecto de 30 días, selector 7/90 y superposición del periodo anterior para ver la tendencia | A | 2026-10-17 |
 | D-027 | Estilo pixel art moderno: sprites, iconos y marcos en pixel art; el texto en una fuente legible; layout fluido | A | 2026-10-17 |
 | D-028 | Assets desde packs CC0 o de licencia libre, verificando la licencia de cada pack | A | 2026-10-17 |
-| D-029 | Personaje fijo: no cambia de aspecto; el progreso se ve en la hoja de personaje | A | 2026-10-17 |
+| D-029 | Personaje fijo: no cambia de aspecto; el progreso se ve en la hoja de personaje. **Enmendada por D-050 (S5-03):** el usuario elige entre 4 protagonistas × 6 variantes de color; el personaje sigue sin evolucionar | A | 2026-10-17 |
 | D-030 | El badge en el icono pasa a P1 junto al push (en iOS requiere permiso de notificaciones). Ajusta D-023 (antes B-002, aprobada con el plan de MVP) | A | 2026-10-17 |
 | D-031 | Alcance del MVP aprobado según `docs/product/mvp-scope.md` | A | 2026-10-17 |
 | D-032 | Completar tarde una misión vencida **sí da XP** (+v); en Disciplina solo anula el fallo (antes P-003) | A | 2026-10-17 |
 | D-033 | Abandonar una misión con fecha límite **antes** de vencer penaliza **la mitad** en Disciplina (E = 0, P = v/2); abandonar es definitivo (antes P-004) | A | 2026-10-17 |
 | D-034 | La racha exige completar el periodo al 100 %; un periodo parcial no la mantiene (antes P-005) | A | 2026-10-17 |
 | D-035 | `docs/design/game-design.md` aprobado, incluidos los títulos y logros propuestos (antes P-006) y los umbrales de "sin datos" = 3 y tendencia = ±5, revisables tras 4 semanas de uso (P-008) | A | 2026-10-17 |
-| D-036 | Assets: Kenney 1-Bit Pack (CC0) recoloreado con la paleta; paneles y botones dibujados con CSS (antes P-007) | A | 2026-10-17 |
+| D-036 | Assets: Kenney 1-Bit Pack (CC0) recoloreado con la paleta; paneles y botones dibujados con CSS (antes P-007). **Enmendada por D-050 (S5-04):** el personaje y la escena salen de Warped City y Streets of Fight (Ansimuz) y de los packs verificados; los iconos siguen siendo del 1-Bit Pack | A | 2026-10-17 |
 | D-037 | Paleta Sweetie 16 (antes P-007) | A | 2026-10-17 |
 | D-038 | Tipografía: Pixelify Sans en títulos, cifras y botones; Atkinson Hyperlegible Next en el resto; ambas autoalojadas | A | 2026-10-17 |
 | D-039 | Solo tema oscuro en el MVP; tema claro en P1 | A | 2026-10-17 |
@@ -64,6 +64,7 @@ Fuente de verdad de las decisiones de producto y técnicas. Cada spec debe refer
 | D-047 | Spec 03 (Misiones) aprobada con S3-01 a S3-05 | A | 2026-10-17 |
 | D-048 | Aclaraciones de atributos y radar R-AT6 a R-AT9 en game-design §5 (sin radar con menos de 3 categorías, ejes sin datos sin vértice, categoría por versión, desactivadas cuentan en Disciplina; antes GD-A7 a GD-A10) | A | 2026-10-17 |
 | D-049 | Spec 04 (Hoja de personaje) aprobada con S4-01 a S4-04 | A | 2026-10-17 |
+| D-050 | Spec 05 (Escena neón, protagonistas y música) aprobada con S5-01 a S5-09: escena de Warped City en Hoy y Personaje; Sweetie 16 + neón sutil, con la escena como excepción a los 16 colores; 4 protagonistas × 6 variantes (enmienda D-029 y D-036); partículas; música opcional desactivada por defecto y sin precache; la escena es el incremento 5 y Logros el 6; solo se publican assets con licencia verificada; nombres de protagonistas provisionales | A | 2026-10-18 |
 | C-001 | El onboarding guía la instalación en la pantalla de inicio y solicita `navigator.storage.persist()` | C | 2026-10-17 |
 | C-002 | Una categoría sin datos suficientes se muestra como "sin datos", nunca como 0. El radar tiene una alternativa accesible en forma de lista | C | 2026-10-17 |
 | C-003 | Sonidos opcionales y desactivados por defecto; se respeta `prefers-reduced-motion` | C | 2026-10-17 |
@@ -72,6 +73,7 @@ Fuente de verdad de las decisiones de producto y técnicas. Cada spec debe refer
 
 | ID | Pregunta | Dónde se resuelve |
 |---|---|---|
+| P-011 | Licencias pendientes de verificar: Residents of the City, Free Drones Pack, sprites de sprite-ai.art (Él, Él 2) y las 7 pistas de música | Responsable del producto (spec 05, T00; R-006) |
 
 ## Riesgos
 
@@ -82,6 +84,7 @@ Fuente de verdad de las decisiones de producto y técnicas. Cada spec debe refer
 | R-003 | Sin límite de actividades + rachas → sobrecarga y desánimo | Rachas por actividad; los atributos por ventana se recuperan solos; comodines; logro "Regreso" |
 | R-004 | Los puntos acumulados miden volumen, no el estado actual | Resuelto con D-011 (atributos por ventana y por ratio) |
 | R-005 | Packs CC0 de distintos autores → estilo incoherente | Una familia principal de un solo autor, recolorear a la paleta propia, `asset-licenses.md` |
+| R-006 | Assets de la escena con licencia sin verificar: peatones, dron, 2 protagonistas generados con IA y las 7 pistas de música (spec 05 §9) | Solo se publica lo verificado (S5-08); la escena funciona con un catálogo reducido |
 
 ## Hipótesis
 
@@ -100,3 +103,4 @@ Monedas, tienda, inventario, equipamiento, competición o ranking social, genera
 |---|---|---|
 | 2026-10-17 | D-008 (±simétrico) sustituida por D-011 | Riesgo de espiral de abandono (R-003) y de medir volumen en lugar del estado actual (R-004) |
 | 2026-10-17 | Badge del icono de P0 a P1 (D-030) | En iOS requiere permiso de notificaciones, que no se justifica sin push |
+| 2026-10-18 | Entran en el MVP la escena animada y la música opcional (incremento 5); Logros y pulido pasa al incremento 6 (D-050). Los efectos de sonido siguen en P1 | Exploración visual: la app debe apetecer abrirla sin añadir mecánicas |

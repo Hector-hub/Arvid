@@ -89,10 +89,11 @@ Complejidad: S (días) · M (1–2 semanas) · L (más de 2 semanas), para una p
 - **Complejidad:** M · **Depende de:** `docs/design/design-system.md`.
 - **Riesgos:** R-005.
 - **Aceptación:** tokens (paleta, tipografía, espaciado, bordes); componentes base; assets con licencia registrada; modo de movimiento reducido; contraste AA en el texto.
+- **Ampliación (D-050):** escena neón animada en Hoy y Personaje, protagonista elegible con variantes de color, partículas y música opcional. Detalle en `docs/specs/05-escena-neon/`.
 - **Verificación:** revisión visual + chequeo automático de contraste.
 
 ## P1 — Después del lanzamiento
-Push con el resumen diario (micro-servidor) y badge en el icono · Insights (tendencias por actividad, resumen semanal) · Descansos planificados · Objetivos con hitos · Retos temporales · Sonidos.
+Push con el resumen diario (micro-servidor) y badge en el icono · Insights (tendencias por actividad, resumen semanal) · Descansos planificados · Objetivos con hitos · Retos temporales · Efectos de sonido (la música opcional se adelanta al MVP, D-050).
 
 ## P2 — Futuro o experimental
 Sync y cuentas · Cosméticos · Personaje evolutivo · Refugio o mundo · Tipo "hábito a reducir" · App nativa con Capacitor.

@@ -10,7 +10,8 @@ Cada incremento es **vertical**: dominio, persistencia, interfaz y pruebas. Solo
 | 2 ✔ | **Backup + progreso básico** (implementado en 0.2.0; pendiente despliegue y prueba en dispositivos) | MVP-09, MVP-04 (XP, nivel, títulos, rachas, comodines) | Uso diario real sin miedo a perder datos; ver la XP y las rachas | `specs/02-backup-progreso/` |
 | 3 ✔ | **Misiones** (implementado en 0.3.0; pendiente despliegue y prueba en dispositivos) | MVP-02, MVP-03 (misiones en Hoy) | Compromisos puntuales con sus reglas | `specs/03-misiones/` |
 | 4 ✔ | **Hoja de personaje** (implementado en 0.4.0; pendiente despliegue y prueba en dispositivos) | MVP-05, MVP-04 (atributos, Disciplina), MVP-06 (categorías propias) | Radar, Disciplina y explicaciones | `specs/04-personaje/` |
-| 5 | **Logros y pulido** | MVP-07, revisión de accesibilidad y rendimiento, checklist en dispositivos | MVP completo | `specs/05-logros-pulido/` |
+| 5 | **Escena neón, protagonistas y música** (spec aprobada, D-050; las licencias pendientes condicionan el catálogo) | MVP-10 (amplía), MVP-05, música opcional | La app se siente viva: escena animada, protagonista elegido, partículas al progresar | `specs/05-escena-neon/` |
+| 6 | **Logros y pulido** | MVP-07, revisión de accesibilidad y rendimiento, checklist en dispositivos | MVP completo | `specs/06-logros-pulido/` |
 
 **Por qué este orden:**
 - El incremento 1 permite probar en los teléfonos lo más arriesgado (instalación y persistencia en iOS) desde el primer día.

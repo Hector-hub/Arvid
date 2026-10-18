@@ -20,7 +20,9 @@ Autor: GrafxKid · fuente: [lospec.com/palette-list/sweetie-16](https://lospec.c
 | green | `#38b764` | slate | `#566c86` |
 | teal | `#257179` | panel | `#333c57` |
 
-**Regla:** la interfaz y los sprites solo usan estos 16 colores. Las únicas excepciones son las transparencias de una superficie sobre otra (p. ej. el relleno del radar al 30 %).
+**Regla:** la interfaz y los sprites solo usan estos 16 colores. Las únicas excepciones son las transparencias de una superficie sobre otra (p. ej. el relleno del radar al 30 %) y **la escena neón con sus protagonistas**, que usan los colores de sus packs y las gamas de sus variantes (D-050, spec 05 DIS-02).
+
+**Neón sutil (D-050):** brillo suave (`--glow-cyan`, `--glow-gold`: `text-shadow` o `box-shadow` de 6–12 px con baja opacidad) en títulos de pantalla, nivel, borde de la escena y botón principal. Nunca sustituye al contraste: §2 se cumple sin brillo.
 
 ## 2. Tokens semánticos
 Contraste calculado según WCAG 2.x (AA: texto normal ≥ 4,5:1; texto grande o elementos gráficos ≥ 3:1).
@@ -80,7 +82,8 @@ Hay 8 colores válidos para 8 categorías como máximo (D-017). Algunos coincide
 - **Recoloreado sin procesado:** el sprite se usa como máscara (`mask-image`) y su color sale de un token (`background-color: var(--cat-cuerpo)`). Un solo PNG sirve para cualquier color.
   - *A verificar al descargar:* que el pack incluya una variante con fondo transparente. Si no, se genera una vez con un script.
 - **Escalas enteras únicamente:** ×2 (32 px) para iconos de lista, ×3 (48 px) para insignias y ×4–×6 (64–96 px) para el personaje. Siempre con `image-rendering: pixelated`.
-- **Inventario mínimo del MVP:** 1 personaje (D-029); 8 iconos de categoría; ~11 insignias de logro (game-design §9); ~10 iconos de interfaz (hoy, actividades, personaje, ajustes, añadir, completar, deshacer, comodín, racha, misión). Más estados vacíos: 1 escena simple por pantalla, compuesta con los mismos sprites.
+- **Personaje y escena (D-050):** ya no salen del 1-Bit Pack. Son la escena de Warped City y 4 protagonistas con 6 variantes, recoloreados en tiempo de ejecución (spec 05).
+- **Inventario mínimo del MVP:** 8 iconos de categoría; ~11 insignias de logro (game-design §9); ~10 iconos de interfaz (hoy, actividades, personaje, ajustes, añadir, completar, deshacer, comodín, racha, misión). Más estados vacíos: 1 escena simple por pantalla, compuesta con los mismos sprites.
 - Cada sprite usado se registra en [asset-licenses.md](asset-licenses.md).
 
 ## 7. Componentes base
@@ -101,7 +104,8 @@ Hay 8 colores válidos para 8 categorías como máximo (D-017). Algunos coincide
 - **Animaciones por pasos** (`steps()`), cortas: 100–200 ms en la interfaz y como máximo 600 ms en celebraciones.
 - **Momentos animados del MVP:** registrar (el icono "salta" 2 px y aparece "+2,5"), completar un periodo (destello del borde), subir de nivel (modal) y desbloquear un logro (la insignia aparece).
 - **Movimiento reducido** (`prefers-reduced-motion` o el ajuste de la app): sin desplazamientos ni destellos; el cambio de estado es instantáneo y los modales se mantienen.
-- **Sonidos:** fuera del MVP (P1).
+- **Escena y partículas:** spec 05 (ESC, PAR). Con movimiento reducido, la escena queda estática y sin partículas.
+- **Música:** opcional y desactivada por defecto (spec 05, MUS). Los efectos de sonido siguen en P1.
 - **Vibración (Android):** un pulso breve al registrar, desactivable. iOS Safari no soporta la API de vibración.
 
 ## 9. Responsive
@@ -122,4 +126,4 @@ Hay 8 colores válidos para 8 categorías como máximo (D-017). Algunos coincide
 - Objetivo: 60 fps en las animaciones en un Android de gama media.
 
 ## 12. Fuera del MVP
-Tema claro (P1), sonidos (P1), cosméticos (P2), personaje evolutivo (P2), escenarios o fondos animados.
+Tema claro (P1), efectos de sonido (P1), cosméticos (P2), personaje evolutivo (P2), escenas distintas por pantalla u hora del día.
