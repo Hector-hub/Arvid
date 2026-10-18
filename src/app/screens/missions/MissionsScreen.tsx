@@ -9,6 +9,7 @@ import { useCategories, useMissions } from '../../data';
 import { Panel, Sprite } from '../../design/components';
 import { ActivitiesTabs } from '../ActivitiesTabs';
 import { MissionSummary } from './MissionRow';
+import { t } from '../../../i18n';
 
 const RECENT_DAYS = 30;
 
@@ -34,17 +35,20 @@ export function MissionsScreen() {
 
   const groups = [
     {
-      title: 'Pendientes',
+      key: 'pending',
+      title: t('missions.pending'),
       items: items.filter(is('pending', 'expired')).sort((a, b) => compareOpenMissions(a, b, today)),
     },
     {
-      title: 'Completadas',
+      key: 'completed',
+      title: t('missions.completed'),
       items: items
         .filter((i) => is('completedOnTime', 'completedLate')(i) && recent(i.analysis.completedOn))
         .sort((a, b) => (b.analysis.completedOn ?? '').localeCompare(a.analysis.completedOn ?? '')),
     },
     {
-      title: 'Abandonadas',
+      key: 'abandoned',
+      title: t('missions.abandoned'),
       items: items.filter((i) => is('abandoned', 'abandonedExpired')(i) && recent(i.analysis.abandonedOn)),
     },
   ];
@@ -52,26 +56,26 @@ export function MissionsScreen() {
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
       <header className="row">
-        <h1 className="grow">Actividades</h1>
+        <h1 className="grow">{t('activities.title')}</h1>
         <Link to="/actividades/misiones/nueva" className="btn btn-primary">
           <Sprite name="plus" />
-          Nueva misión
+          {t('missions.new')}
         </Link>
       </header>
       <ActivitiesTabs />
 
       {items.length === 0 && (
         <Panel className="stack">
-          <h2>Crea una misión</h2>
-          <p className="muted">Algo puntual que quieras cumplir, con fecha límite o sin ella.</p>
+          <h2>{t('missions.emptyTitle')}</h2>
+          <p className="muted">{t('missions.emptyText')}</p>
         </Panel>
       )}
 
       {groups
         .filter((g) => g.items.length > 0)
         .map((g) => (
-          <section key={g.title} className="stack" aria-labelledby={`mgrp-${g.title}`}>
-            <h2 id={`mgrp-${g.title}`}>{g.title}</h2>
+          <section key={g.key} className="stack" aria-labelledby={`mgrp-${g.key}`}>
+            <h2 id={`mgrp-${g.key}`}>{g.title}</h2>
             <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
               {g.items.map((i) => (
                 <li key={i.record.mission.id} className="panel row" style={{ padding: 'var(--s3)' }}>

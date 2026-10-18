@@ -15,9 +15,10 @@ import { useAnalysis } from '../../analysis';
 import { useToday } from '../../clock';
 import { useCategories, useData, useMissions } from '../../data';
 import { BackLink, CategoryIcon, Panel } from '../../design/components';
-import { DIFFICULTY_LABEL, dayMonth, missionDueText } from '../../text';
+import { categoryName, dayMonth, difficultyLabel, missionDueText } from '../../text';
 import { MISSION_STATE_CHIP } from './MissionRow';
 import { celebrate } from '../../scene/engine';
+import { t } from '../../../i18n';
 
 /** Partículas solo si la acción salió bien (PAR-01). */
 const celebrateIf = (ok: boolean) => {
@@ -33,14 +34,14 @@ export function MissionDetailScreen() {
   if (!missions || !analysis) return null;
   const record = missions.find((m) => m.mission.id === id);
   const result = record && analysis.byMission.get(record.mission.id);
-  if (!record || !result) return <p>Misión no encontrada.</p>;
+  if (!record || !result) return <p>{t('missions.notFound')}</p>;
   return <Detail record={record} analysis={result} />;
 }
 
 /** Historial legible: eventos y el vencimiento derivado (MUI-03). */
 function history(record: MissionRecord, analysis: MissionAnalysis): { date: LocalDate; text: string }[] {
   const lines: { date: LocalDate; order: number; text: string }[] = [
-    { date: record.mission.createdOn, order: 0, text: `Creada el ${dayMonth(record.mission.createdOn)}` },
+    { date: record.mission.createdOn, order: 0, text: t('missionDetail.created', { date: dayMonth(record.mission.createdOn) }) },
   ];
   let hadDeadline = false;
   const sorted = [...record.events].sort((a, b) => a.at.localeCompare(b.at));
@@ -51,36 +52,35 @@ function history(record: MissionRecord, analysis: MissionAnalysis): { date: Loca
         lines.push({
           date: e.date,
           order,
-          text: hadDeadline ? `Reprogramada al ${dayMonth(e.deadline!)}` : `Fecha límite: ${dayMonth(e.deadline!)}`,
+          text: t(hadDeadline ? 'missionDetail.rescheduled' : 'missionDetail.deadlineSet', { date: dayMonth(e.deadline!) }),
         });
         hadDeadline = true;
         break;
       case 'deadlineCleared':
-        lines.push({ date: e.date, order, text: 'Fecha límite quitada' });
+        lines.push({ date: e.date, order, text: t('missionDetail.deadlineCleared') });
         break;
       case 'completed':
-        lines.push({ date: e.date, order, text: `Completada el ${dayMonth(e.date)}` });
+        lines.push({ date: e.date, order, text: t('missionDetail.completedOn', { date: dayMonth(e.date) }) });
         break;
       case 'uncompleted':
-        lines.push({ date: e.date, order, text: `Desmarcada el ${dayMonth(e.date)}` });
+        lines.push({ date: e.date, order, text: t('missionDetail.uncompletedOn', { date: dayMonth(e.date) }) });
         break;
       case 'abandoned':
-        lines.push({ date: e.date, order, text: `Abandonada el ${dayMonth(e.date)}` });
+        lines.push({ date: e.date, order, text: t('missionDetail.abandonedOn', { date: dayMonth(e.date) }) });
         break;
     }
   });
   if (analysis.expiredOn)
-    lines.push({ date: addDays(analysis.expiredOn, 1), order: -1, text: `Venció el ${dayMonth(analysis.expiredOn)}` });
+    lines.push({ date: addDays(analysis.expiredOn, 1), order: -1, text: t('missionDetail.expiredOn', { date: dayMonth(analysis.expiredOn) }) });
   return lines.sort((a, b) => compareDates(a.date, b.date) || a.order - b.order);
 }
 
 type Confirm = 'abandon' | 'delete' | undefined;
 
 function abandonText(analysis: MissionAnalysis): string {
-  if (analysis.state === 'expired') return 'El fallo se mantiene. Abandonarla es definitivo.';
-  if (analysis.deadline)
-    return 'Abandonarla antes de la fecha cuesta la mitad de su valor en tu Disciplina. Es definitivo.';
-  return 'No afecta a tus puntos. Abandonarla es definitivo.';
+  if (analysis.state === 'expired') return t('missionDetail.abandonExpired');
+  if (analysis.deadline) return t('missionDetail.abandonWithDeadline');
+  return t('missionDetail.abandonNoDeadline');
 }
 
 function Detail({ record, analysis }: { record: MissionRecord; analysis: MissionAnalysis }) {
@@ -98,20 +98,20 @@ function Detail({ record, analysis }: { record: MissionRecord; analysis: Mission
   const value = DIFFICULTY_POINTS[record.mission.difficulty];
 
   async function run(action: () => Promise<boolean>, done: string) {
-    setMessage((await action()) ? done : 'No se pudo completar la acción.');
+    setMessage((await action()) ? done : t('missionDetail.actionFailed'));
   }
 
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
-      <BackLink to="/actividades/misiones" label="Misiones" />
+      <BackLink to="/actividades/misiones" label={t('nav.missions')} />
       <header className="stack" style={{ gap: 'var(--s2)' }}>
         <div className="row">
           <CategoryIcon category={category} scale={3} />
           <h1 className="grow">{record.mission.title}</h1>
-          {chip && <span className={`chip ${chip.className}`}>{chip.label}</span>}
+          {chip && <span className={`chip ${chip.className}`}>{chip.label()}</span>}
         </div>
         <p className="muted">
-          {category?.name} · {DIFFICULTY_LABEL[record.mission.difficulty]} · {value} XP
+          {t('missionDetail.meta', { category: categoryName(category), difficulty: difficultyLabel(record.mission.difficulty), value })}
           {(analysis.state === 'pending' || analysis.state === 'expired') &&
             ` · ${missionDueText(analysis.deadline, today)}`}
         </p>
@@ -119,9 +119,7 @@ function Detail({ record, analysis }: { record: MissionRecord; analysis: Mission
 
       {analysis.state === 'expired' && analysis.expiredOn && (
         <div className="banner">
-          <p className="small">
-            Venció el {dayMonth(analysis.expiredOn)}. Complétala cuando puedas para recuperar lo perdido.
-          </p>
+          <p className="small">{t('missionDetail.expiredBanner', { date: dayMonth(analysis.expiredOn) })}</p>
         </div>
       )}
 
@@ -136,36 +134,36 @@ function Detail({ record, analysis }: { record: MissionRecord; analysis: Mission
           <button
             type="button"
             className="btn btn-primary"
-            onClick={() => void run(() => completeMission(ctx, id, today).then(celebrateIf), 'Misión completada.')}
+            onClick={() => void run(() => completeMission(ctx, id, today).then(celebrateIf), t('missionDetail.doneCompleted'))}
           >
-            Completar
+            {t('missions.complete')}
           </button>
         )}
         {actions.completeYesterday && (
           <button
             type="button"
             className="btn"
-            onClick={() => void run(() => completeMission(ctx, id, addDays(today, -1)).then(celebrateIf), 'Misión completada ayer.')}
+            onClick={() => void run(() => completeMission(ctx, id, addDays(today, -1)).then(celebrateIf), t('missionDetail.doneCompletedYesterday'))}
           >
-            La hice ayer
+            {t('missionDetail.completeYesterday')}
           </button>
         )}
         {actions.uncomplete && (
           <button
             type="button"
             className="btn"
-            onClick={() => void run(() => uncompleteMission(ctx, id), 'Misión desmarcada.')}
+            onClick={() => void run(() => uncompleteMission(ctx, id), t('missionDetail.doneUncompleted'))}
           >
-            Desmarcar
+            {t('missionDetail.uncomplete')}
           </button>
         )}
       </div>
 
       {actions.reschedule && (
         <Panel className="stack">
-          <h2>{analysis.deadline ? 'Reprogramar' : 'Poner fecha límite'}</h2>
+          <h2>{analysis.deadline ? t('missionDetail.reschedule') : t('missionDetail.setDeadline')}</h2>
           <div className="field">
-            <label htmlFor="new-deadline">Nueva fecha límite</label>
+            <label htmlFor="new-deadline">{t('missionDetail.newDeadline')}</label>
             <input
               id="new-deadline"
               type="date"
@@ -176,34 +174,34 @@ function Detail({ record, analysis }: { record: MissionRecord; analysis: Mission
             />
           </div>
           {analysis.state === 'expired' && (
-            <p className="small muted">La nueva fecha es orientativa: el fallo se anula al completarla.</p>
+            <p className="small muted">{t('missionDetail.rescheduleNote')}</p>
           )}
           <button
             type="button"
             className="btn"
             disabled={!isLocalDate(newDeadline) || newDeadline < today}
             onClick={() =>
-              void run(() => rescheduleMission(ctx, id, newDeadline as LocalDate), 'Fecha límite actualizada.').then(
+              void run(() => rescheduleMission(ctx, id, newDeadline as LocalDate), t('missionDetail.doneRescheduled')).then(
                 () => setNewDeadline(''),
               )
             }
           >
-            Guardar fecha
+            {t('missionDetail.saveDate')}
           </button>
           {actions.clearDeadline && (
             <button
               type="button"
               className="btn btn-ghost"
-              onClick={() => void run(() => clearMissionDeadline(ctx, id), 'Fecha límite quitada.')}
+              onClick={() => void run(() => clearMissionDeadline(ctx, id), t('missionDetail.doneCleared'))}
             >
-              Quitar fecha límite
+              {t('missionDetail.clearDeadline')}
             </button>
           )}
         </Panel>
       )}
 
       <Panel className="stack" labelledBy="history-title">
-        <h2 id="history-title">Historial</h2>
+        <h2 id="history-title">{t('missionDetail.history')}</h2>
         <ul className="stack small" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 'var(--s1)' }}>
           {history(record, analysis).map((line, i) => (
             <li key={i}>{line.text}</li>
@@ -213,16 +211,16 @@ function Detail({ record, analysis }: { record: MissionRecord; analysis: Mission
 
       <div className="stack">
         <Link to={`/actividades/misiones/${id}/editar`} className="btn">
-          Editar
+          {t('common.edit')}
         </Link>
         {actions.abandon && confirm !== 'abandon' && (
           <button type="button" className="btn btn-danger" onClick={() => setConfirm('abandon')}>
-            Abandonar
+            {t('missionDetail.abandon')}
           </button>
         )}
         {actions.delete && confirm !== 'delete' && (
           <button type="button" className="btn btn-ghost" onClick={() => setConfirm('delete')}>
-            Eliminar (creada por error)
+            {t('missionDetail.deleteMistake')}
           </button>
         )}
         {confirm && (
@@ -232,29 +230,29 @@ function Detail({ record, analysis }: { record: MissionRecord; analysis: Mission
             aria-labelledby="confirm-title"
             style={{ alignItems: 'stretch' }}
           >
-            <h3 id="confirm-title">{confirm === 'abandon' ? '¿Abandonar la misión?' : '¿Eliminar la misión?'}</h3>
+            <h3 id="confirm-title">{confirm === 'abandon' ? t('missionDetail.abandonConfirm') : t('missionDetail.deleteConfirm')}</h3>
             <p className="small">
               {confirm === 'abandon'
                 ? abandonText(analysis)
-                : 'Se borrará sin dejar rastro. Solo es posible el día en que la creaste.'}
+                : t('missionDetail.deleteText')}
             </p>
             <div className="row">
               <button type="button" className="btn btn-ghost" onClick={() => setConfirm(undefined)}>
-                Cancelar
+                {t('common.cancel')}
               </button>
               <button
                 type="button"
                 className="btn btn-danger grow"
                 onClick={() => {
                   setConfirm(undefined);
-                  if (confirm === 'abandon') void run(() => abandonMission(ctx, id), 'Misión abandonada.');
+                  if (confirm === 'abandon') void run(() => abandonMission(ctx, id), t('missionDetail.doneAbandoned'));
                   else
                     void deleteMission(ctx, id).then(
                       (ok) => ok && navigate('/actividades/misiones', { replace: true }),
                     );
                 }}
               >
-                {confirm === 'abandon' ? 'Abandonar' : 'Eliminar'}
+                {confirm === 'abandon' ? t('missionDetail.abandon') : t('common.delete')}
               </button>
             </div>
           </div>

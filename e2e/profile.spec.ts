@@ -4,6 +4,8 @@ import { completeOnboarding, createActivity, row } from './helpers';
 const DAY1 = new Date('2026-10-01T10:00:00+02:00');
 
 test('PJ-01/02 · DA-01: radar, ventana recordada y detalle de atributo', async ({ page }) => {
+  // 8 recargas de Hoy con la escena animada: en WebKit (renderizado por software) roza el límite de 30 s
+  test.slow();
   // Caminar se crea el 1 oct; se registra del 2 al 9; hoy es 12 oct.
   await page.clock.install({ time: DAY1 });
   await completeOnboarding(page);
@@ -15,7 +17,7 @@ test('PJ-01/02 · DA-01: radar, ventana recordada y detalle de atributo', async 
     await expect(row(page, 'Caminar').getByText('Completada')).toBeVisible();
   }
   await page.clock.setSystemTime(new Date('2026-10-12T10:00:00+02:00'));
-  await page.goto('/personaje');
+  await page.goto('/perfil');
 
   // 30 días: 10 días cerrados (2–11 oct), 8 cumplidos → 80.
   const radar = page.getByRole('img', { name: /Radar de atributos/ });
@@ -53,7 +55,7 @@ test('CAT-04/05: categoría propia en el formulario y el radar; renombrar una pr
   await createActivity(page, { name: 'Correr', category: 'Salud' });
   await row(page, 'Guitarra').getByRole('button', { name: 'Registrar Guitarra' }).click();
   await expect(row(page, 'Guitarra').getByText('Completada')).toBeVisible();
-  await page.goto('/personaje');
+  await page.goto('/perfil');
   const radar = page.getByRole('img', { name: /Radar de atributos/ });
   await expect(radar).toHaveAttribute('aria-label', /Salud sin datos/);
   await expect(radar).toHaveAttribute('aria-label', /Música sin datos \(1 de 3\)/);

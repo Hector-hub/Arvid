@@ -7,7 +7,7 @@ import { createActivity, loadCategories, logCompletion, setCategoryActive, type 
 import { addDays, toLocalDate } from '../../../domain/time/localDate';
 import { renderRoutes, setupData } from '../../test-utils';
 import { CategoryFormScreen } from '../CategoryFormScreen';
-import { CharacterScreen } from '../CharacterScreen';
+import { ProfileScreen } from '../ProfileScreen';
 import { AttributeDetailScreen, DisciplineDetailScreen } from './AttributeDetailScreen';
 
 vi.mock('../../../pwa/platform', () => ({
@@ -28,9 +28,9 @@ afterEach(async () => {
 });
 
 const routes = [
-  { path: '/personaje', element: <CharacterScreen /> },
-  { path: '/personaje/atributo/:categoryId', element: <AttributeDetailScreen /> },
-  { path: '/personaje/disciplina', element: <DisciplineDetailScreen /> },
+  { path: '/perfil', element: <ProfileScreen /> },
+  { path: '/perfil/atributo/:categoryId', element: <AttributeDetailScreen /> },
+  { path: '/perfil/disciplina', element: <DisciplineDetailScreen /> },
   { path: '/ajustes', element: <p>ajustes</p> },
   { path: '/ajustes/categorias/nueva', element: <CategoryFormScreen /> },
   { path: '/ajustes/categorias/:id', element: <CategoryFormScreen /> },
@@ -57,9 +57,9 @@ async function daily(name: string, category: string, doneDaysAgo: number[]) {
   return id;
 }
 
-describe('Personaje (PJ)', () => {
+describe('Perfil (PJ)', () => {
   it('PJ-07: sin datos muestra el aviso y no el radar', async () => {
-    renderRoutes(ctx, routes, '/personaje');
+    renderRoutes(ctx, routes, '/perfil');
     expect(await screen.findByText('Tus atributos aparecerán cuando registres tus primeras actividades.')).toBeInTheDocument();
     expect(screen.queryByRole('img', { name: /Radar/ })).toBeNull();
   });
@@ -67,19 +67,19 @@ describe('Personaje (PJ)', () => {
   it('PJ-02/04/05: radar con aria-label, lista con "sin datos" y nota fija', async () => {
     // Cuerpo: 10 días cerrados, 5 cumplidos → 50. Mente: sin actividad → sin datos.
     await daily('Caminar', 'Cuerpo', [1, 2, 3, 4, 5]);
-    renderRoutes(ctx, routes, '/personaje');
+    renderRoutes(ctx, routes, '/perfil');
     const radar = await screen.findByRole('img', { name: /Radar de atributos/ });
     expect(radar.getAttribute('aria-label')).toContain('Cuerpo 50');
     expect(radar.getAttribute('aria-label')).toContain('Mente sin datos (0 de 3)');
     const list = screen.getByRole('list', { name: 'Lista de atributos' });
     expect(within(list).getAllByRole('listitem')).toHaveLength(6);
-    expect(within(list).getByRole('link', { name: /Cuerpo/ })).toHaveAttribute('href', `/personaje/atributo/${await cat('Cuerpo')}`);
+    expect(within(list).getByRole('link', { name: /Cuerpo/ })).toHaveAttribute('href', `/perfil/atributo/${await cat('Cuerpo')}`);
     expect(screen.getByText(/no tu salud ni tu capacidad/)).toBeInTheDocument();
   });
 
   it('PJ-01 · D-026: el selector de ventana se guarda', async () => {
     await daily('Caminar', 'Cuerpo', [1]);
-    renderRoutes(ctx, routes, '/personaje');
+    renderRoutes(ctx, routes, '/perfil');
     await userEvent.click(await screen.findByRole('button', { name: '7 días' }));
     await waitFor(async () => expect((await ctx.db.settings.get('radarWindow'))?.value).toBe(7));
     expect(screen.getByRole('button', { name: '7 días' })).toHaveAttribute('aria-pressed', 'true');
@@ -88,7 +88,7 @@ describe('Personaje (PJ)', () => {
   it('R-AT6 · PJ-06: con menos de 3 categorías activas no hay radar', async () => {
     await daily('Caminar', 'Cuerpo', [1, 2, 3]);
     for (const name of ['Descanso', 'Mente', 'Aprendizaje', 'Relaciones']) await setCategoryActive(ctx, await cat(name), false);
-    renderRoutes(ctx, routes, '/personaje');
+    renderRoutes(ctx, routes, '/perfil');
     expect(await screen.findByText('Activa al menos 3 categorías para ver el radar.')).toBeInTheDocument();
     expect(screen.queryByRole('img', { name: /Radar/ })).toBeNull();
     expect(within(screen.getByRole('list', { name: 'Lista de atributos' })).getAllByRole('listitem')).toHaveLength(2);
@@ -96,7 +96,7 @@ describe('Personaje (PJ)', () => {
 
   it('PJ-03: medidor de Disciplina con valor', async () => {
     await daily('Caminar', 'Cuerpo', [1, 2, 3, 4, 5]);
-    renderRoutes(ctx, routes, '/personaje');
+    renderRoutes(ctx, routes, '/perfil');
     const meter = await screen.findByRole('region', { name: /Disciplina/ });
     expect(within(meter).getByText('50')).toBeInTheDocument();
   });
@@ -105,13 +105,13 @@ describe('Personaje (PJ)', () => {
 describe('detalle (DA)', () => {
   it('DA-02/03: explicación y qué cuenta', async () => {
     const caminar = await daily('Caminar', 'Cuerpo', [1, 2, 3, 4, 5]);
-    renderRoutes(ctx, routes, `/personaje/atributo/${await cat('Cuerpo')}`);
+    renderRoutes(ctx, routes, `/perfil/atributo/${await cat('Cuerpo')}`);
     expect(await screen.findByText(/Cuerpo 50: ganaste 50 de 100 puntos posibles en los últimos 30 días \(10 días de Caminar\)\./)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Caminar' })).toHaveAttribute('href', `/actividades/${caminar}`);
   });
 
   it('DA-02: sin datos', async () => {
-    renderRoutes(ctx, routes, `/personaje/atributo/${await cat('Mente')}`);
+    renderRoutes(ctx, routes, `/perfil/atributo/${await cat('Mente')}`);
     expect(await screen.findByText('Aún no hay suficiente información: 0 de 3 elementos necesarios.')).toBeInTheDocument();
   });
 
@@ -125,7 +125,7 @@ describe('detalle (DA)', () => {
       deadline: addDays(today(), -3),
     });
     if (!result.ok) throw new Error();
-    renderRoutes(ctx, routes, '/personaje/disciplina');
+    renderRoutes(ctx, routes, '/perfil/disciplina');
     const region = await screen.findByRole('region', { name: 'Lo que resta' });
     expect(region).toHaveTextContent('1 misión vencida resta 10 puntos posibles; complétala para recuperarlos.');
     expect(within(region).getByRole('link', { name: 'Entregar informe' })).toHaveAttribute('href', `/actividades/misiones/${result.id}`);
@@ -135,7 +135,7 @@ describe('detalle (DA)', () => {
     const result = await createMission(ctx, { title: 'Revisión', categoryId: await cat('Cuerpo'), difficulty: 'hard' });
     if (!result.ok) throw new Error();
     await completeMission(ctx, result.id, today());
-    renderRoutes(ctx, routes, `/personaje/atributo/${await cat('Cuerpo')}`);
+    renderRoutes(ctx, routes, `/perfil/atributo/${await cat('Cuerpo')}`);
     expect(await screen.findByRole('link', { name: 'Misión: Revisión' })).toBeInTheDocument();
   });
 });

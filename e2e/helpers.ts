@@ -1,20 +1,47 @@
 import { expect, type Page } from '@playwright/test';
 
-export async function completeOnboarding(page: Page) {
+/** Pasa el diálogo de ARVID con "Saltar" si sigue escribiendo (spec 06, ON-04). */
+export async function skipDialogue(page: Page) {
+  await page.getByRole('button', { name: 'Saltar' }).click({ timeout: 1500 }).catch(() => undefined);
+}
+
+/** Onboarding con ARVID (spec 06, ON-02) hasta el paso de áreas de vida. */
+export async function onboardingToCategories(page: Page, alias = 'Prueba') {
   await page.goto('/');
+  await skipDialogue(page);
+  await page.getByRole('button', { name: 'Continuar' }).click(); // idioma
+  await skipDialogue(page);
   await page.getByRole('button', { name: 'Empezar' }).click();
-  await chooseDefaultAvatar(page);
+  await skipDialogue(page);
+  await page.getByLabel('Tu nombre o alias').fill(alias);
   await page.getByRole('button', { name: 'Continuar' }).click();
-  const later = page.getByRole('button', { name: 'Más tarde' });
-  if (await later.waitFor({ state: 'visible', timeout: 1500 }).then(() => true, () => false)) await later.click();
+  await skipDialogue(page);
+  await page.getByRole('radio', { name: 'Prefiero no decirlo' }).check();
+  await page.getByRole('button', { name: 'Continuar' }).click();
+  await skipDialogue(page);
+  await page.getByRole('button', { name: 'Continuar' }).click(); // personaje
+  await skipDialogue(page);
+  await page.getByRole('button', { name: 'Continuar' }).click(); // color de ARVID
+  await skipDialogue(page);
+  await expect(page.getByRole('heading', { name: 'Tus áreas de vida' })).toBeVisible();
+}
+
+/** Tras las áreas de vida: instalar (solo iPhone sin instalar) y "Ir a Hoy". */
+export async function finishOnboarding(page: Page) {
+  await skipDialogue(page);
+  const understood = page.getByRole('button', { name: 'Entendido' });
+  if (await understood.isVisible()) {
+    await understood.click();
+    await skipDialogue(page);
+  }
+  await page.getByRole('button', { name: 'Ir a Hoy' }).click();
   await expect(page).toHaveURL(/\/hoy$/);
 }
 
-/** Paso "Elige tu protagonista" del onboarding (spec 05, PRO-02): se acepta la opción preseleccionada. */
-export async function chooseDefaultAvatar(page: Page) {
-  await expect(page.getByRole('heading', { name: 'Elige tu protagonista' })).toBeVisible();
+export async function completeOnboarding(page: Page) {
+  await onboardingToCategories(page);
   await page.getByRole('button', { name: 'Continuar' }).click();
-  await expect(page.getByRole('heading', { name: 'Tus áreas de vida' })).toBeVisible();
+  await finishOnboarding(page);
 }
 
 export interface NewActivity {

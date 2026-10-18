@@ -1,14 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { chooseDefaultAvatar, completeOnboarding, createActivity, row } from './helpers';
+import { completeOnboarding, createActivity, finishOnboarding, onboardingToCategories, row, skipDialogue } from './helpers';
 
 // Fechas de referencia (Europe/Madrid): 14 oct 2026 es miércoles; 19 oct, lunes.
 const WED = new Date('2026-10-14T10:00:00+02:00');
 
 test.describe('onboarding', () => {
   test('ONB-01/02: flujo completo y al menos una categoría', async ({ page }) => {
-    await page.goto('/');
-    await page.getByRole('button', { name: 'Empezar' }).click();
-    await chooseDefaultAvatar(page);
+    await onboardingToCategories(page);
     for (const name of ['Cuerpo', 'Descanso', 'Mente', 'Aprendizaje', 'Relaciones', 'Orden']) {
       await page.getByRole('checkbox', { name: new RegExp(name) }).uncheck();
     }
@@ -16,9 +14,7 @@ test.describe('onboarding', () => {
     await expect(page.getByRole('alert')).toHaveText('Activa al menos una categoría');
     await page.getByRole('checkbox', { name: /Mente/ }).check();
     await page.getByRole('button', { name: 'Continuar' }).click();
-    const later = page.getByRole('button', { name: 'Más tarde' });
-    if (await later.waitFor({ state: 'visible', timeout: 1500 }).then(() => true, () => false)) await later.click();
-    await expect(page).toHaveURL(/\/hoy$/);
+    await finishOnboarding(page);
     await expect(page.getByRole('heading', { name: 'Crea tu primera actividad' })).toBeVisible();
 
     await page.goto('/actividades/nueva');
@@ -28,12 +24,13 @@ test.describe('onboarding', () => {
 
   test('ONB-03/05: en iPhone sin instalar se muestra la guía y el aviso', async ({ page, browserName }) => {
     test.skip(browserName !== 'webkit', 'Solo con el perfil de iPhone');
-    await page.goto('/');
-    await page.getByRole('button', { name: 'Empezar' }).click();
-    await chooseDefaultAvatar(page);
+    await onboardingToCategories(page);
     await page.getByRole('button', { name: 'Continuar' }).click();
+    await skipDialogue(page);
     await expect(page.getByRole('heading', { name: 'Instala ARVID en tu iPhone' })).toBeVisible();
-    await page.getByRole('button', { name: 'Más tarde' }).click();
+    await page.getByRole('button', { name: 'Entendido' }).click();
+    await skipDialogue(page);
+    await page.getByRole('button', { name: 'Ir a Hoy' }).click();
     await expect(page.getByText('Instala ARVID en tu pantalla de inicio para proteger tus datos.')).toBeVisible();
   });
 });
@@ -50,7 +47,7 @@ test.describe('registro diario', () => {
     await expect(page.getByText('Te queda 1 para hoy')).toBeVisible();
 
     await row(page, 'Caminar').getByRole('button', { name: 'Registrar Caminar' }).click();
-    await expect(page.getByText('Día completo')).toBeVisible();
+    await expect(page.getByText('Día completo', { exact: true })).toBeVisible();
     await expect(row(page, 'Caminar').getByText('Completada')).toBeVisible();
 
     await row(page, 'Caminar').getByRole('button', { name: 'Deshacer Caminar' }).click();
@@ -155,7 +152,7 @@ test.describe('fechas', () => {
     await completeOnboarding(page);
     await createActivity(page, { name: 'Caminar' });
     await row(page, 'Caminar').getByRole('button', { name: 'Registrar Caminar' }).click();
-    await expect(page.getByText('Día completo')).toBeVisible();
+    await expect(page.getByText('Día completo', { exact: true })).toBeVisible();
 
     await page.clock.runFor(3 * 60_000);
     await expect(page.getByRole('heading', { name: 'Domingo, 18 oct' })).toBeVisible();
@@ -174,10 +171,10 @@ test.describe('navegación', () => {
     await expect(page.getByRole('heading', { name: 'Actividades' })).toBeVisible();
     await page.goto('/ruta-inexistente');
     await expect(page).toHaveURL(/\/hoy$/);
-    await page.goto('/personaje');
+    await page.goto('/perfil');
     await page.getByRole('link', { name: 'Ajustes' }).click();
     await expect(page.getByRole('heading', { name: 'Ajustes' })).toBeVisible();
-    await page.getByRole('link', { name: 'Personaje' }).first().click();
-    await expect(page.getByRole('heading', { name: 'Personaje' })).toBeVisible();
+    await page.getByRole('link', { name: 'Perfil' }).first().click();
+    await expect(page.getByRole('heading', { name: 'Prueba · Runner' })).toBeVisible();
   });
 });

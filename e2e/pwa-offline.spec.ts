@@ -13,7 +13,7 @@ test('PWA-01: el manifest es válido', async ({ request }) => {
 test('PWA-02: el service worker se instala en la primera visita, antes del onboarding', async ({ page, browserName }) => {
   test.skip(browserName === 'webkit', 'Playwright WebKit no ejecuta service workers');
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Empezar' })).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Diálogo con ARVID' })).toBeVisible();
   await expect.poll(() => page.evaluate(async () => !!(await navigator.serviceWorker.getRegistration())?.active)).toBe(true);
 });
 
@@ -32,12 +32,12 @@ test('OFF-T1/T2 · PWA-02: sin conexión abre, muestra datos y registra; persist
   await page.reload();
   await expect(row(page, 'Caminar')).toBeVisible();
   await row(page, 'Caminar').getByRole('button', { name: 'Registrar Caminar' }).click();
-  await expect(page.getByText('Día completo')).toBeVisible();
+  await expect(page.getByText('Día completo', { exact: true })).toBeVisible();
 
   await page.close();
   const again = await context.newPage();
   await again.goto('/hoy');
-  await expect(again.getByText('Día completo')).toBeVisible();
+  await expect(again.getByText('Día completo', { exact: true })).toBeVisible();
 });
 
 test('NFR-03: el uso diario no hace peticiones a otros orígenes', async ({ page }) => {
@@ -51,7 +51,7 @@ test('NFR-03: el uso diario no hace peticiones a otros orígenes', async ({ page
   await row(page, 'Leer').getByRole('button', { name: 'Registrar Leer' }).click();
   await expect(row(page, 'Leer').getByText('Completada')).toBeVisible();
   await page.goto('/ajustes');
-  await page.goto('/personaje');
+  await page.goto('/perfil');
   expect(external).toEqual([]);
 });
 

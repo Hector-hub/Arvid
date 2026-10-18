@@ -4,13 +4,14 @@ import type { Category } from '../../../domain/categories';
 import type { LocalDate } from '../../../domain/time/localDate';
 import { CategoryIcon } from '../../design/components';
 import { missionDueText } from '../../text';
+import { t } from '../../../i18n';
 
-export const MISSION_STATE_CHIP: Partial<Record<MissionAnalysis['state'], { label: string; className: string }>> = {
-  expired: { label: 'Vencida', className: 'chip-warn' },
-  completedOnTime: { label: 'Cumplida', className: 'chip-done' },
-  completedLate: { label: 'Recuperada', className: 'chip-done' },
-  abandoned: { label: 'Abandonada', className: 'chip-muted' },
-  abandonedExpired: { label: 'Abandonada', className: 'chip-muted' },
+export const MISSION_STATE_CHIP: Partial<Record<MissionAnalysis['state'], { label: () => string; className: string }>> = {
+  expired: { label: () => t('missions.chipExpired'), className: 'chip-warn' },
+  completedOnTime: { label: () => t('missions.chipOnTime'), className: 'chip-done' },
+  completedLate: { label: () => t('missions.chipLate'), className: 'chip-done' },
+  abandoned: { label: () => t('missions.chipAbandoned'), className: 'chip-muted' },
+  abandonedExpired: { label: () => t('missions.chipAbandoned'), className: 'chip-muted' },
 };
 
 /** Contenido común de una fila de misión: icono, título, plazo y estado (MHOY-02). */
@@ -38,7 +39,7 @@ export function MissionSummary({
           {record.mission.title}
         </Link>
         <div className="row" style={{ gap: 'var(--s2)' }}>
-          {chip && <span className={`chip ${chip.className}`}>{chip.label}</span>}
+          {chip && <span className={`chip ${chip.className}`}>{chip.label()}</span>}
           {open && analysis.state !== 'expired' && (
             <span className="small muted">{missionDueText(analysis.deadline, today)}</span>
           )}

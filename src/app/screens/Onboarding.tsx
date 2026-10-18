@@ -1,26 +1,208 @@
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { saveSetting, setCategoryActive } from '../../data/repository';
+import { saveSetting, setCategoryActive, type Settings } from '../../data/repository';
+import { castOrder, validateAlias, ALIAS_MAX, type ArvidColor, type Gender } from '../../domain/arvid/arvid';
+import type { Avatar } from '../../domain/avatar/catalog';
 import type { Category } from '../../domain/categories';
+import { addDays, toLocalDate } from '../../domain/time/localDate';
+import { getLocale, setLocale, t, type Locale } from '../../i18n';
 import { needsInstallForSafety, requestPersistentStorage } from '../../pwa/platform';
-import { useCategories, useData } from '../data';
-import { CategoryIcon, Panel } from '../design/components';
-import { DEFAULT_AVATAR, type Avatar } from '../../domain/avatar/catalog';
-import { AvatarPicker } from '../scene/AvatarPicker';
-import { AvatarPreview } from '../scene/Scene';
+import { DialogueBox } from '../arvid/DialogueBox';
+import { lines } from '../arvid/lines';
+import { useCategories, useData, useSettings } from '../data';
+import { CategoryIcon } from '../design/components';
+import { AliasField, ArvidColorPicker, CharacterCarousel, GenderPicker, LanguagePicker } from '../profile/pickers';
+import { Scene } from '../scene/Scene';
+import { categoryName, errorText } from '../text';
 import { InstallGuide } from './InstallGuide';
 
-type Step = 'welcome' | 'avatar' | 'categories' | 'install';
+type Step = 'language' | 'welcome' | 'alias' | 'gender' | 'character' | 'arvidColor' | 'categories' | 'install' | 'done';
 
-/** ONB-01 a ONB-04. */
+/** Pasos del onboarding (ON-02); el de instalar, solo en iPhone sin instalar. */
+function onboardingSteps(): Step[] {
+  return ['language', 'welcome', 'alias', 'gender', 'character', 'arvidColor', 'categories', ...(needsInstallForSafety() ? (['install'] as const) : []), 'done'];
+}
+
+/** Lo que el usuario va eligiendo; se guarda paso a paso para que la escena lo refleje al momento. */
+function useDraft(settings: Settings | undefined) {
+  const [alias, setAlias] = useState(settings?.profile?.alias ?? '');
+  const [gender, setGender] = useState<Gender | undefined>(settings?.profile?.gender);
+  return { alias, setAlias, gender, setGender };
+}
+
+/**
+ * Asistente con ARVID: en cada paso, la escena arriba, la caja de diálogo de ARVID y el control del paso, que se
+ * habilita al terminar el diálogo (ON-01, ON-04). "Atrás" conserva lo elegido (ON-05).
+ */
+function Wizard({
+  steps,
+  renderControl,
+  onLater,
+  banner,
+  scene = true,
+}: {
+  steps: Step[];
+  /** La presentación se abre sobre Hoy, que ya muestra la escena. */
+  scene?: boolean;
+  renderControl: (step: Step, next: () => void, ready: boolean) => ReactNode;
+  onLater?: () => void;
+  banner?: ReactNode;
+}) {
+  const settings = useSettings();
+  const [index, setIndex] = useState(0);
+  const [ready, setReady] = useState(false);
+  const step = steps[index]!;
+  const gender = settings?.profile?.gender;
+  const alias = settings?.profile?.alias ?? '';
+  const group = step === 'welcome' && onLater ? 'onboarding.intro' : `onboarding.${step}`;
+
+  const go = (delta: number) => {
+    setReady(false);
+    setIndex((i) => Math.min(steps.length - 1, Math.max(0, i + delta)));
+  };
+
+  // Sin los ajustes cargados la caja de diálogo se montaría dos veces (cambia su `key`)
+  if (!settings) return null;
+
+  return (
+    <main className="main stack" style={{ gap: 'var(--s4)' }}>
+      {banner}
+      {scene && <Scene controls={false} />}
+      <DialogueBox key={`${step}:${settings?.locale ?? ''}`} lines={lines(group as `onboarding.${string}`, gender, { alias })} onDone={() => setReady(true)} />
+      <fieldset className="stack onboarding-step" disabled={!ready} style={{ opacity: ready ? 1 : 0.5 }}>
+        {renderControl(step, () => go(1), ready)}
+      </fieldset>
+      <div className="row">
+        {index > 0 && (
+          <button type="button" className="btn btn-ghost" onClick={() => go(-1)}>
+            ‹ {t('common.back')}
+          </button>
+        )}
+        {onLater && (
+          <button type="button" className="btn btn-ghost" style={{ marginLeft: 'auto' }} onClick={onLater}>
+            {t('common.later')}
+          </button>
+        )}
+      </div>
+    </main>
+  );
+}
+
+/** Controles comunes del onboarding y de la presentación (idioma, alias, género, personaje y color de ARVID). */
+function useProfileControls() {
+  const ctx = useData();
+  const settings = useSettings();
+  const draft = useDraft(settings);
+  const [aliasError, setAliasError] = useState<string>();
+  // El activo: cambia al momento al elegirlo, antes de que se guarde
+  const locale: Locale = getLocale();
+
+  function control(step: Step, next: () => void): ReactNode {
+    if (!settings) return null;
+    switch (step) {
+      case 'language':
+        return (
+          <>
+            <LanguagePicker
+              value={locale}
+              onChange={(l) => {
+                setLocale(l);
+                void saveSetting(ctx.db, 'locale', l);
+              }}
+            />
+            <ContinueButton
+              onClick={() => {
+                // Fija también el idioma detectado si no se tocó
+                void saveSetting(ctx.db, 'locale', locale).then(next);
+              }}
+            />
+          </>
+        );
+      case 'alias':
+        return (
+          <>
+            <AliasField
+              value={draft.alias}
+              error={aliasError}
+              onChange={(v) => {
+                draft.setAlias(v);
+                setAliasError(undefined);
+              }}
+            />
+            <ContinueButton
+              onClick={() => {
+                const error = validateAlias(draft.alias);
+                if (error) {
+                  setAliasError(errorText(error, { max: ALIAS_MAX }));
+                  document.getElementById('alias')?.focus();
+                  return;
+                }
+                void saveSetting(ctx.db, 'profile', { alias: draft.alias.trim(), gender: draft.gender ?? 'x' }).then(next);
+              }}
+            />
+          </>
+        );
+      case 'gender':
+        return (
+          <>
+            <GenderPicker value={draft.gender} onChange={draft.setGender} />
+            <ContinueButton
+              disabled={!draft.gender}
+              onClick={() => {
+                const gender = draft.gender ?? 'x';
+                // El personaje sugerido cambia con el género (PJ-02), salvo que ya se hubiera elegido otro
+                const avatar: Avatar = { cast: castOrder(gender)[0]!, variant: settings.avatar.variant };
+                void Promise.all([
+                  saveSetting(ctx.db, 'profile', { alias: draft.alias.trim(), gender }),
+                  settings.profile?.gender === gender ? undefined : saveSetting(ctx.db, 'avatar', avatar),
+                ]).then(next);
+              }}
+            />
+          </>
+        );
+      case 'character':
+        return (
+          <>
+            <CharacterCarousel
+              value={settings.avatar}
+              order={castOrder(settings.profile?.gender)}
+              onChange={(avatar) => void saveSetting(ctx.db, 'avatar', avatar)}
+            />
+            <ContinueButton onClick={next} />
+          </>
+        );
+      case 'arvidColor':
+        return (
+          <>
+            <ArvidColorPicker value={settings.arvidColor} onChange={(c: ArvidColor) => void saveSetting(ctx.db, 'arvidColor', c)} />
+            <ContinueButton onClick={next} />
+          </>
+        );
+      default:
+        return null;
+    }
+  }
+
+  return { control };
+}
+
+function ContinueButton({ onClick, disabled, label = t('common.continue') }: { onClick: () => void; disabled?: boolean; label?: string }) {
+  return (
+    <button type="button" className="btn btn-primary btn-block" disabled={disabled} onClick={onClick}>
+      {label}
+    </button>
+  );
+}
+
+/** Onboarding con ARVID (spec 06, ON). */
 export function Onboarding({ banner }: { banner?: ReactNode }) {
   const ctx = useData();
-  const categories = useCategories();
   const navigate = useNavigate();
-  const [step, setStep] = useState<Step>('welcome');
+  const categories = useCategories();
+  const { control } = useProfileControls();
+  const [steps] = useState(onboardingSteps);
   const [selection, setSelection] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string>();
-  const [avatar, setAvatar] = useState<Avatar>(DEFAULT_AVATAR);
 
   const isSelected = (c: Category) => selection[c.id] ?? c.active;
 
@@ -31,10 +213,10 @@ export function Onboarding({ banner }: { banner?: ReactNode }) {
     navigate('/hoy', { replace: true });
   }
 
-  async function confirmCategories() {
+  async function confirmCategories(next: () => void) {
     if (!categories) return;
     if (!categories.some(isSelected)) {
-      setError('Activa al menos una categoría');
+      setError(t('onboarding.categoriesError'));
       return;
     }
     // Primero activar, después desactivar, para no quedarse nunca sin categorías activas.
@@ -42,93 +224,85 @@ export function Onboarding({ banner }: { banner?: ReactNode }) {
     for (const c of ordered) {
       if (c.active !== isSelected(c)) await setCategoryActive(ctx, c.id, isSelected(c));
     }
-    if (needsInstallForSafety()) setStep('install');
-    else await finish();
+    next();
   }
 
   return (
-    <main className="main stack" style={{ gap: 'var(--s5)' }}>
-      {banner}
-      {step === 'welcome' && (
-        <>
-          <div className="row" style={{ justifyContent: 'center', paddingTop: 'var(--s6)' }}>
-            <AvatarPreview avatar={DEFAULT_AVATAR} scale={2} />
-          </div>
-          <h1 style={{ textAlign: 'center' }}>ARVID</h1>
-          <p className="pixel" style={{ textAlign: 'center', color: 'var(--xp)' }}>
-            Become better, every day.
-          </p>
-          <Panel>
-            <p>
-              No necesitas cambiar toda tu vida hoy. Define lo que quieres hacer cada día, semana o mes, márcalo cuando
-              lo hagas y deja que tu personaje refleje tu constancia.
-            </p>
-          </Panel>
-          <button type="button" className="btn btn-primary btn-block" onClick={() => setStep('avatar')}>
-            Empezar
-          </button>
-        </>
-      )}
+    <Wizard
+      steps={steps}
+      banner={banner}
+      renderControl={(step, next) => {
+        switch (step) {
+          case 'welcome':
+            return <ContinueButton label={t('onboarding.start')} onClick={next} />;
+          case 'categories':
+            return (
+              <>
+                <h1>{t('onboarding.categoriesTitle')}</h1>
+                <div className="stack" aria-describedby={error ? 'cat-error' : undefined}>
+                  {categories?.map((c) => (
+                    <label key={c.id} className="choice">
+                      <input
+                        type="checkbox"
+                        checked={isSelected(c)}
+                        onChange={(e) => {
+                          setError(undefined);
+                          setSelection((s) => ({ ...s, [c.id]: e.target.checked }));
+                        }}
+                      />
+                      <CategoryIcon category={c} />
+                      <span className="grow">{categoryName(c)}</span>
+                      {isSelected(c) && <span className="chip chip-done">{t('settings.categoryActive')}</span>}
+                    </label>
+                  ))}
+                </div>
+                {error && (
+                  <p id="cat-error" className="field-error" role="alert">
+                    {error}
+                  </p>
+                )}
+                <ContinueButton onClick={() => void confirmCategories(next)} />
+              </>
+            );
+          case 'install':
+            return (
+              <>
+                <InstallGuide />
+                <ContinueButton label={t('onboarding.understood')} onClick={next} />
+              </>
+            );
+          case 'done':
+            return <ContinueButton label={t('onboarding.goToday')} onClick={() => void finish()} />;
+          default:
+            return control(step, next);
+        }
+      }}
+    />
+  );
+}
 
-      {step === 'avatar' && (
-        <>
-          <h1>Elige tu protagonista</h1>
-          <p className="muted">Te acompañará cada día. Podrás cambiarlo en Ajustes.</p>
-          <AvatarPicker value={avatar} onChange={setAvatar} />
-          <button
-            type="button"
-            className="btn btn-primary btn-block"
-            onClick={() => void saveSetting(ctx.db, 'avatar', avatar).then(() => setStep('categories'))}
-          >
-            Continuar
-          </button>
-        </>
-      )}
-
-      {step === 'categories' && (
-        <>
-          <h1>Tus áreas de vida</h1>
-          <p className="muted">Elige las que quieres mejorar. Podrás cambiarlas en Ajustes.</p>
-          <fieldset className="stack" aria-describedby={error ? 'cat-error' : undefined}>
-            <legend className="sr-only">Categorías</legend>
-            {categories?.map((c) => (
-              <label key={c.id} className="choice">
-                <input
-                  type="checkbox"
-                  checked={isSelected(c)}
-                  onChange={(e) => {
-                    setError(undefined);
-                    setSelection((s) => ({ ...s, [c.id]: e.target.checked }));
-                  }}
-                />
-                <CategoryIcon category={c} />
-                <span className="grow">{c.name}</span>
-                {isSelected(c) && <span className="chip chip-done">Activa</span>}
-              </label>
-            ))}
-          </fieldset>
-          {error && (
-            <p id="cat-error" className="field-error" role="alert">
-              {error}
-            </p>
-          )}
-          <button type="button" className="btn btn-primary btn-block" onClick={() => void confirmCategories()}>
-            Continuar
-          </button>
-        </>
-      )}
-
-      {step === 'install' && (
-        <>
-          <InstallGuide />
-          <button type="button" className="btn btn-primary btn-block" onClick={() => void finish()}>
-            Entendido
-          </button>
-          <button type="button" className="btn btn-ghost btn-block" onClick={() => void finish()}>
-            Más tarde
-          </button>
-        </>
-      )}
-    </main>
+/**
+ * Presentación de ARVID para quien ya hizo el onboarding sin alias (PR-01): idioma, alias, género y color de ARVID.
+ * Se puede posponer hasta el día siguiente (PR-02).
+ */
+export function IntroSheet({ onClose }: { onClose: () => void }) {
+  const ctx = useData();
+  const { control } = useProfileControls();
+  const steps: Step[] = ['language', 'welcome', 'alias', 'gender', 'arvidColor'];
+  // Se cierra al quedar guardado: una recarga inmediata no debe volver a mostrarla (PR-02)
+  const later = () => void saveSetting(ctx.db, 'introSnoozedUntil', addDays(toLocalDate(ctx.now()), 1)).then(onClose);
+  return (
+    <div className="sheet-backdrop intro" role="dialog" aria-modal="true" aria-label={t('onboarding.introTitle')}>
+      <div className="panel sheet">
+        <Wizard
+          steps={steps}
+          scene={false}
+          onLater={later}
+          renderControl={(step, next) =>
+            step === 'welcome' ? <ContinueButton onClick={next} /> : control(step, step === 'arvidColor' ? onClose : next)
+          }
+        />
+      </div>
+    </div>
   );
 }

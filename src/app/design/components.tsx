@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { Category } from '../../domain/categories';
 import { SPRITE_COUNT, SPRITE_TILE, SPRITES, type SpriteName } from './sprites.generated';
+import { t } from '../../i18n';
 
 /** Sprite del 1-Bit Pack recoloreado con `color` (design-system §6). `scale` entero: 2 = 32 px. */
 export function Sprite({
@@ -95,7 +96,7 @@ export function XpBar({ xp, start, next, compact = false }: { xp: number; start:
     <div
       className="xpbar"
       role="progressbar"
-      aria-label="Experiencia del nivel"
+      aria-label={t('level.xpBar')}
       aria-valuemin={start}
       aria-valuemax={next}
       aria-valuenow={xp}

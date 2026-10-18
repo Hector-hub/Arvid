@@ -6,6 +6,8 @@ import type {
   ActivityStatusEvent,
 } from '../domain/activities/types';
 import { DEFAULT_AVATAR, normalizeAvatar, type Avatar } from '../domain/avatar/catalog';
+import { ARVID_COLORS, DEFAULT_ARVID_COLOR, normalizeProfile, type ArvidColor, type ArvidSeen, type Profile } from '../domain/arvid/arvid';
+import { isLocale, type Locale } from '../i18n';
 import { CATEGORY_PRESETS, checkCategoryToggle, type Category, type CategoryToggleCheck } from '../domain/categories';
 import { toLocalDate, tzOffsetMinutes, type LocalDate } from '../domain/time/localDate';
 import type { ArvidDB } from './db';
@@ -233,6 +235,17 @@ export interface Settings {
   avatar: Avatar;
   /** Música opcional, desactivada por defecto (spec 05, MUS-01). */
   music: MusicSettings;
+  /** Idioma elegido; sin él se usa el del navegador (spec 06, I18N-03). */
+  locale?: Locale;
+  /** Alias y género (spec 06 §4); sin él se muestra la presentación de ARVID (PR-01). */
+  profile?: Profile;
+  arvidColor: ArvidColor;
+  /** ARVID habla por iniciativa propia (DL-03). */
+  arvidTalks: boolean;
+  /** Momentos ya dichos hoy y última frase de cada uno (del dispositivo, no va en el backup). */
+  arvidSeen?: ArvidSeen;
+  /** La presentación de ARVID no se muestra antes de esta fecha local (PR-02). */
+  introSnoozedUntil?: string;
 }
 
 export interface MusicSettings {
@@ -249,6 +262,8 @@ export const DEFAULT_SETTINGS: Settings = {
   radarWindow: 30,
   avatar: DEFAULT_AVATAR,
   music: DEFAULT_MUSIC,
+  arvidColor: DEFAULT_ARVID_COLOR,
+  arvidTalks: true,
 };
 
 function normalizeMusic(value: unknown): MusicSettings {
@@ -264,7 +279,15 @@ export async function loadSettings(db: ArvidDB): Promise<Settings> {
   const rows = await db.settings.toArray();
   const raw = { ...DEFAULT_SETTINGS, ...Object.fromEntries(rows.map((r) => [r.key, r.value])) } as Settings;
   // Un backup antiguo o un protagonista retirado por licencia no deben romper la app (spec 05 §5)
-  return { ...raw, avatar: normalizeAvatar(raw.avatar), music: normalizeMusic(raw.music) };
+  return {
+    ...raw,
+    avatar: normalizeAvatar(raw.avatar),
+    music: normalizeMusic(raw.music),
+    locale: isLocale(raw.locale) ? raw.locale : undefined,
+    profile: normalizeProfile(raw.profile),
+    arvidColor: (ARVID_COLORS as readonly string[]).includes(raw.arvidColor) ? raw.arvidColor : DEFAULT_ARVID_COLOR,
+    arvidTalks: raw.arvidTalks !== false,
+  };
 }
 
 export async function saveSetting<K extends keyof Settings>(db: ArvidDB, key: K, value: Settings[K]): Promise<void> {

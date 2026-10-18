@@ -79,7 +79,7 @@ test('BAK · NFR2-03: exportar, borrar todo e importar recupera los mismos datos
   await page.getByRole('button', { name: 'Eliminar todos mis datos' }).click();
   await page.getByLabel('Escribe BORRAR para confirmar').fill('BORRAR');
   await page.getByRole('button', { name: 'Eliminar', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Empezar' })).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Diálogo con ARVID' })).toBeVisible();
   await completeOnboarding(page);
   await expect(page.getByRole('heading', { name: 'Crea tu primera actividad' })).toBeVisible();
 
@@ -92,7 +92,7 @@ test('BAK · NFR2-03: exportar, borrar todo e importar recupera los mismos datos
 
   await page.goto('/hoy');
   await expect(row(page, 'Leer').getByText('Completada')).toBeVisible();
-  await page.goto('/personaje');
+  await page.goto('/perfil');
   await expect(page.getByText('20 / 100 XP')).toBeVisible();
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });

@@ -16,6 +16,8 @@ export async function setupData(): Promise<DataContext> {
   const ctx: DataContext = { db, now: () => new Date(), newId: () => `id-${++id}` };
   await ensureSeed(ctx);
   await saveSetting(db, 'onboardingCompletedAt', new Date().toISOString());
+  // Las pruebas de interfaz son en español (jsdom simula un navegador en inglés)
+  await saveSetting(db, 'locale', 'es');
   return ctx;
 }
 

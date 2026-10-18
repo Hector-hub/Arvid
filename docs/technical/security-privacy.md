@@ -13,8 +13,8 @@ Estado: **aprobado** (D-040, 2026-10-17) · Implementa: D-004, D-023, D-024.
 
 ## 2. Principios
 1. **Minimización:** solo se guarda lo necesario para las reglas del juego (data-model.md).
-2. **Local por defecto:** ningún dato sale del dispositivo salvo en un backup exportado por el usuario.
-3. **Sin peticiones a terceros:** fuentes y sprites autoalojados, sin CDN ni analíticas. Se impone con una política CSP estricta (`default-src 'self'`).
+2. **Local por defecto:** ningún dato sale del dispositivo salvo en un backup exportado por el usuario o, **con permiso explícito**, el contexto que ARVID envía a Mistral AI a través de la función propia `/api/arvid` (spec 06, IA-04 e IA-06; D-066).
+3. **Sin peticiones a terceros desde la app** (la única excepción es la función propia `/api/arvid`, que reenvía a Mistral): fuentes y sprites autoalojados, sin CDN ni analíticas. Se impone con una política CSP estricta (`default-src 'self'`).
 4. **Control del usuario:** exportar todo y borrar todo ("Eliminar todos mis datos", con confirmación escrita) desde Ajustes.
 
 ## 3. Amenazas y mitigaciones

@@ -113,6 +113,7 @@ export function planNewVersion(
   return { effectiveFrom, supersededIds };
 }
 
+/** Códigos de error (la interfaz los traduce con `errors.<código>`, spec 06 I18N-01). */
 export interface ConfigErrors {
   name?: string;
   categoryId?: string;
@@ -123,13 +124,13 @@ export interface ConfigErrors {
 export function validateActivityInput(name: string, config: Partial<ActivityConfig>): ConfigErrors {
   const errors: ConfigErrors = {};
   const trimmed = name.trim();
-  if (trimmed.length === 0) errors.name = 'Escribe un nombre';
-  else if (trimmed.length > ACTIVITY_NAME_MAX) errors.name = `Máximo ${ACTIVITY_NAME_MAX} caracteres`;
-  if (!config.categoryId) errors.categoryId = 'Elige una categoría';
+  if (trimmed.length === 0) errors.name = 'nameRequired';
+  else if (trimmed.length > ACTIVITY_NAME_MAX) errors.name = 'nameTooLong';
+  if (!config.categoryId) errors.categoryId = 'categoryRequired';
   if (config.period && config.target !== undefined) {
     const max = TARGET_LIMITS[config.period];
     if (!Number.isInteger(config.target) || config.target < 1 || config.target > max) {
-      errors.target = `Entre 1 y ${max}`;
+      errors.target = 'targetRange';
     }
   }
   return errors;

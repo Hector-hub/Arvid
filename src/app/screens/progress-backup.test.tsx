@@ -5,7 +5,7 @@ import { buildBackup } from '../../data/backup';
 import { createActivity, loadCategories, logCompletion, saveSetting, type DataContext } from '../../data/repository';
 import { addDays, toLocalDate } from '../../domain/time/localDate';
 import { renderRoutes, setupData } from '../test-utils';
-import { CharacterScreen } from './CharacterScreen';
+import { ProfileScreen } from './ProfileScreen';
 import { SettingsScreen } from './SettingsScreen';
 import { TodayScreen } from './TodayScreen';
 
@@ -46,9 +46,9 @@ async function addDaily(name: string, logsDaysAgo: number[] = []) {
   return id;
 }
 
-describe('Personaje (PRG-03)', () => {
+describe('Perfil (PRG-03)', () => {
   it('estado vacío con nivel 1', async () => {
-    renderRoutes(ctx, [{ path: '/personaje', element: <CharacterScreen /> }], '/personaje');
+    renderRoutes(ctx, [{ path: '/perfil', element: <ProfileScreen /> }], '/perfil');
     expect(await screen.findByRole('heading', { name: 'Nivel 1 · Recluta' })).toBeInTheDocument();
     expect(screen.getByText('0 / 100 XP')).toBeInTheDocument();
     expect(screen.getByText('Registra tu primera actividad para ganar XP.')).toBeInTheDocument();
@@ -56,7 +56,7 @@ describe('Personaje (PRG-03)', () => {
 
   it('con progreso: nivel, barra y XP total', async () => {
     await addDaily('Caminar', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-    renderRoutes(ctx, [{ path: '/personaje', element: <CharacterScreen /> }], '/personaje');
+    renderRoutes(ctx, [{ path: '/perfil', element: <ProfileScreen /> }], '/perfil');
     expect(await screen.findByRole('heading', { name: 'Nivel 2 · Recluta' })).toBeInTheDocument();
     expect(screen.getByRole('progressbar', { name: 'Experiencia del nivel' })).toHaveAttribute('aria-valuenow', '100');
     expect(screen.getByText(/Has ganado 100 XP en total/)).toBeInTheDocument();
@@ -64,10 +64,10 @@ describe('Personaje (PRG-03)', () => {
 });
 
 describe('Hoy (PRG-04, STR-02)', () => {
-  it('indicador de nivel enlazado a Personaje y racha en la fila', async () => {
+  it('indicador de nivel enlazado a Perfil y racha en la fila', async () => {
     await addDaily('Caminar', [1, 2, 3]);
     renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
-    expect(await screen.findByRole('link', { name: /Nivel 1, Recluta/ })).toHaveAttribute('href', '/personaje');
+    expect(await screen.findByRole('link', { name: /Nivel 1, Recluta/ })).toHaveAttribute('href', '/perfil');
     expect(await screen.findByText('0 de 1 · racha 3 días')).toBeInTheDocument();
   });
 

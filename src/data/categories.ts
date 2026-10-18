@@ -24,7 +24,7 @@ export async function updateCategory(ctx: DataContext, id: string, input: Catego
   const { db } = ctx;
   return db.transaction('rw', db.categories, async () => {
     const categories = await db.categories.toArray();
-    if (!categories.some((c) => c.id === id)) return { ok: false, errors: { name: 'Categoría no encontrada' } };
+    if (!categories.some((c) => c.id === id)) return { ok: false, errors: { name: 'notFound' } };
     const errors = validateCategoryInput(input, categories, id);
     if (Object.keys(errors).length > 0) return { ok: false, errors };
     await db.categories.update(id, { name: input.name.trim(), color: input.color, icon: input.icon });

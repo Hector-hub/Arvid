@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { DEFAULT_MUSIC, saveSetting } from '../../data/repository';
+import { useT } from '../../i18n';
 import { useData, useSettings } from '../data';
+import { SpeakerOffIcon, SpeakerOnIcon } from '../design/icons';
 import { MusicPlayer, type PlayerState } from './player';
 import { TRACKS } from './tracks';
 
@@ -77,18 +79,21 @@ export function useMusic(): Music {
   return ctx;
 }
 
-/** Botón de activar o pausar la música (esquina de la escena en Hoy, MUS-06). */
+/** Bocina de la música arriba a la derecha de la escena: con ondas si suena y tachada si no (MU-01). */
 export function MusicButton() {
   const music = useMusic();
+  const t = useT();
   return (
     <button
       type="button"
-      className="btn"
+      className="btn btn-icon scene-icon"
       aria-pressed={music.playing}
+      aria-label={t('scene.music')}
+      title={t('scene.music')}
       {...{ [MUSIC_CONTROL]: '' }}
       onClick={music.toggle}
     >
-      Música
+      {music.playing ? <SpeakerOnIcon /> : <SpeakerOffIcon />}
     </button>
   );
 }

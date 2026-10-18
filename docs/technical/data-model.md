@@ -101,6 +101,12 @@ Guardar eventos (y no solo el estado) permite saber **cuándo** venció la misi�
 | persistGranted | boolean? | Último resultado de `navigator.storage.persisted()` |
 | avatar | `{ cast, variant }` | Protagonista y variante (spec 05 §5). Por defecto `{ cast: 'ella', variant: 'original' }`; un valor desconocido se normaliza al cargar |
 | music | `{ enabled: boolean, volume: number }` | Música opcional (spec 05, MUS). Por defecto `{ enabled: false, volume: 0.4 }` |
+| locale | `'es' \| 'en'` | Idioma (spec 06, I18N-03); sin él, el del navegador |
+| profile | `{ alias, gender: 'm' \| 'f' \| 'x' }` | Alias y género (spec 06 §4); sin él se muestra la presentación de ARVID |
+| arvidColor | `'original' \| 'cian' \| 'magenta' \| 'lima' \| 'oro' \| 'violeta'` | Color de ARVID; por defecto `cian` |
+| arvidTalks | boolean | ARVID habla por iniciativa propia; por defecto `true` |
+| arvidSeen | `{ said, lastLine }` | Momentos dichos hoy y última frase de cada uno. Del dispositivo: no va en el backup |
+| introSnoozedUntil | LocalDate? | Presentación pospuesta. Del dispositivo: no va en el backup |
 
 ## 3. Estado derivado (no se guarda)
 | Valor | Función del dominio | Entradas |

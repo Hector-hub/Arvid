@@ -3,13 +3,14 @@ import { useNavigate, useParams } from 'react-router';
 import { createMission, updateMission } from '../../../data/missions';
 import { celebrate } from '../../scene/engine';
 import { DIFFICULTY_POINTS, type Difficulty } from '../../../domain/config';
-import { missionActions, type MissionInputErrors, type MissionRecord } from '../../../domain/missions/missions';
+import { MISSION_TITLE_MAX, missionActions, type MissionInputErrors, type MissionRecord } from '../../../domain/missions/missions';
 import { isLocalDate, type LocalDate } from '../../../domain/time/localDate';
 import { useAnalysis } from '../../analysis';
 import { useToday } from '../../clock';
 import { useCategories, useData, useMissions } from '../../data';
 import { CategoryIcon } from '../../design/components';
-import { DIFFICULTY_LABEL } from '../../text';
+import { categoryName, difficultyLabel, errorText } from '../../text';
+import { t } from '../../../i18n';
 
 const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard'];
 
@@ -20,7 +21,7 @@ export function MissionFormScreen() {
   const categories = useCategories();
   if (!missions || !categories) return null;
   const record = id ? missions.find((m) => m.mission.id === id) : undefined;
-  if (id && !record) return <p>Misión no encontrada.</p>;
+  if (id && !record) return <p>{t('missions.notFound')}</p>;
   // La categoría por defecto se calcula aquí, con las categorías ya cargadas.
   const defaultCategoryId = record?.mission.categoryId ?? categories.find((c) => c.active && !c.archivedAt)?.id ?? '';
   return <MissionForm key={id ?? 'new'} record={record} defaultCategoryId={defaultCategoryId} />;
@@ -71,63 +72,61 @@ function MissionForm({ record, defaultCategoryId }: { record?: MissionRecord; de
 
   return (
     <form className="stack" style={{ gap: 'var(--s5)' }} onSubmit={(e) => void submit(e)} noValidate>
-      <h1>{record ? 'Editar misión' : 'Nueva misión'}</h1>
+      <h1>{record ? t('missionForm.editTitle') : t('missionForm.newTitle')}</h1>
 
       <div className="field">
-        <label htmlFor="mission-title">Título</label>
+        <label htmlFor="mission-title">{t('missionForm.title')}</label>
         <input
           id="mission-title"
           type="text"
           value={title}
           maxLength={80}
           autoComplete="off"
-          placeholder="Pedir cita con el médico"
+          placeholder={t('missionForm.titlePlaceholder')}
           aria-invalid={!!errors.title}
           aria-describedby={errors.title ? 'mission-title-error' : undefined}
           onChange={(e) => setTitle(e.target.value)}
         />
         {errors.title && (
           <p id="mission-title-error" className="field-error">
-            {errors.title}
+            {errorText(errors.title, { max: MISSION_TITLE_MAX })}
           </p>
         )}
       </div>
 
       <fieldset className="field" disabled={locked}>
-        <legend>Categoría</legend>
+        <legend>{t('missionForm.category')}</legend>
         <div className="choice-group">
           {options.map((c) => (
             <label key={c.id} className="choice">
               <input type="radio" name="category" checked={categoryId === c.id} onChange={() => setCategoryId(c.id)} />
               <CategoryIcon category={c} />
-              {c.name}
+              {categoryName(c)}
             </label>
           ))}
         </div>
-        {errors.categoryId && <p className="field-error">{errors.categoryId}</p>}
+        {errors.categoryId && <p className="field-error">{errorText(errors.categoryId)}</p>}
       </fieldset>
 
       <fieldset className="field" disabled={locked}>
-        <legend>Dificultad</legend>
+        <legend>{t('missionForm.difficulty')}</legend>
         <div className="choice-group">
           {DIFFICULTIES.map((d) => (
             <label key={d} className="choice">
               <input type="radio" name="difficulty" checked={difficulty === d} onChange={() => setDifficulty(d)} />
-              {DIFFICULTY_LABEL[d]}
-              <span className="small muted">{DIFFICULTY_POINTS[d]} XP</span>
+              {difficultyLabel(d)}
+              <span className="small muted">{t('difficulty.xp', { points: DIFFICULTY_POINTS[d] })}</span>
             </label>
           ))}
         </div>
       </fieldset>
       {locked && (
-        <p className="small muted">
-          La categoría y la dificultad solo se pueden cambiar mientras la misión está pendiente.
-        </p>
+        <p className="small muted">{t('missionForm.locked')}</p>
       )}
 
       {!record && (
         <div className="field">
-          <label htmlFor="mission-deadline">Fecha límite (opcional)</label>
+          <label htmlFor="mission-deadline">{t('missionForm.deadline')}</label>
           <input
             id="mission-deadline"
             type="date"
@@ -140,11 +139,11 @@ function MissionForm({ record, defaultCategoryId }: { record?: MissionRecord; de
           />
           {errors.deadline ? (
             <p id="mission-deadline-error" className="field-error">
-              {errors.deadline}
+              {errorText(errors.deadline)}
             </p>
           ) : (
             <p id="mission-deadline-hint" className="small muted">
-              Si la dejas vencer, resta en tu Disciplina. Sin fecha, nunca penaliza.
+              {t('missionForm.deadlineHint')}
             </p>
           )}
         </div>
@@ -152,10 +151,10 @@ function MissionForm({ record, defaultCategoryId }: { record?: MissionRecord; de
 
       <div className="row">
         <button type="button" className="btn btn-ghost" onClick={() => navigate(-1)}>
-          Cancelar
+          {t('common.cancel')}
         </button>
         <button type="submit" className="btn btn-primary grow" disabled={saving}>
-          {record ? 'Guardar' : 'Crear misión'}
+          {record ? t('common.save') : t('missionForm.create')}
         </button>
       </div>
     </form>

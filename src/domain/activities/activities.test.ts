@@ -169,8 +169,8 @@ describe('validación del formulario (ACT-01)', () => {
   it('detecta errores', () => {
     expect(validateActivityInput('  ', { period: 'week', target: 4, categoryId: 'x' }).name).toBeDefined();
     expect(validateActivityInput('a'.repeat(41), { period: 'week', target: 4, categoryId: 'x' }).name).toBeDefined();
-    expect(validateActivityInput('Gym', { period: 'day', target: 11, categoryId: 'x' }).target).toBe('Entre 1 y 10');
-    expect(validateActivityInput('Gym', { period: 'month', target: 29, categoryId: 'x' }).target).toBe('Entre 1 y 28');
+    expect(validateActivityInput('Gym', { period: 'day', target: 11, categoryId: 'x' }).target).toBe('targetRange');
+    expect(validateActivityInput('Gym', { period: 'month', target: 29, categoryId: 'x' }).target).toBe('targetRange');
     expect(validateActivityInput('Gym', { period: 'week', target: 4 }).categoryId).toBeDefined();
     expect(validateActivityInput('Gym', { period: 'week', target: 4, categoryId: 'x' })).toEqual({});
   });

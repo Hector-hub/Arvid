@@ -1,5 +1,6 @@
 import { backupFileName, buildBackup, type BackupError } from '../data/backup';
 import { saveSetting, type DataContext } from '../data/repository';
+import { t } from '../i18n';
 
 export type ExportResult = 'shared' | 'downloaded' | 'cancelled';
 
@@ -12,7 +13,7 @@ export async function exportData(ctx: DataContext): Promise<ExportResult> {
 
   if (navigator.canShare?.({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: 'Copia de seguridad de ARVID' });
+      await navigator.share({ files: [file], title: t('backup.shareTitle') });
       await markDone();
       return 'shared';
     } catch (error) {
@@ -39,14 +40,14 @@ function download(file: File) {
 export function backupErrorText(error: BackupError): string {
   switch (error.code) {
     case 'invalid-json':
-      return 'El archivo no es un JSON válido.';
+      return t('backup.errInvalidJson');
     case 'not-arvid':
-      return 'Este archivo no es una copia de seguridad de ARVID.';
+      return t('backup.errNotArvid');
     case 'too-new':
-      return 'Este archivo es de una versión más nueva de ARVID. Actualiza la app.';
+      return t('backup.errTooNew');
     case 'invalid':
-      return `El archivo está dañado (${error.detail}).`;
+      return t('backup.errInvalid', { detail: error.detail });
     case 'broken-references':
-      return `El archivo está incompleto (${error.detail}).`;
+      return t('backup.errBroken', { detail: error.detail });
   }
 }

@@ -1,0 +1,636 @@
+{
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "back": "Atrás",
+    "continue": "Continuar",
+    "close": "Cerrar",
+    "later": "Más tarde",
+    "skip": "Saltar",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "completed": "Completada",
+    "export": "Exportar",
+    "retry": "Reintentar",
+    "how": "Cómo",
+    "andJoin": " y ",
+    "listJoin": ", "
+  },
+  "nav": {
+    "main": "Principal",
+    "today": "Hoy",
+    "activities": "Actividades",
+    "profile": "Perfil",
+    "settings": "Ajustes",
+    "missions": "Misiones"
+  },
+  "units": {
+    "day_one": "día",
+    "day_other": "días",
+    "week_one": "semana",
+    "week_other": "semanas",
+    "month_one": "mes",
+    "month_other": "meses"
+  },
+  "period": {
+    "label": {
+      "day": "Diaria",
+      "week": "Semanal",
+      "month": "Mensual"
+    },
+    "section": {
+      "day": "Hoy",
+      "week": "Esta semana",
+      "month": "Este mes"
+    },
+    "per": {
+      "day": "día",
+      "week": "semana",
+      "month": "mes"
+    },
+    "weekShort": "sem. {date}"
+  },
+  "difficulty": {
+    "easy": "Fácil",
+    "medium": "Media",
+    "hard": "Difícil",
+    "text": "{label} · {points} puntos",
+    "pts": "{points} pts",
+    "xp": "{points} XP"
+  },
+  "format": {
+    "frequency_one": "{count} vez/{unit}",
+    "frequency_other": "{count} veces/{unit}",
+    "progress": "{count} de {target}",
+    "lastDay": "último día",
+    "daysLeft": "quedan {count} días",
+    "dayComplete": "Día completo",
+    "pendingToday_one": "Te queda {count} para hoy",
+    "pendingToday_other": "Te quedan {count} para hoy",
+    "streak": "racha {count} {unit}",
+    "today": "hoy",
+    "yesterday": "ayer",
+    "daysAgo": "hace {count} días",
+    "missionsDue_one": "{count} misión para hoy",
+    "missionsDue_other": "{count} misiones para hoy",
+    "dueNone": "sin fecha",
+    "dueToday": "vence hoy",
+    "dueTomorrow": "vence mañana",
+    "dueOn": "vence el {date}"
+  },
+  "logDenial": {
+    "inactive": "La actividad no está activa",
+    "not-editable": "Ese día ya no se puede editar",
+    "before-creation": "La actividad aún no existía ese día",
+    "full": "Ya está completada",
+    "no-version": "Actividad sin configuración"
+  },
+  "errors": {
+    "nameRequired": "Escribe un nombre",
+    "nameTooLong": "Máximo {max} caracteres",
+    "nameDuplicate": "Ya tienes una categoría con ese nombre",
+    "colorRequired": "Elige un color",
+    "iconRequired": "Elige un icono",
+    "categoryRequired": "Elige una categoría",
+    "targetRange": "Entre 1 y {max}",
+    "titleRequired": "Escribe un título",
+    "titleTooLong": "Máximo {max} caracteres",
+    "deadlinePast": "La fecha límite no puede ser pasada",
+    "notFound": "No encontrado",
+    "aliasRequired": "Escribe cómo quieres que te llame",
+    "aliasTooLong": "Máximo {max} caracteres"
+  },
+  "categories": {
+    "body": "Cuerpo",
+    "rest": "Descanso",
+    "mind": "Mente",
+    "learning": "Aprendizaje",
+    "relationships": "Relaciones",
+    "order": "Orden"
+  },
+  "titles": {
+    "l1": "Recluta",
+    "l5": "Aprendiz",
+    "l10": "Vigía",
+    "l15": "Centinela",
+    "l20": "Estratega",
+    "l30": "Élite",
+    "l40": "Leyenda"
+  },
+  "level": {
+    "short": "Nv {level} · {title}",
+    "long": "Nivel {level} · {title}",
+    "stripLabel": "Nivel {level}, {title}. Ver perfil",
+    "xpBar": "Experiencia del nivel"
+  },
+  "today": {
+    "installBanner": "Instala ARVID en tu pantalla de inicio para proteger tus datos.",
+    "emptyTitle": "Crea tu primera actividad",
+    "emptyText": "Algo que quieras hacer cada día, semana o mes. Empieza por una pequeña.",
+    "newActivity": "Nueva actividad",
+    "forgotYesterday": "¿Olvidaste algo ayer?",
+    "logged": "+1 · {progress} · {xp}",
+    "undone": "Registro deshecho · {xp}",
+    "undoFailed": "No se pudo deshacer",
+    "undoLabel": "Deshacer {name}",
+    "logLabel": "Registrar {name}",
+    "yesterdayTitle": "Ayer, {date}",
+    "nothingYesterday": "No queda nada pendiente de ayer.",
+    "logYesterdayLabel": "Registrar {name} ayer",
+    "backupRegion": "Copia de seguridad",
+    "backupReminder": "Hace tiempo que no guardas una copia de tus datos."
+  },
+  "activities": {
+    "title": "Actividades",
+    "new": "Nueva actividad",
+    "active": "Activas",
+    "paused": "Pausadas",
+    "archived": "Archivadas",
+    "emptyTitle": "Aún no tienes actividades",
+    "emptyText": "Crea una con la frecuencia que te parezca sostenible.",
+    "moveUp": "Subir {name}",
+    "moveDown": "Bajar {name}",
+    "tabsLabel": "Tipo de actividad",
+    "recurring": "Recurrentes",
+    "missions": "Misiones",
+    "notFound": "Actividad no encontrada."
+  },
+  "activityForm": {
+    "newTitle": "Nueva actividad",
+    "editTitle": "Editar actividad",
+    "name": "Nombre",
+    "namePlaceholder": "Caminar 20 minutos",
+    "category": "Categoría",
+    "frequency": "Frecuencia",
+    "timesPer": "Veces por {unit}",
+    "difficulty": "Dificultad",
+    "changesNote": "Los cambios de categoría, frecuencia o dificultad se aplican desde el inicio del periodo actual.",
+    "create": "Crear actividad"
+  },
+  "activityDetail": {
+    "paused": "Pausada",
+    "archived": "Archivada",
+    "logsByDay": "Registros por día",
+    "logs_one": "{count} registro",
+    "logs_other": "{count} registros",
+    "noLog": "sin registro",
+    "removeLog": "Quitar registro del {day}",
+    "logOn": "Registrar el {day}",
+    "resumeToLog": "Reanuda la actividad para registrar.",
+    "pause": "Pausar",
+    "resume": "Reanudar",
+    "archive": "Archivar",
+    "restore": "Restaurar",
+    "streak": "Racha",
+    "best": "Mejor: {best}",
+    "wildcards": "Comodines {count} de {max}",
+    "wildcardsHelp": "Ganas un comodín cada {every} {unit} cumplidos seguidos. Si fallas uno, se usa solo y tu racha se mantiene.",
+    "recentPeriods": "Últimos periodos",
+    "fulfilled": "Cumplido",
+    "wildcardUsed": "Comodín usado",
+    "reasonGrace": "Gracia",
+    "reasonPaused": "Pausa",
+    "reasonTruncated": "Cambio de frecuencia"
+  },
+  "categoryForm": {
+    "newTitle": "Nueva categoría",
+    "editTitle": "Editar categoría",
+    "name": "Nombre",
+    "namePlaceholder": "Música",
+    "color": "Color",
+    "icon": "Icono",
+    "create": "Crear categoría",
+    "notFound": "Categoría no encontrada.",
+    "deleteConfirmTitle": "¿Eliminar la categoría?",
+    "deleteConfirmText": "No tiene actividades ni misiones, así que se borra sin efectos.",
+    "deleteButton": "Eliminar categoría",
+    "hasHistory": "Esta categoría tiene historial: no se puede eliminar, pero puedes desactivarla en Ajustes.",
+    "icons": {
+      "cat-body": "Corazón",
+      "cat-rest": "Cama",
+      "cat-mind": "Cara sonriente",
+      "cat-learning": "Libro",
+      "cat-relationships": "Bocadillo con corazón",
+      "cat-order": "Casa",
+      "cat-key": "Llave",
+      "cat-music": "Nota musical",
+      "cat-coin": "Moneda",
+      "cat-apple": "Manzana",
+      "cat-potion": "Frasco",
+      "cat-gem": "Gema",
+      "cat-tree": "Árbol",
+      "cat-sword": "Espada"
+    },
+    "colors": {
+      "orange": "Naranja",
+      "sky": "Azul",
+      "cyan": "Cian",
+      "gold": "Dorado",
+      "lime": "Lima",
+      "fog": "Gris",
+      "green": "Verde",
+      "white": "Blanco"
+    }
+  },
+  "missions": {
+    "title": "Misiones",
+    "new": "Nueva misión",
+    "pending": "Pendientes",
+    "completed": "Completadas",
+    "abandoned": "Abandonadas",
+    "emptyTitle": "Crea una misión",
+    "emptyText": "Algo puntual que quieras cumplir, con fecha límite o sin ella.",
+    "seeAll": "Ver todas ({count})",
+    "notFound": "Misión no encontrada.",
+    "chipExpired": "Vencida",
+    "chipOnTime": "Cumplida",
+    "chipLate": "Recuperada",
+    "chipAbandoned": "Abandonada",
+    "complete": "Completar",
+    "undo": "Deshacer",
+    "completeLabel": "Completar {title}",
+    "undoLabel": "Deshacer {title}",
+    "completeFailed": "No se pudo completar",
+    "recovered": "Misión recuperada · {xp}",
+    "accomplished": "Misión cumplida · {xp}",
+    "unmarked": "Misión desmarcada · {xp}"
+  },
+  "missionForm": {
+    "newTitle": "Nueva misión",
+    "editTitle": "Editar misión",
+    "title": "Título",
+    "titlePlaceholder": "Pedir cita con el médico",
+    "category": "Categoría",
+    "difficulty": "Dificultad",
+    "locked": "La categoría y la dificultad solo se pueden cambiar mientras la misión está pendiente.",
+    "deadline": "Fecha límite (opcional)",
+    "deadlineHint": "Si la dejas vencer, resta en tu Disciplina. Sin fecha, nunca penaliza.",
+    "create": "Crear misión"
+  },
+  "missionDetail": {
+    "created": "Creada el {date}",
+    "rescheduled": "Reprogramada al {date}",
+    "deadlineSet": "Fecha límite: {date}",
+    "deadlineCleared": "Fecha límite quitada",
+    "completedOn": "Completada el {date}",
+    "uncompletedOn": "Desmarcada el {date}",
+    "abandonedOn": "Abandonada el {date}",
+    "expiredOn": "Venció el {date}",
+    "abandonExpired": "El fallo se mantiene. Abandonarla es definitivo.",
+    "abandonWithDeadline": "Abandonarla antes de la fecha cuesta la mitad de su valor en tu Disciplina. Es definitivo.",
+    "abandonNoDeadline": "No afecta a tus puntos. Abandonarla es definitivo.",
+    "actionFailed": "No se pudo completar la acción.",
+    "meta": "{category} · {difficulty} · {value} XP",
+    "expiredBanner": "Venció el {date}. Complétala cuando puedas para recuperar lo perdido.",
+    "completeYesterday": "La hice ayer",
+    "uncomplete": "Desmarcar",
+    "doneCompleted": "Misión completada.",
+    "doneCompletedYesterday": "Misión completada ayer.",
+    "doneUncompleted": "Misión desmarcada.",
+    "doneRescheduled": "Fecha límite actualizada.",
+    "doneCleared": "Fecha límite quitada.",
+    "doneAbandoned": "Misión abandonada.",
+    "reschedule": "Reprogramar",
+    "setDeadline": "Poner fecha límite",
+    "newDeadline": "Nueva fecha límite",
+    "rescheduleNote": "La nueva fecha es orientativa: el fallo se anula al completarla.",
+    "saveDate": "Guardar fecha",
+    "clearDeadline": "Quitar fecha límite",
+    "history": "Historial",
+    "abandon": "Abandonar",
+    "deleteMistake": "Eliminar (creada por error)",
+    "abandonConfirm": "¿Abandonar la misión?",
+    "deleteConfirm": "¿Eliminar la misión?",
+    "deleteText": "Se borrará sin dejar rastro. Solo es posible el día en que la creaste."
+  },
+  "profile": {
+    "title": "Perfil",
+    "noAlias": "Tu perfil",
+    "xpOf": "{xp} / {next} XP",
+    "toNext": "{count} para el nivel {level}",
+    "firstXp": "Registra tu primera actividad para ganar XP.",
+    "totalXp": "Has ganado {xp} XP en total. La XP nunca se pierde.",
+    "windowLabel": "Periodo de los atributos",
+    "days": "{count} días",
+    "emptyAttributes": "Tus atributos aparecerán cuando registres tus primeras actividades.",
+    "attributes": "Atributos",
+    "needThree": "Activa al menos 3 categorías para ver el radar.",
+    "lastDays": "Últimos {count} días",
+    "previousDays": "{count} días anteriores",
+    "attributesList": "Lista de atributos",
+    "attributesNote": "Los atributos miden cuánto cumpliste lo que te propusiste en cada área durante los últimos {count} días, no tu salud ni tu capacidad.",
+    "discipline": "Disciplina",
+    "disciplineText": "Cuánto cumpliste de todo lo que te propusiste.",
+    "seeDetail": "Ver detalle"
+  },
+  "score": {
+    "noData": "sin datos ({items} de {min})",
+    "up": "↑ subiendo {delta}",
+    "down": "↓ bajando {delta}",
+    "stable": "estable",
+    "activityPart": "{count} {unit} de {name}",
+    "missions_one": "{count} misión",
+    "missions_other": "{count} misiones",
+    "expired_one": "{count} misión vencida resta {points} puntos posibles",
+    "expired_other": "{count} misiones vencidas restan {points} puntos posibles",
+    "abandoned_one": "{count} misión abandonada resta {points} puntos posibles",
+    "abandoned_other": "{count} misiones abandonadas restan {points} puntos posibles",
+    "notEnough": "Aún no hay suficiente información: {items} de {min} elementos necesarios.",
+    "explanation": "{label} {value}: ganaste {earned} de {possible} puntos posibles en los últimos {window} días{detail}.",
+    "radar": "Radar de atributos: {summary}"
+  },
+  "attribute": {
+    "fallbackActivity": "actividad",
+    "fallbackMission": "misión",
+    "inLastDays": "en los últimos {count} días",
+    "before": " · antes: {value}",
+    "notFound": "Categoría no encontrada o inactiva.",
+    "howCalculated": "Cómo se calcula",
+    "measureNote": "Mide cuánto cumpliste lo que te propusiste en esta área, no tu salud ni tu capacidad.",
+    "sevenDaysNote": "Con 7 días, las actividades mensuales solo cuentan si el mes en curso ya está completo.",
+    "whatCounts": "Qué cuenta",
+    "nothing": "No hay actividades ni misiones de esta categoría en el periodo.",
+    "pointsOf": "{earned} de {possible}",
+    "missionItem": "Misión: {title}",
+    "notEnoughDiscipline": "Aún no hay suficiente información: {value}.",
+    "disciplineNote": "Cuenta todo lo que te propusiste en todas tus áreas, incluidas las misiones con fecha límite. Las misiones sin fecha no cuentan.",
+    "whatSubtracts": "Lo que resta",
+    "recover_one": "; complétala para recuperarlos.",
+    "recover_other": "; complétalas para recuperarlos."
+  },
+  "settings": {
+    "title": "Ajustes",
+    "storage": "Almacenamiento",
+    "persistGranted": "Protegido",
+    "persistGrantedText": "El navegador no borrará tus datos para liberar espacio.",
+    "persistDenied": "No protegido",
+    "persistDeniedText": "El navegador podría borrar tus datos si falta espacio. Instalar la app suele resolverlo.",
+    "persistUnsupported": "No soportado",
+    "persistUnsupportedText": "Este navegador no permite pedir almacenamiento protegido.",
+    "installIphone": "Cómo instalar en iPhone",
+    "categories": "Categorías",
+    "categoriesNote": "Las categorías activas aparecen al crear actividades y en tu radar (máximo 8).",
+    "newCategory": "Nueva categoría",
+    "reduceMotion": "Reducir movimiento",
+    "motionSystem": "Sistema",
+    "motionOn": "Activado",
+    "motionOff": "Desactivado",
+    "credits": "Créditos",
+    "version": "ARVID {version}",
+    "categoryActive": "Activa",
+    "categoryInactive": "Inactiva",
+    "editCategory": "Editar {name}",
+    "inUse_one": "Tiene {count} actividad. Archívala o cámbiala de categoría primero.",
+    "inUse_other": "Tiene {count} actividades. Archívalas o cámbialas de categoría primero.",
+    "lastActive": "Necesitas al menos una categoría activa.",
+    "tooMany": "Máximo 8 categorías activas.",
+    "profile": "Perfil",
+    "alias": "Cómo quieres que te llame",
+    "gender": "Género",
+    "language": "Idioma",
+    "character": "Personaje",
+    "arvidColor": "Color de ARVID",
+    "arvidTalks": "ARVID habla por iniciativa propia",
+    "arvidTalksHelp": "Saludo del día, día completo, primera actividad y retomar tras fallar.",
+    "sound": "Sonido",
+    "music": "Música de fondo",
+    "playing": "Sonando",
+    "off": "Apagada",
+    "paused": "En pausa",
+    "volume": "Volumen",
+    "nowPlaying": "{state}: {track}",
+    "needsConnection": "La música necesita conexión la primera vez.",
+    "musicNote": "Desactivada por defecto. Una pista que ya ha sonado se puede escuchar sin conexión."
+  },
+  "backup": {
+    "title": "Copia de seguridad",
+    "lastCopy": "Última copia: {ago}",
+    "noCopy": "Aún no has hecho ninguna copia.",
+    "explanation": "Tus datos solo están en este dispositivo. Exporta una copia y guárdala fuera del navegador. El archivo contiene tus actividades en texto legible: guárdalo en un lugar privado.",
+    "export": "Exportar copia",
+    "exported": "Copia exportada.",
+    "cancelled": "Exportación cancelada.",
+    "fileLabel": "Archivo de copia de seguridad",
+    "import": "Importar copia",
+    "imported": "Datos importados.",
+    "importFailed": "No se pudo importar. Tus datos no han cambiado.",
+    "replaceTitle": "¿Reemplazar tus datos?",
+    "summary": "Exportado el {date} · {activities} · {completions}",
+    "activities_one": "{count} actividad",
+    "activities_other": "{count} actividades",
+    "completions_one": "{count} registro",
+    "completions_other": "{count} registros",
+    "replaceWarning": "Reemplazará todos tus datos actuales.",
+    "exportFirst": "Exportar mis datos actuales primero",
+    "replace": "Reemplazar",
+    "shareTitle": "Copia de seguridad de ARVID",
+    "errInvalidJson": "El archivo no es un JSON válido.",
+    "errNotArvid": "Este archivo no es una copia de seguridad de ARVID.",
+    "errTooNew": "Este archivo es de una versión más nueva de ARVID. Actualiza la app.",
+    "errInvalid": "El archivo está dañado ({detail}).",
+    "errBroken": "El archivo está incompleto ({detail})."
+  },
+  "deleteData": {
+    "title": "Eliminar datos",
+    "open": "Eliminar todos mis datos",
+    "warning": "Se borrarán todas tus actividades y registros de este dispositivo. No se puede deshacer.",
+    "word": "BORRAR",
+    "typeToConfirm": "Escribe {word} para confirmar"
+  },
+  "install": {
+    "title": "Instala ARVID en tu iPhone",
+    "intro": "Instalada en la pantalla de inicio, ARVID funciona sin conexión y tus datos están protegidos. Sin instalar, Safari puede borrarlos si pasas unos días sin abrirla.",
+    "step1": "Abre esta página en Safari.",
+    "step2": "Toca el botón **Compartir** (el cuadrado con una flecha hacia arriba).",
+    "step3": "Elige **Añadir a pantalla de inicio** y confirma.",
+    "step4": "Abre ARVID desde su icono, no desde Safari.",
+    "note": "Los datos de Safari y los de la app instalada están separados: empieza a usarla desde el icono."
+  },
+  "update": {
+    "available": "Nueva versión disponible",
+    "update": "Actualizar"
+  },
+  "levelUp": {
+    "title": "¡Nivel {level}!",
+    "newTitle": "Nuevo título:",
+    "keep": "Lo que has hecho no se pierde. Sigue así."
+  },
+  "credits": {
+    "title": "Créditos",
+    "scene": "Escena y protagonistas",
+    "music": "Música",
+    "interface": "Interfaz",
+    "warped": "Warped City: ciudad, vehículos y protagonista Runner",
+    "streets": "Streets of Fight: protagonista Brawler",
+    "townspeople": "Free Townspeople Cyberpunk: peatones",
+    "drones": "Free Drones Pack: ARVID",
+    "ownCharacters": "Protagonistas Ghost y Drifter",
+    "ownCharactersBy": "ARVID (creados con sprite-ai.art)",
+    "tracks": "Midnight Sector Drive y Glass Tower Horizon",
+    "tracksBy": "ARVID (creadas con Gemini)",
+    "icons": "1-Bit Pack: iconos",
+    "publicDomain": "Dominio público",
+    "craftpix": "Licencia gratuita de CraftPix",
+    "own_m": "Propios",
+    "own_f": "Propias",
+    "freeUse": "Uso libre"
+  },
+  "scene": {
+    "label": "Tu protagonista camina por un puente de la ciudad de noche, con ARVID a su lado",
+    "music": "Música",
+    "chat": "Hablar con ARVID",
+    "send": "Enviar",
+    "chatPlaceholder": "Escribe a ARVID…",
+    "chatInput": "Mensaje para ARVID",
+    "arvidSays": "ARVID dice"
+  },
+  "avatar": {
+    "carousel": "Elige tu personaje",
+    "cardLabel": "{name}, {index} de {total}, {description}",
+    "colors": "Colores",
+    "styles": {
+      "ella": "Runner",
+      "ella2": "Brawler",
+      "el": "Ghost",
+      "el2": "Drifter"
+    },
+    "descriptions": {
+      "ella": "Ágil, se mueve por la ciudad",
+      "ella2": "Fuerte y directa",
+      "el": "Sigiloso, de noche",
+      "el2": "Tranquilo, siempre de paso"
+    },
+    "variants": {
+      "original": "Original",
+      "neon": "Neón",
+      "carmesi": "Carmesí",
+      "bosque": "Bosque",
+      "plata": "Plata",
+      "ocaso": "Ocaso"
+    }
+  },
+  "gender": {
+    "m": "Masculino",
+    "f": "Femenino",
+    "x": "Prefiero no decirlo"
+  },
+  "language": {
+    "es": "Español",
+    "en": "English"
+  },
+  "arvid": {
+    "name": "ARVID",
+    "colors": {
+      "original": "Ámbar",
+      "cian": "Cian",
+      "magenta": "Magenta",
+      "lima": "Lima",
+      "oro": "Oro",
+      "violeta": "Violeta"
+    },
+    "hello": {
+      "morning": "Buenos días",
+      "afternoon": "Buenas tardes",
+      "evening": "Buenas noches"
+    },
+    "status": {
+      "pending_one": "Hoy te queda {count} actividad.",
+      "pending_other": "Hoy te quedan {count} actividades.",
+      "done": "Ya has completado todo lo de hoy.",
+      "none": "Hoy no tienes nada pendiente."
+    },
+    "lines": {
+      "greeting": {
+        "0": "Empieza por la más pequeña: el resto será más fácil.",
+        "1": "Un paso cada día es suficiente. Aquí estoy contigo.",
+        "2": "Si necesitas algo, toca el chat y hablamos."
+      },
+      "dayComplete": {
+        "0": "¡Día completo, {alias}! Así se construye la constancia.",
+        "1": "Todo hecho por hoy. Descansa, te lo has ganado.",
+        "2": {
+          "m": "¡Lo lograste! Estoy orgulloso de ti, campeón.",
+          "f": "¡Lo lograste! Estoy orgulloso de ti, campeona.",
+          "x": "¡Lo lograste! Estoy orgulloso de lo que has hecho."
+        }
+      },
+      "firstActivity": {
+        "0": "Tu primera actividad. Márcala aquí cuando la hagas.",
+        "1": "¡Primera actividad creada! Empieza con calma, sin prisa.",
+        "2": "Ya tienes tu primera meta. Yo te la recordaré cada día."
+      },
+      "comeback": {
+        "0": "Ayer no salió como querías. Hoy es una nueva oportunidad: empieza por una sola.",
+        "1": {
+          "m": "Bienvenido de nuevo, {alias}. Lo importante es volver.",
+          "f": "Bienvenida de nuevo, {alias}. Lo importante es volver.",
+          "x": "Qué bien verte de nuevo, {alias}. Lo importante es volver."
+        },
+        "2": "Un mal día no borra lo que has hecho. Vamos con una actividad."
+      },
+      "levelUp": {
+        "0": "¡Nivel {level}! Ahora eres {title}.",
+        "1": "¡Subiste al nivel {level}! Todo lo que haces cuenta.",
+        "2": "Nivel {level}. Sigue así, {alias}."
+      }
+    },
+    "chat": {
+      "unavailable": "Aún estoy aprendiendo a conversar. Muy pronto podré responderte; mientras tanto, te acompaño con mis avisos.",
+      "offline": "Ahora no tengo conexión. Cuando vuelva, hablamos.",
+      "thinking": "…"
+    },
+    "onboarding": {
+      "welcome": {
+        "0": "Hola. Soy ARVID, tu compañero de ruta.",
+        "1": "Voy a acompañarte cada día: te recordaré lo pendiente y celebraré cada avance contigo.",
+        "2": "Antes de empezar, quiero conocerte un poco."
+      },
+      "language": {
+        "0": "Hola. ¿En qué idioma prefieres que hablemos?"
+      },
+      "alias": {
+        "0": "¿Cómo quieres que te llame?"
+      },
+      "gender": {
+        "0": "Encantado de conocerte, {alias}. ¿Cómo prefieres que me dirija a ti?"
+      },
+      "character": {
+        "0": "Elige quién te representa en la ciudad. Desliza para verlos a todos."
+      },
+      "arvidColor": {
+        "0": "Y yo, ¿de qué color me prefieres?"
+      },
+      "categories": {
+        "0": "¿Qué áreas de tu vida quieres mejorar? Podrás cambiarlas cuando quieras."
+      },
+      "install": {
+        "0": "Un consejo: instálame en tu pantalla de inicio para que no se pierdan tus datos."
+      },
+      "done": {
+        "0": {
+          "m": "Todo listo, {alias}. Bienvenido. Vamos a por el primer día.",
+          "f": "Todo listo, {alias}. Bienvenida. Vamos a por el primer día.",
+          "x": "Todo listo, {alias}. Te doy la bienvenida. Vamos a por el primer día."
+        }
+      },
+      "intro": {
+        "0": "Hola, soy ARVID. Desde ahora te acompaño cada día.",
+        "1": "Antes de nada, me gustaría conocerte un poco."
+      }
+    }
+  },
+  "onboarding": {
+    "start": "Empezar",
+    "aliasLabel": "Tu nombre o alias",
+    "aliasPlaceholder": "Alex",
+    "categoriesTitle": "Tus áreas de vida",
+    "categoriesError": "Activa al menos una categoría",
+    "goToday": "Ir a Hoy",
+    "understood": "Entendido",
+    "dialogue": "Diálogo con ARVID",
+    "tapToContinue": "Toca para continuar",
+    "introTitle": "ARVID se presenta"
+  }
+}

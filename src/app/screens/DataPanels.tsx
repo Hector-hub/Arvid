@@ -4,9 +4,8 @@ import { deleteAllData, parseBackup, replaceAllData, type Backup, type BackupSum
 import { backupErrorText, exportData } from '../backupActions';
 import { useData, useSettings } from '../data';
 import { Panel } from '../design/components';
-import { daysAgoText } from '../text';
-
-const LONG_DATE = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short', year: 'numeric' });
+import { daysAgoText, fullDate } from '../text';
+import { t } from '../../i18n';
 
 type ImportState =
   | { stage: 'idle' }
@@ -25,14 +24,14 @@ export function BackupPanel() {
 
   const last = settings?.lastBackupAt;
   const lastText = last
-    ? `Última copia: ${daysAgoText(Math.floor((ctx.now().getTime() - Date.parse(last)) / 86_400_000))}`
-    : 'Aún no has hecho ninguna copia.';
+    ? t('backup.lastCopy', { ago: daysAgoText(Math.floor((ctx.now().getTime() - Date.parse(last)) / 86_400_000)) })
+    : t('backup.noCopy');
 
   async function onExport() {
     setBusy(true);
     try {
       const result = await exportData(ctx);
-      setExportMessage(result === 'cancelled' ? 'Exportación cancelada.' : 'Copia exportada.');
+      setExportMessage(result === 'cancelled' ? t('backup.cancelled') : t('backup.exported'));
     } finally {
       setBusy(false);
     }
@@ -55,7 +54,7 @@ export function BackupPanel() {
       await replaceAllData(ctx, backup);
       setState({ stage: 'done' });
     } catch {
-      setState({ stage: 'error', message: 'No se pudo importar. Tus datos no han cambiado.' });
+      setState({ stage: 'error', message: t('backup.importFailed') });
     } finally {
       setBusy(false);
     }
@@ -63,14 +62,11 @@ export function BackupPanel() {
 
   return (
     <Panel className="stack">
-      <h2>Copia de seguridad</h2>
+      <h2>{t('backup.title')}</h2>
       <p className="small muted">{lastText}</p>
-      <p className="small">
-        Tus datos solo están en este dispositivo. Exporta una copia y guárdala fuera del navegador. El archivo contiene
-        tus actividades en texto legible: guárdalo en un lugar privado.
-      </p>
+      <p className="small">{t('backup.explanation')}</p>
       <button type="button" className="btn btn-primary" disabled={busy} onClick={() => void onExport()}>
-        Exportar copia
+        {t('backup.export')}
       </button>
       {exportMessage && (
         <p role="status" className="small" style={{ color: 'var(--success)' }}>
@@ -84,11 +80,11 @@ export function BackupPanel() {
         accept="application/json,.json"
         className="sr-only"
         id="import-file"
-        aria-label="Archivo de copia de seguridad"
+        aria-label={t('backup.fileLabel')}
         onChange={(e) => void onFile(e.target.files?.[0])}
       />
       <button type="button" className="btn" disabled={busy} onClick={() => input.current?.click()}>
-        Importar copia
+        {t('backup.import')}
       </button>
 
       {state.stage === 'error' && (
@@ -98,7 +94,7 @@ export function BackupPanel() {
       )}
       {state.stage === 'done' && (
         <p role="status" style={{ color: 'var(--success)' }}>
-          Datos importados.
+          {t('backup.imported')}
         </p>
       )}
       {state.stage === 'confirm' && (
@@ -108,29 +104,29 @@ export function BackupPanel() {
           aria-labelledby="import-title"
           style={{ alignItems: 'stretch' }}
         >
-          <h3 id="import-title">¿Reemplazar tus datos?</h3>
+          <h3 id="import-title">{t('backup.replaceTitle')}</h3>
           <p className="small">
-            Exportado el {LONG_DATE.format(new Date(state.summary.exportedAt))} · {state.summary.activities}{' '}
-            {state.summary.activities === 1 ? 'actividad' : 'actividades'} · {state.summary.completions}{' '}
-            {state.summary.completions === 1 ? 'registro' : 'registros'}
+            {t('backup.summary', {
+              date: fullDate(new Date(state.summary.exportedAt)),
+              activities: t('backup.activities', { count: state.summary.activities }),
+              completions: t('backup.completions', { count: state.summary.completions }),
+            })}
           </p>
-          <p className="small">Reemplazará todos tus datos actuales.</p>
+          <p className="small">{t('backup.replaceWarning')}</p>
           <button type="button" className="btn" disabled={busy} onClick={() => void onExport()}>
-            Exportar mis datos actuales primero
+            {t('backup.exportFirst')}
           </button>
           <button type="button" className="btn btn-danger" disabled={busy} onClick={() => void onReplace(state.backup)}>
-            Reemplazar
+            {t('backup.replace')}
           </button>
           <button type="button" className="btn btn-ghost" onClick={() => setState({ stage: 'idle' })}>
-            Cancelar
+            {t('common.cancel')}
           </button>
         </div>
       )}
     </Panel>
   );
 }
-
-const CONFIRM_WORD = 'BORRAR';
 
 /** Ajustes → Eliminar todos mis datos (DEL-01). */
 export function DeletePanel() {
@@ -139,10 +135,11 @@ export function DeletePanel() {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
   const [error, setError] = useState<string>();
+  const word = t('deleteData.word');
 
   async function onDelete() {
-    if (text.trim() !== CONFIRM_WORD) {
-      setError(`Escribe ${CONFIRM_WORD} para confirmar`);
+    if (text.trim() !== word) {
+      setError(t('deleteData.typeToConfirm', { word }));
       return;
     }
     await deleteAllData(ctx);
@@ -151,18 +148,16 @@ export function DeletePanel() {
 
   return (
     <Panel className="stack">
-      <h2>Eliminar datos</h2>
+      <h2>{t('deleteData.title')}</h2>
       {!open ? (
         <button type="button" className="btn btn-danger" onClick={() => setOpen(true)}>
-          Eliminar todos mis datos
+          {t('deleteData.open')}
         </button>
       ) : (
         <>
-          <p className="small">
-            Se borrarán todas tus actividades y registros de este dispositivo. No se puede deshacer.
-          </p>
+          <p className="small">{t('deleteData.warning')}</p>
           <div className="field">
-            <label htmlFor="delete-confirm">Escribe {CONFIRM_WORD} para confirmar</label>
+            <label htmlFor="delete-confirm">{t('deleteData.typeToConfirm', { word })}</label>
             <input
               id="delete-confirm"
               type="text"
@@ -183,10 +178,10 @@ export function DeletePanel() {
           </div>
           <div className="row">
             <button type="button" className="btn btn-ghost" onClick={() => setOpen(false)}>
-              Cancelar
+              {t('common.cancel')}
             </button>
             <button type="button" className="btn btn-danger grow" onClick={() => void onDelete()}>
-              Eliminar
+              {t('common.delete')}
             </button>
           </div>
         </>

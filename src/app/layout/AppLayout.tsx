@@ -4,21 +4,28 @@ import { Sprite } from '../design/components';
 import { useMotionPreference } from '../motion';
 import { Onboarding } from '../screens/Onboarding';
 import type { SpriteName } from '../design/sprites.generated';
+import { detectLocale, setLocale, t, useLocale, type TKey } from '../../i18n';
+import { useEffect } from 'react';
 import { UpdateBanner } from './UpdateBanner';
 import { AnalysisProvider } from '../analysis';
 import { LevelUpWatcher } from './LevelUp';
 import { MusicProvider } from '../music/MusicProvider';
 
-const TABS: { to: string; label: string; icon: SpriteName }[] = [
-  { to: '/hoy', label: 'Hoy', icon: 'nav-today' },
-  { to: '/actividades', label: 'Actividades', icon: 'nav-activities' },
-  { to: '/personaje', label: 'Personaje', icon: 'nav-character' },
+const TABS: { to: string; label: TKey; icon: SpriteName }[] = [
+  { to: '/hoy', label: 'nav.today', icon: 'nav-today' },
+  { to: '/actividades', label: 'nav.activities', icon: 'nav-activities' },
+  { to: '/perfil', label: 'nav.profile', icon: 'nav-character' },
 ];
 
 /** Shell de la app: navegación de 3 pestañas (UI-02) y puerta del onboarding (ONB-01). */
 export function AppLayout() {
   const settings = useSettings();
   useMotionPreference(settings?.reducedMotion);
+  // Idioma elegido o, si no hay, el del navegador (I18N-03); al cambiarlo se vuelve a pintar toda la app
+  useLocale();
+  useEffect(() => {
+    if (settings) setLocale(settings.locale ?? detectLocale());
+  }, [settings]);
 
   if (!settings) return null;
   // El service worker se registra desde UpdateBanner: debe montarse también durante el onboarding (PWA-02).
@@ -32,11 +39,11 @@ export function AppLayout() {
           <UpdateBanner />
           <Outlet />
         </main>
-        <nav className="nav" aria-label="Principal">
+        <nav className="nav" aria-label={t('nav.main')}>
           {TABS.map((tab) => (
             <NavLink key={tab.to} to={tab.to} className={({ isActive }) => (isActive ? 'active' : undefined)}>
               <Sprite name={tab.icon} />
-              {tab.label}
+              {t(tab.label)}
             </NavLink>
           ))}
         </nav>

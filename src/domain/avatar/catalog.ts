@@ -1,4 +1,5 @@
-// Catálogo de protagonistas y variantes de color (spec 05, PRO-01). Solo datos: el dibujo vive en app/scene.
+// Catálogo de protagonistas y variantes de color (spec 05, PRO-01). Solo datos: el dibujo vive en app/scene y los
+// nombres de estilo (Runner, Brawler, Ghost, Drifter; spec 06 PJ-01) en src/i18n.
 
 export const CAST_IDS = ['ella', 'ella2', 'el', 'el2'] as const;
 export type CastId = (typeof CAST_IDS)[number];
@@ -23,8 +24,6 @@ export interface SheetSpec {
 
 export interface CastSpec {
   id: CastId;
-  /** Nombre en la interfaz (provisional, S5-09). */
-  name: string;
   walk: SheetSpec & {
     /** Fotogramas de 60 Hz que dura cada fotograma de la animación. */
     ticks: number;
@@ -38,13 +37,11 @@ export interface CastSpec {
   scale: number;
   /** El sprite mira a la izquierda: se dibuja en espejo para caminar hacia la derecha. */
   flip: boolean;
-  credit: string;
 }
 
 export const CASTS: Record<CastId, CastSpec> = {
   ella: {
     id: 'ella',
-    name: 'Ella',
     walk: { file: 'ella-walk.png', frameW: 71, frameH: 67, frames: 16, ticks: 5 },
     idle: { file: 'ella-idle.png', frameW: 71, frameH: 67, frames: 4 },
     restFrame: 0,
@@ -52,11 +49,9 @@ export const CASTS: Record<CastId, CastSpec> = {
     feetY: 67,
     scale: 1,
     flip: false,
-    credit: 'Warped City · Ansimuz',
   },
   ella2: {
     id: 'ella2',
-    name: 'Ella 2',
     walk: { file: 'ella2-walk.png', frameW: 96, frameH: 63, frames: 10, ticks: 6 },
     idle: { file: 'ella2-idle.png', frameW: 96, frameH: 63, frames: 4 },
     restFrame: 0,
@@ -64,40 +59,27 @@ export const CASTS: Record<CastId, CastSpec> = {
     feetY: 63,
     scale: 1,
     flip: false,
-    credit: 'Streets of Fight · Ansimuz',
   },
   el: {
     id: 'el',
-    name: 'Él',
     walk: { file: 'el-walk.png', frameW: 64, frameH: 64, frames: 8, ticks: 7.5 },
     restFrame: 0,
     anchorX: 29,
     feetY: 64,
     scale: 0.8,
     flip: true,
-    credit: 'Propio (sprite-ai.art)',
   },
   el2: {
     id: 'el2',
-    name: 'Él 2',
     walk: { file: 'el2-walk.png', frameW: 40, frameH: 60, frames: 8, ticks: 7.5 },
     restFrame: 3, // piernas juntas
     anchorX: 20,
     feetY: 59,
     scale: 1,
     flip: false,
-    credit: 'Propio (sprite-ai.art)',
   },
 };
 
-export const VARIANT_NAMES: Record<VariantId, string> = {
-  original: 'Original',
-  neon: 'Neón',
-  carmesi: 'Carmesí',
-  bosque: 'Bosque',
-  plata: 'Plata',
-  ocaso: 'Ocaso',
-};
 
 const isCast = (v: unknown): v is CastId => typeof v === 'string' && (CAST_IDS as readonly string[]).includes(v);
 const isVariant = (v: unknown): v is VariantId => typeof v === 'string' && (VARIANT_IDS as readonly string[]).includes(v);

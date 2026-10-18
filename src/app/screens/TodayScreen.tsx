@@ -12,16 +12,20 @@ import { needsInstallForSafety } from '../../pwa/platform';
 import { useToday } from '../clock';
 import { useAnalysis } from '../analysis';
 import { exportData } from '../backupActions';
-import { MusicButton } from '../music/MusicProvider';
+import { t } from '../../i18n';
+import { useArvidMoments } from '../arvid/moments';
 import { Scene } from '../scene/Scene';
+import { IntroSheet } from './Onboarding';
+import { compareDates } from '../../domain/time/localDate';
 import { celebrate } from '../scene/engine';
 import { TodayMissionsSection, useTodayMissions } from './missions/TodayMissions';
 import { useCategories, useData, useRecords, useSettings } from '../data';
 import { CategoryIcon, Panel, Segments, Sprite, XpBar, categoryColor } from '../design/components';
 import {
-  LOG_DENIAL_TEXT,
-  SECTION_TITLE,
   daysLeftText,
+  levelTitle,
+  logDenialText,
+  sectionTitle,
   longDate,
   missionsDueText,
   pendingTodayText,
@@ -39,12 +43,21 @@ export function TodayScreen() {
   const records = useRecords();
   const categories = useCategories();
   const [forgottenOpen, setForgottenOpen] = useState(false);
+  const settings = useSettings();
+  // Presentación de ARVID para quien hizo el onboarding sin alias, salvo que la haya pospuesto (PR-01, PR-02).
+  // Se decide una vez al abrir Hoy: al guardar el alias a mitad de la presentación, esta sigue abierta.
+  const [introOpen, setIntroOpen] = useState<boolean>();
+  const needsIntro =
+    !!settings && !settings.profile && !(settings.introSnoozedUntil && compareDates(today, settings.introSnoozedUntil as typeof today) < 0);
+  if (settings && introOpen === undefined) setIntroOpen(needsIntro);
+  const showIntro = introOpen === true;
 
   const view = useMemo(() => (records ? buildTodayView(records, today) : undefined), [records, today]);
   const forgotten = useMemo(() => (records ? forgottenYesterday(records, today) : []), [records, today]);
   const byId = useMemo(() => new Map(records?.map((r) => [r.activity.id, r])), [records]);
   const categoryById = useMemo(() => new Map(categories?.map((c) => [c.id, c])), [categories]);
   const missions = useTodayMissions();
+  useArvidMoments(view, forgotten.length > 0, showIntro);
 
   if (!view || !missions) return null;
   const summary = [
@@ -58,7 +71,7 @@ export function TodayScreen() {
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
       <header className="stack" style={{ gap: 'var(--s2)' }}>
-        <Scene corner={<MusicButton />} />
+        <Scene />
         <h1>{longDate(today)}</h1>
         <LevelStrip />
         {summary && (
@@ -71,9 +84,9 @@ export function TodayScreen() {
       {needsInstallForSafety() && (
         <div className="banner">
           <Sprite name="warning" color="var(--level)" />
-          <p className="grow small">Instala ARVID en tu pantalla de inicio para proteger tus datos.</p>
+          <p className="grow small">{t('today.installBanner')}</p>
           <Link to="/ajustes/instalar" className="btn">
-            Cómo
+            {t('common.how')}
           </Link>
         </div>
       )}
@@ -82,17 +95,17 @@ export function TodayScreen() {
 
       {view.isEmpty ? (
         <Panel className="stack">
-          <h2>Crea tu primera actividad</h2>
-          <p className="muted">Algo que quieras hacer cada día, semana o mes. Empieza por una pequeña.</p>
+          <h2>{t('today.emptyTitle')}</h2>
+          <p className="muted">{t('today.emptyText')}</p>
           <Link to="/actividades/nueva" className="btn btn-primary">
             <Sprite name="plus" />
-            Nueva actividad
+            {t('today.newActivity')}
           </Link>
         </Panel>
       ) : (
         view.sections.map((section) => (
           <section key={section.kind} className="stack" aria-labelledby={`sec-${section.kind}`}>
-            <h2 id={`sec-${section.kind}`}>{SECTION_TITLE[section.kind]}</h2>
+            <h2 id={`sec-${section.kind}`}>{sectionTitle(section.kind)}</h2>
             <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
               {section.items.map((item) => (
                 <TodayRow
@@ -111,13 +124,15 @@ export function TodayScreen() {
 
       {forgotten.length > 0 && (
         <button type="button" className="btn btn-ghost" onClick={() => setForgottenOpen(true)}>
-          ¿Olvidaste algo ayer?
+          {t('today.forgotYesterday')}
         </button>
       )}
 
       {forgottenOpen && (
         <ForgottenSheet records={records ?? []} categoryById={categoryById} onClose={() => setForgottenOpen(false)} />
       )}
+
+      {showIntro && <IntroSheet onClose={() => setIntroOpen(false)} />}
     </div>
   );
 }
@@ -152,10 +167,10 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
     run(async () => {
       const delta = record ? logDeltaCents(record, today, 1) : 0;
       const result = await logCompletion(ctx, item.activityId, today);
-      if (!result.ok) return LOG_DENIAL_TEXT[result.reason];
+      if (!result.ok) return logDenialText(result.reason);
       celebrate('small');
       if (navigator.vibrate) navigator.vibrate(15);
-      return `+1 · ${progressText(item.count + 1, item.target)} · ${xpDeltaText(delta)}`;
+      return t('today.logged', { progress: progressText(item.count + 1, item.target), xp: xpDeltaText(delta) });
     });
 
   const undo = () =>
@@ -163,8 +178,8 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
       if (!undoDate || !record) return '';
       const delta = logDeltaCents(record, undoDate, -1);
       return (await undoCompletion(ctx, item.activityId, undoDate))
-        ? `Registro deshecho · ${xpDeltaText(delta)}`
-        : 'No se pudo deshacer';
+        ? t('today.undone', { xp: xpDeltaText(delta) })
+        : t('today.undoFailed');
     });
 
   const meta = [
@@ -186,7 +201,7 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
         </Link>
         <div className="row" style={{ gap: 'var(--s2)' }}>
           <Segments count={item.count} target={item.target} color={categoryColor(category)} />
-          {item.done && <span className="chip chip-done">Completada</span>}
+          {item.done && <span className="chip chip-done">{t('common.completed')}</span>}
         </div>
         <p className="small muted">{meta}</p>
         <p aria-live="polite" className="small pixel" style={{ color: 'var(--success)', minHeight: '1.2em' }}>
@@ -201,7 +216,7 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
         <button
           type="button"
           className="btn btn-icon"
-          aria-label={`Deshacer ${item.name}`}
+          aria-label={t('today.undoLabel', { name: item.name })}
           disabled={busy}
           onClick={() => void undo()}
         >
@@ -212,7 +227,7 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
         <button
           type="button"
           className="btn btn-primary btn-icon"
-          aria-label={`Registrar ${item.name}`}
+          aria-label={t('today.logLabel', { name: item.name })}
           disabled={busy || !loggable}
           onClick={() => void log()}
         >
@@ -252,14 +267,14 @@ function ForgottenSheet({
       >
         <div className="row">
           <h2 id="forgotten-title" className="grow">
-            Ayer, {longDate(yesterday).toLowerCase()}
+            {t('today.yesterdayTitle', { date: longDate(yesterday).toLowerCase() })}
           </h2>
-          <button type="button" className="btn btn-icon btn-ghost" aria-label="Cerrar" onClick={onClose} autoFocus>
+          <button type="button" className="btn btn-icon btn-ghost" aria-label={t('common.close')} onClick={onClose} autoFocus>
             <Sprite name="close" />
           </button>
         </div>
         {items.length === 0 ? (
-          <p className="muted">No queda nada pendiente de ayer.</p>
+          <p className="muted">{t('today.nothingYesterday')}</p>
         ) : (
           <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
             {items.map((item) => (
@@ -272,7 +287,7 @@ function ForgottenSheet({
                 <button
                   type="button"
                   className="btn btn-primary btn-icon"
-                  aria-label={`Registrar ${item.name} ayer`}
+                  aria-label={t('today.logYesterdayLabel', { name: item.name })}
                   onClick={() =>
                     void logCompletion(ctx, item.activityId, yesterday).then((r) => r.ok && celebrate('small'))
                   }
@@ -294,12 +309,12 @@ function LevelStrip() {
   if (!progress) return null;
   return (
     <Link
-      to="/personaje"
+      to="/perfil"
       className="level-strip"
-      aria-label={`Nivel ${progress.level}, ${progress.title}. Ver personaje`}
+      aria-label={t('level.stripLabel', { level: progress.level, title: levelTitle(progress.level) })}
     >
       <span className="pixel small" style={{ color: 'var(--level)', whiteSpace: 'nowrap' }}>
-        Nv {progress.level} · {progress.title}
+        {t('level.short', { level: progress.level, title: levelTitle(progress.level) })}
       </span>
       <XpBar xp={progress.xp} start={progress.levelStartXp} next={progress.nextLevelXp} compact />
     </Link>
@@ -322,9 +337,9 @@ function BackupReminder({ records }: { records: ActivityRecord[] }) {
   });
   if (!show) return null;
   return (
-    <div className="banner" role="region" aria-label="Copia de seguridad">
+    <div className="banner" role="region" aria-label={t('today.backupRegion')}>
       <Sprite name="info" color="var(--level)" />
-      <p className="grow small">Hace tiempo que no guardas una copia de tus datos.</p>
+      <p className="grow small">{t('today.backupReminder')}</p>
       <button
         type="button"
         className="btn"
@@ -334,14 +349,14 @@ function BackupReminder({ records }: { records: ActivityRecord[] }) {
           void exportData(ctx).finally(() => setBusy(false));
         }}
       >
-        Exportar
+        {t('common.export')}
       </button>
       <button
         type="button"
         className="btn btn-ghost"
         onClick={() => void saveSetting(ctx.db, 'backupReminderSnoozedUntil', addDays(today, 1))}
       >
-        Más tarde
+        {t('common.later')}
       </button>
     </div>
   );

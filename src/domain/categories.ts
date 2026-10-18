@@ -83,6 +83,7 @@ export interface CategoryInput {
   icon: string;
 }
 
+/** Códigos de error (la interfaz los traduce con `errors.<código>`, spec 06 I18N-01). */
 export interface CategoryInputErrors {
   name?: string;
   color?: string;
@@ -93,13 +94,13 @@ export interface CategoryInputErrors {
 export function validateCategoryInput(input: CategoryInput, categories: readonly Category[], excludeId?: string): CategoryInputErrors {
   const errors: CategoryInputErrors = {};
   const name = input.name.trim();
-  if (!name) errors.name = 'Escribe un nombre';
-  else if (name.length > CATEGORY_NAME_MAX) errors.name = `Máximo ${CATEGORY_NAME_MAX} caracteres`;
+  if (!name) errors.name = 'nameRequired';
+  else if (name.length > CATEGORY_NAME_MAX) errors.name = 'nameTooLong';
   else if (categories.some((c) => c.id !== excludeId && c.name.trim().toLocaleLowerCase('es') === name.toLocaleLowerCase('es'))) {
-    errors.name = 'Ya tienes una categoría con ese nombre';
+    errors.name = 'nameDuplicate';
   }
-  if (!CATEGORY_COLORS.includes(input.color)) errors.color = 'Elige un color';
-  if (!CATEGORY_ICONS.includes(input.icon)) errors.icon = 'Elige un icono';
+  if (!CATEGORY_COLORS.includes(input.color)) errors.color = 'colorRequired';
+  if (!CATEGORY_ICONS.includes(input.icon)) errors.icon = 'iconRequired';
   return errors;
 }
 

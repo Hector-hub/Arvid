@@ -161,6 +161,7 @@ export function canCompleteOn(record: MissionRecord, analysis: MissionAnalysis, 
   return compareDates(date, record.mission.createdOn) >= 0;
 }
 
+/** Códigos de error (la interfaz los traduce con `errors.<código>`, spec 06 I18N-01). */
 export interface MissionInputErrors {
   title?: string;
   categoryId?: string;
@@ -171,9 +172,9 @@ export interface MissionInputErrors {
 export function validateMissionInput(input: { title: string; categoryId?: string; deadline?: LocalDate }, today: LocalDate): MissionInputErrors {
   const errors: MissionInputErrors = {};
   const title = input.title.trim();
-  if (!title) errors.title = 'Escribe un título';
-  else if (title.length > MISSION_TITLE_MAX) errors.title = `Máximo ${MISSION_TITLE_MAX} caracteres`;
-  if (!input.categoryId) errors.categoryId = 'Elige una categoría';
-  if (input.deadline && compareDates(input.deadline, today) < 0) errors.deadline = 'La fecha límite no puede ser pasada';
+  if (!title) errors.title = 'titleRequired';
+  else if (title.length > MISSION_TITLE_MAX) errors.title = 'titleTooLong';
+  if (!input.categoryId) errors.categoryId = 'categoryRequired';
+  if (input.deadline && compareDates(input.deadline, today) < 0) errors.deadline = 'deadlinePast';
   return errors;
 }

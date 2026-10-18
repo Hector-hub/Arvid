@@ -1,6 +1,6 @@
 # Spec 05 — Escena neón, protagonistas y música
 
-Estado: **aprobada** (D-050, 2026-10-18; licencias D-051) · **implementada** 2026-10-18 en la versión 0.5.0 (pendiente: despliegue y checklist manual M5) · Incremento 5 de implementation-plan.md (Logros y pulido pasa a ser el 6)
+Estado: **aprobada** (D-050, 2026-10-18; licencias D-051; PRO-01, PRO-02, ESC-07 y MUS-06 enmendados por la spec 06, D-066) · **implementada** 2026-10-18 en la versión 0.5.0 (pendiente: despliegue y checklist manual M5) · Incremento 5 de implementation-plan.md (Logros y pulido pasa a ser el 6)
 Cubre: MVP-10 (amplía el sistema de diseño), MVP-05 (personaje en Hoy y Personaje) y música opcional (adelantada de P1)
 Decisiones que modifica (§10): D-027, D-029, D-036, D-037 (regla de los 16 colores), C-003, design-system §6 y §12, mvp-scope (sonidos en P1)
 Prototipo de referencia: `prototypes/escena-warped/` (local, fuera de git), con `index.html` (escena), `variantes.html` (galería) y `exports/hoja-protagonistas.png`

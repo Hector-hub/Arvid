@@ -1,9 +1,9 @@
-import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
+import { createBrowserRouter, Navigate, useLocation, type RouteObject } from 'react-router';
 import { AppLayout } from './layout/AppLayout';
 import { ActivitiesScreen } from './screens/ActivitiesScreen';
 import { ActivityDetailScreen } from './screens/ActivityDetailScreen';
 import { ActivityFormScreen } from './screens/ActivityFormScreen';
-import { CharacterScreen } from './screens/CharacterScreen';
+import { ProfileScreen } from './screens/ProfileScreen';
 import { InstallGuideScreen } from './screens/InstallGuideScreen';
 import { MissionDetailScreen } from './screens/missions/MissionDetailScreen';
 import { MissionFormScreen } from './screens/missions/MissionFormScreen';
@@ -29,9 +29,11 @@ export const routes: RouteObject[] = [
       { path: 'actividades/misiones/:id/editar', element: <MissionFormScreen /> },
       { path: 'actividades/:id', element: <ActivityDetailScreen /> },
       { path: 'actividades/:id/editar', element: <ActivityFormScreen /> },
-      { path: 'personaje', element: <CharacterScreen /> },
-      { path: 'personaje/atributo/:categoryId', element: <AttributeDetailScreen /> },
-      { path: 'personaje/disciplina', element: <DisciplineDetailScreen /> },
+      { path: 'perfil', element: <ProfileScreen /> },
+      { path: 'perfil/atributo/:categoryId', element: <AttributeDetailScreen /> },
+      { path: 'perfil/disciplina', element: <DisciplineDetailScreen /> },
+      // La pantalla se llamaba Personaje hasta la 0.5.0 (PF-01)
+      { path: 'personaje/*', element: <LegacyProfileRedirect /> },
       { path: 'ajustes', element: <SettingsScreen /> },
       { path: 'ajustes/instalar', element: <InstallGuideScreen /> },
       { path: 'ajustes/creditos', element: <CreditsScreen /> },
@@ -41,6 +43,11 @@ export const routes: RouteObject[] = [
     ],
   },
 ];
+
+function LegacyProfileRedirect() {
+  const { pathname } = useLocation();
+  return <Navigate to={pathname.replace(/^\/personaje/, '/perfil')} replace />;
+}
 
 export function createAppRouter() {
   return createBrowserRouter(routes);

@@ -444,3 +444,224 @@ fieldset { border: 0; padding: 0; margin: 0; }
   display: block;
   image-rendering: pixelated;
 }
+
+/* ---------- Escena: bocina y chat (spec 06, MU-01, CH) ---------- */
+.scene-top-right {
+  position: absolute;
+  right: var(--s2);
+  top: var(--s2);
+}
+.scene-icon {
+  background: rgb(26 28 44 / 0.75);
+  min-height: 40px;
+  min-width: 44px;
+  padding: var(--s1);
+  color: var(--c-white);
+}
+.scene-icon[aria-pressed='true'] {
+  color: var(--c-cyan);
+  border-color: var(--c-cyan);
+}
+.chat {
+  display: flex;
+  align-items: center;
+  gap: var(--s1);
+}
+.chat-button {
+  background: rgb(26 28 44 / 0.85);
+  min-height: 40px;
+  min-width: 44px;
+  padding: var(--s1) var(--s2);
+  gap: var(--s1);
+}
+.chat.open .chat-button {
+  background: var(--primary-fill);
+  border-color: var(--c-navy);
+}
+.chat-send-label {
+  font-size: 0.875rem;
+}
+.chat-input {
+  width: min(56vw, 260px);
+  min-height: 40px;
+  padding: var(--s1) var(--s2);
+  font: inherit;
+  color: var(--text);
+  background: rgb(26 28 44 / 0.92);
+  border: 2px solid var(--c-cyan);
+  border-radius: 0;
+  transform-origin: right center;
+  animation: chat-open 250ms steps(5) 1;
+}
+@keyframes chat-open {
+  from { transform: scaleX(0); opacity: 0; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+
+/* ---------- Caja de diálogo del onboarding (ON-01, BP-05) ---------- */
+.dialogue {
+  display: flex;
+  gap: var(--s3);
+  align-items: flex-start;
+  position: relative;
+  padding: var(--s3);
+  background: var(--c-ink);
+  border: var(--b) solid var(--c-cyan);
+  box-shadow: var(--glow-cyan);
+}
+.dialogue .avatar-preview {
+  flex: none;
+  background: var(--surface-sunken);
+  border: 2px solid var(--border);
+}
+.dialogue-body {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  min-height: 3.6em;
+}
+.dialogue-name {
+  color: var(--level);
+  font-size: 0.875rem;
+  margin: 0 0 var(--s1);
+}
+.dialogue-text {
+  font-size: 15px;
+  line-height: 1.35;
+  min-height: 2.7em;
+}
+.dialogue-text span {
+  display: block;
+}
+.dialogue-more {
+  position: absolute;
+  right: var(--s3);
+  bottom: var(--s2);
+  color: var(--c-cyan);
+  font-size: 0.75rem;
+  animation: blink 0.8s steps(2) infinite;
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+.dialogue-skip {
+  position: absolute;
+  right: var(--s1);
+  top: var(--s1);
+  min-height: 32px;
+  padding: 0 var(--s2);
+  font-size: 0.8125rem;
+}
+.onboarding-step {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+/* ---------- Carrusel de personajes y muestras de color (CR, AV-01) ---------- */
+.carousel {
+  align-items: center;
+}
+.carousel-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  width: 100%;
+  touch-action: pan-y;
+  user-select: none;
+}
+.carousel-card {
+  flex: 1;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--s3);
+  background: var(--surface-sunken);
+  border: var(--b) solid var(--border);
+  animation: rise var(--dur-celebrate) steps(4) 1;
+}
+.carousel:has(input[name='character']:focus-visible) .carousel-card {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.carousel-name {
+  margin: var(--s2) 0 0;
+  font-size: 1.25rem;
+  color: var(--level);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: var(--glow-gold);
+}
+.carousel-arrow {
+  font-size: 1.5rem;
+}
+.carousel-dots {
+  display: flex;
+  gap: var(--s2);
+}
+.carousel-dots span {
+  width: 8px;
+  height: 8px;
+  background: var(--border);
+}
+.carousel-dots span.on {
+  background: var(--level);
+}
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s3);
+  justify-content: center;
+  margin-top: var(--s2);
+}
+.swatch {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid var(--c-ink);
+  box-shadow: 0 0 0 2px var(--border);
+  cursor: pointer;
+}
+.swatch input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.swatch:has(input:checked) {
+  box-shadow: 0 0 0 3px var(--level);
+}
+.swatch:has(input:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+}
+.sr-only-group {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.sheet-backdrop.intro .sheet {
+  max-width: 560px;
+}
+
+/* Las vistas previas se encogen en pantallas estrechas sin perder la proporción (sin desbordar a 320 px) */
+.avatar-preview {
+  max-width: 100%;
+}
+.avatar-canvas {
+  max-width: 100%;
+  height: auto !important;
+}
+.carousel-card {
+  min-width: 0;
+}
+.carousel-stage > .carousel-arrow {
+  flex: none;
+}
+.main {
+  min-width: 0;
+}

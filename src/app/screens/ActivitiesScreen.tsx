@@ -9,11 +9,12 @@ import { useCategories, useData, useRecords } from '../data';
 import { CategoryIcon, Panel, Sprite } from '../design/components';
 import { frequencyText } from '../text';
 import { ActivitiesTabs } from './ActivitiesTabs';
+import { t } from '../../i18n';
 
-const GROUPS: { status: ActivityStatus; title: string }[] = [
-  { status: 'active', title: 'Activas' },
-  { status: 'paused', title: 'Pausadas' },
-  { status: 'archived', title: 'Archivadas' },
+const GROUPS: { status: ActivityStatus; title: () => string }[] = [
+  { status: 'active', title: () => t('activities.active') },
+  { status: 'paused', title: () => t('activities.paused') },
+  { status: 'archived', title: () => t('activities.archived') },
 ];
 
 /** Lista de actividades por estado (ACT-07) con reordenación accesible (ACT-08). */
@@ -33,18 +34,18 @@ export function ActivitiesScreen() {
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
       <header className="row">
-        <h1 className="grow">Actividades</h1>
+        <h1 className="grow">{t('activities.title')}</h1>
         <Link to="/actividades/nueva" className="btn btn-primary">
           <Sprite name="plus" />
-          Nueva actividad
+          {t('activities.new')}
         </Link>
       </header>
       <ActivitiesTabs />
 
       {records.length === 0 && (
         <Panel className="stack">
-          <h2>Aún no tienes actividades</h2>
-          <p className="muted">Crea una con la frecuencia que te parezca sostenible.</p>
+          <h2>{t('activities.emptyTitle')}</h2>
+          <p className="muted">{t('activities.emptyText')}</p>
         </Panel>
       )}
 
@@ -52,7 +53,7 @@ export function ActivitiesScreen() {
         .filter((g) => g.records.length > 0)
         .map((g) => (
           <section key={g.status} className="stack" aria-labelledby={`grp-${g.status}`}>
-            <h2 id={`grp-${g.status}`}>{g.title}</h2>
+            <h2 id={`grp-${g.status}`}>{g.title()}</h2>
             <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
               {g.records.map((r, i) => (
                 <ActivityItem
@@ -103,7 +104,7 @@ function ActivityItem({
           <button
             type="button"
             className="btn btn-icon btn-ghost"
-            aria-label={`Subir ${name}`}
+            aria-label={t('activities.moveUp', { name })}
             disabled={reorder.first}
             onClick={() => void moveActivity(ctx, record.activity.id, -1)}
           >
@@ -112,7 +113,7 @@ function ActivityItem({
           <button
             type="button"
             className="btn btn-icon btn-ghost"
-            aria-label={`Bajar ${name}`}
+            aria-label={t('activities.moveDown', { name })}
             disabled={reorder.last}
             onClick={() => void moveActivity(ctx, record.activity.id, 1)}
           >

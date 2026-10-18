@@ -11,7 +11,7 @@ export const BACKUP_FORMAT = 'arvid-backup';
 export const BACKUP_FORMAT_VERSION = 1;
 
 /** Ajustes propios de cada dispositivo: un import no los sobrescribe (BAK-06). */
-const DEVICE_SETTINGS = new Set(['persistGranted', 'installHintDismissedAt', 'backupReminderSnoozedUntil']);
+const DEVICE_SETTINGS = new Set(['persistGranted', 'installHintDismissedAt', 'backupReminderSnoozedUntil', 'arvidSeen', 'introSnoozedUntil']);
 
 // ---------- Esquema (data-model §4) ----------
 

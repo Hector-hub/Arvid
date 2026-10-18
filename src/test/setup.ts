@@ -6,3 +6,6 @@ import { afterEach } from 'vitest';
 afterEach(() => {
   cleanup();
 });
+
+// jsdom no implementa canvas: devolver null (como un navegador sin canvas) en lugar de avisar en cada prueba
+HTMLCanvasElement.prototype.getContext = (() => null) as typeof HTMLCanvasElement.prototype.getContext;

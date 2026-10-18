@@ -61,7 +61,7 @@ export async function updateMission(ctx: DataContext, id: string, input: Omit<Mi
   const today = toLocalDate(ctx.now());
   return ctx.db.transaction('rw', ctx.db.missions, ctx.db.missionEvents, async () => {
     const record = await loadMission(ctx.db, id);
-    if (!record) return { ok: false, errors: { title: 'Misión no encontrada' } };
+    if (!record) return { ok: false, errors: { title: 'notFound' } };
     const errors = validateMissionInput(input, today);
     if (Object.keys(errors).length > 0) return { ok: false, errors };
     const actions = missionActions(record, analyzeMission(record, today), today);

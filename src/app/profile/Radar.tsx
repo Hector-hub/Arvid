@@ -2,6 +2,8 @@ import type { Category } from '../../domain/categories';
 import { MIN_ITEMS, type ProfileScores } from '../../domain/attributes/attributes';
 import { radarGeometry, type Point, type RadarShape } from '../../domain/attributes/radar';
 import { CategoryIcon, categoryColor } from '../design/components';
+import { t } from '../../i18n';
+import { categoryName } from '../text';
 
 const SIZE = 280;
 const pts = (points: Point[]) => points.map((p) => `${p.x},${p.y}`).join(' ');
@@ -21,13 +23,13 @@ export function Radar({ categories, current, previous }: { categories: Category[
   const summary = categories
     .map((c) => {
       const s = current.attributes.get(c.id);
-      return `${c.name} ${s?.value ?? `sin datos (${s?.items ?? 0} de ${MIN_ITEMS})`}`;
+      return `${categoryName(c)} ${s?.value ?? t('score.noData', { items: s?.items ?? 0, min: MIN_ITEMS })}`;
     })
     .join(', ');
 
   return (
     <div className="radar" style={{ position: 'relative', width: '100%', maxWidth: 320, aspectRatio: '1 / 1', margin: '0 auto' }}>
-      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={`Radar de atributos: ${summary}`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={t('score.radar', { summary })} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
         {g.rings.map((ring, i) => (
           <polygon key={i} points={pts(ring)} fill="none" stroke="var(--border)" strokeWidth={i === g.rings.length - 1 ? 2 : 1} />
         ))}

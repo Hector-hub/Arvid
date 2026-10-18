@@ -97,7 +97,8 @@ Hay 8 colores válidos para 8 categorías como máximo (D-017). Algunos coincide
 | Chip de estado | "Vencida" (red + white), "Completada" (lime + ink), "Gracia" (fog + ink) |
 | Medidor de Disciplina | Barra segmentada de 10 bloques + cifra |
 | Radar | SVG propio; ejes con el color de cada categoría; relleno cyan al 30 %; ejes "sin datos" punteados y con una marca (C-002); alternativa en lista |
-| Navegación inferior | 3 pestañas (Hoy · Actividades · Personaje) con icono y texto; Ajustes desde Personaje (B-004) |
+| Navegación inferior | 3 pestañas (Hoy · Actividades · Perfil) con icono y texto; Ajustes desde Perfil (B-004, D-052) |
+| Escena | Bocina (música) arriba a la derecha y chat abajo a la derecha; ARVID habla con burbuja pixel ×2 dibujada en la escena y, en el onboarding, con caja de diálogo con retrato (spec 06) |
 | Modal de subida de nivel | Panel central + insignia o título; se cierra con un toque |
 
 ## 8. Movimiento y feedback (C-003)

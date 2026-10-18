@@ -1,11 +1,16 @@
 import { expect, test, type Page } from '@playwright/test';
 import { completeOnboarding } from './helpers';
 
-const SCENE = 'Tu protagonista camina por un puente de la ciudad de noche';
+const SCENE = 'Tu protagonista camina por un puente de la ciudad de noche, con ARVID a su lado';
 
-/** Huella del contenido del lienzo de la escena. */
+/** Huella de la parte baja de la escena (piernas del personaje, acera y barandilla; ARVID y su burbuja van más arriba). */
 function snapshot(page: Page) {
-  return page.getByRole('img', { name: SCENE }).evaluate((c: HTMLCanvasElement) => c.toDataURL());
+  return page.getByRole('img', { name: SCENE }).evaluate((c: HTMLCanvasElement) => {
+    const d = c.getContext('2d')!.getImageData(0, 135, c.width, c.height - 135).data;
+    let h = 0;
+    for (let i = 0; i < d.length; i += 7) h = (h * 31 + d[i]!) | 0;
+    return h;
+  });
 }
 
 /** El lienzo tiene algo dibujado en la zona del protagonista. */
@@ -20,6 +25,7 @@ function heroDrawn(page: Page) {
 
 test.describe('escena neón (spec 05)', () => {
   test('UB-01/ESC-09: Hoy muestra la escena animada con la fecha y el botón de música', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
     await completeOnboarding(page);
     await expect(page.getByRole('img', { name: SCENE })).toBeVisible();
     await expect.poll(() => heroDrawn(page)).toBe(true);
@@ -38,18 +44,38 @@ test.describe('escena neón (spec 05)', () => {
     expect(await snapshot(page)).toBe(a);
   });
 
-  test('UB-02/PRO-03: Personaje muestra la escena con el nivel; el protagonista se cambia en Ajustes', async ({ page }) => {
+  test('UB-02/PRO-03: Perfil muestra la escena con el nivel; el personaje se cambia en Ajustes', async ({ page }) => {
     await completeOnboarding(page);
-    await page.goto('/personaje');
+    await page.goto('/perfil');
     await expect(page.getByRole('img', { name: SCENE })).toBeVisible();
     await expect(page.getByRole('heading', { name: /Nivel 1 · / })).toBeVisible();
 
     await page.goto('/ajustes');
-    await page.getByRole('radio', { name: 'Él 2' }).check();
+    // El carrusel se maneja con las flechas (los radios son para teclado y lectores de pantalla)
+    await page.getByRole('button', { name: 'Anterior' }).click();
+    await expect(page.getByRole('radio', { name: /^Drifter,/ })).toBeChecked();
     await page.getByRole('radio', { name: 'Ocaso' }).check();
-    await expect(page.getByRole('img', { name: 'Él 2 · Ocaso' })).toBeVisible();
+    await expect(page.locator('.carousel-name')).toHaveText('Drifter');
+    // Antes de recargar, esperar a que el ajuste esté guardado
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            new Promise((resolve) => {
+              const req = indexedDB.open('arvid');
+              req.onsuccess = () => {
+                const get = req.result.transaction('settings').objectStore('settings').get('avatar');
+                get.onsuccess = () => {
+                  req.result.close();
+                  resolve(get.result?.value);
+                };
+              };
+            }),
+        ),
+      )
+      .toEqual({ cast: 'el2', variant: 'ocaso' });
     await page.reload();
-    await expect(page.getByRole('radio', { name: 'Él 2' })).toBeChecked();
+    await expect(page.getByRole('radio', { name: /^Drifter,/ })).toBeChecked();
     await expect(page.getByRole('radio', { name: 'Ocaso' })).toBeChecked();
   });
 

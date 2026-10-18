@@ -4,13 +4,15 @@ import { createActivity, renameActivity, updateActivityConfig } from '../../data
 import { celebrate } from '../scene/engine';
 import { validateActivityInput, versionAt, type ConfigErrors } from '../../domain/activities/rules';
 import type { ActivityConfig } from '../../domain/activities/types';
-import { TARGET_LIMITS, type Difficulty } from '../../domain/config';
+import { ACTIVITY_NAME_MAX, TARGET_LIMITS, type Difficulty } from '../../domain/config';
 import type { PeriodKind } from '../../domain/time/period';
 import { useToday } from '../clock';
-import { useCategories, useData, useRecord } from '../data';
+import { useCategories, useData, useRecord, useRecords } from '../data';
 import { CategoryIcon } from '../design/components';
-import { DIFFICULTY_LABEL, PERIOD_LABEL } from '../text';
+import { categoryName, difficultyLabel, errorText, periodLabel } from '../text';
 import { DIFFICULTY_POINTS } from '../../domain/config';
+import { t } from '../../i18n';
+import { flagFirstActivity } from '../arvid/moments';
 
 const PERIODS: PeriodKind[] = ['day', 'week', 'month'];
 const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard'];
@@ -23,7 +25,7 @@ export function ActivityFormScreen() {
   const today = useToday();
 
   if (id && record === null) return null;
-  if (id && !record) return <p>Actividad no encontrada.</p>;
+  if (id && !record) return <p>{t('activities.notFound')}</p>;
   if (!categories) return null;
 
   const version = record ? versionAt(record.versions, today) : undefined;
@@ -56,6 +58,7 @@ function ActivityForm({
   const ctx = useData();
   const navigate = useNavigate();
   const categories = useCategories() ?? [];
+  const records = useRecords();
   const [name, setName] = useState(initialName);
   const [config, setConfig] = useState<ActivityConfig>({
     period: initialConfig.period,
@@ -85,7 +88,9 @@ function ActivityForm({
     setSaving(true);
     try {
       if (!activityId) {
+        const first = (records?.length ?? 0) === 0;
         await createActivity(ctx, { name, config });
+        if (first) flagFirstActivity();
         celebrate('small');
         navigate('/hoy');
         return;
@@ -101,30 +106,30 @@ function ActivityForm({
 
   return (
     <form className="stack" style={{ gap: 'var(--s5)' }} onSubmit={(e) => void submit(e)} noValidate>
-      <h1>{activityId ? 'Editar actividad' : 'Nueva actividad'}</h1>
+      <h1>{activityId ? t('activityForm.editTitle') : t('activityForm.newTitle')}</h1>
 
       <div className="field">
-        <label htmlFor="name">Nombre</label>
+        <label htmlFor="name">{t('activityForm.name')}</label>
         <input
           id="name"
           type="text"
           value={name}
           maxLength={60}
           autoComplete="off"
-          placeholder="Caminar 20 minutos"
+          placeholder={t('activityForm.namePlaceholder')}
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? 'name-error' : undefined}
           onChange={(e) => setName(e.target.value)}
         />
         {errors.name && (
           <p id="name-error" className="field-error">
-            {errors.name}
+            {errorText(errors.name, { max: ACTIVITY_NAME_MAX })}
           </p>
         )}
       </div>
 
       <fieldset className="field" aria-describedby={errors.categoryId ? 'cat-error' : undefined}>
-        <legend>Categoría</legend>
+        <legend>{t('activityForm.category')}</legend>
         <div className="choice-group">
           {options.map((c) => (
             <label key={c.id} className="choice">
@@ -136,19 +141,19 @@ function ActivityForm({
                 onChange={() => set({ categoryId: c.id })}
               />
               <CategoryIcon category={c} />
-              {c.name}
+              {categoryName(c)}
             </label>
           ))}
         </div>
         {errors.categoryId && (
           <p id="cat-error" className="field-error">
-            {errors.categoryId}
+            {errorText(errors.categoryId)}
           </p>
         )}
       </fieldset>
 
       <fieldset className="field">
-        <legend>Frecuencia</legend>
+        <legend>{t('activityForm.frequency')}</legend>
         <div className="choice-group">
           {PERIODS.map((p) => (
             <label key={p} className="choice">
@@ -159,7 +164,7 @@ function ActivityForm({
                 checked={config.period === p}
                 onChange={() => set({ period: p, target: Math.min(config.target, TARGET_LIMITS[p]) })}
               />
-              {PERIOD_LABEL[p]}
+              {periodLabel(p)}
             </label>
           ))}
         </div>
@@ -167,7 +172,7 @@ function ActivityForm({
 
       <div className="field">
         <label htmlFor="target">
-          Veces por {config.period === 'day' ? 'día' : config.period === 'week' ? 'semana' : 'mes'}
+          {t('activityForm.timesPer', { unit: t(`period.per.${config.period}`) })}
         </label>
         <input
           id="target"
@@ -183,17 +188,17 @@ function ActivityForm({
         />
         {errors.target ? (
           <p id="target-error" className="field-error">
-            {errors.target}
+            {errorText(errors.target, { max })}
           </p>
         ) : (
           <p id="target-hint" className="small muted">
-            Entre 1 y {max}
+            {t('errors.targetRange', { max })}
           </p>
         )}
       </div>
 
       <fieldset className="field">
-        <legend>Dificultad</legend>
+        <legend>{t('activityForm.difficulty')}</legend>
         <div className="choice-group">
           {DIFFICULTIES.map((d) => (
             <label key={d} className="choice">
@@ -204,25 +209,23 @@ function ActivityForm({
                 checked={config.difficulty === d}
                 onChange={() => set({ difficulty: d })}
               />
-              {DIFFICULTY_LABEL[d]}
-              <span className="small muted">{DIFFICULTY_POINTS[d]} pts</span>
+              {difficultyLabel(d)}
+              <span className="small muted">{t('difficulty.pts', { points: DIFFICULTY_POINTS[d] })}</span>
             </label>
           ))}
         </div>
       </fieldset>
 
       {activityId && (
-        <p className="small muted">
-          Los cambios de categoría, frecuencia o dificultad se aplican desde el inicio del periodo actual.
-        </p>
+        <p className="small muted">{t('activityForm.changesNote')}</p>
       )}
 
       <div className="row">
         <button type="button" className="btn btn-ghost" onClick={() => navigate(-1)}>
-          Cancelar
+          {t('common.cancel')}
         </button>
         <button type="submit" className="btn btn-primary grow" disabled={saving}>
-          {activityId ? 'Guardar' : 'Crear actividad'}
+          {activityId ? t('common.save') : t('activityForm.create')}
         </button>
       </div>
     </form>

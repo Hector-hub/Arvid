@@ -2,7 +2,9 @@
 // Se cargan bajo demanda (NFR5-04) y se guardan en memoria: cada variante se recolorea una sola vez.
 import { CASTS, type Avatar, type SheetSpec } from '../../domain/avatar/catalog';
 import { recolorSheet } from '../../domain/avatar/recolor';
-import { CAR_FILES } from './engine';
+import { recolorArvid, type ArvidColor } from '../../domain/arvid/arvid';
+import { CAR_FILES, PROP_FILES } from './engine';
+import { DRONE, EXTRAS_FRAME } from './extras';
 
 const BASE = '/scene/';
 
@@ -11,6 +13,8 @@ export interface SceneImages {
   cars: HTMLImageElement[];
   /** Atlas de peatones y dron. */
   extras: HTMLImageElement;
+  /** Detalles de la acera (MV-03). */
+  props: HTMLImageElement[];
 }
 
 export interface HeroSheets {
@@ -43,7 +47,8 @@ export function loadSceneImages(): Promise<SceneImages> {
     Promise.all(['bg-1.png', 'bg-2.png', 'bg-3.png'].map(loadImage)),
     Promise.all(CAR_FILES.map(loadImage)),
     loadImage('extras.png'),
-  ]).then(([bg, cars, extras]) => ({ bg, cars, extras }));
+    Promise.all(PROP_FILES.map(loadImage)),
+  ]).then(([bg, cars, extras, props]) => ({ bg, cars, extras, props }));
   sceneImages.catch(() => (sceneImages = undefined));
   return sceneImages;
 }
@@ -75,6 +80,30 @@ export function loadHero(avatar: Avatar): Promise<HeroSheets> {
     }));
     p.catch(() => heroes.delete(key));
     heroes.set(key, p);
+  }
+  return p;
+}
+
+const arvids = new Map<ArvidColor, Promise<HTMLCanvasElement>>();
+
+/** Atlas con ARVID en su color (AV-01): solo se recolorean las filas del dron. */
+export function loadArvidAtlas(color: ArvidColor): Promise<HTMLCanvasElement> {
+  let p = arvids.get(color);
+  if (!p) {
+    p = loadImage('extras.png').then((img) => {
+      const cv = document.createElement('canvas');
+      cv.width = img.width;
+      cv.height = img.height;
+      const ctx = cv.getContext('2d', { willReadFrequently: true });
+      if (!ctx) throw new Error('Canvas 2D no disponible');
+      ctx.drawImage(img, 0, 0);
+      const data = ctx.getImageData(0, 0, cv.width, cv.height);
+      recolorArvid(data.data, cv.width, cv.height, color, DRONE.walk.row * EXTRAS_FRAME);
+      ctx.putImageData(data, 0, 0);
+      return cv;
+    });
+    p.catch(() => arvids.delete(color));
+    arvids.set(color, p);
   }
   return p;
 }

@@ -1,6 +1,7 @@
 // Simulación de la escena neón (spec 05, ESC y PAR). Pura y determinista: el azar llega como `rng` y el tiempo
 // como `dt` en fotogramas de 60 Hz, así que va igual a 60, 120 o 144 Hz (ESC-09) y se prueba sin navegador.
 // app/scene la dibuja; aquí solo hay posiciones y estados.
+import { ARVID_HOME, createArvid, hop, hopOffset, isHome, nextPropDelay, stepArvid, type ArvidState, type Prop, type PropSpec } from './arvid';
 
 export type Rng = () => number;
 
@@ -92,8 +93,15 @@ export interface SceneState {
   flicker: Map<number, number>;
   /** Farolas visibles encendidas en este fotograma. */
   lit: Map<number, boolean>;
+  /** Escaneo ocasional de ARVID en su sitio (ESC-07). */
   drone: { scanT: number; scanIn: number };
   particles: Particle[];
+  /** La mascota (spec 06, MV). */
+  arvid: ArvidState;
+  /** Detalles de la acera que ARVID puede inspeccionar (MV-03). */
+  props: Prop[];
+  nextProp: number;
+  propSeq: number;
 }
 
 export interface SceneConfig {
@@ -102,7 +110,12 @@ export interface SceneConfig {
   /** Peatones disponibles: altura del personaje dentro de su fotograma cuadrado y número de fotogramas. */
   pedestrians: { height: number; frames: number }[];
   frameSize: number;
+  /** Detalles de la acera disponibles (MV-03). */
+  props?: PropSpec[];
 }
+
+/** Base de los detalles de la acera (un poco por detrás del protagonista). */
+export const PROP_BASELINE = 171;
 
 export function createScene(rng: Rng): SceneState {
   return {
@@ -118,6 +131,10 @@ export function createScene(rng: Rng): SceneState {
     lit: new Map(),
     drone: { scanT: -1, scanIn: 400 },
     particles: [],
+    arvid: createArvid(),
+    props: [],
+    nextProp: Math.round(R(rng, 300, 900)),
+    propSeq: 0,
   };
 }
 
@@ -169,6 +186,7 @@ export function stepScene(s: SceneState, rawDt: number, rng: Rng, cfg: SceneConf
   if (reduced) {
     for (const i of visibleLamps(s.offset)) s.lit.set(i, true);
     s.particles = [];
+    stepArvid(s.arvid, dt, rng, { props: s.props, offset: s.offset, specs: cfg.props ?? [], baseline: PROP_BASELINE }, true);
     return;
   }
   s.t += dt;
@@ -202,7 +220,18 @@ export function stepScene(s: SceneState, rawDt: number, rng: Rng, cfg: SceneConf
     return x > -p.size - 20 && x < SCENE_W + 40;
   });
 
-  // Dron: de vez en cuando escanea (ESC-07)
+  // Detalles de la acera (MV-03)
+  const specs = cfg.props ?? [];
+  if (specs.length > 0 && (s.nextProp -= dt) <= 0) {
+    s.props.push({ id: ++s.propSeq, kind: Math.floor(rng() * specs.length), wx: s.offset + SCENE_W + 10 });
+    s.nextProp = nextPropDelay(rng);
+  }
+  s.props = s.props.filter((p) => p.wx - s.offset > -(specs[p.kind]?.width ?? 0) - 10);
+
+  // ARVID: entrada, paseos y vuelta a su sitio (MV)
+  stepArvid(s.arvid, dt, rng, { props: s.props, offset: s.offset, specs, baseline: PROP_BASELINE });
+
+  // Dron: de vez en cuando escanea en su sitio (ESC-07)
   const d = s.drone;
   d.scanIn -= dt;
   if (d.scanIn <= 0 && d.scanT < 0) d.scanT = 0;
@@ -227,12 +256,24 @@ export function stepScene(s: SceneState, rawDt: number, rng: Rng, cfg: SceneConf
 export const DRONE_SCAN_FRAMES = 8;
 export const DRONE_SCAN_TICKS = 7;
 
-/** Posición del dron (esquina superior izquierda de su sprite de 48 px antes de escalar). */
-export function dronePosition(s: SceneState): { x: number; y: number } {
+/**
+ * Dónde se dibuja ARVID: su centro con el balanceo (flota siempre; en su sitio, además, se mece), el salto de
+ * celebración, la escala y la opacidad de la entrada.
+ */
+export function arvidPose(s: SceneState): { x: number; y: number; scale: number; alpha: number } {
+  const a = s.arvid;
   const bob = Math.sin(s.t / 22) * 2.5;
-  const sway = Math.sin(s.t / 61) * 4;
-  return { x: Math.round(LAYOUT.heroX - 50 + sway), y: Math.round(LAYOUT.heroFeet - 88 + bob) };
+  const sway = isHome(a) ? Math.sin(s.t / 61) * 4 : 0;
+  return { x: a.x + sway, y: a.y + bob + hopOffset(a), scale: a.scale, alpha: a.alpha };
 }
+
+/** Compatibilidad con el prototipo: esquina superior izquierda del sprite de 48 px (sitio de ARVID). */
+export function dronePosition(s: SceneState): { x: number; y: number } {
+  const p = arvidPose(s);
+  return { x: Math.round(p.x - 24), y: Math.round(p.y - 26) };
+}
+
+export { ARVID_HOME };
 
 // ---------- Partículas (PAR) ----------
 export type BurstKind = 'small' | 'big';
@@ -247,6 +288,7 @@ function burstAt(s: SceneState, rng: Rng, x: number, y: number, n: number, speed
 
 /** Ráfaga pequeña desde el protagonista (PAR-01) o grande, también en el cielo (PAR-02). */
 export function burst(s: SceneState, kind: BurstKind, rng: Rng): void {
+  hop(s.arvid);
   if (kind === 'small') burstAt(s, rng, LAYOUT.heroX, 140, 30, 2);
   else {
     burstAt(s, rng, LAYOUT.heroX, 130, 70, 3.2);

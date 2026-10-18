@@ -1,0 +1,636 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "back": "Back",
+    "continue": "Continue",
+    "close": "Close",
+    "later": "Later",
+    "skip": "Skip",
+    "next": "Next",
+    "previous": "Previous",
+    "completed": "Done",
+    "export": "Export",
+    "retry": "Retry",
+    "how": "How",
+    "andJoin": " and ",
+    "listJoin": ", "
+  },
+  "nav": {
+    "main": "Main",
+    "today": "Today",
+    "activities": "Activities",
+    "profile": "Profile",
+    "settings": "Settings",
+    "missions": "Missions"
+  },
+  "units": {
+    "day_one": "day",
+    "day_other": "days",
+    "week_one": "week",
+    "week_other": "weeks",
+    "month_one": "month",
+    "month_other": "months"
+  },
+  "period": {
+    "label": {
+      "day": "Daily",
+      "week": "Weekly",
+      "month": "Monthly"
+    },
+    "section": {
+      "day": "Today",
+      "week": "This week",
+      "month": "This month"
+    },
+    "per": {
+      "day": "day",
+      "week": "week",
+      "month": "month"
+    },
+    "weekShort": "wk {date}"
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "text": "{label} · {points} points",
+    "pts": "{points} pts",
+    "xp": "{points} XP"
+  },
+  "format": {
+    "frequency_one": "{count} time/{unit}",
+    "frequency_other": "{count} times/{unit}",
+    "progress": "{count} of {target}",
+    "lastDay": "last day",
+    "daysLeft": "{count} days left",
+    "dayComplete": "Day complete",
+    "pendingToday_one": "{count} left for today",
+    "pendingToday_other": "{count} left for today",
+    "streak": "{count}-{unit} streak",
+    "today": "today",
+    "yesterday": "yesterday",
+    "daysAgo": "{count} days ago",
+    "missionsDue_one": "{count} mission for today",
+    "missionsDue_other": "{count} missions for today",
+    "dueNone": "no date",
+    "dueToday": "due today",
+    "dueTomorrow": "due tomorrow",
+    "dueOn": "due {date}"
+  },
+  "logDenial": {
+    "inactive": "This activity isn't active",
+    "not-editable": "That day can no longer be edited",
+    "before-creation": "This activity didn't exist yet that day",
+    "full": "Already complete",
+    "no-version": "Activity has no settings"
+  },
+  "errors": {
+    "nameRequired": "Enter a name",
+    "nameTooLong": "Maximum {max} characters",
+    "nameDuplicate": "You already have a category with that name",
+    "colorRequired": "Choose a color",
+    "iconRequired": "Choose an icon",
+    "categoryRequired": "Choose a category",
+    "targetRange": "Between 1 and {max}",
+    "titleRequired": "Enter a title",
+    "titleTooLong": "Maximum {max} characters",
+    "deadlinePast": "The deadline can't be in the past",
+    "notFound": "Not found",
+    "aliasRequired": "Tell me what to call you",
+    "aliasTooLong": "Maximum {max} characters"
+  },
+  "categories": {
+    "body": "Body",
+    "rest": "Rest",
+    "mind": "Mind",
+    "learning": "Learning",
+    "relationships": "Relationships",
+    "order": "Order"
+  },
+  "titles": {
+    "l1": "Recruit",
+    "l5": "Apprentice",
+    "l10": "Lookout",
+    "l15": "Sentinel",
+    "l20": "Strategist",
+    "l30": "Elite",
+    "l40": "Legend"
+  },
+  "level": {
+    "short": "Lv {level} · {title}",
+    "long": "Level {level} · {title}",
+    "stripLabel": "Level {level}, {title}. See profile",
+    "xpBar": "Level experience"
+  },
+  "today": {
+    "installBanner": "Install ARVID on your home screen to keep your data safe.",
+    "emptyTitle": "Create your first activity",
+    "emptyText": "Something you want to do every day, week or month. Start small.",
+    "newActivity": "New activity",
+    "forgotYesterday": "Forgot something yesterday?",
+    "logged": "+1 · {progress} · {xp}",
+    "undone": "Log undone · {xp}",
+    "undoFailed": "Couldn't undo",
+    "undoLabel": "Undo {name}",
+    "logLabel": "Log {name}",
+    "yesterdayTitle": "Yesterday, {date}",
+    "nothingYesterday": "Nothing left from yesterday.",
+    "logYesterdayLabel": "Log {name} yesterday",
+    "backupRegion": "Backup",
+    "backupReminder": "It's been a while since you backed up your data."
+  },
+  "activities": {
+    "title": "Activities",
+    "new": "New activity",
+    "active": "Active",
+    "paused": "Paused",
+    "archived": "Archived",
+    "emptyTitle": "No activities yet",
+    "emptyText": "Create one with a frequency that feels sustainable.",
+    "moveUp": "Move {name} up",
+    "moveDown": "Move {name} down",
+    "tabsLabel": "Activity type",
+    "recurring": "Recurring",
+    "missions": "Missions",
+    "notFound": "Activity not found."
+  },
+  "activityForm": {
+    "newTitle": "New activity",
+    "editTitle": "Edit activity",
+    "name": "Name",
+    "namePlaceholder": "Walk 20 minutes",
+    "category": "Category",
+    "frequency": "Frequency",
+    "timesPer": "Times per {unit}",
+    "difficulty": "Difficulty",
+    "changesNote": "Changes to category, frequency or difficulty apply from the start of the current period.",
+    "create": "Create activity"
+  },
+  "activityDetail": {
+    "paused": "Paused",
+    "archived": "Archived",
+    "logsByDay": "Logs by day",
+    "logs_one": "{count} log",
+    "logs_other": "{count} logs",
+    "noLog": "no log",
+    "removeLog": "Remove log on {day}",
+    "logOn": "Log on {day}",
+    "resumeToLog": "Resume the activity to log it.",
+    "pause": "Pause",
+    "resume": "Resume",
+    "archive": "Archive",
+    "restore": "Restore",
+    "streak": "Streak",
+    "best": "Best: {best}",
+    "wildcards": "Wildcards {count} of {max}",
+    "wildcardsHelp": "You earn a wildcard every {every} {unit} completed in a row. If you miss one, it's used automatically and your streak survives.",
+    "recentPeriods": "Recent periods",
+    "fulfilled": "Done",
+    "wildcardUsed": "Wildcard used",
+    "reasonGrace": "Grace",
+    "reasonPaused": "Paused",
+    "reasonTruncated": "Frequency change"
+  },
+  "categoryForm": {
+    "newTitle": "New category",
+    "editTitle": "Edit category",
+    "name": "Name",
+    "namePlaceholder": "Music",
+    "color": "Color",
+    "icon": "Icon",
+    "create": "Create category",
+    "notFound": "Category not found.",
+    "deleteConfirmTitle": "Delete this category?",
+    "deleteConfirmText": "It has no activities or missions, so deleting it has no effect.",
+    "deleteButton": "Delete category",
+    "hasHistory": "This category has history: it can't be deleted, but you can deactivate it in Settings.",
+    "icons": {
+      "cat-body": "Heart",
+      "cat-rest": "Bed",
+      "cat-mind": "Smiling face",
+      "cat-learning": "Book",
+      "cat-relationships": "Speech bubble with heart",
+      "cat-order": "House",
+      "cat-key": "Key",
+      "cat-music": "Music note",
+      "cat-coin": "Coin",
+      "cat-apple": "Apple",
+      "cat-potion": "Flask",
+      "cat-gem": "Gem",
+      "cat-tree": "Tree",
+      "cat-sword": "Sword"
+    },
+    "colors": {
+      "orange": "Orange",
+      "sky": "Blue",
+      "cyan": "Cyan",
+      "gold": "Gold",
+      "lime": "Lime",
+      "fog": "Grey",
+      "green": "Green",
+      "white": "White"
+    }
+  },
+  "missions": {
+    "title": "Missions",
+    "new": "New mission",
+    "pending": "Pending",
+    "completed": "Completed",
+    "abandoned": "Abandoned",
+    "emptyTitle": "Create a mission",
+    "emptyText": "Something one-off you want to get done, with or without a deadline.",
+    "seeAll": "See all ({count})",
+    "notFound": "Mission not found.",
+    "chipExpired": "Overdue",
+    "chipOnTime": "Done",
+    "chipLate": "Recovered",
+    "chipAbandoned": "Abandoned",
+    "complete": "Complete",
+    "undo": "Undo",
+    "completeLabel": "Complete {title}",
+    "undoLabel": "Undo {title}",
+    "completeFailed": "Couldn't complete",
+    "recovered": "Mission recovered · {xp}",
+    "accomplished": "Mission accomplished · {xp}",
+    "unmarked": "Mission unmarked · {xp}"
+  },
+  "missionForm": {
+    "newTitle": "New mission",
+    "editTitle": "Edit mission",
+    "title": "Title",
+    "titlePlaceholder": "Book a doctor's appointment",
+    "category": "Category",
+    "difficulty": "Difficulty",
+    "locked": "Category and difficulty can only be changed while the mission is pending.",
+    "deadline": "Deadline (optional)",
+    "deadlineHint": "If it goes overdue, it lowers your Discipline. Without a date, it never penalizes.",
+    "create": "Create mission"
+  },
+  "missionDetail": {
+    "created": "Created on {date}",
+    "rescheduled": "Rescheduled to {date}",
+    "deadlineSet": "Deadline: {date}",
+    "deadlineCleared": "Deadline removed",
+    "completedOn": "Completed on {date}",
+    "uncompletedOn": "Unmarked on {date}",
+    "abandonedOn": "Abandoned on {date}",
+    "expiredOn": "Overdue since {date}",
+    "abandonExpired": "The miss stays. Abandoning is final.",
+    "abandonWithDeadline": "Abandoning before the deadline costs half its value in your Discipline. It's final.",
+    "abandonNoDeadline": "It doesn't affect your points. Abandoning is final.",
+    "actionFailed": "That action couldn't be completed.",
+    "meta": "{category} · {difficulty} · {value} XP",
+    "expiredBanner": "It went overdue on {date}. Complete it when you can to recover what was lost.",
+    "completeYesterday": "I did it yesterday",
+    "uncomplete": "Unmark",
+    "doneCompleted": "Mission completed.",
+    "doneCompletedYesterday": "Mission completed yesterday.",
+    "doneUncompleted": "Mission unmarked.",
+    "doneRescheduled": "Deadline updated.",
+    "doneCleared": "Deadline removed.",
+    "doneAbandoned": "Mission abandoned.",
+    "reschedule": "Reschedule",
+    "setDeadline": "Set a deadline",
+    "newDeadline": "New deadline",
+    "rescheduleNote": "The new date is a guide: the miss is cleared when you complete it.",
+    "saveDate": "Save date",
+    "clearDeadline": "Remove deadline",
+    "history": "History",
+    "abandon": "Abandon",
+    "deleteMistake": "Delete (created by mistake)",
+    "abandonConfirm": "Abandon this mission?",
+    "deleteConfirm": "Delete this mission?",
+    "deleteText": "It will be erased without a trace. Only possible on the day you created it."
+  },
+  "profile": {
+    "title": "Profile",
+    "noAlias": "Your profile",
+    "xpOf": "{xp} / {next} XP",
+    "toNext": "{count} to level {level}",
+    "firstXp": "Log your first activity to earn XP.",
+    "totalXp": "You've earned {xp} XP in total. XP is never lost.",
+    "windowLabel": "Attribute period",
+    "days": "{count} days",
+    "emptyAttributes": "Your attributes will appear once you log your first activities.",
+    "attributes": "Attributes",
+    "needThree": "Activate at least 3 categories to see the radar.",
+    "lastDays": "Last {count} days",
+    "previousDays": "Previous {count} days",
+    "attributesList": "Attribute list",
+    "attributesNote": "Attributes measure how much of what you set out to do you completed in each area over the last {count} days, not your health or ability.",
+    "discipline": "Discipline",
+    "disciplineText": "How much of everything you set out to do you completed.",
+    "seeDetail": "See details"
+  },
+  "score": {
+    "noData": "no data ({items} of {min})",
+    "up": "↑ rising {delta}",
+    "down": "↓ falling {delta}",
+    "stable": "steady",
+    "activityPart": "{count} {unit} of {name}",
+    "missions_one": "{count} mission",
+    "missions_other": "{count} missions",
+    "expired_one": "{count} overdue mission takes away {points} possible points",
+    "expired_other": "{count} overdue missions take away {points} possible points",
+    "abandoned_one": "{count} abandoned mission takes away {points} possible points",
+    "abandoned_other": "{count} abandoned missions take away {points} possible points",
+    "notEnough": "Not enough information yet: {items} of {min} items needed.",
+    "explanation": "{label} {value}: you earned {earned} of {possible} possible points over the last {window} days{detail}.",
+    "radar": "Attribute radar: {summary}"
+  },
+  "attribute": {
+    "fallbackActivity": "activity",
+    "fallbackMission": "mission",
+    "inLastDays": "over the last {count} days",
+    "before": " · before: {value}",
+    "notFound": "Category not found or inactive.",
+    "howCalculated": "How it's calculated",
+    "measureNote": "It measures how much of what you set out to do you completed in this area, not your health or ability.",
+    "sevenDaysNote": "With 7 days, monthly activities only count if the current month is already complete.",
+    "whatCounts": "What counts",
+    "nothing": "No activities or missions in this category for the period.",
+    "pointsOf": "{earned} of {possible}",
+    "missionItem": "Mission: {title}",
+    "notEnoughDiscipline": "Not enough information yet: {value}.",
+    "disciplineNote": "It counts everything you set out to do across all your areas, including missions with a deadline. Missions without a date don't count.",
+    "whatSubtracts": "What takes points away",
+    "recover_one": "; complete it to recover them.",
+    "recover_other": "; complete them to recover them."
+  },
+  "settings": {
+    "title": "Settings",
+    "storage": "Storage",
+    "persistGranted": "Protected",
+    "persistGrantedText": "The browser won't delete your data to free up space.",
+    "persistDenied": "Not protected",
+    "persistDeniedText": "The browser could delete your data if space runs low. Installing the app usually fixes this.",
+    "persistUnsupported": "Not supported",
+    "persistUnsupportedText": "This browser can't request protected storage.",
+    "installIphone": "How to install on iPhone",
+    "categories": "Categories",
+    "categoriesNote": "Active categories appear when creating activities and on your radar (maximum 8).",
+    "newCategory": "New category",
+    "reduceMotion": "Reduce motion",
+    "motionSystem": "System",
+    "motionOn": "On",
+    "motionOff": "Off",
+    "credits": "Credits",
+    "version": "ARVID {version}",
+    "categoryActive": "Active",
+    "categoryInactive": "Inactive",
+    "editCategory": "Edit {name}",
+    "inUse_one": "It has {count} activity. Archive it or move it to another category first.",
+    "inUse_other": "It has {count} activities. Archive them or move them to another category first.",
+    "lastActive": "You need at least one active category.",
+    "tooMany": "Maximum 8 active categories.",
+    "profile": "Profile",
+    "alias": "What should I call you",
+    "gender": "Gender",
+    "language": "Language",
+    "character": "Character",
+    "arvidColor": "ARVID's color",
+    "arvidTalks": "ARVID speaks on its own",
+    "arvidTalksHelp": "Daily greeting, day complete, first activity and getting back on track.",
+    "sound": "Sound",
+    "music": "Background music",
+    "playing": "Playing",
+    "off": "Off",
+    "paused": "Paused",
+    "volume": "Volume",
+    "nowPlaying": "{state}: {track}",
+    "needsConnection": "Music needs a connection the first time.",
+    "musicNote": "Off by default. A track that has already played can be heard offline."
+  },
+  "backup": {
+    "title": "Backup",
+    "lastCopy": "Last backup: {ago}",
+    "noCopy": "You haven't made a backup yet.",
+    "explanation": "Your data only lives on this device. Export a backup and keep it outside the browser. The file contains your activities in readable text: store it somewhere private.",
+    "export": "Export backup",
+    "exported": "Backup exported.",
+    "cancelled": "Export cancelled.",
+    "fileLabel": "Backup file",
+    "import": "Import backup",
+    "imported": "Data imported.",
+    "importFailed": "Import failed. Your data hasn't changed.",
+    "replaceTitle": "Replace your data?",
+    "summary": "Exported on {date} · {activities} · {completions}",
+    "activities_one": "{count} activity",
+    "activities_other": "{count} activities",
+    "completions_one": "{count} log",
+    "completions_other": "{count} logs",
+    "replaceWarning": "It will replace all your current data.",
+    "exportFirst": "Export my current data first",
+    "replace": "Replace",
+    "shareTitle": "ARVID backup",
+    "errInvalidJson": "The file isn't valid JSON.",
+    "errNotArvid": "This file isn't an ARVID backup.",
+    "errTooNew": "This file is from a newer version of ARVID. Update the app.",
+    "errInvalid": "The file is damaged ({detail}).",
+    "errBroken": "The file is incomplete ({detail})."
+  },
+  "deleteData": {
+    "title": "Delete data",
+    "open": "Delete all my data",
+    "warning": "All your activities and logs on this device will be deleted. This can't be undone.",
+    "word": "DELETE",
+    "typeToConfirm": "Type {word} to confirm"
+  },
+  "install": {
+    "title": "Install ARVID on your iPhone",
+    "intro": "Installed on the home screen, ARVID works offline and your data is protected. Without installing, Safari may delete it if you don't open it for a few days.",
+    "step1": "Open this page in Safari.",
+    "step2": "Tap the **Share** button (the square with an arrow pointing up).",
+    "step3": "Choose **Add to Home Screen** and confirm.",
+    "step4": "Open ARVID from its icon, not from Safari.",
+    "note": "Safari's data and the installed app's data are separate: start using it from the icon."
+  },
+  "update": {
+    "available": "New version available",
+    "update": "Update"
+  },
+  "levelUp": {
+    "title": "Level {level}!",
+    "newTitle": "New title:",
+    "keep": "What you've done is never lost. Keep it up."
+  },
+  "credits": {
+    "title": "Credits",
+    "scene": "Scene and characters",
+    "music": "Music",
+    "interface": "Interface",
+    "warped": "Warped City: city, vehicles and the Runner character",
+    "streets": "Streets of Fight: the Brawler character",
+    "townspeople": "Free Townspeople Cyberpunk: pedestrians",
+    "drones": "Free Drones Pack: ARVID",
+    "ownCharacters": "Ghost and Drifter characters",
+    "ownCharactersBy": "ARVID (made with sprite-ai.art)",
+    "tracks": "Midnight Sector Drive and Glass Tower Horizon",
+    "tracksBy": "ARVID (made with Gemini)",
+    "icons": "1-Bit Pack: icons",
+    "publicDomain": "Public domain",
+    "craftpix": "CraftPix free license",
+    "own_m": "Own work",
+    "own_f": "Own work",
+    "freeUse": "Free to use"
+  },
+  "scene": {
+    "label": "Your character walks across a city bridge at night, with ARVID by their side",
+    "music": "Music",
+    "chat": "Talk to ARVID",
+    "send": "Send",
+    "chatPlaceholder": "Write to ARVID…",
+    "chatInput": "Message for ARVID",
+    "arvidSays": "ARVID says"
+  },
+  "avatar": {
+    "carousel": "Choose your character",
+    "cardLabel": "{name}, {index} of {total}, {description}",
+    "colors": "Colors",
+    "styles": {
+      "ella": "Runner",
+      "ella2": "Brawler",
+      "el": "Ghost",
+      "el2": "Drifter"
+    },
+    "descriptions": {
+      "ella": "Quick, always moving through the city",
+      "ella2": "Strong and direct",
+      "el": "Stealthy, a night owl",
+      "el2": "Calm, always passing through"
+    },
+    "variants": {
+      "original": "Original",
+      "neon": "Neon",
+      "carmesi": "Crimson",
+      "bosque": "Forest",
+      "plata": "Silver",
+      "ocaso": "Dusk"
+    }
+  },
+  "gender": {
+    "m": "Male",
+    "f": "Female",
+    "x": "Prefer not to say"
+  },
+  "language": {
+    "es": "Español",
+    "en": "English"
+  },
+  "arvid": {
+    "name": "ARVID",
+    "colors": {
+      "original": "Amber",
+      "cian": "Cyan",
+      "magenta": "Magenta",
+      "lima": "Lime",
+      "oro": "Gold",
+      "violeta": "Violet"
+    },
+    "hello": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "status": {
+      "pending_one": "You have {count} activity left today.",
+      "pending_other": "You have {count} activities left today.",
+      "done": "You've already done everything for today.",
+      "none": "Nothing pending today."
+    },
+    "lines": {
+      "greeting": {
+        "0": "Start with the smallest one: the rest gets easier.",
+        "1": "One step a day is enough. I'm right here with you.",
+        "2": "If you need anything, tap the chat and let's talk."
+      },
+      "dayComplete": {
+        "0": "Day complete, {alias}! That's how consistency is built.",
+        "1": "All done for today. Rest, you've earned it.",
+        "2": {
+          "m": "You did it! I'm proud of you, champ.",
+          "f": "You did it! I'm proud of you, champ.",
+          "x": "You did it! I'm proud of what you've done."
+        }
+      },
+      "firstActivity": {
+        "0": "Your first activity. Mark it here when you've done it.",
+        "1": "First activity created! Take it easy, no rush.",
+        "2": "You've got your first goal. I'll remind you every day."
+      },
+      "comeback": {
+        "0": "Yesterday didn't go as planned. Today is a new chance: start with just one.",
+        "1": {
+          "m": "Welcome back, {alias}. What matters is coming back.",
+          "f": "Welcome back, {alias}. What matters is coming back.",
+          "x": "Good to see you again, {alias}. What matters is coming back."
+        },
+        "2": "One bad day doesn't erase what you've done. Let's do one activity."
+      },
+      "levelUp": {
+        "0": "Level {level}! You're now {title}.",
+        "1": "You reached level {level}! Everything you do counts.",
+        "2": "Level {level}. Keep it up, {alias}."
+      }
+    },
+    "chat": {
+      "unavailable": "I'm still learning to chat. I'll be able to answer you very soon; meanwhile, I'll keep you company with my tips.",
+      "offline": "I'm offline right now. Let's talk when the connection is back.",
+      "thinking": "…"
+    },
+    "onboarding": {
+      "welcome": {
+        "0": "Hi. I'm ARVID, your companion on the road.",
+        "1": "I'll be with you every day: I'll remind you what's pending and celebrate every step with you.",
+        "2": "Before we start, I'd like to get to know you a little."
+      },
+      "language": {
+        "0": "Hi. Which language would you like us to speak?"
+      },
+      "alias": {
+        "0": "What should I call you?"
+      },
+      "gender": {
+        "0": "Nice to meet you, {alias}. How would you like me to address you?"
+      },
+      "character": {
+        "0": "Choose who represents you in the city. Swipe to see them all."
+      },
+      "arvidColor": {
+        "0": "And me, which color do you like me in?"
+      },
+      "categories": {
+        "0": "Which areas of your life do you want to improve? You can change them anytime."
+      },
+      "install": {
+        "0": "A tip: install me on your home screen so your data isn't lost."
+      },
+      "done": {
+        "0": {
+          "m": "All set, {alias}. Welcome. Let's go for day one.",
+          "f": "All set, {alias}. Welcome. Let's go for day one.",
+          "x": "All set, {alias}. Welcome. Let's go for day one."
+        }
+      },
+      "intro": {
+        "0": "Hi, I'm ARVID. From now on I'll be with you every day.",
+        "1": "First of all, I'd like to get to know you a little."
+      }
+    }
+  },
+  "onboarding": {
+    "start": "Start",
+    "aliasLabel": "Your name or nickname",
+    "aliasPlaceholder": "Alex",
+    "categoriesTitle": "Your life areas",
+    "categoriesError": "Activate at least one category",
+    "goToday": "Go to Today",
+    "understood": "Got it",
+    "dialogue": "Dialogue with ARVID",
+    "tapToContinue": "Tap to continue",
+    "introTitle": "Meet ARVID"
+  }
+}

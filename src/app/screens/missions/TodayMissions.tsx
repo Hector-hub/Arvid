@@ -11,6 +11,7 @@ import { useToday } from '../../clock';
 import { useData, useMissions } from '../../data';
 import { xpDeltaText } from '../../text';
 import { MissionSummary } from './MissionRow';
+import { t } from '../../../i18n';
 
 const TAP_COOLDOWN_MS = 400;
 
@@ -40,7 +41,7 @@ export function TodayMissionsSection({
   if (view.items.length === 0 && view.completedToday.length === 0) return null;
   return (
     <section className="stack" aria-labelledby="sec-missions">
-      <h2 id="sec-missions">Misiones</h2>
+      <h2 id="sec-missions">{t('missions.title')}</h2>
       <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
         {[...view.items, ...view.completedToday].map((item) => (
           <MissionTodayRow
@@ -53,7 +54,7 @@ export function TodayMissionsSection({
       </ul>
       {view.openCount > view.items.length && (
         <Link to="/actividades/misiones" className="btn btn-ghost">
-          Ver todas ({view.openCount})
+          {t('missions.seeAll', { count: view.openCount })}
         </Link>
       )}
     </section>
@@ -86,16 +87,16 @@ function MissionTodayRow({ item, category, today }: { item: MissionItem; categor
   const complete = () =>
     run(async () => {
       const wasExpired = analysis.state === 'expired';
-      if (!(await completeMission(ctx, record.mission.id, today))) return 'No se pudo completar';
+      if (!(await completeMission(ctx, record.mission.id, today))) return t('missions.completeFailed');
       celebrate('small');
-      return `${wasExpired ? 'Misión recuperada' : 'Misión cumplida'} · ${xpDeltaText(valueCents(item))}`;
+      return t(wasExpired ? 'missions.recovered' : 'missions.accomplished', { xp: xpDeltaText(valueCents(item)) });
     });
 
   const undo = () =>
     run(async () =>
       (await uncompleteMission(ctx, record.mission.id))
-        ? `Misión desmarcada · ${xpDeltaText(-valueCents(item))}`
-        : 'No se pudo deshacer',
+        ? t('missions.unmarked', { xp: xpDeltaText(-valueCents(item)) })
+        : t('today.undoFailed'),
     );
 
   return (
@@ -109,20 +110,20 @@ function MissionTodayRow({ item, category, today }: { item: MissionItem; categor
           type="button"
           className="btn btn-primary"
           disabled={busy}
-          aria-label={`Completar ${title}`}
+          aria-label={t('missions.completeLabel', { title })}
           onClick={() => void complete()}
         >
-          Completar
+          {t('missions.complete')}
         </button>
       ) : (
         <button
           type="button"
           className="btn"
           disabled={busy}
-          aria-label={`Deshacer ${title}`}
+          aria-label={t('missions.undoLabel', { title })}
           onClick={() => void undo()}
         >
-          Deshacer
+          {t('missions.undo')}
         </button>
       )}
     </li>

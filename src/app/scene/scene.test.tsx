@@ -11,7 +11,6 @@ import {
 } from '../../data/repository';
 import { renderRoutes, setupData } from '../test-utils';
 import { CreditsScreen } from '../screens/CreditsScreen';
-import { Onboarding } from '../screens/Onboarding';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { TodayScreen } from '../screens/TodayScreen';
 import { celebrate } from './engine';
@@ -37,30 +36,14 @@ afterEach(async () => {
 });
 
 describe('protagonista (PRO)', () => {
-  it('PRO-03: elegir protagonista y color seguidos guarda ambos', async () => {
+  it('PRO-03: elegir personaje y color seguidos guarda ambos', async () => {
     const user = userEvent.setup();
     renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
-    await user.click(await screen.findByRole('radio', { name: 'Él 2' }));
+    await user.click(await screen.findByRole('radio', { name: /^Drifter,/ }));
     await user.click(screen.getByRole('radio', { name: 'Ocaso' }));
     await waitFor(async () => expect((await loadSettings(ctx.db)).avatar).toEqual({ cast: 'el2', variant: 'ocaso' }));
-    expect(screen.getByRole('radio', { name: 'Él 2' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /^Drifter,/ })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'Ocaso' })).toBeChecked();
-  });
-
-  it('PRO-02: el onboarding pregunta el protagonista antes de las categorías', async () => {
-    await ctx.db.settings.delete('onboardingCompletedAt');
-    const user = userEvent.setup();
-    renderRoutes(ctx, [{ path: '/', element: <Onboarding /> }], '/');
-    await user.click(await screen.findByRole('button', { name: 'Empezar' }));
-    expect(screen.getByRole('heading', { name: 'Elige tu protagonista' })).toBeInTheDocument();
-    // "Ella · Original" viene preseleccionada
-    expect(screen.getByRole('radio', { name: 'Ella' })).toBeChecked();
-    expect(screen.getByRole('radio', { name: 'Original' })).toBeChecked();
-    await user.click(screen.getByRole('radio', { name: 'Ella 2' }));
-    await user.click(screen.getByRole('radio', { name: 'Neón' }));
-    await user.click(screen.getByRole('button', { name: 'Continuar' }));
-    expect(await screen.findByRole('heading', { name: 'Tus áreas de vida' })).toBeInTheDocument();
-    expect((await loadSettings(ctx.db)).avatar).toEqual({ cast: 'ella2', variant: 'neon' });
   });
 });
 

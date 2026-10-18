@@ -1,19 +1,23 @@
 // Dibujo de la escena neón sobre un canvas de 384×192 (spec 05, ESC). Solo lee el estado de la simulación.
 // Los colores de la escena son una excepción a la paleta de la interfaz (design-system §1, DIS-02).
 import { walkFrame, type CastSpec } from '../../domain/avatar/catalog';
+import { hasMore, visibleLines, type Speech } from '../../domain/arvid/speech';
+import { isScanningProp } from '../../domain/scene/arvid';
 import {
   DRONE_SCAN_TICKS,
   LAYOUT,
   PARALLAX,
+  PROP_BASELINE,
   SCENE_H,
   SCENE_W,
+  arvidPose,
   carBaseline,
-  dronePosition,
   lampScreenX,
   visibleLamps,
   type SceneState,
 } from '../../domain/scene/scene';
 import type { HeroSheets, SceneImages } from './assets';
+import { BUBBLE_FONT } from './bubble';
 import { DRONE, EXTRAS_FRAME, PEDESTRIANS } from './extras';
 
 const C = {
@@ -25,6 +29,7 @@ const C = {
   magenta: '#9b0c8e',
   lamp: '#f07c36',
   glow: '#de9a41',
+  cyanLight: '#73eff7',
 };
 const PARTICLE_COLORS = [C.cyan, C.lamp, C.magenta];
 
@@ -74,7 +79,21 @@ export function drawHero(c: Ctx, cast: CastSpec, sheets: HeroSheets, t: number, 
   sprite(c, img, frame * spec.frameW, 0, spec.frameW, spec.frameH, Math.round(x - anchor * cast.scale), Math.round(feet - cast.feetY * cast.scale), w, h, cast.flip);
 }
 
-export function drawScene(c: Ctx, s: SceneState, imgs: SceneImages, hero: { cast: CastSpec; sheets: HeroSheets }, reduced: boolean) {
+export interface SceneExtras {
+  /** Atlas con ARVID en su color (si aún no está, se usa el original). */
+  arvid?: CanvasImageSource;
+  /** Lo que ARVID está diciendo (BP). */
+  speech?: Speech;
+}
+
+export function drawScene(
+  c: Ctx,
+  s: SceneState,
+  imgs: SceneImages,
+  hero: { cast: CastSpec; sheets: HeroSheets },
+  reduced: boolean,
+  extras: SceneExtras = {},
+) {
   const off = s.offset;
   const { road, walk, rail, lampTop } = LAYOUT;
   c.clearRect(0, 0, SCENE_W, SCENE_H);
@@ -121,6 +140,12 @@ export function drawScene(c: Ctx, s: SceneState, imgs: SceneImages, hero: { cast
     rect(c, x - 1, rail - 4, 5, 4, C.blue);
   }
 
+  // Detalles de la acera que ARVID inspecciona (MV-03)
+  for (const p of s.props) {
+    const img = imgs.props[p.kind];
+    if (img) c.drawImage(img, Math.round(p.wx - off), PROP_BASELINE - img.height);
+  }
+
   // Peatones: miran a la derecha; los que van a la izquierda, en espejo (ESC-06)
   for (const p of s.peds) {
     const type = PEDESTRIANS[p.type];
@@ -129,11 +154,30 @@ export function drawScene(c: Ctx, s: SceneState, imgs: SceneImages, hero: { cast
     sprite(c, imgs.extras, f * EXTRAS_FRAME, type.row * EXTRAS_FRAME, EXTRAS_FRAME, EXTRAS_FRAME, Math.round(p.wx - off), LAYOUT.backFeet - p.size, p.size, p.size, p.dir < 0);
   }
 
-  // Dron mascota: detrás y por encima del hombro (ESC-07)
-  const d = dronePosition(s);
-  const anim = s.drone.scanT >= 0 ? DRONE.scan : DRONE.walk;
-  const df = reduced ? 0 : s.drone.scanT >= 0 ? Math.floor(s.drone.scanT / DRONE_SCAN_TICKS) % anim.frames : Math.floor(s.t / anim.ticks) % anim.frames;
-  c.drawImage(imgs.extras, df * EXTRAS_FRAME, anim.row * EXTRAS_FRAME, EXTRAS_FRAME, EXTRAS_FRAME, d.x + 6, d.y + 8, DRONE.size, DRONE.size);
+  // ARVID: escanea (luz encendida) al hablar, al inspeccionar un detalle y de vez en cuando en su sitio (AV-02)
+  const pose = arvidPose(s);
+  const talking = !!extras.speech;
+  const scanning = talking || isScanningProp(s.arvid) || s.drone.scanT >= 0;
+  const anim = scanning ? DRONE.scan : DRONE.walk;
+  const df = reduced
+    ? 0
+    : s.drone.scanT >= 0 && !talking
+      ? Math.floor(s.drone.scanT / DRONE_SCAN_TICKS) % anim.frames
+      : Math.floor(s.t / anim.ticks) % anim.frames;
+  const size = DRONE.size * pose.scale;
+  c.globalAlpha = pose.alpha;
+  c.drawImage(
+    extras.arvid ?? imgs.extras,
+    df * EXTRAS_FRAME,
+    anim.row * EXTRAS_FRAME,
+    EXTRAS_FRAME,
+    EXTRAS_FRAME,
+    Math.round(pose.x - size / 2),
+    Math.round(pose.y - size / 2),
+    Math.round(size),
+    Math.round(size),
+  );
+  c.globalAlpha = 1;
 
   drawHero(c, hero.cast, hero.sheets, s.t, reduced, LAYOUT.heroX, LAYOUT.heroFeet);
 
@@ -149,5 +193,47 @@ export function drawScene(c: Ctx, s: SceneState, imgs: SceneImages, hero: { cast
     rect(c, p.x, p.y, p.size, p.size, PARTICLE_COLORS[p.color] ?? C.cyan);
   }
   c.globalAlpha = 1;
+
+  if (extras.speech) drawBubble(c, extras.speech, pose.x, pose.y);
+}
+
+// ---------- Burbuja pixel ×2 (BP-01) ----------
+const LINE_H = 18;
+/** Hueco a la derecha para no tapar la bocina. */
+const BUBBLE_RIGHT_GAP = 50;
+const PAD = 7;
+
+/** Burbuja anclada a ARVID, con cola hacia él y ▼ si hay más páginas (BP-01 a BP-03). */
+function drawBubble(c: Ctx, sp: Speech, ax: number, ay: number) {
+  const lines = sp.pages[sp.page] ?? [];
+  if (lines.length === 0) return;
+  c.font = BUBBLE_FONT;
+  const textW = Math.max(...lines.map((l) => c.measureText(l).width), 40);
+  const w = Math.ceil(textW) + PAD * 2 + 8;
+  const h = lines.length * LINE_H + PAD * 2 - 4;
+  // Sin llegar a la esquina superior derecha, donde está la bocina (MU-01)
+  const x = Math.round(Math.max(4, Math.min(SCENE_W - BUBBLE_RIGHT_GAP - w, ax - 24)));
+  const y = Math.round(Math.max(4, ay - 22 - h));
+  c.fillStyle = 'rgba(5, 9, 18, 0.92)';
+  c.fillRect(x, y, w, h);
+  // Borde de 2 px y cola en escalera hacia ARVID
+  c.fillStyle = C.cyanLight;
+  c.fillRect(x, y, w, 2);
+  c.fillRect(x, y + h - 2, w, 2);
+  c.fillRect(x, y, 2, h);
+  c.fillRect(x + w - 2, y, 2, h);
+  const tx = Math.round(Math.min(x + w - 12, Math.max(x + 8, ax - 2)));
+  for (let i = 0; i < 6; i++) c.fillRect(tx - Math.floor(i / 2), y + h + i, 2, 1);
+  c.fillStyle = '#f4f4f4';
+  c.textBaseline = 'top';
+  visibleLines(sp).forEach((line, i) => c.fillText(line, x + PAD + 2, y + PAD + i * LINE_H));
+  if (hasMore(sp)) {
+    c.fillStyle = C.cyanLight;
+    const mx = x + w - 10;
+    const my = y + h - 9;
+    c.fillRect(mx - 2, my, 5, 1);
+    c.fillRect(mx - 1, my + 1, 3, 1);
+    c.fillRect(mx, my + 2, 1, 1);
+  }
 }
 

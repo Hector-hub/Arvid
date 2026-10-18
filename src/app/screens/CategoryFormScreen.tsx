@@ -12,34 +12,9 @@ import {
 import { useCategories, useData } from '../data';
 import { BackLink, Sprite } from '../design/components';
 import type { SpriteName } from '../design/sprites.generated';
-
-const ICON_NAMES: Record<string, string> = {
-  'cat-body': 'Corazón',
-  'cat-rest': 'Cama',
-  'cat-mind': 'Cara sonriente',
-  'cat-learning': 'Libro',
-  'cat-relationships': 'Bocadillo con corazón',
-  'cat-order': 'Casa',
-  'cat-key': 'Llave',
-  'cat-music': 'Nota musical',
-  'cat-coin': 'Moneda',
-  'cat-apple': 'Manzana',
-  'cat-potion': 'Frasco',
-  'cat-gem': 'Gema',
-  'cat-tree': 'Árbol',
-  'cat-sword': 'Espada',
-};
-
-const COLOR_NAMES: Record<CategoryColor, string> = {
-  orange: 'Naranja',
-  sky: 'Azul',
-  cyan: 'Cian',
-  gold: 'Dorado',
-  lime: 'Lima',
-  fog: 'Gris',
-  green: 'Verde',
-  white: 'Blanco',
-};
+import { t, tDynamic } from '../../i18n';
+import { CATEGORY_NAME_MAX } from '../../domain/config';
+import { errorText } from '../text';
 
 /** Ajustes → Categorías → nueva o editar (CAT-04 a CAT-06). */
 export function CategoryFormScreen() {
@@ -47,7 +22,7 @@ export function CategoryFormScreen() {
   const categories = useCategories();
   if (!categories) return null;
   const category = id ? categories.find((c) => c.id === id) : undefined;
-  if (id && !category) return <p>Categoría no encontrada.</p>;
+  if (id && !category) return <p>{t('categoryForm.notFound')}</p>;
   return <CategoryForm key={id ?? 'new'} category={category} defaultColor={suggestColor(categories)} />;
 }
 
@@ -79,48 +54,48 @@ function CategoryForm({ category, defaultColor }: { category?: Category; default
 
   return (
     <form className="stack" style={{ gap: 'var(--s5)' }} onSubmit={(e) => void submit(e)} noValidate>
-      <BackLink to="/ajustes" label="Ajustes" />
-      <h1>{category ? 'Editar categoría' : 'Nueva categoría'}</h1>
+      <BackLink to="/ajustes" label={t('nav.settings')} />
+      <h1>{category ? t('categoryForm.editTitle') : t('categoryForm.newTitle')}</h1>
 
       <div className="field">
-        <label htmlFor="category-name">Nombre</label>
+        <label htmlFor="category-name">{t('categoryForm.name')}</label>
         <input
           id="category-name"
           type="text"
           value={name}
           maxLength={40}
           autoComplete="off"
-          placeholder="Música"
+          placeholder={t('categoryForm.namePlaceholder')}
           aria-invalid={!!errors.name}
           aria-describedby={errors.name ? 'category-name-error' : undefined}
           onChange={(e) => setName(e.target.value)}
         />
         {errors.name && (
           <p id="category-name-error" className="field-error">
-            {errors.name}
+            {errorText(errors.name, { max: CATEGORY_NAME_MAX })}
           </p>
         )}
       </div>
 
       <fieldset className="field">
-        <legend>Color</legend>
+        <legend>{t('categoryForm.color')}</legend>
         <div className="choice-group">
           {CATEGORY_COLORS.map((c) => (
             <label key={c} className="choice">
               <input type="radio" name="color" checked={color === c} onChange={() => setColor(c)} />
               <span aria-hidden="true" style={{ width: 20, height: 20, background: `var(--cat-${c})` }} />
-              {COLOR_NAMES[c]}
+              {t(`categoryForm.colors.${c}`)}
             </label>
           ))}
         </div>
       </fieldset>
 
       <fieldset className="field">
-        <legend>Icono</legend>
+        <legend>{t('categoryForm.icon')}</legend>
         <div className="choice-group">
           {CATEGORY_ICONS.map((i) => (
             <label key={i} className="choice" style={{ padding: 'var(--s2)' }}>
-              <input type="radio" name="icon" checked={icon === i} onChange={() => setIcon(i)} aria-label={ICON_NAMES[i] ?? i} />
+              <input type="radio" name="icon" checked={icon === i} onChange={() => setIcon(i)} aria-label={tDynamic(`categoryForm.icons.${i}`)} />
               <Sprite name={i as SpriteName} color={`var(--cat-${color})`} />
             </label>
           ))}
@@ -129,10 +104,10 @@ function CategoryForm({ category, defaultColor }: { category?: Category; default
 
       <div className="row">
         <button type="button" className="btn btn-ghost" onClick={() => navigate('/ajustes')}>
-          Cancelar
+          {t('common.cancel')}
         </button>
         <button type="submit" className="btn btn-primary grow">
-          {category ? 'Guardar' : 'Crear categoría'}
+          {category ? t('common.save') : t('categoryForm.create')}
         </button>
       </div>
 
@@ -141,28 +116,28 @@ function CategoryForm({ category, defaultColor }: { category?: Category; default
           {deletable ? (
             confirmDelete ? (
               <div className="banner stack" role="alertdialog" aria-labelledby="del-cat" style={{ alignItems: 'stretch' }}>
-                <h3 id="del-cat">¿Eliminar la categoría?</h3>
-                <p className="small">No tiene actividades ni misiones, así que se borra sin efectos.</p>
+                <h3 id="del-cat">{t('categoryForm.deleteConfirmTitle')}</h3>
+                <p className="small">{t('categoryForm.deleteConfirmText')}</p>
                 <div className="row">
                   <button type="button" className="btn btn-ghost" onClick={() => setConfirmDelete(false)}>
-                    Cancelar
+                    {t('common.cancel')}
                   </button>
                   <button
                     type="button"
                     className="btn btn-danger grow"
                     onClick={() => void deleteCategory(ctx, category.id).then((ok) => ok && navigate('/ajustes', { replace: true }))}
                   >
-                    Eliminar
+                    {t('common.delete')}
                   </button>
                 </div>
               </div>
             ) : (
               <button type="button" className="btn btn-danger" onClick={() => setConfirmDelete(true)}>
-                Eliminar categoría
+                {t('categoryForm.deleteButton')}
               </button>
             )
           ) : (
-            <p className="small muted">Esta categoría tiene historial: no se puede eliminar, pero puedes desactivarla en Ajustes.</p>
+            <p className="small muted">{t('categoryForm.hasHistory')}</p>
           )}
         </div>
       )}

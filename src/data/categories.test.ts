@@ -27,9 +27,9 @@ describe('categorías propias (CAT-04 a CAT-07)', () => {
     expect(created).toMatchObject({ name: 'Música', active: true, color: 'green', icon: 'cat-music', order: 6 });
     expect(await createCategory(ctx, { name: 'MÚSICA', color: 'white', icon: 'cat-key' })).toEqual({
       ok: false,
-      errors: { name: 'Ya tienes una categoría con ese nombre' },
+      errors: { name: 'nameDuplicate' },
     });
-    expect(await createCategory(ctx, { name: 'X', color: 'red' as never, icon: 'nav-today' })).toMatchObject({ ok: false, errors: { color: 'Elige un color', icon: 'Elige un icono' } });
+    expect(await createCategory(ctx, { name: 'X', color: 'red' as never, icon: 'nav-today' })).toMatchObject({ ok: false, errors: { color: 'colorRequired', icon: 'iconRequired' } });
   });
 
   it('con 8 activas, la nueva se crea inactiva', async () => {

@@ -9,12 +9,13 @@ import { Radar } from '../profile/Radar';
 import { Scene } from '../scene/Scene';
 import { scoreValueText, trendText } from '../profile/scoreText';
 import { useProfile } from '../profile/useProfile';
-import { intText } from '../text';
+import { categoryName, intText, levelTitle } from '../text';
+import { t } from '../../i18n';
 
 const WINDOWS: WindowDays[] = [7, 30, 90];
 
-/** Hoja de personaje: nivel, ventana, radar, Disciplina y lista de atributos (PJ-01 a PJ-07). */
-export function CharacterScreen() {
+/** Perfil (spec 06, PF): el usuario y su progreso; nivel, ventana, radar, Disciplina y atributos (PJ-01 a PJ-07). */
+export function ProfileScreen() {
   const { db } = useData();
   const analysis = useAnalysis();
   const settings = useSettings();
@@ -28,37 +29,33 @@ export function CharacterScreen() {
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
       <header className="row">
-        <h1 className="grow">Personaje</h1>
-        <Link to="/ajustes" className="btn btn-icon btn-ghost" aria-label="Ajustes">
+        <h1 className="grow">
+          {settings.profile ? `${settings.profile.alias} · ${t(`avatar.styles.${settings.avatar.cast}`)}` : t('profile.noAlias')}
+        </h1>
+        <Link to="/ajustes" className="btn btn-icon btn-ghost" aria-label={t('nav.settings')}>
           <Sprite name="nav-settings" />
         </Link>
       </header>
 
       <Panel className="stack">
         <Scene
-          overlay={
-            <h2>
-              Nivel {p.level} · {p.title}
-            </h2>
-          }
+          overlay={<h2>{t('level.long', { level: p.level, title: levelTitle(p.level) })}</h2>}
         />
         <XpBar xp={p.xp} start={p.levelStartXp} next={p.nextLevelXp} />
         <p className="row small">
           <span className="grow pixel" style={{ color: 'var(--xp)' }}>
-            {intText(p.xp)} / {intText(p.nextLevelXp)} XP
+            {t('profile.xpOf', { xp: intText(p.xp), next: intText(p.nextLevelXp) })}
           </span>
-          <span className="muted">
-            {intText(p.nextLevelXp - p.xp)} para el nivel {p.level + 1}
-          </span>
+          <span className="muted">{t('profile.toNext', { count: intText(p.nextLevelXp - p.xp), level: p.level + 1 })}</span>
         </p>
         {p.xpCents === 0 ? (
-          <p className="muted">Registra tu primera actividad para ganar XP.</p>
+          <p className="muted">{t('profile.firstXp')}</p>
         ) : (
-          <p className="muted small">Has ganado {intText(p.xp)} XP en total. La XP nunca se pierde.</p>
+          <p className="muted small">{t('profile.totalXp', { xp: intText(p.xp) })}</p>
         )}
       </Panel>
 
-      <div className="tabs" role="group" aria-label="Periodo de los atributos">
+      <div className="tabs" role="group" aria-label={t('profile.windowLabel')}>
         {WINDOWS.map((w) => (
           <button
             key={w}
@@ -67,19 +64,19 @@ export function CharacterScreen() {
             aria-pressed={w === window}
             onClick={() => void saveSetting(db, 'radarWindow', w)}
           >
-            {w} días
+            {t('profile.days', { count: w })}
           </button>
         ))}
       </div>
 
       {!hasData ? (
         <Panel>
-          <p className="muted">Tus atributos aparecerán cuando registres tus primeras actividades.</p>
+          <p className="muted">{t('profile.emptyAttributes')}</p>
         </Panel>
       ) : (
         <>
           <Panel className="stack" labelledBy="attrs-title">
-            <h2 id="attrs-title">Atributos</h2>
+            <h2 id="attrs-title">{t('profile.attributes')}</h2>
             {categories.length >= MIN_RADAR_AXES ? (
               <>
                 <Radar categories={categories} current={profile.current} previous={profile.previous} />
@@ -88,29 +85,29 @@ export function CharacterScreen() {
                     <span aria-hidden="true" style={{ color: 'var(--xp)' }}>
                       ■{' '}
                     </span>
-                    Últimos {window} días
+                    {t('profile.lastDays', { count: window })}
                   </span>
                   <span>
                     <span aria-hidden="true" style={{ color: 'var(--c-fog)' }}>
                       - -{' '}
                     </span>
-                    {window} días anteriores
+                    {t('profile.previousDays', { count: window })}
                   </span>
                 </p>
               </>
             ) : (
-              <p className="small muted">Activa al menos 3 categorías para ver el radar.</p>
+              <p className="small muted">{t('profile.needThree')}</p>
             )}
-            <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 'var(--s3)' }} aria-label="Lista de atributos">
+            <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 'var(--s3)' }} aria-label={t('profile.attributesList')}>
               {categories.map((c) => {
                 const score = profile.current.attributes.get(c.id);
-                const t = trendText(trend(score?.value, profile.previous.attributes.get(c.id)?.value));
+                const tr = trendText(trend(score?.value, profile.previous.attributes.get(c.id)?.value));
                 return (
                   <li key={c.id} className="stack" style={{ gap: 'var(--s1)' }}>
-                    <Link to={`/personaje/atributo/${c.id}`} className="row" style={{ color: 'var(--text)', textDecoration: 'none' }}>
+                    <Link to={`/perfil/atributo/${c.id}`} className="row" style={{ color: 'var(--text)', textDecoration: 'none' }}>
                       <CategoryIcon category={c} />
-                      <span className="grow">{c.name}</span>
-                      {t && <span className="small muted">{t}</span>}
+                      <span className="grow">{categoryName(c)}</span>
+                      {tr && <span className="small muted">{tr}</span>}
                       <span className="pixel" style={{ minWidth: 32, textAlign: 'right', color: score?.value === undefined ? 'var(--text-muted)' : 'var(--text)' }}>
                         {score?.value ?? '—'}
                       </span>
@@ -121,10 +118,7 @@ export function CharacterScreen() {
                 );
               })}
             </ul>
-            <p className="small muted">
-              Los atributos miden cuánto cumpliste lo que te propusiste en cada área durante los últimos {window} días, no tu salud
-              ni tu capacidad.
-            </p>
+            <p className="small muted">{t('profile.attributesNote', { count: window })}</p>
           </Panel>
 
           <DisciplineMeter score={profile.current.discipline} previous={profile.previous.discipline} />
@@ -147,12 +141,12 @@ function ScoreBar({ score, color }: { score?: Score; color: string }) {
 
 /** Medidor de Disciplina de 10 bloques (PJ-03, D-025). */
 function DisciplineMeter({ score, previous }: { score: Score; previous: Score }) {
-  const t = trendText(trend(score.value, previous.value));
+  const tr = trendText(trend(score.value, previous.value));
   return (
     <Panel className="stack" labelledBy="discipline-title">
       <div className="row">
         <h2 id="discipline-title" className="grow">
-          Disciplina
+          {t('profile.discipline')}
         </h2>
         <span className="pixel" style={{ fontSize: '1.5rem', color: score.value === undefined ? 'var(--text-muted)' : 'var(--level)' }}>
           {score.value ?? '—'}
@@ -160,11 +154,11 @@ function DisciplineMeter({ score, previous }: { score: Score; previous: Score })
       </div>
       <ScoreBar score={score} color="var(--level)" />
       <p className="small muted">
-        {score.value === undefined ? scoreValueText(score) : 'Cuánto cumpliste de todo lo que te propusiste.'}
-        {t && ` · ${t}`}
+        {score.value === undefined ? scoreValueText(score) : t('profile.disciplineText')}
+        {tr && ` · ${tr}`}
       </p>
-      <Link to="/personaje/disciplina" className="btn">
-        Ver detalle
+      <Link to="/perfil/disciplina" className="btn">
+        {t('profile.seeDetail')}
       </Link>
     </Panel>
   );

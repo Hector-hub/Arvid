@@ -1,35 +1,30 @@
 import { MIN_ITEMS, type BreakdownEntry, type Score, type Trend } from '../../domain/attributes/attributes';
-import { periodUnit } from '../text';
-
-const NUMBER = new Intl.NumberFormat('es', { maximumFractionDigits: 2 });
+import { t } from '../../i18n';
+import { decimalText, joinList, periodUnit } from '../text';
 
 export function pointsText(cents: number): string {
-  return NUMBER.format(cents / 100);
+  return decimalText(cents / 100);
 }
 
 export function scoreValueText(score: Score | undefined): string {
-  if (!score || score.value === undefined) return `sin datos (${score?.items ?? 0} de ${MIN_ITEMS})`;
+  if (!score || score.value === undefined) return t('score.noData', { items: score?.items ?? 0, min: MIN_ITEMS });
   return String(score.value);
 }
 
 /** "↑ subiendo 6", "estable", "↓ bajando 8" (R-AT5). */
-export function trendText(t: Trend | undefined): string | undefined {
-  if (!t) return undefined;
-  if (t.direction === 'up') return `↑ subiendo ${t.delta}`;
-  if (t.direction === 'down') return `↓ bajando ${Math.abs(t.delta)}`;
-  return 'estable';
-}
-
-function joinList(parts: string[]): string {
-  if (parts.length <= 1) return parts.join('');
-  return `${parts.slice(0, -1).join(', ')} y ${parts.at(-1)}`;
+export function trendText(tr: Trend | undefined): string | undefined {
+  if (!tr) return undefined;
+  if (tr.direction === 'up') return t('score.up', { delta: tr.delta });
+  if (tr.direction === 'down') return t('score.down', { delta: Math.abs(tr.delta) });
+  return t('score.stable');
 }
 
 /** "4 semanas de Gym, 29 días de Caminar y 1 misión" (ATR-06, game-design §10). */
 export function breakdownText(breakdown: BreakdownEntry[], activityName: (id: string) => string): string {
   const parts = breakdown.flatMap((b) => {
-    if (b.source === 'activity') return [`${b.periods} ${periodUnit(b.kind, b.periods)} de ${activityName(b.activityId)}`];
-    if (b.source === 'missions') return [`${b.count} ${b.count === 1 ? 'misión' : 'misiones'}`];
+    if (b.source === 'activity')
+      return [t('score.activityPart', { count: b.periods, unit: periodUnit(b.kind, b.periods), name: activityName(b.activityId) })];
+    if (b.source === 'missions') return [t('score.missions', { count: b.count })];
     return [];
   });
   return joinList(parts);
@@ -37,9 +32,8 @@ export function breakdownText(breakdown: BreakdownEntry[], activityName: (id: st
 
 /** "1 misión vencida resta 10 puntos posibles" (ATR-06). */
 export function penaltyText(b: Extract<BreakdownEntry, { source: 'penalty' }>): string {
-  const n = b.missionIds.length;
-  const what = b.reason === 'expired' ? (n === 1 ? 'misión vencida resta' : 'misiones vencidas restan') : n === 1 ? 'misión abandonada resta' : 'misiones abandonadas restan';
-  return `${n} ${what} ${pointsText(b.possibleCents)} puntos posibles`;
+  const vars = { count: b.missionIds.length, points: pointsText(b.possibleCents) };
+  return b.reason === 'expired' ? t('score.expired', vars) : t('score.abandoned', vars);
 }
 
 /** Explicación de un atributo o de Disciplina (DA-02, DA-05, game-design §10). */
@@ -50,7 +44,14 @@ export function explanationText(params: {
   activityName: (id: string) => string;
 }): string {
   const { label, score, window, activityName } = params;
-  if (score.value === undefined) return `Aún no hay suficiente información: ${score.items} de ${MIN_ITEMS} elementos necesarios.`;
+  if (score.value === undefined) return t('score.notEnough', { items: score.items, min: MIN_ITEMS });
   const detail = breakdownText(score.breakdown, activityName);
-  return `${label} ${score.value}: ganaste ${pointsText(score.earnedCents)} de ${pointsText(score.possibleCents)} puntos posibles en los últimos ${window} días${detail ? ` (${detail})` : ''}.`;
+  return t('score.explanation', {
+    label,
+    value: score.value,
+    earned: pointsText(score.earnedCents),
+    possible: pointsText(score.possibleCents),
+    window,
+    detail: detail ? ` (${detail})` : '',
+  });
 }

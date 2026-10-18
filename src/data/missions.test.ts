@@ -55,7 +55,7 @@ describe('comandos de misiones', () => {
     expect(record!.events).toEqual([expect.objectContaining({ type: 'deadlineSet', deadline: '2026-10-15', date: '2026-10-14' })]);
     const categoryId = (await loadCategories(db))[0]!.id;
     const bad = await createMission(ctx, { title: 'x', categoryId, difficulty: 'easy', deadline: d('2026-10-13') });
-    expect(bad).toEqual({ ok: false, errors: { deadline: 'La fecha límite no puede ser pasada' } });
+    expect(bad).toEqual({ ok: false, errors: { deadline: 'deadlinePast' } });
   });
 
   it('completar hoy, desmarcar y "ayer" antes de la creación no permitido (GD-A5)', async () => {
