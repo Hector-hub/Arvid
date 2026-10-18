@@ -11,7 +11,7 @@ test.describe('ARVID (spec 06)', () => {
     await expect(arvidSays(page)).toHaveText(/ARVID dice: (Buenos días|Buenas tardes|Buenas noches), Prueba\./, { timeout: 10_000 });
   });
 
-  test('CH: el chat se despliega desde el botón, pasa a "Enviar" y ARVID responde (sin IA en la 0.6.0)', async ({ page }) => {
+  test('CH: el chat se despliega desde el botón, pasa a "Enviar"; sin permiso, ARVID pide activar la IA', async ({ page }) => {
     await completeOnboarding(page);
     await page.getByRole('button', { name: 'Hablar con ARVID' }).click();
     const input = page.getByRole('textbox', { name: 'Mensaje para ARVID' });
@@ -19,9 +19,26 @@ test.describe('ARVID (spec 06)', () => {
     await expect(page.getByRole('button', { name: 'Enviar' })).toBeVisible();
     await input.fill('¿Qué hago hoy?');
     await page.getByRole('button', { name: 'Enviar' }).click();
-    await expect(arvidSays(page)).toHaveText(/Aún estoy aprendiendo a conversar/, { timeout: 15_000 });
+    await expect(arvidSays(page)).toHaveText(/activa «ARVID con IA»/, { timeout: 15_000 });
     await page.keyboard.press('Escape');
     await expect(input).toBeHidden();
+  });
+
+  test('IA: con permiso, ARVID saluda y conversa con lo que responde /api/arvid', async ({ page }) => {
+    const requests: { moment: string; messages: unknown[] }[] = [];
+    await page.route('**/api/arvid', async (route) => {
+      const body = route.request().postDataJSON() as { moment: string; messages: { content: string }[] };
+      requests.push(body);
+      const reply = body.moment === 'chat' ? `Respuesta a: ${body.messages.at(-1)!.content}` : 'Hola desde la IA, Prueba.';
+      await route.fulfill({ json: { reply } });
+    });
+    await completeOnboarding(page, { ai: true });
+    await expect(arvidSays(page)).toHaveText(/Hola desde la IA, Prueba\./, { timeout: 10_000 });
+    await page.getByRole('button', { name: 'Hablar con ARVID' }).click();
+    await page.getByRole('textbox', { name: 'Mensaje para ARVID' }).fill('¿Qué hago hoy?');
+    await page.getByRole('button', { name: 'Enviar' }).click();
+    await expect(arvidSays(page)).toHaveText(/Respuesta a: ¿Qué hago hoy\?/, { timeout: 15_000 });
+    expect(requests.map((r) => r.moment)).toEqual(['greeting', 'chat']);
   });
 
   test('I18N: el onboarding en inglés deja la app en inglés', async ({ page }) => {

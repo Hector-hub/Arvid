@@ -11,7 +11,7 @@ Cada incremento es **vertical**: dominio, persistencia, interfaz y pruebas. Solo
 | 3 ✔ | **Misiones** (implementado en 0.3.0; pendiente despliegue y prueba en dispositivos) | MVP-02, MVP-03 (misiones en Hoy) | Compromisos puntuales con sus reglas | `specs/03-misiones/` |
 | 4 ✔ | **Hoja de personaje** (implementado en 0.4.0; pendiente despliegue y prueba en dispositivos) | MVP-05, MVP-04 (atributos, Disciplina), MVP-06 (categorías propias) | Radar, Disciplina y explicaciones | `specs/04-personaje/` |
 | 5 ✔ | **Escena neón, protagonistas y música** (implementado en 0.5.0; pendiente despliegue y prueba en dispositivos) | MVP-10 (amplía), MVP-05, música opcional | La app se siente viva: escena animada, protagonista elegido, partículas al progresar | `specs/05-escena-neon/` |
-| 6 | **Perfil, ARVID con IA, idiomas y onboarding** (0.6.0 implementada sin IA; 0.6.1 con la IA, pendiente) | MVP-05, MVP-08, MVP-10, IA (D-059) | El usuario es el protagonista, ARVID le acompaña y conversa, en español o inglés | `specs/06-perfil-arvid/` |
+| 6 | **Perfil, ARVID con IA, idiomas y onboarding** (0.6.0 desplegada; 0.6.1 con la IA implementada, pendiente de desplegar) | MVP-05, MVP-08, MVP-10, IA (D-059) | El usuario es el protagonista, ARVID le acompaña y conversa, en español o inglés | `specs/06-perfil-arvid/` |
 | 7 | **Logros y pulido** | MVP-07, revisión de accesibilidad y rendimiento, checklist en dispositivos | MVP completo | `specs/07-logros-pulido/` |
 
 **Por qué este orden:**

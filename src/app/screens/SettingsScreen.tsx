@@ -187,6 +187,16 @@ function ProfilePanel({ settings }: { settings: Settings }) {
       <ArvidColorPicker value={settings.arvidColor} onChange={(c) => void saveSetting(db, 'arvidColor', c)} />
 
       <label className="choice">
+        <input type="checkbox" checked={settings.arvidAi} onChange={(e) => void saveSetting(db, 'arvidAi', e.target.checked)} />
+        <span className="grow">
+          {t('settings.arvidAi')}
+          <span className="small muted" style={{ display: 'block' }}>
+            {t('settings.arvidAiHelp')}
+          </span>
+        </span>
+      </label>
+
+      <label className="choice">
         <input type="checkbox" checked={settings.arvidTalks} onChange={(e) => void saveSetting(db, 'arvidTalks', e.target.checked)} />
         <span className="grow">
           {t('settings.arvidTalks')}

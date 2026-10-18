@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useT } from '../../i18n';
 import { replyTo } from '../arvid/brain';
+import { useArvidContext } from '../arvid/useArvidContext';
+import { useSettings } from '../data';
 import { speak } from '../arvid/voice';
 import { ChatIcon, SendIcon } from '../design/icons';
 import { markUserChat } from './engine';
@@ -13,6 +15,8 @@ export const CHAT_MAX = 280;
  */
 export function ChatControl() {
   const t = useT();
+  const settings = useSettings();
+  const context = useArvidContext();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
@@ -55,7 +59,7 @@ export function ChatControl() {
     try {
       // ARVID "piensa" mientras espera la respuesta (CH-03)
       await speak(t('arvid.chat.thinking'));
-      await speak(await replyTo(message));
+      await speak(await replyTo(message, { aiEnabled: settings?.arvidAi ?? false, context }));
     } finally {
       setBusy(false);
     }

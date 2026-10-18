@@ -1,6 +1,6 @@
 # Spec 06 — Pruebas
 
-Ubicación: `src/i18n/i18n.test.ts`, `src/domain/arvid/*.test.ts`, `src/domain/scene/arvid.test.ts` (U); `src/app/arvid/arvid.test.tsx` y `src/app/scene/scene.test.tsx` (C); `e2e/arvid.spec.ts` y el resto de E2E con el onboarding nuevo (E).
+Ubicación: `src/domain/arvid/ai.test.ts` (instrucciones, saneado y contexto), `src/app/arvid/function.test.ts` (función con Mistral simulado), `src/i18n/i18n.test.ts`, `src/domain/arvid/*.test.ts`, `src/domain/scene/arvid.test.ts` (U); `src/app/arvid/arvid.test.tsx` y `src/app/scene/scene.test.tsx` (C); `e2e/arvid.spec.ts` y el resto de E2E con el onboarding nuevo (E).
 
 **Sin prueba automática en la 0.6.0** (checklist manual): CR-02 deslizar con el dedo (M6-02), MV-02/MV-03 a la vista (M6-04; la lógica está en U), la burbuja ×2 a 360 px (M6-03) y DL-01 "día completo" y "retomar" por componente (están en U con `chooseMoment`).
 

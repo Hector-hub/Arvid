@@ -1,6 +1,6 @@
 # Spec 06 — Perfil, ARVID con IA, idiomas y onboarding
 
-Estado: **aprobada** (D-066, 2026-10-18) · **0.6.0 implementada** 2026-10-18 (pendiente: despliegue y checklist M6; la IA llega en la 0.6.1) · Incremento 6 de implementation-plan.md (Logros y pulido pasa a ser el 7)
+Estado: **aprobada** (D-066, 2026-10-18) · **0.6.0 desplegada** y **0.6.1 implementada** 2026-10-18 (pendiente: desplegar la 0.6.1 y checklists M6 y M6-IA) · Incremento 6 de implementation-plan.md (Logros y pulido pasa a ser el 7)
 Cubre: MVP-05 (perfil), MVP-08 (onboarding), MVP-10 (personalidad e idiomas) y la ampliación de alcance de D-059 (IA)
 Decisiones que implementa: D-052 a D-064
 Modifica:
@@ -109,7 +109,7 @@ Principio: ARVID **acompaña, no juzga ni presiona**. Habla en momentos concreto
   - La app llama a `POST /api/arvid`, una función de Netlify del mismo sitio, así que la CSP no cambia (`connect-src 'self'`).
   - La función añade la clave (`MISTRAL_API_KEY`, variable de entorno de Netlify) y llama a la API de chat de Mistral.
   - **La clave nunca está en el código ni en el repositorio.**
-- **IA-02.** **Modelo y parámetros:** `mistral-small-latest`, temperatura 0,7, como máximo 350 tokens de respuesta y 15 s de tiempo de espera.
+- **IA-02.** **Modelo y parámetros:** `mistral-small-latest`, temperatura 0,7 y como máximo 350 tokens de respuesta. La función espera a Mistral como mucho **9 s**, porque el plan gratuito de Netlify corta las funciones a los 10 s (D-067); el cliente espera 15 s en el chat y 6 s por iniciativa propia.
 - **IA-03.** **Personalidad** (instrucciones de sistema, en la función):
   - ARVID es un dron compañero, cercano y breve.
   - Basa sus consejos en el contexto y **no inventa datos**.

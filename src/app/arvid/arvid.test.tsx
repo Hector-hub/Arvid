@@ -11,6 +11,7 @@ import { ProfileScreen } from '../screens/ProfileScreen';
 import { TodayScreen } from '../screens/TodayScreen';
 import { renderRoutes, setupData } from '../test-utils';
 import { say } from '../scene/engine';
+import { resetConversation } from './brain';
 
 vi.mock('../../pwa/platform', () => ({
   needsInstallForSafety: () => false,
@@ -96,6 +97,10 @@ describe('onboarding con ARVID (ON)', () => {
     await skipDialogue(user);
     await user.click(screen.getByRole('radio', { name: 'Magenta' }));
     await user.click(screen.getByRole('button', { name: 'Continuar' }));
+    // 7. Permiso para la IA (IA-06)
+    await skipDialogue(user);
+    expect(screen.getByText(/envía tu progreso y tus actividades a Mistral AI/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Activar' }));
     // 7. Áreas de vida
     await skipDialogue(user);
     await user.click(screen.getByRole('button', { name: 'Continuar' }));
@@ -108,6 +113,7 @@ describe('onboarding con ARVID (ON)', () => {
     expect(s.profile).toEqual({ alias: 'Héctor', gender: 'm' });
     expect(s.avatar).toEqual({ cast: 'el2', variant: 'ocaso' });
     expect(s.arvidColor).toBe('magenta');
+    expect(s.arvidAi).toBe(true);
     expect(s.locale).toBe('es');
     expect(s.onboardingCompletedAt).toBeDefined();
   });
@@ -190,15 +196,46 @@ describe('escena: chat y música (CH, MU)', () => {
     expect(screen.queryByRole('textbox', { name: 'Mensaje para ARVID' })).not.toBeInTheDocument();
   });
 
-  it('CH-03/05: sin IA, ARVID piensa ("…") y explica que pronto podrá conversar', async () => {
+  it('CH-05 · IA-06: sin permiso, ARVID pide activar la IA y no hay ninguna petición', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
     const user = userEvent.setup();
     renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
     await user.click(await screen.findByRole('button', { name: 'Hablar con ARVID' }));
     await user.type(screen.getByRole('textbox', { name: 'Mensaje para ARVID' }), '¿Qué hago hoy?{Enter}');
     // El saludo del día puede llegar antes o después: se busca entre todo lo dicho
     const said = () => vi.mocked(say).mock.calls.map((c) => c[0].flat().join(' '));
-    await waitFor(() => expect(said().some((x) => /Aún estoy aprendiendo a conversar/.test(x))).toBe(true), { timeout: 3000 });
+    await waitFor(() => expect(said().some((x) => /activa «ARVID con IA»/.test(x))).toBe(true), { timeout: 3000 });
     expect(vi.mocked(say).mock.calls.some((c) => c[0].flat().join('') === '…')).toBe(true);
+    expect(fetchSpy.mock.calls.some(([url]) => String(url).includes('/api/arvid'))).toBe(false);
+    fetchSpy.mockRestore();
+  });
+
+  it('CH-03 · IA-05: con IA, ARVID responde con lo que devuelve /api/arvid y recuerda la conversación', async () => {
+    await saveSetting(ctx.db, 'arvidAi', true);
+    resetConversation();
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ reply: 'Empieza por Leer, Ana.' })));
+    const user = userEvent.setup();
+    renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
+    await user.click(await screen.findByRole('button', { name: 'Hablar con ARVID' }));
+    await user.type(screen.getByRole('textbox', { name: 'Mensaje para ARVID' }), '¿Qué hago hoy?{Enter}');
+    const said = () => vi.mocked(say).mock.calls.map((c) => c[0].flat().join(' '));
+    await waitFor(() => expect(said()).toContain('Empieza por Leer, Ana.'));
+    const chatCall = fetchSpy.mock.calls.map(([, init]) => JSON.parse(String(init?.body))).find((b) => b.moment === 'chat');
+    expect(chatCall).toMatchObject({ locale: 'es', messages: [{ role: 'user', content: '¿Qué hago hoy?' }] });
+    expect(chatCall.context).toMatchObject({ user: { alias: 'Ana' } });
+    fetchSpy.mockRestore();
+  });
+
+  it('IA-07: con la cuota agotada (429), ARVID lo explica', async () => {
+    await saveSetting(ctx.db, 'arvidAi', true);
+    resetConversation();
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response('{}', { status: 429 }));
+    const user = userEvent.setup();
+    renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
+    await user.click(await screen.findByRole('button', { name: 'Hablar con ARVID' }));
+    await user.type(screen.getByRole('textbox', { name: 'Mensaje para ARVID' }), 'Hola{Enter}');
+    await waitFor(() => expect(vi.mocked(say).mock.calls.some((c) => /no puedo conversar más/.test(c[0].flat().join(' ')))).toBe(true));
+    fetchSpy.mockRestore();
   });
 
   it('MU-01: bocina con aria-pressed, apagada por defecto', async () => {
@@ -218,6 +255,23 @@ describe('momentos por iniciativa propia (DL)', () => {
       timeout: 2000,
     });
     await waitFor(async () => expect((await loadSettings(ctx.db)).arvidSeen?.said?.greeting).toBe(toLocalDate(new Date())));
+  });
+
+  it('IA-05: con IA, el saludo lo genera ARVID con el contexto', async () => {
+    await saveSetting(ctx.db, 'arvidAi', true);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ reply: 'Buenos días, Ana. Hoy toca descansar.' })));
+    renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
+    await waitFor(() => expect(lastSaid()).toBe('Buenos días, Ana. Hoy toca descansar.'), { timeout: 3000 });
+    expect(JSON.parse(String(fetchSpy.mock.calls[0]![1]!.body))).toMatchObject({ moment: 'greeting' });
+    fetchSpy.mockRestore();
+  });
+
+  it('IA-05: si la IA falla, ARVID usa su frase fija', async () => {
+    await saveSetting(ctx.db, 'arvidAi', true);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response('{}', { status: 502 }));
+    renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
+    await waitFor(() => expect(lastSaid()).toMatch(/^(Buenos días|Buenas tardes|Buenas noches), Ana\./), { timeout: 3000 });
+    fetchSpy.mockRestore();
   });
 
   it('DL-03: con "ARVID habla por iniciativa propia" desactivado, no saluda', async () => {

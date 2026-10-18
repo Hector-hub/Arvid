@@ -2,7 +2,7 @@
 
 Derivadas de spec.md (aprobada, D-066).
 
-**Estado (2026-10-18):** 0.6.0 con T01–T13 hechas; T14 pendiente de desplegar y de la checklist M6. Decisiones menores tomadas al implementar:
+**Estado (2026-10-18):** 0.6.0 desplegada (T01–T14; falta la checklist M6). 0.6.1 con T15–T18 hechas: la función `netlify/functions/arvid.mts`, el contexto en `domain/arvid/context.ts`, el saneado y las instrucciones en `domain/arvid/ai.ts`, y el cliente en `app/arvid/brain.ts`. El permiso es un paso del onboarding y de la presentación, y un interruptor en Ajustes → Perfil. Falta T19: desplegar con la función y probar con Mistral de verdad. Decisiones menores tomadas al implementar:
 - **Diálogos:** la tercera frase de bienvenida pasa a "Antes de empezar, quiero conocerte un poco" (y en la presentación, "Antes de nada, me gustaría conocerte un poco") para no preguntar el alias dos veces seguidas. "Saltar" deja a la vista la última frase entera.
 - **Presentación:** no repite la escena (ya está detrás, en Hoy) y se decide al abrir Hoy, así que no se cierra al guardar el alias a mitad.
 - **Carrusel:** los `radio` de personaje están ocultos a la vista (teclado y lectores de pantalla); la tarjeta se maneja con el dedo y con ‹ ›.

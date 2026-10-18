@@ -242,6 +242,8 @@ export interface Settings {
   arvidColor: ArvidColor;
   /** ARVID habla por iniciativa propia (DL-03). */
   arvidTalks: boolean;
+  /** ARVID con IA: desactivado hasta que el usuario lo acepte (spec 06, IA-06). */
+  arvidAi: boolean;
   /** Momentos ya dichos hoy y última frase de cada uno (del dispositivo, no va en el backup). */
   arvidSeen?: ArvidSeen;
   /** La presentación de ARVID no se muestra antes de esta fecha local (PR-02). */
@@ -264,6 +266,7 @@ export const DEFAULT_SETTINGS: Settings = {
   music: DEFAULT_MUSIC,
   arvidColor: DEFAULT_ARVID_COLOR,
   arvidTalks: true,
+  arvidAi: false,
 };
 
 function normalizeMusic(value: unknown): MusicSettings {
@@ -287,6 +290,7 @@ export async function loadSettings(db: ArvidDB): Promise<Settings> {
     profile: normalizeProfile(raw.profile),
     arvidColor: (ARVID_COLORS as readonly string[]).includes(raw.arvidColor) ? raw.arvidColor : DEFAULT_ARVID_COLOR,
     arvidTalks: raw.arvidTalks !== false,
+    arvidAi: raw.arvidAi === true,
   };
 }
 

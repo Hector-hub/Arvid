@@ -6,7 +6,7 @@ export async function skipDialogue(page: Page) {
 }
 
 /** Onboarding con ARVID (spec 06, ON-02) hasta el paso de áreas de vida. */
-export async function onboardingToCategories(page: Page, alias = 'Prueba') {
+export async function onboardingToCategories(page: Page, alias = 'Prueba', ai = false) {
   await page.goto('/');
   await skipDialogue(page);
   await page.getByRole('button', { name: 'Continuar' }).click(); // idioma
@@ -23,6 +23,8 @@ export async function onboardingToCategories(page: Page, alias = 'Prueba') {
   await skipDialogue(page);
   await page.getByRole('button', { name: 'Continuar' }).click(); // color de ARVID
   await skipDialogue(page);
+  await page.getByRole('button', { name: ai ? 'Activar' : 'Ahora no' }).click(); // permiso para la IA
+  await skipDialogue(page);
   await expect(page.getByRole('heading', { name: 'Tus áreas de vida' })).toBeVisible();
 }
 
@@ -38,8 +40,8 @@ export async function finishOnboarding(page: Page) {
   await expect(page).toHaveURL(/\/hoy$/);
 }
 
-export async function completeOnboarding(page: Page) {
-  await onboardingToCategories(page);
+export async function completeOnboarding(page: Page, { ai = false } = {}) {
+  await onboardingToCategories(page, 'Prueba', ai);
   await page.getByRole('button', { name: 'Continuar' }).click();
   await finishOnboarding(page);
 }

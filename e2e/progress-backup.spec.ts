@@ -33,6 +33,8 @@ test('PRG-06/07: celebra el nivel 2 una sola vez', async ({ page }) => {
 });
 
 test('STR-02/03/04: racha en Hoy y en el detalle, con comodín usado', async ({ page }) => {
+  // Flujo largo con varias cargas de Hoy y su escena: en WebKit (renderizado por software) roza los 30 s
+  test.slow();
   // Creada el 1 oct; se registra cada día del 1 al 7 (gana comodín), falla el 8 (lo usa), registra el 9.
   await page.clock.install({ time: new Date('2026-10-01T10:00:00+02:00') });
   await completeOnboarding(page);
@@ -55,6 +57,8 @@ test('STR-02/03/04: racha en Hoy y en el detalle, con comodín usado', async ({ 
 });
 
 test('BAK · NFR2-03: exportar, borrar todo e importar recupera los mismos datos', async ({ page }) => {
+  // Flujo largo con varias cargas de Hoy y su escena: en WebKit (renderizado por software) roza los 30 s
+  test.slow();
   // En headless la hoja de compartir del sistema no se resuelve: se fuerza la ruta de descarga.
   // La de compartir se cubre en los tests de componente y en la checklist manual (M2-01).
   await page.addInitScript(() => Object.defineProperty(navigator, 'canShare', { value: undefined, configurable: true }));

@@ -8,7 +8,9 @@ import { t } from '../../i18n';
 import { useToday } from '../clock';
 import { useData, useSettings } from '../data';
 import { hasUserChatted, isTalking, onArvidReady } from '../scene/engine';
+import { momentLine } from './brain';
 import { line, lineCount } from './lines';
+import { useArvidContext } from './useArvidContext';
 import { speak } from './voice';
 
 /** "Primera actividad": lo marca el formulario al crearla y se dice al volver a Hoy. */
@@ -26,6 +28,7 @@ export function useArvidMoments(view: TodayView | undefined, comeback: boolean, 
   const settings = useSettings();
   const today = useToday();
   const prevPending = useRef<number | undefined>(undefined);
+  const context = useArvidContext();
 
   const decide = useEffectEvent(async (candidates: Moment[]) => {
     if (!settings || !view || !settings.arvidTalks) return;
@@ -44,6 +47,8 @@ export function useArvidMoments(view: TodayView | undefined, comeback: boolean, 
       text = `${hello} ${status} ${text}`;
     }
     await saveSetting(ctx.db, 'arvidSeen', markSaid(settings.arvidSeen, moment, index, today));
+    // Con IA, la frase se genera con el contexto; si no hay IA o falla, la fija (IA-05)
+    if (moment !== 'levelUp') text = await momentLine(moment, text, { aiEnabled: settings.arvidAi, context });
     // No interrumpe: espera a que ARVID termine lo que esté diciendo (p. ej. una respuesta del chat)
     for (let i = 0; i < 120 && isTalking(); i++) await new Promise((r) => setTimeout(r, 500));
     await speak(text);

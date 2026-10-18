@@ -402,7 +402,9 @@
     "volume": "Volume",
     "nowPlaying": "{state}: {track}",
     "needsConnection": "Music needs a connection the first time.",
-    "musicNote": "Off by default. A track that has already played can be heard offline."
+    "musicNote": "Off by default. A track that has already played can be heard offline.",
+    "arvidAi": "ARVID with AI",
+    "arvidAiHelp": "To give you advice, ARVID sends your progress and activities to Mistral AI (France). You can turn it off anytime."
   },
   "backup": {
     "title": "Backup",
@@ -577,9 +579,11 @@
       }
     },
     "chat": {
-      "unavailable": "I'm still learning to chat. I'll be able to answer you very soon; meanwhile, I'll keep you company with my tips.",
       "offline": "I'm offline right now. Let's talk when the connection is back.",
-      "thinking": "…"
+      "thinking": "…",
+      "needsPermission": "To chat with me, turn on “ARVID with AI” in Settings → Profile.",
+      "quota": "I can't chat any more for now. Try again a bit later.",
+      "error": "I can't think straight right now. Try again in a moment."
     },
     "onboarding": {
       "welcome": {
@@ -618,6 +622,10 @@
       "intro": {
         "0": "Hi, I'm ARVID. From now on I'll be with you every day.",
         "1": "First of all, I'd like to get to know you a little."
+      },
+      "ai": {
+        "0": "I can also give you advice with artificial intelligence and chat with you.",
+        "1": "For that I'd send your progress and activities to Mistral AI (France). Shall we turn it on?"
       }
     }
   },
@@ -631,6 +639,8 @@
     "understood": "Got it",
     "dialogue": "Dialogue with ARVID",
     "tapToContinue": "Tap to continue",
-    "introTitle": "Meet ARVID"
+    "introTitle": "Meet ARVID",
+    "aiActivate": "Turn on",
+    "aiNotNow": "Not now"
   }
 }

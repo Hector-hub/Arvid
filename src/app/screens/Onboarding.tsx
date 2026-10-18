@@ -16,11 +16,11 @@ import { Scene } from '../scene/Scene';
 import { categoryName, errorText } from '../text';
 import { InstallGuide } from './InstallGuide';
 
-type Step = 'language' | 'welcome' | 'alias' | 'gender' | 'character' | 'arvidColor' | 'categories' | 'install' | 'done';
+type Step = 'language' | 'welcome' | 'alias' | 'gender' | 'character' | 'arvidColor' | 'ai' | 'categories' | 'install' | 'done';
 
 /** Pasos del onboarding (ON-02); el de instalar, solo en iPhone sin instalar. */
 function onboardingSteps(): Step[] {
-  return ['language', 'welcome', 'alias', 'gender', 'character', 'arvidColor', 'categories', ...(needsInstallForSafety() ? (['install'] as const) : []), 'done'];
+  return ['language', 'welcome', 'alias', 'gender', 'character', 'arvidColor', 'ai', 'categories', ...(needsInstallForSafety() ? (['install'] as const) : []), 'done'];
 }
 
 /** Lo que el usuario va eligiendo; se guarda paso a paso para que la escena lo refleje al momento. */
@@ -178,6 +178,17 @@ function useProfileControls() {
             <ContinueButton onClick={next} />
           </>
         );
+      case 'ai':
+        // Permiso explícito: la IA envía datos a Mistral AI (IA-06)
+        return (
+          <>
+            <p className="small muted">{t('settings.arvidAiHelp')}</p>
+            <ContinueButton label={t('onboarding.aiActivate')} onClick={() => void saveSetting(ctx.db, 'arvidAi', true).then(next)} />
+            <button type="button" className="btn btn-block" onClick={() => void saveSetting(ctx.db, 'arvidAi', false).then(next)}>
+              {t('onboarding.aiNotNow')}
+            </button>
+          </>
+        );
       default:
         return null;
     }
@@ -288,7 +299,7 @@ export function Onboarding({ banner }: { banner?: ReactNode }) {
 export function IntroSheet({ onClose }: { onClose: () => void }) {
   const ctx = useData();
   const { control } = useProfileControls();
-  const steps: Step[] = ['language', 'welcome', 'alias', 'gender', 'arvidColor'];
+  const steps: Step[] = ['language', 'welcome', 'alias', 'gender', 'arvidColor', 'ai'];
   // Se cierra al quedar guardado: una recarga inmediata no debe volver a mostrarla (PR-02)
   const later = () => void saveSetting(ctx.db, 'introSnoozedUntil', addDays(toLocalDate(ctx.now()), 1)).then(onClose);
   return (
@@ -299,7 +310,7 @@ export function IntroSheet({ onClose }: { onClose: () => void }) {
           scene={false}
           onLater={later}
           renderControl={(step, next) =>
-            step === 'welcome' ? <ContinueButton onClick={next} /> : control(step, step === 'arvidColor' ? onClose : next)
+            step === 'welcome' ? <ContinueButton onClick={next} /> : control(step, step === 'ai' ? onClose : next)
           }
         />
       </div>
