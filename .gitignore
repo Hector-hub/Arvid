@@ -9,3 +9,4 @@ vendor
 *.local
 .netlify
 prototypes
+tsconfig.tsbuildinfo

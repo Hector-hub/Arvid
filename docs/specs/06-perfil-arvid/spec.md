@@ -78,7 +78,7 @@ Principio: ARVID **acompaña, no juzga ni presiona**. Habla en momentos concreto
 
   Dura unos 2 s, con suavizado. Al llegar, puede hablar (DL).
 - **MV-02.** **Paseos:** cada 20–40 s, si no está hablando, ARVID se desplaza despacio (unos 0,3 px por fotograma) a un punto al azar de la zona alta y media de la escena. Se queda 3–6 s flotando y vuelve a su sitio.
-- **MV-03.** **Detalles de la acera:** por la acera pasan, con el suelo, detalles de Warped City (cajas de control y una señal en el suelo), cada 15–30 s. A veces (1 de cada 3), ARVID se acerca a uno, lo escanea 2–3 s y vuelve.
+- **MV-03.** **Detalles de la acera:** por la acera pasan, con el suelo, detalles de Warped City (cajas de control), cada 15–30 s. A veces (1 de cada 3), ARVID se acerca a uno, lo escanea 2–3 s y vuelve. Mientras escanea (un detalle o en su sitio, no al hablar), baja de él hasta la acera un cono de luz blanca translúcida, como un rayo de abducción; con movimiento reducido el cono queda fijo (D-070).
 - **MV-04.** **Para hablar, ARVID vuelve siempre a su sitio** y empieza a hablar al llegar. Si el usuario abre el chat a mitad de un paseo, vuelve antes de responder.
 - **MV-05.** **Movimiento reducido:** sin entrada animada, paseos ni saltos; ARVID queda quieto en su sitio y la burbuja sale sin escritura letra a letra.
 - **MV-06.** La simulación de ARVID (estado, destino, velocidad y fases) es pura y determinista con semilla (`domain/scene`), como el resto de la escena.

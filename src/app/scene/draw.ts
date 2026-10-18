@@ -165,6 +165,8 @@ export function drawScene(
       ? Math.floor(s.drone.scanT / DRONE_SCAN_TICKS) % anim.frames
       : Math.floor(s.t / anim.ticks) % anim.frames;
   const size = DRONE.size * pose.scale;
+  // Al escanear (no al hablar), un cono de luz baja hasta la acera, como un rayo de abducción (MV-03)
+  if (scanning && !talking) drawBeam(c, pose.x, pose.y - size / 2 + DRONE_BOTTOM * size, pose.alpha, reduced ? 0 : s.t);
   c.globalAlpha = pose.alpha;
   c.drawImage(
     extras.arvid ?? imgs.extras,
@@ -195,6 +197,40 @@ export function drawScene(
   c.globalAlpha = 1;
 
   if (extras.speech) drawBubble(c, extras.speech, pose.x, pose.y);
+}
+
+// ---------- Cono de escaneo ----------
+/** Parte inferior del dron dentro de su fotograma (fracción de la altura). */
+const DRONE_BOTTOM = 37 / 48;
+
+/**
+ * Cono blanco translúcido desde la base de ARVID hasta la acera, fila a fila para que los bordes queden en escalera
+ * pixel. Con `t` > 0 late y lo recorren franjas hacia abajo; con movimiento reducido (`t` = 0) queda fijo.
+ */
+function drawBeam(c: Ctx, x: number, top: number, alpha: number, t: number) {
+  const y0 = Math.round(top);
+  const len = PROP_BASELINE - y0;
+  if (len < 8) return;
+  const cx = Math.round(x);
+  const pulse = t ? 0.85 + 0.15 * Math.sin(t / 6) : 1;
+  c.fillStyle = '#ffffff';
+  for (let i = 0; i < len; i++) {
+    const k = i / len;
+    const half = Math.round(3 + k * 14);
+    const band = t && (i - Math.floor(t / 3)) % 8 === 0 ? 0.12 : 0;
+    const a = alpha * pulse * (0.3 - k * 0.2 + band);
+    c.globalAlpha = a;
+    c.fillRect(cx - half, y0 + i, half * 2, 1);
+    // Bordes un poco más brillantes
+    c.globalAlpha = Math.min(1, a + 0.12 * alpha);
+    c.fillRect(cx - half, y0 + i, 1, 1);
+    c.fillRect(cx + half - 1, y0 + i, 1, 1);
+  }
+  // Mancha de luz en el suelo
+  c.globalAlpha = alpha * pulse * 0.3;
+  c.fillRect(cx - 17, PROP_BASELINE, 34, 1);
+  c.fillRect(cx - 13, PROP_BASELINE + 1, 26, 1);
+  c.globalAlpha = 1;
 }
 
 // ---------- Burbuja pixel ×2 (BP-01) ----------

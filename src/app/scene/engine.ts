@@ -20,7 +20,7 @@ import { EXTRAS_FRAME, PEDESTRIANS } from './extras';
 /** Vehículos de Warped City; sus anchos van en `config.carWidths`, en el mismo orden. */
 export const CAR_FILES = ['v-red.png', 'v-yellow.png', 'v-police.png'];
 /** Detalles de la acera (MV-03); sus medidas van en `config.props`, en el mismo orden. */
-export const PROP_FILES = ['prop-control-box-1.png', 'prop-control-box-2.png', 'prop-banner-floor.png'];
+export const PROP_FILES = ['prop-control-box-1.png', 'prop-control-box-2.png'];
 
 const config: SceneConfig = {
   carWidths: [96, 93, 163],
@@ -29,7 +29,6 @@ const config: SceneConfig = {
   props: [
     { width: 32, height: 30 },
     { width: 17, height: 27 },
-    { width: 13, height: 10 },
   ],
 };
 
