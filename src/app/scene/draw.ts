@@ -140,18 +140,18 @@ export function drawScene(
     rect(c, x - 1, rail - 4, 5, 4, C.blue);
   }
 
-  // Detalles de la acera que ARVID inspecciona (MV-03)
-  for (const p of s.props) {
-    const img = imgs.props[p.kind];
-    if (img) c.drawImage(img, Math.round(p.wx - off), PROP_BASELINE - img.height);
-  }
-
-  // Peatones: miran a la derecha; los que van a la izquierda, en espejo (ESC-06)
+  // Peatones: por detrás de los detalles de la acera; miran a la derecha; los que van a la izquierda, en espejo (ESC-06)
   for (const p of s.peds) {
     const type = PEDESTRIANS[p.type];
     if (!type) continue;
     const f = reduced ? 0 : Math.floor((s.t + p.t0) / type.ticks) % type.frames;
     sprite(c, imgs.extras, f * EXTRAS_FRAME, type.row * EXTRAS_FRAME, EXTRAS_FRAME, EXTRAS_FRAME, Math.round(p.wx - off), LAYOUT.backFeet - p.size, p.size, p.size, p.dir < 0);
+  }
+
+  // Detalles de la acera que ARVID inspecciona (MV-03), por delante de los peatones
+  for (const p of s.props) {
+    const img = imgs.props[p.kind];
+    if (img) c.drawImage(img, Math.round(p.wx - off), PROP_BASELINE - img.height);
   }
 
   // ARVID: escanea (luz encendida) al hablar, al inspeccionar un detalle y de vez en cuando en su sitio (AV-02)

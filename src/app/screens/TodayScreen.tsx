@@ -70,16 +70,18 @@ export function TodayScreen() {
 
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
-      <header className="stack" style={{ gap: 'var(--s2)' }}>
+      {/* Escena, fecha y nivel quedan fijos arriba al hacer scroll (UB-05) */}
+      <header className="scene-sticky stack" style={{ gap: 'var(--s2)' }}>
         <Scene />
         <h1>{longDate(today)}</h1>
         <LevelStrip />
-        {summary && (
-          <p className="pixel" style={{ color: allDone ? 'var(--success)' : 'var(--text-muted)' }}>
-            {summary}
-          </p>
-        )}
       </header>
+      {summary && (
+        // Junto al nivel, como antes de fijar la cabecera
+        <p className="pixel" style={{ color: allDone ? 'var(--success)' : 'var(--text-muted)', marginTop: 'calc(-1 * var(--s5))' }}>
+          {summary}
+        </p>
+      )}
 
       {needsInstallForSafety() && (
         <div className="banner">

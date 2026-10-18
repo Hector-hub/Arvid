@@ -4,6 +4,7 @@ import { DEFAULT_AVATAR, type Avatar } from '../../domain/avatar/catalog';
 import { useT } from '../../i18n';
 import { useSettings } from '../data';
 import { MusicButton } from '../music/MusicProvider';
+import { TrackName } from '../music/TrackName';
 import { ChatControl } from './Chat';
 import { currentSpeechText, subscribeSpeech } from './engine';
 
@@ -27,7 +28,8 @@ function SpeechAnnouncer() {
  * Escena neón con el protagonista y ARVID (spec 05 UB, spec 06). El contenedor mantiene la proporción 2:1 y el
  * color de fondo mientras carga o si falla (ESC-12), así que no hay saltos de layout.
  * - `overlay`, arriba a la izquierda (nivel en Perfil).
- * - Con `controls`: bocina arriba a la derecha (MU-01) y chat abajo a la derecha (CH-01).
+ * - Con `controls`: nombre de la pista arriba a la izquierda (MUS-08), bocina arriba a la derecha (MU-01) y chat
+ *   abajo a la derecha (CH-01).
  */
 export function Scene({ overlay, controls = true }: { overlay?: ReactNode; controls?: boolean }) {
   const settings = useSettings();
@@ -38,7 +40,12 @@ export function Scene({ overlay, controls = true }: { overlay?: ReactNode; contr
       <Suspense fallback={null}>
         <SceneCanvas avatar={avatar} arvidColor={arvidColor} />
       </Suspense>
-      {overlay && <div className="scene-overlay">{overlay}</div>}
+      {(overlay || controls) && (
+        <div className="scene-overlay">
+          {overlay}
+          {controls && <TrackName />}
+        </div>
+      )}
       {controls && (
         <>
           <div className="scene-top-right">

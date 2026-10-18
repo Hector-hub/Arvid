@@ -21,6 +21,7 @@ Tipos: **U** unitario · **I** integración · **C** componente · **E** E2E (Ch
 | ESC-12 | Un asset que falla → panel de respaldo; Hoy sigue funcionando | C |
 | ESC-08 · UB-01/02 | Hoy: escena + fecha en texto; Personaje: escena + "Nv N · Título" en texto | C + E |
 | UB-04 | Al cambiar de Hoy a Personaje, la escena continúa (mismo desplazamiento) | E |
+| UB-05 | Al hacer scroll en Hoy, la escena, la fecha y el nivel siguen en el mismo sitio arriba | E |
 | PRO-01 · §5 | Catálogo de 4 × 6; un `cast` o una `variant` desconocidos se normalizan al valor por defecto | U |
 | PRO-02/03 | El onboarding guarda la elección; Ajustes la cambia y se ve al instante y tras recargar | C + E |
 | PRO-04 · NFR5-03 | El recoloreado se cachea por variante y tarda < 50 ms (mejor de 7) | C |
@@ -30,6 +31,7 @@ Tipos: **U** unitario · **I** integración · **C** componente · **E** E2E (Ch
 | MUS-05 | Al ocultar la app, la música se pausa; al volver, se reanuda | C |
 | MUS-06 | Botón ♪ con `aria-pressed`; volumen y "Siguiente" en Ajustes | C |
 | MUS-07 | Sin conexión, solo se eligen pistas en caché; sin ninguna, se muestra el aviso | E |
+| MUS-08 | Al empezar una pista se ve su nombre y a los 5 s ya no; al volver a montar la escena después, no reaparece | C |
 | DIS-01 | Contraste de los tokens de texto sin brillo (script de contraste) | U |
 | LIC-01 | Script: todo archivo de `public/scene` y `public/music` figura en `asset-licenses.md` | U |
 | LIC-02 | Créditos con autor, recurso y licencia de cada asset incluido | C |

@@ -251,10 +251,11 @@ fieldset { border: 0; padding: 0; margin: 0; }
   min-height: 100dvh;
 }
 .main {
+  --main-top: calc(var(--s4) + env(safe-area-inset-top));
   width: 100%;
   max-width: 560px;
   margin: 0 auto;
-  padding: calc(var(--s4) + env(safe-area-inset-top)) var(--s4) var(--s6);
+  padding: var(--main-top) var(--s4) var(--s6);
 }
 .nav {
   position: sticky;
@@ -294,7 +295,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
     order: -1;
   }
   .nav a { flex: none; flex-direction: row; justify-content: flex-start; gap: var(--s3); padding: var(--s2) var(--s3); font-size: 1rem; }
-  .main { max-width: 720px; padding-top: var(--s6); }
+  .main { max-width: 720px; --main-top: var(--s6); }
 }
 
 /* ---------- Banner ---------- */
@@ -420,6 +421,39 @@ fieldset { border: 0; padding: 0; margin: 0; }
   position: absolute;
   left: var(--s2);
   top: var(--s1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+  pointer-events: none;
+}
+/* Nombre de la pista (MUS-08): lo hace aparecer y desvanecerse TrackName */
+.track-name {
+  opacity: 0;
+  max-width: 60vw;
+  margin-top: var(--s1);
+  padding: 2px var(--s2);
+  background: rgb(26 28 44 / 0.75);
+  border: 1px solid var(--c-cyan);
+  color: var(--c-cyan);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Hoy: escena, fecha y nivel quedan fijos arriba al hacer scroll (UB-05). Ocupa el relleno superior de .main para
+   no moverse */
+.scene-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin-top: calc(-1 * var(--main-top));
+  padding-top: var(--main-top);
+  padding-bottom: var(--s2);
+  background: var(--bg);
+}
+/* Con el aviso de nueva versión encima, la escena empieza debajo de él (sin taparlo) */
+.main > .banner + * .scene-sticky {
+  margin-top: 0;
 }
 .scene-overlay h2 {
   font-size: 1rem;

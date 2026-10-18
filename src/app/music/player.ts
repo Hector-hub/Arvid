@@ -9,6 +9,8 @@ const FADE_S = 1.2;
 export interface PlayerState {
   playing: boolean;
   track?: Track;
+  /** Cuándo empezó la pista actual (`Date.now()`), para mostrar su nombre unos segundos (MUS-08). */
+  startedAt?: number;
   /** Sin conexión y sin ninguna pista en caché. */
   needsConnection: boolean;
 }
@@ -147,7 +149,7 @@ export class MusicPlayer {
     }
     this.fadingOut = false;
     this.audio.src = next.track.src;
-    this.emit({ track: next.track, playing: true, needsConnection: false });
+    this.emit({ track: next.track, startedAt: Date.now(), playing: true, needsConnection: false });
     await this.resume();
     this.warmCache(next.track);
   }

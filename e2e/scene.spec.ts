@@ -35,6 +35,19 @@ test.describe('escena neón (spec 05)', () => {
     await expect(page.getByRole('button', { name: 'Música' })).toHaveAttribute('aria-pressed', 'false');
   });
 
+  test('UB-05: al hacer scroll en Hoy, la escena, la fecha y el nivel siguen arriba', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 420 });
+    await completeOnboarding(page);
+    const scene = page.getByRole('img', { name: SCENE });
+    const date = page.getByRole('heading', { level: 1 });
+    await expect(scene).toBeVisible();
+    const before = { scene: (await scene.boundingBox())!.y, date: (await date.boundingBox())!.y };
+    await page.evaluate(() => window.scrollTo(0, 400));
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(50);
+    expect((await scene.boundingBox())!.y).toBeCloseTo(before.scene, 0);
+    expect((await date.boundingBox())!.y).toBeCloseTo(before.date, 0);
+  });
+
   test('ESC-11: con movimiento reducido la escena queda quieta', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await completeOnboarding(page);

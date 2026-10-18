@@ -87,6 +87,7 @@ La exploración se hizo con prototipos sucesivos.
 - **UB-02.** **Personaje:** la escena sustituye al sprite del 1-Bit Pack, con el nivel y el título superpuestos en la esquina superior izquierda ("Nv 5 · Aprendiz"). El resto de la pantalla no cambia (S4-01).
 - **UB-03.** **≥ 768 px:** la escena ocupa el ancho de la columna principal (design-system §9).
 - **UB-04.** Las dos pantallas comparten la misma instancia de la escena. Al cambiar de pestaña, los vehículos, los peatones y el desplazamiento continúan donde estaban.
+- **UB-05.** **Hoy:** la escena, la fecha y el nivel quedan fijos arriba al hacer scroll, en el mismo sitio en que empiezan; el resumen del día y el resto del contenido pasan por debajo (D-072).
 
 ### 4.3 Partículas (PAR)
 - **PAR-01.** **Ráfaga pequeña** (≈30 partículas en los 3 colores neón de la escena: cian, naranja y magenta) desde el protagonista al registrar progreso de una actividad, completar una misión o crear una actividad o misión.
@@ -113,12 +114,13 @@ La exploración se hizo con prototipos sucesivos.
 
 ### 4.5 Música (MUS)
 - **MUS-01.** Opcional y **desactivada por defecto** (C-003).
-- **MUS-02.** **Lista:** las pistas verificadas de §9 (2 en la 0.5.0). Orden aleatorio: se barajan todas, suenan todas una vez y se vuelve a barajar sin empezar por la última que sonó. Bucle indefinido.
+- **MUS-02.** **Lista:** las pistas verificadas de §9 (2 en la 0.5.0; 3 desde D-073). Orden aleatorio: se barajan todas, suenan todas una vez y se vuelve a barajar sin empezar por la última que sonó. Bucle indefinido.
 - **MUS-03.** **Fundidos:** fundido de entrada de 1,2 s y de salida al final de cada pista. El volumen va por Web Audio (`GainNode`).
 - **MUS-04.** **Arranque:** solo con un gesto del usuario. Si la música quedó activada, empieza con la primera interacción de la sesión.
 - **MUS-05.** **App oculta:** se pausa y se reanuda al volver.
 - **MUS-06.** **Controles:** en Ajustes → Sonido (activar, volumen y pista actual con "Siguiente"), y un botón ♪ de activar/pausar en la esquina de la escena de Hoy.
 - **MUS-07.** **Offline:** las pistas **no** se precachean (≈13 MB). Se guardan en caché la primera vez que suenan (`CacheFirst` con soporte de peticiones por rangos), así que una pista ya escuchada suena sin conexión. Sin conexión solo se eligen las pistas en caché, y si no hay ninguna se avisa con "La música necesita conexión la primera vez".
+- **MUS-08.** **Nombre de la pista:** cada vez que empieza una pista, su nombre ("♪ Black Chrome Horizon") aparece arriba a la izquierda de la escena y se desvanece a los 5 s (fundido de 0,8 s). Al cambiar de pantalla no vuelve a aparecer. Con movimiento reducido desaparece sin fundido (D-071).
 
 ### 4.6 Interfaz "neón sutil" (DIS)
 - **DIS-01.** La interfaz mantiene Sweetie 16 (paleta A, D-037) y añade **brillo sutil**:
@@ -230,6 +232,7 @@ Comportamiento con valores ausentes o desconocidos:
 | 5 pistas de CombinaDos (Ascension, Curiosity, Descent, Fallen, Taurus) | Desconocida | ✘ No se incluyen hasta verificarlas |
 | Midnight Sector Drive (Gemini, IA) | Propia | ✔ Declaración del responsable (2026-10-18) |
 | Glass Tower Horizon (Gemini, IA) | Propia | ✔ Declaración del responsable (2026-10-18) |
+| Black Chrome Horizon (Gemini, IA) | Propia | ✔ Declaración del responsable (2026-10-18, D-073) |
 
 **Riesgos:**
 - **R5-1 · Licencias sin verificar.** Resuelto para todo salvo las 5 pistas de CombinaDos, que quedan fuera (D-051). *Mitigación:* LIC-01 deja que el incremento se publique con lo que esté verificado.

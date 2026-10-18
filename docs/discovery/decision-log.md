@@ -84,6 +84,9 @@ Fuente de verdad de las decisiones de producto y técnicas. Cada spec debe refer
 | D-068 | Modelo de ARVID con IA: `ministral-8b-2512`, uno de los permitidos para la clave de pruebas (con `mistral-small-latest` Mistral respondía 429 `rate_limited`) | C | 2026-10-18 |
 | D-069 | Se quita de la acera el letrero morado «4F» (`prop-banner-floor.png`); quedan las dos cajas de control para MV-03 | A | 2026-10-18 |
 | D-070 | Al escanear (un detalle o en su sitio, no al hablar), ARVID proyecta hacia la acera un cono de luz blanca translúcida, como un rayo de abducción, con bordes en escalera pixel; late y lo recorren franjas, y queda fijo con movimiento reducido | A | 2026-10-18 |
+| D-071 | Al empezar cada pista, su nombre aparece arriba a la izquierda de la escena y se desvanece a los 5 s (spec 05, MUS-08) | A | 2026-10-18 |
+| D-072 | En Hoy, la escena, la fecha y el nivel quedan fijos arriba al hacer scroll (spec 05, UB-05) | A | 2026-10-18 |
+| D-073 | Se añade la pista Black Chrome Horizon (propia, generada con Gemini como las otras dos) | A | 2026-10-18 |
 | D-050 | Spec 05 (Escena neón, protagonistas y música) aprobada con S5-01 a S5-09: escena de Warped City en Hoy y Personaje; Sweetie 16 + neón sutil, con la escena como excepción a los 16 colores; 4 protagonistas × 6 variantes (enmienda D-029 y D-036); partículas; música opcional desactivada por defecto y sin precache; la escena es el incremento 5 y Logros el 6; solo se publican assets con licencia verificada; nombres de protagonistas provisionales | A | 2026-10-18 |
 | C-001 | El onboarding guía la instalación en la pantalla de inicio y solicita `navigator.storage.persist()` | C | 2026-10-17 |
 | C-002 | Una categoría sin datos suficientes se muestra como "sin datos", nunca como 0. El radar tiene una alternativa accesible en forma de lista | C | 2026-10-17 |
