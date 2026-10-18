@@ -62,9 +62,13 @@ export async function handle(req: Request, deps: { apiKey?: string; fetch: typeo
   } catch {
     return json(504, { error: 'timeout' });
   }
-  // Cuota de la clave de pruebas agotada (IA-07): ARVID lo explica con su frase fija
-  if (res.status === 429) return json(429, { error: 'quota' });
-  if (!res.ok) return json(502, { error: 'upstream' });
+  if (!res.ok) {
+    // Mensaje de Mistral para diagnosticar (no contiene la clave ni el contexto; la app no lo muestra)
+    const detail = (await res.text().catch(() => '')).slice(0, 300);
+    console.error(`Mistral ${res.status}: ${detail}`);
+    // Cuota de la clave de pruebas agotada (IA-07): ARVID lo explica con su frase fija
+    return res.status === 429 ? json(429, { error: 'quota', detail }) : json(502, { error: 'upstream', detail });
+  }
 
   const data = (await res.json().catch(() => undefined)) as { choices?: { message?: { content?: unknown } }[] } | undefined;
   const content = data?.choices?.[0]?.message?.content;
