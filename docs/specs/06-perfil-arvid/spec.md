@@ -109,7 +109,7 @@ Principio: ARVID **acompaña, no juzga ni presiona**. Habla en momentos concreto
   - La app llama a `POST /api/arvid`, una función de Netlify del mismo sitio, así que la CSP no cambia (`connect-src 'self'`).
   - La función añade la clave (`MISTRAL_API_KEY`, variable de entorno de Netlify) y llama a la API de chat de Mistral.
   - **La clave nunca está en el código ni en el repositorio.**
-- **IA-02.** **Modelo y parámetros:** `mistral-small-latest`, temperatura 0,7 y como máximo 350 tokens de respuesta. La función espera a Mistral como mucho **9 s**, porque el plan gratuito de Netlify corta las funciones a los 10 s (D-067); el cliente espera 15 s en el chat y 6 s por iniciativa propia.
+- **IA-02.** **Modelo y parámetros:** `ministral-8b-2512`, temperatura 0,7 y como máximo 350 tokens de respuesta. La función espera a Mistral como mucho **9 s**, porque el plan gratuito de Netlify corta las funciones a los 10 s (D-067); el cliente espera 15 s en el chat y 6 s por iniciativa propia.
 - **IA-03.** **Personalidad** (instrucciones de sistema, en la función):
   - ARVID es un dron compañero, cercano y breve.
   - Basa sus consejos en el contexto y **no inventa datos**.
@@ -278,7 +278,7 @@ Para poder probar antes, la spec se entrega en dos versiones:
 | S6-05 | ARVID Cian por defecto; entrada, paseos y detalles de la acera con los tiempos de MV |
 | S6-06 | Burbuja ×2 de 2 en 2 líneas, avance a los 5 s o al tocar (BP) |
 | S6-07 | Chat: 280 caracteres, 10 turnos por sesión, sin historial guardado (CH) |
-| S6-08 | `mistral-small-latest`, 350 tokens, tiempos de espera de 6 y 15 s (IA-02, IA-05) |
+| S6-08 | `ministral-8b-2512`, 350 tokens, tiempos de espera de 6 y 15 s (IA-02, IA-05) |
 | S6-09 | Contexto de IA-04 (sin identificadores internos ni horas exactas) |
 | S6-10 | Permiso explícito para la IA, desactivada hasta aceptar (IA-06) |
 | S6-11 | Sin contadores en el servidor: solo límites de tamaño y la cuota propia de la clave de pruebas (IA-07) |

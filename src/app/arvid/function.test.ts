@@ -24,7 +24,7 @@ describe('función /api/arvid', () => {
     expect(url).toBe('https://api.mistral.ai/v1/chat/completions');
     expect((init!.headers as Record<string, string>).Authorization).toBe('Bearer clave-de-prueba');
     const sent = JSON.parse(init!.body as string);
-    expect(sent).toMatchObject({ model: 'mistral-small-latest', temperature: 0.7, max_tokens: 350 });
+    expect(sent).toMatchObject({ model: 'ministral-8b-2512', temperature: 0.7, max_tokens: 350 });
     expect(sent.messages[0].content).toMatch(/You are ARVID/);
     expect(sent.messages.at(-1)).toEqual({ role: 'user', content: 'Hola' });
   });

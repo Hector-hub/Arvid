@@ -2,7 +2,7 @@
 // Puro: lo usan la función de Netlify (servidor) y las pruebas; la clave nunca pasa por aquí.
 import type { Moment } from './arvid';
 
-export const AI_MODEL = 'mistral-small-latest';
+export const AI_MODEL = 'ministral-8b-2512';
 export const AI_TEMPERATURE = 0.7;
 export const AI_MAX_TOKENS = 350;
 /** Cuerpo máximo de la petición (IA-07). */
