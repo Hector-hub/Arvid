@@ -111,6 +111,55 @@ describe('escena: farolas y dron (ESC-03, ESC-07)', () => {
   });
 });
 
+describe('escena: drones del cielo (ESC-13)', () => {
+  const SKY: SceneConfig = { ...CFG, skyModels: 5 };
+
+  it('cruzan a lo lejos en ambos sentidos, a las tres distancias, como mucho 3 a la vez', () => {
+    const seen = new Set<string>();
+    let max = 0;
+    let count = 0;
+    let last = new Set<object>();
+    run(600, 60, 3, (s) => {
+      max = Math.max(max, s.sky.length);
+      for (const d of s.sky) {
+        if (!last.has(d)) count++;
+        seen.add(`${d.depth}:${d.dir}`);
+        expect(d.model).toBeGreaterThanOrEqual(0);
+        expect(d.model).toBeLessThan(5);
+        expect(d.y).toBeLessThan(90);
+      }
+      last = new Set(s.sky);
+    }, SKY);
+    expect(max).toBeLessThanOrEqual(3);
+    expect(count).toBeGreaterThan(40); // uno cada 4–10 s en 10 min, salvo cuando ya hay 3
+    expect(seen.size).toBe(6);
+  });
+
+  it('cada uno avanza siempre en su sentido y desaparece al salir de la escena', () => {
+    const rng = seededRng(4);
+    const s = createScene(rng);
+    s.nextSky = 0;
+    stepScene(s, 1, rng, SKY);
+    const d = s.sky[0]!;
+    let x = d.x;
+    for (let i = 0; i < 6000 && s.sky.includes(d); i++) {
+      stepScene(s, 1, rng, SKY);
+      if (s.sky.includes(d)) expect((d.x - x) * d.dir).toBeGreaterThan(0);
+      x = d.x;
+    }
+    expect(s.sky).not.toContain(d);
+  });
+
+  it('sin modelos no aparece ninguno; con movimiento reducido no hay drones', () => {
+    run(120, 60, 5, (s) => expect(s.sky).toHaveLength(0));
+    const rng = seededRng(6);
+    const s = run(60, 60, 6, undefined, SKY);
+    expect(s.sky.length).toBeGreaterThan(0);
+    stepScene(s, 1, rng, SKY, true);
+    expect(s.sky).toHaveLength(0);
+  });
+});
+
 describe('escena: movimiento reducido (ESC-11)', () => {
   it('no se mueve nada, las farolas quedan encendidas y no hay partículas', () => {
     const rng = seededRng(8);

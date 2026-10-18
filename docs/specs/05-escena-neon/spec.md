@@ -62,6 +62,7 @@ La exploración se hizo con prototipos sucesivos.
 - **ESC-03.** **Puente:**
   - Acera, barandilla y carretera dibujadas en la escena.
   - Farolas de unas 2× la altura del protagonista, separadas 112 px.
+  - Las farolas y su haz van al frente: por delante de peatones, detalles de la acera, ARVID y protagonista; solo la barandilla queda delante (D-074).
   - El haz de luz sale de la bombilla.
   - Cada farola parpadea de forma aleatoria e independiente.
 - **ESC-04.** **Protagonista:** camina en el sitio a velocidad constante (el mundo se desplaza a 0,55 px por fotograma de 60 Hz). Nunca corre ni salta.
@@ -81,6 +82,7 @@ La exploración se hizo con prototipos sucesivos.
   - Sin parallax, parpadeo, vehículos, peatones ni partículas.
   - El cambio se aplica en vivo.
 - **ESC-12.** **Fallo de carga:** si un asset no carga, la escena se sustituye por un panel con el fondo de la paleta y la app funciona igual.
+- **ESC-13.** **Drones del cielo:** otros 5 modelos del Free Drones Pack cruzan a lo lejos, uno cada 4–10 s y como mucho 3 a la vez, en ambos sentidos y con su animación. Cada uno va a una de 3 distancias (lejos, en medio, cerca): más pequeño y más teñido del color del cielo cuanto más lejos, con el parallax de la capa que tiene detrás. Los de lejos pasan por detrás de la ciudad del fondo; los de en medio, por detrás de los edificios delanteros; los de cerca, por delante. Con movimiento reducido no hay drones (D-075).
 
 ### 4.2 Ubicación (UB)
 - **UB-01.** **Hoy:** la escena va arriba, con la fecha debajo (ESC-08), y después el contenido actual.
@@ -148,7 +150,7 @@ Comportamiento con valores ausentes o desconocidos:
 
 ## 6. Requisitos no funcionales
 - **NFR5-01.** **Fluidez:** dibujar un fotograma de la escena cuesta < 4 ms en un Android de gama media. Objetivo de 60 fps (design-system §11).
-- **NFR5-02.** **Peso de la escena:** imágenes de la escena, protagonistas, peatones y dron ≤ 350 KB en total (hoy ≈210 KB), precacheadas. Música fuera del precache (MUS-07).
+- **NFR5-02.** **Peso de la escena:** imágenes de la escena, protagonistas, peatones y drones ≤ 350 KB en total (hoy ≈210 KB), precacheadas. Música fuera del precache (MUS-07).
 - **NFR5-03.** **Recoloreado:** generar las hojas de una variante tarda < 50 ms (mejor de 7).
 - **NFR5-04.** **Carga diferida:** la escena se carga después del contenido. Hoy es usable antes de que la escena termine de cargar, y la primera pintura no empeora más de 100 ms respecto a la 0.4.0.
 - **NFR5-05.** **Accesibilidad:**

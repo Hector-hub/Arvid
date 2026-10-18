@@ -19,6 +19,7 @@ import {
 import type { HeroSheets, SceneImages } from './assets';
 import { BUBBLE_FONT } from './bubble';
 import { DRONE, EXTRAS_FRAME, PEDESTRIANS } from './extras';
+import { skySprite } from './sky';
 
 const C = {
   night: '#050912',
@@ -79,6 +80,18 @@ export function drawHero(c: Ctx, cast: CastSpec, sheets: HeroSheets, t: number, 
   sprite(c, img, frame * spec.frameW, 0, spec.frameW, spec.frameH, Math.round(x - anchor * cast.scale), Math.round(feet - cast.feetY * cast.scale), w, h, cast.flip);
 }
 
+/** Drones del cielo a la distancia `depth`; los sprites miran a la derecha. */
+function drawSky(c: Ctx, s: SceneState, img: HTMLImageElement, depth: number) {
+  for (const d of s.sky) {
+    if (d.depth !== depth) continue;
+    const row = skySprite(d.model, d.depth);
+    if (!row) continue;
+    const f = Math.floor((s.t + d.t0) / 8) % row.frames;
+    const bob = Math.round(Math.sin((s.t + d.t0) / 30));
+    sprite(c, img, f * row.w, row.y, row.w, row.h, Math.round(d.x - row.w / 2), Math.round(d.y - row.h / 2) + bob, row.w, row.h, d.dir < 0);
+  }
+}
+
 export interface SceneExtras {
   /** Atlas con ARVID en su color (si aún no está, se usa el original). */
   arvid?: CanvasImageSource;
@@ -97,7 +110,11 @@ export function drawScene(
   const off = s.offset;
   const { road, walk, rail, lampTop } = LAYOUT;
   c.clearRect(0, 0, SCENE_W, SCENE_H);
-  imgs.bg.forEach((img, i) => tiled(c, img, off, PARALLAX[i] ?? 0));
+  // Fondo: tras cada capa, los drones de esa distancia, así que pasan por detrás y por delante de edificios (ESC-13)
+  imgs.bg.forEach((img, i) => {
+    tiled(c, img, off, PARALLAX[i] ?? 0);
+    drawSky(c, s, imgs.sky, i);
+  });
 
   // Carretera
   rect(c, 0, road - 6, SCENE_W, 1, C.cyan);
@@ -116,29 +133,6 @@ export function drawScene(
   rect(c, 0, walk, SCENE_W, rail - walk, C.teal);
   rect(c, 0, walk, SCENE_W, 1, C.cyan);
   for (let x = -mod(off, 32); x < SCENE_W; x += 32) rect(c, x, walk + 1, 1, rail - walk - 1, C.road);
-
-  // Farolas de ~2× la altura del protagonista; el haz sale de la bombilla (ESC-03)
-  for (const i of visibleLamps(off)) {
-    const x = lampScreenX(i, off);
-    const on = s.lit.get(i) ?? true;
-    if (on) {
-      c.globalAlpha = 0.14;
-      c.fillStyle = C.glow;
-      c.beginPath();
-      c.moveTo(x + 11, lampTop + 3);
-      c.lineTo(x + 18, lampTop + 3);
-      c.lineTo(x + 42, rail);
-      c.lineTo(x - 13, rail);
-      c.closePath();
-      c.fill();
-      c.globalAlpha = 1;
-    }
-    rect(c, x, lampTop, 3, rail - lampTop, C.blue);
-    rect(c, x + 1, lampTop, 1, rail - lampTop, C.cyan);
-    rect(c, x, lampTop - 2, 18, 3, C.blue);
-    rect(c, x + 11, lampTop + 1, 7, 2, on ? C.lamp : C.road);
-    rect(c, x - 1, rail - 4, 5, 4, C.blue);
-  }
 
   // Peatones: por detrás de los detalles de la acera; miran a la derecha; los que van a la izquierda, en espejo (ESC-06)
   for (const p of s.peds) {
@@ -182,6 +176,30 @@ export function drawScene(
   c.globalAlpha = 1;
 
   drawHero(c, hero.cast, hero.sheets, s.t, reduced, LAYOUT.heroX, LAYOUT.heroFeet);
+
+  // Farolas al frente, por delante de peatones, ARVID y protagonista, de ~2× la altura del protagonista; el haz sale
+  // de la bombilla (ESC-03)
+  for (const i of visibleLamps(off)) {
+    const x = lampScreenX(i, off);
+    const on = s.lit.get(i) ?? true;
+    if (on) {
+      c.globalAlpha = 0.14;
+      c.fillStyle = C.glow;
+      c.beginPath();
+      c.moveTo(x + 11, lampTop + 3);
+      c.lineTo(x + 18, lampTop + 3);
+      c.lineTo(x + 42, rail);
+      c.lineTo(x - 13, rail);
+      c.closePath();
+      c.fill();
+      c.globalAlpha = 1;
+    }
+    rect(c, x, lampTop, 3, rail - lampTop, C.blue);
+    rect(c, x + 1, lampTop, 1, rail - lampTop, C.cyan);
+    rect(c, x, lampTop - 2, 18, 3, C.blue);
+    rect(c, x + 11, lampTop + 1, 7, 2, on ? C.lamp : C.road);
+    rect(c, x - 1, rail - 4, 5, 4, C.blue);
+  }
 
   // Barandilla
   rect(c, 0, rail, SCENE_W, SCENE_H - rail, C.night);

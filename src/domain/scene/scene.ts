@@ -102,6 +102,9 @@ export interface SceneState {
   props: Prop[];
   nextProp: number;
   propSeq: number;
+  /** Drones a lo lejos, entre los edificios (ESC-13). */
+  sky: SkyDrone[];
+  nextSky: number;
 }
 
 export interface SceneConfig {
@@ -112,6 +115,8 @@ export interface SceneConfig {
   frameSize: number;
   /** Detalles de la acera disponibles (MV-03). */
   props?: PropSpec[];
+  /** Modelos de drones del cielo disponibles (ESC-13). */
+  skyModels?: number;
 }
 
 /** Base de los detalles de la acera (un poco por detrás del protagonista). */
@@ -135,6 +140,8 @@ export function createScene(rng: Rng): SceneState {
     props: [],
     nextProp: Math.round(R(rng, 300, 900)),
     propSeq: 0,
+    sky: [],
+    nextSky: Math.round(R(rng, 120, 360)),
   };
 }
 
@@ -148,6 +155,56 @@ export function visibleLamps(offset: number): number[] {
 }
 
 export const lampScreenX = (i: number, offset: number) => Math.round(i * LAYOUT.lampGap - offset + 40);
+
+// ---------- Drones del cielo (ESC-13) ----------
+/** Distancia: 0 = lejos (detrás de la ciudad del fondo), 1 = en medio (detrás de los edificios delanteros), 2 = cerca. */
+export type SkyDepth = 0 | 1 | 2;
+
+export interface SkyDrone {
+  model: number;
+  depth: SkyDepth;
+  /** Centro en pantalla. */
+  x: number;
+  y: number;
+  v: number;
+  dir: 1 | -1;
+  t0: number;
+}
+
+/** Como mucho, 3 drones a la vez en el cielo. */
+export const SKY_MAX = 3;
+/** Se desplazan con el parallax de la capa que tienen detrás (PARALLAX) y algo más los de cerca. */
+export const SKY_PARALLAX = [0.08, 0.14, 0.2] as const;
+/** Velocidad propia (px por fotograma) y altura del centro, por distancia. */
+const SKY_SPEED = [
+  [0.12, 0.25],
+  [0.25, 0.45],
+  [0.4, 0.7],
+] as const;
+const SKY_Y = [
+  [18, 60],
+  [22, 80],
+  [14, 84],
+] as const;
+/** Fuera de la escena a partir de aquí (el dron más ancho mide 44 px). */
+const SKY_MARGIN = 30;
+
+function spawnSky(s: SceneState, models: number, rng: Rng) {
+  const r = rng();
+  const depth: SkyDepth = r < 0.35 ? 0 : r < 0.75 ? 1 : 2;
+  const dir: 1 | -1 = rng() < 0.5 ? 1 : -1;
+  const [vMin, vMax] = SKY_SPEED[depth];
+  const [yMin, yMax] = SKY_Y[depth];
+  s.sky.push({
+    model: Math.floor(rng() * models),
+    depth,
+    x: dir > 0 ? -SKY_MARGIN + 1 : SCENE_W + SKY_MARGIN - 1,
+    y: Math.round(R(rng, yMin, yMax)),
+    v: R(rng, vMin, vMax),
+    dir,
+    t0: Math.floor(R(rng, 0, 60)),
+  });
+}
 
 /** Alterna el sentido; a veces (20 %) lo repite para que no parezca mecánico (ESC-05). */
 const nextCarDir = (last: 1 | -1, rng: Rng): 1 | -1 => (rng() < 0.8 ? (-last as 1 | -1) : last);
@@ -186,6 +243,7 @@ export function stepScene(s: SceneState, rawDt: number, rng: Rng, cfg: SceneConf
   if (reduced) {
     for (const i of visibleLamps(s.offset)) s.lit.set(i, true);
     s.particles = [];
+    s.sky = [];
     stepArvid(s.arvid, dt, rng, { props: s.props, offset: s.offset, specs: cfg.props ?? [], baseline: PROP_BASELINE }, true);
     return;
   }
@@ -227,6 +285,14 @@ export function stepScene(s: SceneState, rawDt: number, rng: Rng, cfg: SceneConf
     s.nextProp = nextPropDelay(rng);
   }
   s.props = s.props.filter((p) => p.wx - s.offset > -(specs[p.kind]?.width ?? 0) - 10);
+
+  // Drones del cielo: cruzan a lo lejos con el parallax de su distancia (ESC-13)
+  if ((cfg.skyModels ?? 0) > 0 && (s.nextSky -= dt) <= 0) {
+    if (s.sky.length < SKY_MAX) spawnSky(s, cfg.skyModels!, rng);
+    s.nextSky = Math.round(R(rng, 240, 600)); // uno cada 4–10 s
+  }
+  for (const d of s.sky) d.x += (d.v * d.dir - WALK_SPEED * SKY_PARALLAX[d.depth]) * dt;
+  s.sky = s.sky.filter((d) => d.x > -SKY_MARGIN && d.x < SCENE_W + SKY_MARGIN);
 
   // ARVID: entrada, paseos y vuelta a su sitio (MV)
   stepArvid(s.arvid, dt, rng, { props: s.props, offset: s.offset, specs, baseline: PROP_BASELINE });

@@ -15,6 +15,8 @@ export interface SceneImages {
   extras: HTMLImageElement;
   /** Detalles de la acera (MV-03). */
   props: HTMLImageElement[];
+  /** Atlas de drones del cielo (ESC-13). */
+  sky: HTMLImageElement;
 }
 
 export interface HeroSheets {
@@ -48,7 +50,8 @@ export function loadSceneImages(): Promise<SceneImages> {
     Promise.all(CAR_FILES.map(loadImage)),
     loadImage('extras.png'),
     Promise.all(PROP_FILES.map(loadImage)),
-  ]).then(([bg, cars, extras, props]) => ({ bg, cars, extras, props }));
+    loadImage('sky.png'),
+  ]).then(([bg, cars, extras, props, sky]) => ({ bg, cars, extras, props, sky }));
   sceneImages.catch(() => (sceneImages = undefined));
   return sceneImages;
 }

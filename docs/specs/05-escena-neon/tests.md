@@ -19,6 +19,7 @@ Tipos: **U** unitario · **I** integración · **C** componente · **E** E2E (Ch
 | ESC-10 · NFR5-06 | Con la pestaña oculta o el lienzo fuera de la pantalla no se dibujan fotogramas | C + E |
 | ESC-11 | Con movimiento reducido, la escena queda estática y sin partículas; el cambio se aplica en vivo | C + E |
 | ESC-12 | Un asset que falla → panel de respaldo; Hoy sigue funcionando | C |
+| ESC-13 | En 10 min simulados cruzan drones a las 3 distancias y en ambos sentidos, como mucho 3 a la vez; cada uno avanza en su sentido y desaparece al salir; con movimiento reducido no hay | U |
 | ESC-08 · UB-01/02 | Hoy: escena + fecha en texto; Personaje: escena + "Nv N · Título" en texto | C + E |
 | UB-04 | Al cambiar de Hoy a Personaje, la escena continúa (mismo desplazamiento) | E |
 | UB-05 | Al hacer scroll en Hoy, la escena, la fecha y el nivel siguen en el mismo sitio arriba | E |

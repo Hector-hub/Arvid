@@ -16,6 +16,7 @@ import {
   type SceneConfig,
 } from '../../domain/scene/scene';
 import { EXTRAS_FRAME, PEDESTRIANS } from './extras';
+import { SKY_MODELS } from './sky';
 
 /** Vehículos de Warped City; sus anchos van en `config.carWidths`, en el mismo orden. */
 export const CAR_FILES = ['v-red.png', 'v-yellow.png', 'v-police.png'];
@@ -30,6 +31,7 @@ const config: SceneConfig = {
     { width: 32, height: 30 },
     { width: 17, height: 27 },
   ],
+  skyModels: SKY_MODELS,
 };
 
 const rng = seededRng(Date.now());
