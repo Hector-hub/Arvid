@@ -8,6 +8,7 @@ import { detectLocale, setLocale, t, useLocale, type TKey } from '../../i18n';
 import { useEffect } from 'react';
 import { UpdateBanner } from './UpdateBanner';
 import { AnalysisProvider } from '../analysis';
+import { AchievementsWatcher } from '../achievements/AchievementsWatcher';
 import { LevelUpWatcher } from './LevelUp';
 import { MusicProvider } from '../music/MusicProvider';
 
@@ -48,6 +49,7 @@ export function AppLayout() {
           ))}
         </nav>
         <LevelUpWatcher />
+        <AchievementsWatcher />
       </div>
       </MusicProvider>
     </AnalysisProvider>

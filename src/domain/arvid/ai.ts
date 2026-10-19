@@ -13,8 +13,8 @@ export const AI_MAX_HISTORY = 20;
 export const AI_MAX_USER_MESSAGE = 280;
 export const AI_MAX_REPLY = 1200;
 
-export type AiMoment = Exclude<Moment, 'levelUp'> | 'chat';
-export const AI_MOMENTS: readonly AiMoment[] = ['greeting', 'dayComplete', 'firstActivity', 'comeback', 'chat'];
+export type AiMoment = Exclude<Moment, 'levelUp'> | 'achievement' | 'chat';
+export const AI_MOMENTS: readonly AiMoment[] = ['greeting', 'dayComplete', 'firstActivity', 'comeback', 'achievement', 'chat'];
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -57,6 +57,8 @@ const MOMENT_PROMPT: Record<Exclude<AiMoment, 'chat'>, string> = {
     'The user just created their first activity. Encourage them and remind them they can log it from Today when they do it. At most 2 sentences.',
   comeback:
     'Yesterday some daily activities were left undone. Encourage the user to restart today with one small activity, without any guilt. At most 3 sentences.',
+  achievement:
+    'The user just unlocked the achievements listed in the context under "unlockedAchievements". Congratulate them briefly, naming the achievement, and relate it to their data. At most 2 sentences.',
 };
 
 /** Mensajes para la API de chat: sistema, contexto como datos y la conversación o el momento. */

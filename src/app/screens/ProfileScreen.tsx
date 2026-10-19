@@ -1,7 +1,8 @@
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { saveSetting } from '../../data/repository';
 import { trend, type Score, type WindowDays } from '../../domain/attributes/attributes';
 import { MIN_RADAR_AXES } from '../../domain/attributes/radar';
+import { AchievementsSection } from '../achievements/AchievementsSection';
 import { useAnalysis } from '../analysis';
 import { useData, useSettings } from '../data';
 import { CategoryIcon, Panel, Sprite, XpBar, categoryColor } from '../design/components';
@@ -21,6 +22,7 @@ export function ProfileScreen() {
   const settings = useSettings();
   const window = settings?.radarWindow ?? 30;
   const view = useProfile(window);
+  const location = useLocation();
   if (!analysis || !settings || !view) return null;
   const p = analysis.progress;
   const { profile, categories } = view;
@@ -124,6 +126,9 @@ export function ProfileScreen() {
           <DisciplineMeter score={profile.current.discipline} previous={profile.previous.discipline} />
         </>
       )}
+
+      {/* Al llegar desde el aviso de un logro se vuelve a montar para abrir su hoja (CE-01) */}
+      <AchievementsSection key={location.key} />
     </div>
   );
 }

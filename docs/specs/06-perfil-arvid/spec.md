@@ -152,6 +152,8 @@ Principio: ARVID **acompaña, no juzga ni presiona**. Habla en momentos concreto
   | 5 | Saludo | Primera apertura del día, al terminar la entrada de ARVID |
 
   Con la IA, la frase se genera con el contexto. Sin ella, se usa una de las frases fijas del momento (3 o más por momento e idioma, sin repetir la del día anterior).
+
+  **Logro nuevo** (spec 07, CE-02): no entra en esta tabla. Se dice cada vez que se desbloquea un logro, aunque ARVID ya haya hablado hoy, después del aviso de nivel si coinciden; con "ARVID habla por iniciativa propia" desactivado no se dice.
 - **DL-02.** El saludo fijo depende de la hora local: "Buenos días" hasta las 12:59, "Buenas tardes" hasta las 19:59 y "Buenas noches" después (en inglés, "Good morning / afternoon / evening").
 - **DL-03.** Ajustes → Perfil incluye **"ARVID habla por iniciativa propia"** (activado por defecto). Desactivarlo quita los momentos 2 a 5. El aviso de nivel y el chat siguen igual.
 

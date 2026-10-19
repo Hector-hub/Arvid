@@ -10,7 +10,7 @@ import { ARVID_COLORS, DEFAULT_ARVID_COLOR, normalizeProfile, type ArvidColor, t
 import { isLocale, type Locale } from '../i18n';
 import { CATEGORY_PRESETS, checkCategoryToggle, type Category, type CategoryToggleCheck } from '../domain/categories';
 import { toLocalDate, tzOffsetMinutes, type LocalDate } from '../domain/time/localDate';
-import type { ArvidDB } from './db';
+import type { AchievementRow, ArvidDB } from './db';
 
 /** Dependencias inyectables: base de datos, reloj y generador de IDs (tests deterministas). */
 export interface DataContext {
@@ -248,6 +248,8 @@ export interface Settings {
   arvidSeen?: ArvidSeen;
   /** La presentación de ARVID no se muestra antes de esta fecha local (PR-02). */
   introSnoozedUntil?: string;
+  /** Los logros ya se evaluaron una vez en este dispositivo (spec 07, LO-05). No va en el backup. */
+  achievementsReady?: boolean;
 }
 
 export interface MusicSettings {
@@ -296,4 +298,18 @@ export async function loadSettings(db: ArvidDB): Promise<Settings> {
 
 export async function saveSetting<K extends keyof Settings>(db: ArvidDB, key: K, value: Settings[K]): Promise<void> {
   await db.settings.put({ key, value });
+}
+
+// ---------- Logros (spec 07, LO-03) ----------
+
+export async function loadAchievements(db: ArvidDB): Promise<AchievementRow[]> {
+  return db.achievements.toArray();
+}
+
+/** Guarda los logros nuevos; los que ya estaban no cambian (son permanentes, R-L1). */
+export async function unlockAchievements(db: ArvidDB, ids: readonly string[], at: string): Promise<void> {
+  await db.transaction('rw', db.achievements, async () => {
+    const existing = new Set((await db.achievements.bulkGet([...ids])).filter((r) => r).map((r) => r!.id));
+    await db.achievements.bulkAdd(ids.filter((id) => !existing.has(id)).map((id) => ({ id, unlockedAt: at })));
+  });
 }

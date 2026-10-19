@@ -90,8 +90,7 @@ Hay 8 colores válidos para 8 categorías como máximo (D-017). Algunos coincide
 | Componente | Notas |
 |---|---|
 | Panel / tarjeta | Fondo `--surface`, borde `--border`, esquinas recortadas |
-| Botón principal | `--primary-fill` + texto white en Pixelify; alto mínimo de 44 px; "pulsado" = desplazamiento de 2 px |
-| Botón secundario | Transparente con borde `--border-strong` |
+| Botones "Bisel pixel" (spec 07, BT, D-082) | Relleno de color, contorno de 2 px casi negro, esquinas en escalera de 2 px, franja de luz de 2 px arriba y sombra de 6 px abajo; al pulsar, la sombra baja a 2 px y el botón se hunde 4 px. Variantes: principal `--primary-fill`, normal `--c-navy`, peligro `--danger-fill` (texto white), fantasma (sin relleno, cyan subrayado) y desactivado (`--c-ink` con contorno y texto `--c-slate`). Foco de teclado: contorno `--focus`. Alto mínimo de 44 px. Prototipo: `prototypes/botones/` (variante A) |
 | Fila de actividad | Icono de categoría · nombre · "3 de 4 esta semana · racha 6" · botón de registrar de ≥ 44×44 px |
 | Barra de progreso | Pista `--surface-sunken`, relleno por segmentos (pixel) |
 | Chip de estado | "Vencida" (red + white), "Completada" (lime + ink), "Gracia" (fog + ink) |
@@ -100,6 +99,7 @@ Hay 8 colores válidos para 8 categorías como máximo (D-017). Algunos coincide
 | Navegación inferior | 3 pestañas (Hoy · Actividades · Perfil) con icono y texto; Ajustes desde Perfil (B-004, D-052) |
 | Escena | Bocina (música) arriba a la derecha y chat abajo a la derecha; ARVID habla con burbuja pixel ×2 dibujada en la escena y, en el onboarding, con caja de diálogo con retrato (spec 06) |
 | Modal de subida de nivel | Panel central + insignia o título; se cierra con un toque |
+| Logros (spec 07) | Insignia en medalla hexagonal (pendientes en gris y atenuadas); cuadrícula en Perfil con barra de progreso fina; aviso arriba con borde dorado que se cierra solo a los 5 s |
 
 ## 8. Movimiento y feedback (C-003)
 - **Animaciones por pasos** (`steps()`), cortas: 100–200 ms en la interfaz y como máximo 600 ms en celebraciones.

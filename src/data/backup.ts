@@ -12,6 +12,9 @@ export const BACKUP_FORMAT_VERSION = 1;
 
 /** Ajustes propios de cada dispositivo: un import no los sobrescribe (BAK-06). */
 const DEVICE_SETTINGS = new Set(['persistGranted', 'installHintDismissedAt', 'backupReminderSnoozedUntil', 'arvidSeen', 'introSnoozedUntil']);
+/** Ajustes que no van en el backup y que un import borra: tras importar, los logros se evalúan en silencio (LO-05). */
+const RESET_ON_IMPORT = new Set(['achievementsReady']);
+const exported = (key: string) => !DEVICE_SETTINGS.has(key) && !RESET_ON_IMPORT.has(key);
 
 // ---------- Esquema (data-model §4) ----------
 
@@ -109,7 +112,7 @@ export async function buildBackup(db: ArvidDB, appVersion: string, now: Date): P
       missions: await db.missions.toArray(),
       missionEvents: await db.missionEvents.toArray(),
       achievements: await db.achievements.toArray(),
-      settings: (await db.settings.toArray()).filter((s) => !DEVICE_SETTINGS.has(s.key)),
+      settings: (await db.settings.toArray()).filter((s) => exported(s.key)),
     },
   }));
 }
@@ -238,7 +241,7 @@ export async function replaceAllData(ctx: DataContext, backup: Backup): Promise<
     await db.missionEvents.bulkAdd(data.missionEvents);
     await db.achievements.bulkAdd(data.achievements);
     await db.settings.bulkPut([
-      ...data.settings.filter((s) => !DEVICE_SETTINGS.has(s.key)),
+      ...data.settings.filter((s) => exported(s.key)),
       ...device,
       { key: 'lastCelebratedLevel', value: level },
       { key: 'lastBackupAt', value: backup.exportedAt },

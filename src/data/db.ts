@@ -13,7 +13,7 @@ export interface SettingRow {
   value: unknown;
 }
 
-/** Tabla reservada para el incremento 5 (logros). */
+/** Logros desbloqueados (spec 07, LO-03): permanentes. */
 export interface AchievementRow {
   id: string;
   unlockedAt: string;

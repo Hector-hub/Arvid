@@ -12,9 +12,12 @@ function measure(text: string): number {
   return ctx.measureText(text).width;
 }
 
+/** En el lienzo, Pixelify dibuja mal las ligaduras "fi" y "fl" ("perﬁl"): se separan con un carácter invisible. */
+export const noLigatures = (text: string) => text.replace(/f(?=[il])/g, 'f\u200C');
+
 /** ARVID dice `text` en la burbuja de la escena. */
 export async function speak(text: string): Promise<void> {
   // La medida depende de la fuente pixel: se espera a que esté cargada
   await document.fonts?.load(BUBBLE_FONT).catch(() => undefined);
-  say(paginate(text, measure, BUBBLE_TEXT_W));
+  say(paginate(noLigatures(text), measure, BUBBLE_TEXT_W));
 }

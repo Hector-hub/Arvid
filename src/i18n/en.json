@@ -325,6 +325,64 @@
     "disciplineText": "How much of everything you set out to do you completed.",
     "seeDetail": "See details"
   },
+  "achievements": {
+    "title": "Achievements",
+    "count": "{count} / {total}",
+    "earnedOn": "Earned on {date}",
+    "progress": "{current} / {goal}",
+    "pending": "Pending",
+    "a11yEarned": "{name}, earned",
+    "a11yPending": "{name}, pending",
+    "a11yProgress": "{name}, pending, {current} of {goal}",
+    "toast": "Achievement: {name}",
+    "toastMany": "{count} achievements: {names}",
+    "items": {
+      "L-01": {
+        "name": "First Step",
+        "condition": "Log your first activity."
+      },
+      "L-02": {
+        "name": "Solid Week",
+        "condition": "Reach a 7 streak on a daily activity."
+      },
+      "L-03": {
+        "name": "Thirty",
+        "condition": "Reach a 30 streak on any activity."
+      },
+      "L-04": {
+        "name": "Hundred",
+        "condition": "Reach 100 logs in total."
+      },
+      "L-05": {
+        "name": "Promise Kept",
+        "condition": "Complete your first mission with a deadline on time."
+      },
+      "L-06": {
+        "name": "Reliable",
+        "condition": "Complete 10 missions with a deadline on time."
+      },
+      "L-07": {
+        "name": "Rescue",
+        "condition": "Complete a mission that was already overdue."
+      },
+      "L-08": {
+        "name": "Comeback",
+        "condition": "Log something again after 7 or more days without logs."
+      },
+      "L-09": {
+        "name": "Balance",
+        "condition": "Have 4 categories with an attribute of 60 or more over 30 days."
+      },
+      "L-10": {
+        "name": "Temper",
+        "condition": "Reach a Discipline of 80 or more over 30 days."
+      },
+      "L-11": {
+        "name": "Watcher",
+        "condition": "Reach level 10."
+      }
+    }
+  },
   "score": {
     "noData": "no data ({items} of {min})",
     "up": "↑ rising {delta}",
@@ -576,6 +634,11 @@
         "0": "Level {level}! You're now {title}.",
         "1": "You reached level {level}! Everything you do counts.",
         "2": "Level {level}. Keep it up, {alias}."
+      },
+      "achievement": {
+        "0": "New achievement: {name}! That's real consistency.",
+        "1": "{name}! You earned it, {alias}.",
+        "2": "You unlocked {name}. I'll keep it on your profile."
       }
     },
     "chat": {
@@ -627,7 +690,9 @@
         "0": "I can also give you advice with artificial intelligence and chat with you.",
         "1": "For that I'd send your progress and activities to Mistral AI (France). Shall we turn it on?"
       }
-    }
+    },
+    "achievementsFound_one": "I checked your history: you already had 1 achievement. It's on your profile.",
+    "achievementsFound_other": "I checked your history: you already had {count} achievements. They're on your profile."
   },
   "onboarding": {
     "start": "Start",

@@ -108,6 +108,7 @@ Guardar eventos (y no solo el estado) permite saber **cuándo** venció la misi�
 | arvidAi | boolean | ARVID con IA (spec 06, IA-06); desactivado hasta que el usuario lo acepta |
 | arvidSeen | `{ said, lastLine }` | Momentos dichos hoy y última frase de cada uno. Del dispositivo: no va en el backup |
 | introSnoozedUntil | LocalDate? | Presentación pospuesta. Del dispositivo: no va en el backup |
+| achievementsReady | boolean? | Los logros ya se evaluaron una vez en este dispositivo (spec 07, LO-05). No va en el backup y un import lo borra, para que los logros importados se ganen en silencio |
 
 ## 3. Estado derivado (no se guarda)
 | Valor | Función del dominio | Entradas |
@@ -118,7 +119,8 @@ Guardar eventos (y no solo el estado) permite saber **cuándo** venció la misi�
 | Disciplina | `computeDiscipline` | ídem |
 | Rachas y comodines por actividad | `computeStreaks` | periodos |
 | Estado de cada misión | `deriveMissionState` | eventos, `today` |
-| Logros nuevos a desbloquear | `detectAchievements` | todo lo anterior + logros ya desbloqueados |
+| Estado y progreso de los logros | `evaluateAchievements` | registros, análisis y atributos y Disciplina en 30 días (spec 07, LO-01, LO-04) |
+| Logros nuevos a desbloquear | `detectAchievements` | estado de los logros + logros ya desbloqueados |
 
 ## 4. Formato de backup (MVP-09)
 ```json

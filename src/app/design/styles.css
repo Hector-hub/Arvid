@@ -81,6 +81,8 @@ html {
 
 body {
   margin: 0;
+  /* Pixelify dibuja mal las ligaduras "fi" y "fl" ("PerAl") */
+  font-variant-ligatures: none;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-text);
@@ -160,34 +162,78 @@ select {
   );
 }
 
-/* ---------- Botones (§7) ---------- */
+/* ---------- Botones "Bisel pixel" (§7, spec 07 BT, D-082) ----------
+   Relleno de color, contorno de 2 px, esquinas en escalera de 2 px (recorte + un píxel de contorno pintado en cada
+   esquina), luz arriba y sombra abajo. Al pulsar, la sombra baja y el botón se hunde. Cada variante solo cambia las
+   variables. */
 .btn {
+  --btn-fill: var(--c-navy);
+  --btn-edge: #0d0e18;
+  --btn-hi: rgb(255 255 255 / 0.22);
+  --btn-lo: rgb(0 0 0 / 0.38);
+  --btn-depth: 6px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--s2);
   min-height: 44px;
   min-width: 44px;
-  padding: var(--s2) var(--s4);
+  padding: var(--s2) var(--s4) calc(var(--s1) + var(--btn-depth));
   font-family: var(--font-pixel);
   font-size: 1rem;
-  border: var(--b) solid var(--border-strong);
-  border-bottom-width: 6px;
-  background: transparent;
-  color: var(--text);
+  border: 0;
+  background:
+    linear-gradient(var(--btn-edge), var(--btn-edge)) 2px 2px / 2px 2px no-repeat,
+    linear-gradient(var(--btn-edge), var(--btn-edge)) calc(100% - 2px) 2px / 2px 2px no-repeat,
+    linear-gradient(var(--btn-edge), var(--btn-edge)) 2px calc(100% - 2px) / 2px 2px no-repeat,
+    linear-gradient(var(--btn-edge), var(--btn-edge)) calc(100% - 2px) calc(100% - 2px) / 2px 2px no-repeat,
+    var(--btn-fill);
+  box-shadow:
+    inset 0 0 0 2px var(--btn-edge),
+    inset 0 4px 0 0 var(--btn-hi),
+    inset 0 calc(-1 * var(--btn-depth)) 0 0 var(--btn-lo);
+  clip-path: polygon(
+    0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px,
+    calc(100% - 2px) 4px, 100% 4px, 100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px),
+    calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px),
+    2px calc(100% - 4px), 0 calc(100% - 4px)
+  );
+  color: var(--c-white);
   cursor: pointer;
   text-decoration: none;
+  transition: filter var(--dur-fast);
 }
+.btn:hover:not(:disabled) { filter: brightness(1.12); }
 .btn:active:not(:disabled) {
-  border-bottom-width: var(--b);
-  transform: translateY(3px);
+  --btn-depth: 2px;
+  transform: translateY(4px);
 }
-.btn:disabled { cursor: default; color: var(--text-muted); border-color: var(--border); }
-.btn-primary { background: var(--primary-fill); border-color: var(--c-navy); color: var(--c-white); box-shadow: var(--glow-cyan); }
-.btn-icon { padding: var(--s1); }
-.btn-ghost { border-color: transparent; border-bottom-width: var(--b); }
+/* El recorte oculta el contorno de foco general: el contorno del botón pasa a dorado (BT-03) */
+.btn:focus-visible { outline: 0; --btn-edge: var(--focus); }
+.btn:disabled {
+  --btn-fill: var(--c-ink);
+  --btn-edge: var(--c-slate);
+  --btn-hi: transparent;
+  --btn-lo: transparent;
+  cursor: default;
+  color: var(--c-slate);
+}
+.btn-primary { --btn-fill: var(--primary-fill); }
+.btn-danger { --btn-fill: var(--danger-fill); }
+.btn-ghost {
+  --btn-fill: transparent;
+  --btn-edge: transparent;
+  --btn-hi: transparent;
+  --btn-lo: transparent;
+  color: var(--c-cyan);
+  text-decoration: underline 2px;
+  text-underline-offset: 4px;
+}
+.btn-ghost.btn-icon { text-decoration: none; }
+.btn-ghost:focus-visible { --btn-edge: var(--focus); }
+.btn-icon { padding: var(--s1) var(--s2) calc(var(--s1) + var(--btn-depth) - 2px); }
 .btn-block { width: 100%; }
-.btn-danger { border-color: var(--danger-fill); }
+[data-motion='reduced'] .btn { transition: none; }
 
 /* ---------- Chips (§7) ---------- */
 .chip {
@@ -466,9 +512,9 @@ fieldset { border: 0; padding: 0; margin: 0; }
   bottom: var(--s2);
 }
 .scene-corner .btn {
-  background: rgb(26 28 44 / 0.75);
+  --btn-fill: rgb(26 28 44 / 0.8);
   min-height: 36px;
-  padding: var(--s1) var(--s2);
+  padding: var(--s1) var(--s2) calc(var(--btn-depth) - 2px);
   font-size: 0.875rem;
 }
 .avatar-preview {
@@ -486,15 +532,15 @@ fieldset { border: 0; padding: 0; margin: 0; }
   top: var(--s2);
 }
 .scene-icon {
-  background: rgb(26 28 44 / 0.75);
+  --btn-fill: rgb(26 28 44 / 0.8);
   min-height: 40px;
   min-width: 44px;
-  padding: var(--s1);
+  padding: var(--s1) var(--s1) calc(var(--btn-depth) - 2px);
   color: var(--c-white);
 }
 .scene-icon[aria-pressed='true'] {
+  --btn-edge: var(--c-cyan);
   color: var(--c-cyan);
-  border-color: var(--c-cyan);
 }
 .chat {
   display: flex;
@@ -502,15 +548,14 @@ fieldset { border: 0; padding: 0; margin: 0; }
   gap: var(--s1);
 }
 .chat-button {
-  background: rgb(26 28 44 / 0.85);
+  --btn-fill: rgb(26 28 44 / 0.85);
   min-height: 40px;
   min-width: 44px;
-  padding: var(--s1) var(--s2);
+  padding: var(--s1) var(--s2) calc(var(--btn-depth) - 2px);
   gap: var(--s1);
 }
 .chat.open .chat-button {
-  background: var(--primary-fill);
-  border-color: var(--c-navy);
+  --btn-fill: var(--primary-fill);
 }
 .chat-send-label {
   font-size: 0.875rem;
@@ -583,7 +628,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
   right: var(--s1);
   top: var(--s1);
   min-height: 32px;
-  padding: 0 var(--s2);
+  padding: 0 var(--s2) calc(var(--btn-depth) - 4px);
   font-size: 0.8125rem;
 }
 .onboarding-step {
@@ -699,3 +744,79 @@ fieldset { border: 0; padding: 0; margin: 0; }
 .main {
   min-width: 0;
 }
+
+/* ---------- Logros (spec 07, LP, CE, IN) ---------- */
+/* Insignia del atlas (IN-02); las pendientes, en gris y atenuadas (IN-03) */
+.badge {
+  display: inline-block;
+  flex: none;
+  background-repeat: no-repeat;
+}
+.badge.locked { filter: grayscale(1); opacity: 0.45; }
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s3) var(--s2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+@media (min-width: 560px) { .badge-grid { grid-template-columns: repeat(6, 1fr); } }
+.badge-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s1);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--s1) 0;
+  background: none;
+  border: 0;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+}
+.badge-name {
+  font-family: var(--font-pixel);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  text-align: center;
+}
+.badge-progress {
+  width: 56px;
+  height: 4px;
+  background: var(--c-navy);
+}
+.badge-progress i {
+  display: block;
+  height: 100%;
+  background: var(--xp);
+}
+/* Aviso de logro: arriba, sobre la escena, sin tapar la navegación ni los botones de registrar (CE-05) */
+.achievement-toast {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + var(--s2));
+  left: 50%;
+  translate: -50% 0;
+  z-index: 15;
+  width: max-content;
+  max-width: calc(100% - 2 * var(--s4));
+  animation: toast-in var(--dur-celebrate) ease-out;
+}
+.achievement-toast-body {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s2) var(--s4) var(--s2) var(--s2);
+  background: rgb(26 28 44 / 0.95);
+  border: 2px solid var(--level);
+  box-shadow: var(--glow-gold);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(-12px); }
+}
+[data-motion='reduced'] .achievement-toast { animation: none; }

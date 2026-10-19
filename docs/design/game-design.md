@@ -164,19 +164,19 @@ Por actividad, contadas en periodos de esa actividad.
 - **R-L1.** Se evalúan sobre el estado derivado. Al cumplirse la condición se guarda `unlockedAt` y el logro queda **permanente**, aunque luego se deshaga el registro que lo provocó (evita parpadeos).
 - **R-L2.** No dan XP (§0.3).
 
-| ID | Nombre provisional | Condición |
+| ID | Nombre (es / en, definitivos: spec 07, S7-01) | Condición |
 |---|---|---|
-| L-01 | Primer paso | Primer registro de cualquier actividad |
-| L-02 | Semana sólida | Racha de 7 en una actividad diaria |
-| L-03 | Treinta | Racha de 30 en cualquier actividad |
-| L-04 | Centenar | 100 registros en total |
-| L-05 | Palabra dada | Primera misión con fecha límite completada a tiempo |
-| L-06 | Fiable | 10 misiones con fecha límite completadas a tiempo |
-| L-07 | Rescate | Completar una misión vencida (completada tarde) |
-| L-08 | Regreso | Registrar algo tras 7 o más días completos sin ningún registro |
-| L-09 | Equilibrio | 4 o más categorías con atributo ≥ 60 en la ventana de 30 días |
-| L-10 | Temple | Disciplina ≥ 80 en la ventana de 30 días (con datos) |
-| L-11 | Vigía | Alcanzar el nivel 10 |
+| L-01 | Primer paso / First Step | Primer registro de cualquier actividad |
+| L-02 | Semana sólida / Solid Week | Racha de 7 en una actividad diaria (cuyo periodo actual es diario) |
+| L-03 | Treinta / Thirty | Racha de 30 en cualquier actividad |
+| L-04 | Centenar / Hundred | 100 registros en total |
+| L-05 | Palabra dada / Promise Kept | Primera misión con fecha límite completada a tiempo |
+| L-06 | Fiable / Reliable | 10 misiones con fecha límite completadas a tiempo |
+| L-07 | Rescate / Rescue | Completar una misión vencida (completada tarde) |
+| L-08 | Regreso / Comeback | Registrar algo tras 7 o más días completos sin ningún registro, habiendo registrado algo antes |
+| L-09 | Equilibrio / Balance | 4 o más categorías con atributo ≥ 60 en la ventana de 30 días |
+| L-10 | Temple / Temper | Disciplina ≥ 80 en la ventana de 30 días (con datos) |
+| L-11 | Vigía / Watcher | Alcanzar el nivel 10 |
 
 L-07 y L-08 premian **volver**, en línea con el problema principal (D-002).
 

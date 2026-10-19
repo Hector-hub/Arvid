@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { createContext, useContext, type ReactNode } from 'react';
 import { loadMissions } from '../data/missions';
-import { loadCategories, loadRecord, loadRecords, loadSettings, type DataContext } from '../data/repository';
+import { loadAchievements, loadCategories, loadRecord, loadRecords, loadSettings, type DataContext } from '../data/repository';
 
 const DataCtx = createContext<DataContext | null>(null);
 
@@ -39,4 +39,10 @@ export function useSettings() {
 export function useMissions() {
   const { db } = useData();
   return useLiveQuery(() => loadMissions(db), [db]);
+}
+
+/** Logros desbloqueados (spec 07). */
+export function useAchievements() {
+  const { db } = useData();
+  return useLiveQuery(() => loadAchievements(db), [db]);
 }

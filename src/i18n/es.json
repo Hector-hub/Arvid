@@ -325,6 +325,64 @@
     "disciplineText": "Cuánto cumpliste de todo lo que te propusiste.",
     "seeDetail": "Ver detalle"
   },
+  "achievements": {
+    "title": "Logros",
+    "count": "{count} / {total}",
+    "earnedOn": "Ganado el {date}",
+    "progress": "{current} / {goal}",
+    "pending": "Pendiente",
+    "a11yEarned": "{name}, ganado",
+    "a11yPending": "{name}, pendiente",
+    "a11yProgress": "{name}, pendiente, {current} de {goal}",
+    "toast": "Logro: {name}",
+    "toastMany": "{count} logros: {names}",
+    "items": {
+      "L-01": {
+        "name": "Primer paso",
+        "condition": "Registra tu primera actividad."
+      },
+      "L-02": {
+        "name": "Semana sólida",
+        "condition": "Consigue una racha de 7 en una actividad diaria."
+      },
+      "L-03": {
+        "name": "Treinta",
+        "condition": "Consigue una racha de 30 en cualquier actividad."
+      },
+      "L-04": {
+        "name": "Centenar",
+        "condition": "Llega a 100 registros en total."
+      },
+      "L-05": {
+        "name": "Palabra dada",
+        "condition": "Completa a tiempo tu primera misión con fecha límite."
+      },
+      "L-06": {
+        "name": "Fiable",
+        "condition": "Completa a tiempo 10 misiones con fecha límite."
+      },
+      "L-07": {
+        "name": "Rescate",
+        "condition": "Completa una misión que ya había vencido."
+      },
+      "L-08": {
+        "name": "Regreso",
+        "condition": "Vuelve a registrar algo tras 7 días o más sin registros."
+      },
+      "L-09": {
+        "name": "Equilibrio",
+        "condition": "Ten 4 categorías con atributo de 60 o más en 30 días."
+      },
+      "L-10": {
+        "name": "Temple",
+        "condition": "Llega a una Disciplina de 80 o más en 30 días."
+      },
+      "L-11": {
+        "name": "Vigía",
+        "condition": "Alcanza el nivel 10."
+      }
+    }
+  },
   "score": {
     "noData": "sin datos ({items} de {min})",
     "up": "↑ subiendo {delta}",
@@ -576,6 +634,11 @@
         "0": "¡Nivel {level}! Ahora eres {title}.",
         "1": "¡Subiste al nivel {level}! Todo lo que haces cuenta.",
         "2": "Nivel {level}. Sigue así, {alias}."
+      },
+      "achievement": {
+        "0": "¡Logro nuevo: {name}! Eso es constancia de verdad.",
+        "1": "¡{name}! Te lo has ganado, {alias}.",
+        "2": "Desbloqueaste {name}. Lo guardo en tu perfil."
       }
     },
     "chat": {
@@ -627,7 +690,9 @@
         "0": "También puedo darte consejos con inteligencia artificial y conversar contigo.",
         "1": "Para eso enviaría tu progreso y tus actividades a Mistral AI (Francia). ¿Lo activamos?"
       }
-    }
+    },
+    "achievementsFound_one": "Revisé tu historial: ya tenías 1 logro. Lo tienes en tu perfil.",
+    "achievementsFound_other": "Revisé tu historial: ya tenías {count} logros. Los tienes en tu perfil."
   },
   "onboarding": {
     "start": "Empezar",
