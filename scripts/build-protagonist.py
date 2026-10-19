@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Convierte hojas de caminar generadas con IA (filas de 8 fotogramas sobre fondo transparente) en hojas de pixel art
 para la escena: una por etapa, celdas de CELL px, todos los fotogramas a la misma escala, alineados por la cabeza
-(horizontal) y por los pies (vertical), alfa sin semitransparencias y paleta común reducida.
+(horizontal) y por los pies (vertical), muestreando el centro de cada píxel del original (nítido, sin colores
+intermedios), alfa sin semitransparencias y paleta común reducida.
 
 Uso: build-protagonist.py <nombre> <salida_dir> <hoja1.png> [hoja2.png ...]
 Las filas de las hojas, en orden, son las etapas 1, 2, 3...
@@ -10,7 +11,7 @@ import os, subprocess, sys, tempfile
 
 CELL = 64          # celda de salida (px)
 HEIGHT = 58        # altura del personaje en la celda (px), pies a 2 px del borde inferior
-COLORS = 48        # paleta común de todas las etapas
+COLORS = int(os.environ.get("COLORS", 48))  # paleta común de todas las etapas
 FRAMES = 8
 
 def size(f):
@@ -67,7 +68,7 @@ def main():
             size_ = round(src_cell)
             subprocess.check_call(['magick', f, '-crop', f'{x1 - x0}x{bottom - top}+{x0}+{top}', '+repage',
                                    '-background', 'none', '-extent', f'{size_}x{size_}{offset(x0 - left)}{offset(top - up)}',
-                                   '-filter', 'Box',
+                                   '-filter', 'Point',
                                    '-resize', f'{CELL}x{CELL}!', '-channel', 'A', '-threshold', '50%', '+channel', cell])
             cells.append(cell)
         row_file = os.path.join(tmp, f'row{s}.png')

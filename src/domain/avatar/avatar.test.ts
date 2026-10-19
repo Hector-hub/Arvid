@@ -79,19 +79,20 @@ describe('recoloreado por variante (PRO-04)', () => {
     expect(at(px, 96, 50, 30)).toBe('#ff2a6d');
   });
 
-  it('Él 2: el negro del pelo se recolorea por dentro, pero el contorno se conserva', () => {
-    const px = sheet(40, 60, [
-      [10, 2, '#080717'], [11, 2, '#080717'], [12, 2, '#080717'],
-      [10, 3, '#080717'], [11, 3, '#080717'], [12, 3, '#080717'],
-      [10, 4, '#080717'], [11, 4, '#080717'], [12, 4, '#080717'],
-      [20, 30, '#fafaf6'], // camisa
-      [20, 50, '#653e3e'], // zapato
+  it('Él 2: pelo, camisa y zapatos por color y zona; el contorno y el ojo se conservan', () => {
+    const px = sheet(64, 64, [
+      [30, 2, '#03020a'], // contorno (primera fila opaca)
+      [30, 4, '#080815'], // pelo
+      [34, 10, '#d2dae0'], // blanco del ojo (en la cabeza, no es camisa)
+      [30, 25, '#f7f8f9'], // camisa
+      [30, 58, '#b75a3f'], // zapato
     ]);
-    recolorSheet(px, 40, 60, 40, 'el2', 'ocaso');
-    expect(at(px, 40, 11, 3)).toBe('#b13e53'); // interior del pelo
-    expect(at(px, 40, 10, 2)).toBe('#080717'); // contorno
-    expect(at(px, 40, 20, 30)).toBe('#7a4fd1');
-    expect(at(px, 40, 20, 50)).toBe('#f07c36');
+    recolorSheet(px, 64, 64, 64, 'el2', 'ocaso');
+    expect(at(px, 64, 30, 2)).toBe('#03020a');
+    expect(at(px, 64, 30, 4)).toBe('#b13e53');
+    expect(at(px, 64, 34, 10)).toBe('#d2dae0');
+    expect(at(px, 64, 30, 25)).toBe('#7a4fd1');
+    expect(at(px, 64, 30, 58)).toBe('#f07c36');
   });
 
   it('recolorea cada fotograma de la hoja', () => {

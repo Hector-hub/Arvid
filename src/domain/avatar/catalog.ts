@@ -71,10 +71,10 @@ export const CASTS: Record<CastId, CastSpec> = {
   },
   el2: {
     id: 'el2',
-    walk: { file: 'el2-walk.png', frameW: 40, frameH: 60, frames: 8, ticks: 7.5 },
+    walk: { file: 'el2-walk.png', frameW: 64, frameH: 64, frames: 8, ticks: 7.5 },
     restFrame: 3, // piernas juntas
-    anchorX: 20,
-    feetY: 59,
+    anchorX: 30,
+    feetY: 62,
     scale: 1,
     flip: false,
   },

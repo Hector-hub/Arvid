@@ -207,23 +207,31 @@ const BRAWLER: RoleSpec<'hair' | 'outfit' | 'skin' | 'boots' | 'accent'> = {
   },
 };
 
-const M2_FEET = 46; // por debajo de esta fila solo hay zapatos
+// Drifter (Él 2), hoja nueva generada con IA (64 × 64, 20 colores): el color no basta (el negro es pelo, contorno
+// y camiseta; los marrones, piel y zapatos), así que se usa también la zona respecto a la primera fila opaca.
+const M2_HEAD = 12; // filas de pelo
+const M2_HAIR_TOP = 7; // por encima de la cara
+const M2_WAIST = 28; // por encima, camisa; por debajo, vaqueros
+const M2_FEET = 51; // por debajo, solo zapatos
 const MALE2: RoleSpec<'hair' | 'shirt' | 'skin' | 'jeans' | 'shoes'> = {
   roles: {
-    hair: ['#080717', '#221926'],
-    shirt: ['#8194ac', '#b4b6bc', '#f9f5e3', '#fafaf6'],
-    skin: ['#653e3e', '#b45547', '#c17a64', '#e9996c'],
-    jeans: ['#202a49', '#253a65', '#517a94'],
-    shoes: ['#221926', '#653e3e'],
+    hair: ['#080815', '#140e19', '#1d1726'],
+    shirt: ['#2b4e73', '#4a7494', '#708ba5', '#8da0b3', '#b3bfc9', '#d2dae0', '#f7f8f9'],
+    skin: ['#5d373a', '#a54a36', '#b75a3f', '#a37d83', '#ab8d78', '#f49c64'],
+    jeans: ['#1b2f5a', '#1c3364', '#2b4e73', '#386a8c', '#4a7494'],
+    shoes: ['#1d1726', '#5d373a', '#a54a36', '#b75a3f'],
   },
-  // El negro del pelo también es contorno y ojo: solo es pelo en la cabeza, por dentro y por detrás de la cara.
-  // #221926 es brillo del pelo arriba y zapato abajo; #653e3e, sombra de piel arriba y zapato abajo.
-  roleOf(h, x, y, top, edge) {
-    if (y >= M2_FEET) return MALE2.roles.shoes.includes(h) ? 'shoes' : undefined;
-    if (h === '#080717') return y < top + 13 && !edge && !(x >= 22 && y >= top + 5) ? 'hair' : undefined;
-    if (h === '#221926') return y < top + 13 ? 'hair' : undefined;
-    for (const r of ['shirt', 'skin', 'jeans'] as const) if (MALE2.roles[r].includes(h)) return r;
-    return undefined;
+  roleOf(h, _x, y, top) {
+    const r = y - top;
+    if (r >= M2_FEET) return MALE2.roles.shoes.includes(h) ? 'shoes' : undefined;
+    // Los tonos claros del pelo también son ceja y ojo: solo son pelo en la parte alta de la cabeza
+    if (r < M2_HEAD && h === '#080815') return 'hair';
+    if (r < M2_HAIR_TOP && MALE2.roles.hair.includes(h)) return 'hair';
+    if (MALE2.roles.skin.includes(h)) return 'skin';
+    // Los blancos y grises azulados de la cabeza son el ojo: no son camisa
+    if (r < M2_HEAD) return undefined;
+    if (r < M2_WAIST) return MALE2.roles.shirt.includes(h) ? 'shirt' : undefined;
+    return MALE2.roles.jeans.includes(h) ? 'jeans' : undefined;
   },
   variants: {
     neon: { hair: ['#031b70', '#05d9e8'], shirt: ['#031b70', '#0b347f', '#177daa', '#05d9e8'], jeans: ['#160f2b', '#2a1a4a', '#4d3fa0'], shoes: ['#540052', '#ff2a6d'], skin: 'media' },
