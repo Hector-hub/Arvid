@@ -89,6 +89,12 @@ Fuente de verdad de las decisiones de producto y técnicas. Cada spec debe refer
 | D-073 | Se añade la pista Black Chrome Horizon (propia, generada con Gemini como las otras dos) | A | 2026-10-18 |
 | D-074 | Las farolas y su haz se dibujan al frente, por delante de peatones, detalles de la acera, ARVID y protagonista; solo la barandilla queda delante (spec 05, ESC-03) | A | 2026-10-18 |
 | D-075 | Drones del cielo: los otros modelos del Free Drones Pack cruzan a lo lejos a 3 distancias, por detrás y por delante de los edificios (spec 05, ESC-13) | A | 2026-10-18 |
+| D-076 | Spec 07 · Logros: sección en Perfil (cuadrícula de insignias bajo el radar); al tocar una se ven nombre, condición y fecha | A | 2026-10-18 |
+| D-077 | Spec 07 · Al desbloquear un logro: ráfaga de partículas, ARVID lo anuncia en su burbuja (con IA, frase personalizada) y un aviso pequeño con la insignia que se cierra solo; sin bloquear la pantalla | A | 2026-10-18 |
+| D-078 | Spec 07 · Los logros pendientes se ven en gris con nombre y condición, con barra de progreso cuando es medible | A | 2026-10-18 |
+| D-079 | Spec 07 · Logros ya cumplidos al llegar la versión o al importar un backup: se ganan en silencio con su fecha, sin celebrar cada uno (los historiales previos son de prueba) | C | 2026-10-18 |
+| D-080 | Spec 07 · Set: los 11 logros de game-design §9 con sus nombres (pasan a definitivos, con traducción al inglés). Insignias generadas con IA por el responsable a partir de un prompt común | A | 2026-10-18 |
+| D-081 | Spec 07 · Pulido: botones pixel más modernos hechos con CSS, revisión de accesibilidad automática (axe en E2E) y de rendimiento (Lighthouse); la checklist en teléfonos queda aparte | A | 2026-10-18 |
 | D-050 | Spec 05 (Escena neón, protagonistas y música) aprobada con S5-01 a S5-09: escena de Warped City en Hoy y Personaje; Sweetie 16 + neón sutil, con la escena como excepción a los 16 colores; 4 protagonistas × 6 variantes (enmienda D-029 y D-036); partículas; música opcional desactivada por defecto y sin precache; la escena es el incremento 5 y Logros el 6; solo se publican assets con licencia verificada; nombres de protagonistas provisionales | A | 2026-10-18 |
 | C-001 | El onboarding guía la instalación en la pantalla de inicio y solicita `navigator.storage.persist()` | C | 2026-10-17 |
 | C-002 | Una categoría sin datos suficientes se muestra como "sin datos", nunca como 0. El radar tiene una alternativa accesible en forma de lista | C | 2026-10-17 |

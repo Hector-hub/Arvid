@@ -1,6 +1,6 @@
 # Spec 01 — Actividades, Hoy y PWA offline
 
-Estado: **aprobada** (D-042) · **implementada** 2026-10-17 (pendiente: despliegue en Netlify y checklist manual en dispositivos) · Incremento 1 de implementation-plan.md
+Estado: **aprobada** (D-042) · **implementada** 2026-10-17 · desplegada en Netlify (pendiente: checklist manual en dispositivos) · Incremento 1 de implementation-plan.md
 Cubre: MVP-01, MVP-03 (parcial), MVP-06 (solo categorías predefinidas), MVP-08, MVP-10 (base)
 Reglas: game-design §2 (R-T1 a R-T5), §3.1 a §3.3 (R-A1 a R-A5) · Datos: data-model.md · Diseño: design-system.md
 

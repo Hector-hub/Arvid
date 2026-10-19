@@ -1,6 +1,6 @@
 # Spec 02 — Backup y progreso básico
 
-Estado: **aprobada** (D-045; enmiendas D-044) · **implementada** 2026-10-17 en la versión 0.2.0 (pendiente: despliegue y checklist manual M2) · Incremento 2 de implementation-plan.md
+Estado: **aprobada** (D-045; enmiendas D-044) · **implementada** 2026-10-17 en la versión 0.2.0 · desplegada en Netlify (pendiente: checklist manual M2) · Incremento 2 de implementation-plan.md
 Cubre: MVP-09 (backup), MVP-04 (XP, niveles, títulos, rachas, comodines), MVP-05 (parcial: nivel y XP en Personaje)
 Reglas: game-design §3.3, §3.4, §4, §7 · Datos: data-model §4 · Offline: offline-strategy §4 · Privacidad: security-privacy §2–3
 

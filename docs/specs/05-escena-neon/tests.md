@@ -43,7 +43,7 @@ Tipos: **U** unitario · **I** integración · **C** componente · **E** E2E (Ch
 |---|---|---|---|
 | M5-01 | La escena va fluida y no calienta el teléfono tras 5 min en Hoy | ☐ | ☐ |
 | M5-02 | Al bloquear el teléfono y volver, la escena y la música continúan sin saltos | ☐ | ☐ |
-| M5-03 | Movimiento reducido del sistema → escena quieta | ☐ | ☐ |
+| M5-03 | Movimiento reducido del sistema → escena quieta | ☑ (2026-10-18) | ☐ |
 | M5-04 | La música suena con el interruptor de silencio en ambas posiciones (iPhone) y respeta el volumen del sistema | ☐ | ☐ |
 | M5-05 | Una pista escuchada vuelve a sonar en modo avión | ☐ | ☐ |
 | M5-06 | Los 4 protagonistas y sus 6 variantes se ven bien en la escena a 320 px y a 720 px | ☐ | ☐ |

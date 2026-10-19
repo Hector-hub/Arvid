@@ -1,6 +1,6 @@
 # Spec 06 — Perfil, ARVID con IA, idiomas y onboarding
 
-Estado: **aprobada** (D-066, 2026-10-18) · **0.6.0 desplegada** y **0.6.1 implementada** 2026-10-18 (pendiente: desplegar la 0.6.1 y checklists M6 y M6-IA) · Incremento 6 de implementation-plan.md (Logros y pulido pasa a ser el 7)
+Estado: **aprobada** (D-066, 2026-10-18) · **0.6.0 y 0.6.1 desplegadas** 2026-10-18; ajustes posteriores en la 0.6.2 (pendiente: checklists M6 y M6-IA) · Incremento 6 de implementation-plan.md (Logros y pulido pasa a ser el 7)
 Cubre: MVP-05 (perfil), MVP-08 (onboarding), MVP-10 (personalidad e idiomas) y la ampliación de alcance de D-059 (IA)
 Decisiones que implementa: D-052 a D-064
 Modifica:

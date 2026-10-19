@@ -1,6 +1,6 @@
 # Spec 03 — Misiones
 
-Estado: **aprobada** (D-047; aclaraciones D-046) · **implementada** 2026-10-17 en la versión 0.3.0 (pendiente: despliegue y checklist manual M3) · Incremento 3 de implementation-plan.md
+Estado: **aprobada** (D-047; aclaraciones D-046) · **implementada** 2026-10-17 en la versión 0.3.0 · desplegada en Netlify (pendiente: checklist manual M3) · Incremento 3 de implementation-plan.md
 Cubre: MVP-02 (misiones únicas), MVP-03 (misiones en Hoy)
 Reglas: game-design §8 (R-M1 a R-M7), §4 (R-X1), §6 (R-D1) · Decisiones: D-018, D-020, D-020b, D-032, D-033 · Datos: data-model (`missions`, `missionEvents`)
 

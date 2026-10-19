@@ -1,6 +1,6 @@
 # Spec 04 — Hoja de personaje
 
-Estado: **aprobada** (D-049; aclaraciones D-048) · **implementada** 2026-10-17 en la versión 0.4.0 (pendiente: despliegue y checklist manual M4) · Incremento 4 de implementation-plan.md
+Estado: **aprobada** (D-049; aclaraciones D-048) · **implementada** 2026-10-17 en la versión 0.4.0 · desplegada en Netlify (pendiente: checklist manual M4) · Incremento 4 de implementation-plan.md
 Cubre: MVP-05 (hoja de personaje), MVP-04 (atributos y Disciplina), MVP-06 (categorías propias)
 Reglas: game-design §5 (R-AT1 a R-AT5), §6 (R-D1 a R-D3), §10 (explicabilidad), E-2, E-3, E-4b, E-8 · Decisiones: D-015, D-017, D-025, D-026, C-002 · Diseño: design-system §3, §7
 
