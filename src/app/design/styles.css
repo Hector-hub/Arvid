@@ -501,6 +501,56 @@ fieldset { border: 0; padding: 0; margin: 0; }
 .main > .banner + * .scene-sticky {
   margin-top: 0;
 }
+.scene-overlay.hidden { opacity: 0; }
+.scene-overlay { transition: opacity var(--dur-celebrate); }
+/* Fecha de Hoy en la esquina de la escena (UB-06) */
+.scene-overlay .scene-date {
+  font-size: 1.125rem;
+  color: var(--c-white);
+  text-shadow: var(--glow-cyan), 0 1px 0 var(--c-ink);
+}
+.scene-bottom-left {
+  position: absolute;
+  left: var(--s2);
+  bottom: var(--s2);
+  max-width: calc(100% - 120px);
+  pointer-events: none;
+}
+.scene-bottom-left .track-name { margin-top: 0; max-width: 100%; }
+/* Presentación de la fecha (UB-06): negro, texto escrito letra a letra, fundido y bandas que se abren */
+.scene-intro {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.scene-intro-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50.5%;
+  background: #000;
+  transition: transform 700ms cubic-bezier(0.7, 0, 0.3, 1);
+}
+.scene-intro-band.top { top: 0; }
+.scene-intro-band.bottom { bottom: 0; }
+.scene-intro.open .scene-intro-band.top { transform: translateY(-100%); }
+.scene-intro.open .scene-intro-band.bottom { transform: translateY(100%); }
+.scene-intro-text {
+  position: relative;
+  margin: 0;
+  font-family: var(--font-pixel);
+  font-size: clamp(1.125rem, 5vw, 1.75rem);
+  color: var(--c-white);
+  text-shadow: var(--glow-cyan);
+  white-space: nowrap;
+  transition: opacity 400ms;
+}
+.scene-intro.fade .scene-intro-text,
+.scene-intro.open .scene-intro-text { opacity: 0; }
+.scene-intro-caret { color: var(--c-cyan); animation: caret-blink 0.8s steps(1) infinite; }
+@keyframes caret-blink { 50% { opacity: 0; } }
 .scene-overlay h2 {
   font-size: 1rem;
   color: var(--level);

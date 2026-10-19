@@ -1,4 +1,4 @@
-import { Suspense, lazy, useSyncExternalStore, type ReactNode } from 'react';
+import { Suspense, lazy, useEffect, useEffectEvent, useLayoutEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { DEFAULT_ARVID_COLOR, type ArvidColor } from '../../domain/arvid/arvid';
 import { DEFAULT_AVATAR, type Avatar } from '../../domain/avatar/catalog';
 import { useT } from '../../i18n';
@@ -6,7 +6,7 @@ import { useSettings } from '../data';
 import { MusicButton } from '../music/MusicProvider';
 import { TrackName } from '../music/TrackName';
 import { ChatControl } from './Chat';
-import { currentSpeechText, subscribeSpeech } from './engine';
+import { claimIntro, currentSpeechText, introAvailable, releaseEntrance, subscribeSpeech } from './engine';
 
 // El dibujo se carga aparte: Hoy es usable antes de que llegue la escena (NFR5-04)
 const SceneCanvas = lazy(() => import('./SceneCanvas').then((m) => ({ default: m.SceneCanvas })));
@@ -24,30 +24,85 @@ function SpeechAnnouncer() {
   );
 }
 
+/** Tiempos de la presentación de la fecha (UB-06), en ms. */
+const INTRO_TYPE_MS = 60;
+const INTRO_HOLD_MS = 700;
+const INTRO_FADE_MS = 400;
+const INTRO_OPEN_MS = 700;
+
+/**
+ * Presentación al abrir la app (UB-06): la escena empieza en negro, `text` se escribe letra a letra en el centro, se
+ * desvanece y dos bandas negras se abren hacia arriba y hacia abajo. ARVID hace su entrada al abrirse.
+ */
+function SceneIntro({ text, onDone }: { text: string; onDone: () => void }) {
+  const [typed, setTyped] = useState(0);
+  const [phase, setPhase] = useState<'typing' | 'fade' | 'open'>('typing');
+  const done = useEffectEvent(onDone);
+  useEffect(() => {
+    const timers: number[] = [];
+    let i = 0;
+    const typing = window.setInterval(() => {
+      setTyped(++i);
+      if (i < text.length) return;
+      window.clearInterval(typing);
+      timers.push(window.setTimeout(() => setPhase('fade'), INTRO_HOLD_MS));
+      timers.push(
+        window.setTimeout(() => {
+          setPhase('open');
+          releaseEntrance();
+        }, INTRO_HOLD_MS + INTRO_FADE_MS),
+      );
+      timers.push(window.setTimeout(() => done(), INTRO_HOLD_MS + INTRO_FADE_MS + INTRO_OPEN_MS));
+    }, INTRO_TYPE_MS);
+    return () => {
+      window.clearInterval(typing);
+      timers.forEach((t) => window.clearTimeout(t));
+      // Si se sale de Hoy a mitad, ARVID entra igualmente al volver a ver la escena
+      releaseEntrance();
+    };
+  }, [text]);
+  return (
+    <div className={`scene-intro ${phase}`} aria-hidden="true">
+      <span className="scene-intro-band top" />
+      <span className="scene-intro-band bottom" />
+      <p className="scene-intro-text">
+        {text.slice(0, typed)}
+        <span className="scene-intro-caret">_</span>
+      </p>
+    </div>
+  );
+}
+
 /**
  * Escena neón con el protagonista y ARVID (spec 05 UB, spec 06). El contenedor mantiene la proporción 2:1 y el
  * color de fondo mientras carga o si falla (ESC-12), así que no hay saltos de layout.
- * - `overlay`, arriba a la izquierda (nivel en Perfil).
- * - Con `controls`: nombre de la pista arriba a la izquierda (MUS-08), bocina arriba a la derecha (MU-01) y chat
+ * - `overlay`, arriba a la izquierda (fecha en Hoy, nivel en Perfil).
+ * - `intro`: texto de la presentación al abrir la app (UB-06); el `overlay` aparece al terminar.
+ * - Con `controls`: bocina arriba a la derecha (MU-01), nombre de la pista abajo a la izquierda (MUS-08) y chat
  *   abajo a la derecha (CH-01).
  */
-export function Scene({ overlay, controls = true }: { overlay?: ReactNode; controls?: boolean }) {
+export function Scene({ overlay, controls = true, intro }: { overlay?: ReactNode; controls?: boolean; intro?: string }) {
   const settings = useSettings();
   const avatar = settings?.avatar ?? DEFAULT_AVATAR;
   const arvidColor = settings?.arvidColor ?? DEFAULT_ARVID_COLOR;
+  // Se decide al montar: solo la primera escena de la apertura y sin movimiento reducido
+  const [playing, setPlaying] = useState(() => intro !== undefined && introAvailable());
+  // Antes de que el lienzo se active (efecto normal del hijo), para que ARVID espere
+  useLayoutEffect(() => {
+    if (playing) claimIntro();
+  }, [playing]);
   return (
     <div className="scene">
       <Suspense fallback={null}>
         <SceneCanvas avatar={avatar} arvidColor={arvidColor} />
       </Suspense>
-      {(overlay || controls) && (
-        <div className="scene-overlay">
-          {overlay}
-          {controls && <TrackName />}
-        </div>
-      )}
+      {overlay && <div className={playing ? 'scene-overlay hidden' : 'scene-overlay'}>{overlay}</div>}
+      {playing && intro && <SceneIntro text={intro} onDone={() => setPlaying(false)} />}
       {controls && (
         <>
+          <div className="scene-bottom-left">
+            <TrackName />
+          </div>
           <div className="scene-top-right">
             <MusicButton />
           </div>

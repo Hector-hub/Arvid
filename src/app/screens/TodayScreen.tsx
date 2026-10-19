@@ -70,10 +70,9 @@ export function TodayScreen() {
 
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
-      {/* Escena, fecha y nivel quedan fijos arriba al hacer scroll (UB-05) */}
+      {/* Escena, fecha y nivel quedan fijos arriba al hacer scroll (UB-05); la fecha va en la escena (UB-06) */}
       <header className="scene-sticky stack" style={{ gap: 'var(--s2)' }}>
-        <Scene />
-        <h1>{longDate(today)}</h1>
+        <Scene overlay={<h1 className="scene-date">{longDate(today)}</h1>} intro={longDate(today)} />
         <LevelStrip />
       </header>
       {summary && (

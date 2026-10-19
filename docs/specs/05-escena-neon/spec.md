@@ -74,7 +74,7 @@ La exploración se hizo con prototipos sucesivos.
   - Residentes que caminan por la acera en ambos sentidos, con baja frecuencia (uno cada 15–25 s de media).
   - Se escalan a la altura del protagonista y caminan a una velocidad parecida a la suya.
 - **ESC-07.** **Dron mascota:** sigue al protagonista por encima y detrás, con balanceo suave, y de vez en cuando hace la animación de escaneo.
-- **ESC-08.** **Fecha** bajo la escena, en texto ("Sábado, 17 oct"). Sustituye al encabezado de fecha actual de Hoy. No hay reloj.
+- **ESC-08.** **Fecha** en texto ("Sábado, 17 oct") en la esquina superior izquierda de la escena de Hoy, como encabezado de la pantalla (antes iba debajo; D-084). No hay reloj.
 - **ESC-09.** **Animación por tiempo** (`requestAnimationFrame` con `dt` normalizado a 60 Hz y limitado a 3 fotogramas). Va a la misma velocidad a 60, 120 y 144 Hz.
 - **ESC-10.** **Ahorro:** la escena no se anima con la app oculta (`visibilitychange`) ni cuando el lienzo está fuera de la pantalla (`IntersectionObserver`). Al volver, continúa sin saltos.
 - **ESC-11.** **Movimiento reducido** (`prefers-reduced-motion` o el ajuste `reducedMotion`, C-003):
@@ -85,11 +85,12 @@ La exploración se hizo con prototipos sucesivos.
 - **ESC-13.** **Drones del cielo:** otros 5 modelos del Free Drones Pack cruzan a lo lejos, uno cada 4–10 s y como mucho 3 a la vez, en ambos sentidos y con su animación. Cada uno va a una de 3 distancias (lejos, en medio, cerca): más pequeño y más teñido del color del cielo cuanto más lejos, con el parallax de la capa que tiene detrás. Los de lejos pasan por detrás de la ciudad del fondo; los de en medio, por detrás de los edificios delanteros; los de cerca, por delante. Con movimiento reducido no hay drones (D-075).
 
 ### 4.2 Ubicación (UB)
-- **UB-01.** **Hoy:** la escena va arriba, con la fecha debajo (ESC-08), y después el contenido actual.
+- **UB-01.** **Hoy:** la escena va arriba, con la fecha en su esquina superior izquierda (ESC-08), y después el contenido actual.
 - **UB-02.** **Personaje:** la escena sustituye al sprite del 1-Bit Pack, con el nivel y el título superpuestos en la esquina superior izquierda ("Nv 5 · Aprendiz"). El resto de la pantalla no cambia (S4-01).
 - **UB-03.** **≥ 768 px:** la escena ocupa el ancho de la columna principal (design-system §9).
 - **UB-04.** Las dos pantallas comparten la misma instancia de la escena. Al cambiar de pestaña, los vehículos, los peatones y el desplazamiento continúan donde estaban.
-- **UB-05.** **Hoy:** la escena, la fecha y el nivel quedan fijos arriba al hacer scroll, en el mismo sitio en que empiezan; el resumen del día y el resto del contenido pasan por debajo (D-072).
+- **UB-05.** **Hoy:** la escena (con la fecha) y el nivel quedan fijos arriba al hacer scroll, en el mismo sitio en que empiezan; el resumen del día y el resto del contenido pasan por debajo (D-072).
+- **UB-06.** **Presentación al abrir la app** (D-084): la primera vez que se ve la escena en cada apertura, si es la de Hoy, empieza en negro y la fecha se escribe letra a letra en el centro (60 ms por letra). Tras 0,7 s se desvanece (0,4 s) y dos bandas negras se abren hacia arriba y hacia abajo (0,7 s); entonces ARVID hace su entrada (MV-01) y la fecha aparece en su esquina. El resto de Hoy se ve y se puede usar mientras tanto. Con movimiento reducido no hay presentación.
 
 ### 4.3 Partículas (PAR)
 - **PAR-01.** **Ráfaga pequeña** (≈30 partículas en los 3 colores neón de la escena: cian, naranja y magenta) desde el protagonista al registrar progreso de una actividad, completar una misión o crear una actividad o misión.
@@ -122,7 +123,7 @@ La exploración se hizo con prototipos sucesivos.
 - **MUS-05.** **App oculta:** se pausa y se reanuda al volver.
 - **MUS-06.** **Controles:** en Ajustes → Sonido (activar, volumen y pista actual con "Siguiente"), y un botón ♪ de activar/pausar en la esquina de la escena de Hoy.
 - **MUS-07.** **Offline:** las pistas **no** se precachean (≈13 MB). Se guardan en caché la primera vez que suenan (`CacheFirst` con soporte de peticiones por rangos), así que una pista ya escuchada suena sin conexión. Sin conexión solo se eligen las pistas en caché, y si no hay ninguna se avisa con "La música necesita conexión la primera vez".
-- **MUS-08.** **Nombre de la pista:** cada vez que empieza una pista, su nombre ("♪ Black Chrome Horizon") aparece arriba a la izquierda de la escena y se desvanece a los 5 s (fundido de 0,8 s). Al cambiar de pantalla no vuelve a aparecer. Con movimiento reducido desaparece sin fundido (D-071).
+- **MUS-08.** **Nombre de la pista:** cada vez que empieza una pista, su nombre ("♪ Black Chrome Horizon") aparece abajo a la izquierda de la escena (D-085) y se desvanece a los 5 s (fundido de 0,8 s). Al cambiar de pantalla no vuelve a aparecer. Con movimiento reducido desaparece sin fundido (D-071).
 
 ### 4.6 Interfaz "neón sutil" (DIS)
 - **DIS-01.** La interfaz mantiene Sweetie 16 (paleta A, D-037) y añade **brillo sutil**:

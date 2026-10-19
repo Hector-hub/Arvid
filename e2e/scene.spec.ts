@@ -48,6 +48,34 @@ test.describe('escena neón (spec 05)', () => {
     expect((await date.boundingBox())!.y).toBeCloseTo(before.date, 0);
   });
 
+  test('UB-06: al abrir la app, la fecha se escribe en negro, se abren las bandas y queda arriba a la izquierda', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await completeOnboarding(page);
+    await page.reload();
+    const intro = page.locator('.scene-intro');
+    await expect(intro).toBeVisible();
+    await expect(intro).toHaveClass(/open/, { timeout: 5000 });
+    await expect(intro).toHaveCount(0);
+    const date = page.getByRole('heading', { level: 1 });
+    const [d, scene] = [await date.boundingBox(), await page.getByRole('img', { name: SCENE }).boundingBox()];
+    expect(d!.x - scene!.x).toBeLessThan(20);
+    expect(d!.y - scene!.y).toBeLessThan(20);
+    // Al volver a Hoy en la misma apertura no se repite
+    await page.goto('/perfil');
+    await page.getByRole('link', { name: 'Hoy' }).click();
+    await expect(page.locator('.scene-overlay')).toBeVisible();
+    await expect(intro).toHaveCount(0);
+  });
+
+  test('UB-06: con movimiento reducido no hay presentación; la fecha ya está en la escena', async ({ page }) => {
+    await completeOnboarding(page);
+    await page.reload();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.locator('.scene-intro')).toHaveCount(0);
+  });
+
   test('ESC-11: con movimiento reducido la escena queda quieta', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await completeOnboarding(page);

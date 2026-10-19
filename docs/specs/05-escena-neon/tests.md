@@ -23,6 +23,7 @@ Tipos: **U** unitario · **I** integración · **C** componente · **E** E2E (Ch
 | ESC-08 · UB-01/02 | Hoy: escena + fecha en texto; Personaje: escena + "Nv N · Título" en texto | C + E |
 | UB-04 | Al cambiar de Hoy a Personaje, la escena continúa (mismo desplazamiento) | E |
 | UB-05 | Al hacer scroll en Hoy, la escena, la fecha y el nivel siguen en el mismo sitio arriba | E |
+| UB-06 | Al abrir la app: fecha escrita, bandas que se abren y fecha arriba a la izquierda; no se repite al volver a Hoy; con movimiento reducido no hay presentación | E |
 | PRO-01 · §5 | Catálogo de 4 × 6; un `cast` o una `variant` desconocidos se normalizan al valor por defecto | U |
 | PRO-02/03 | El onboarding guarda la elección; Ajustes la cambia y se ve al instante y tras recargar | C + E |
 | PRO-04 · NFR5-03 | El recoloreado se cachea por variante y tarda < 50 ms (mejor de 7) | C |

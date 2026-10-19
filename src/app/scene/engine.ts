@@ -44,6 +44,9 @@ let active = 0;
 let pending: PendingBurst[] = [];
 /** ARVID llega volando la primera vez que se ve la escena en cada apertura (MV-01). */
 let entered = false;
+/** La presentación de la fecha (UB-06) retiene la entrada de ARVID hasta que se abre la escena. */
+let entranceHeld = false;
+let introPlayed = false;
 
 const isReduced = () => typeof document !== 'undefined' && document.documentElement.dataset.motion === 'reduced';
 
@@ -157,7 +160,7 @@ export function resetClock(): void {
 export function setActive(visible: boolean): void {
   active = Math.max(0, active + (visible ? 1 : -1));
   if (!visible) return;
-  if (!entered) {
+  if (!entered && !entranceHeld) {
     entered = true;
     if (!isReduced()) startEntrance(scene.arvid, rng);
   }
@@ -169,6 +172,29 @@ export function setActive(visible: boolean): void {
 /** ARVID ya terminó de llegar y está en su sitio (para empezar a hablar al abrir la app). */
 export function arvidReady(): boolean {
   return entered && isHome(scene.arvid);
+}
+
+/**
+ * Presentación de la fecha al abrir la app (UB-06): solo la primera vez que se ve la escena en cada apertura y sin
+ * movimiento reducido. `claimIntro` la reserva y retiene la entrada de ARVID; `releaseEntrance` la suelta.
+ */
+export function introAvailable(): boolean {
+  return !introPlayed && !entered && !isReduced();
+}
+
+export function claimIntro(): void {
+  introPlayed = true;
+  entranceHeld = true;
+}
+
+export function releaseEntrance(): void {
+  if (!entranceHeld) return;
+  entranceHeld = false;
+  if (active > 0 && !entered) {
+    entered = true;
+    if (!isReduced()) startEntrance(scene.arvid, rng);
+    notifyReady();
+  }
 }
 
 const readyListeners = new Set<() => void>();
