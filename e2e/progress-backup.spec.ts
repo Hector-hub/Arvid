@@ -9,7 +9,7 @@ test('PRG-06/07: celebra el nivel 2 una sola vez', async ({ page }) => {
   await completeOnboarding(page);
   // 5 actividades Difíciles (20 XP) → 100 XP = nivel 2.
   for (const name of ['A1', 'A2', 'A3', 'A4', 'A5']) await createActivity(page, { name, difficulty: 'Difícil' });
-  await expect(page.getByRole('link', { name: /Nivel 1, Recluta/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Nv 1 · Recluta/ })).toBeVisible();
 
   for (const name of ['A1', 'A2', 'A3', 'A4']) {
     await row(page, name).getByRole('button', { name: `Registrar ${name}` }).click();
@@ -22,13 +22,13 @@ test('PRG-06/07: celebra el nivel 2 una sola vez', async ({ page }) => {
   await expect(modal).toBeVisible();
   await modal.getByRole('button', { name: 'Continuar' }).click();
   await expect(modal).toHaveCount(0);
-  await expect(page.getByRole('link', { name: /Nivel 2, Recluta/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Nv 2 · Recluta/ })).toBeVisible();
 
   // Deshacer y volver a registrar no repite la celebración.
   await row(page, 'A5').getByRole('button', { name: 'Deshacer A5' }).click();
-  await expect(page.getByRole('link', { name: /Nivel 1, Recluta/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Nv 1 · Recluta/ })).toBeVisible();
   await row(page, 'A5').getByRole('button', { name: 'Registrar A5' }).click();
-  await expect(page.getByRole('link', { name: /Nivel 2, Recluta/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Nv 2 · Recluta/ })).toBeVisible();
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 

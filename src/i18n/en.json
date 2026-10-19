@@ -122,7 +122,7 @@
   "level": {
     "short": "Lv {level} · {title}",
     "long": "Level {level} · {title}",
-    "stripLabel": "Level {level}, {title}. See profile",
+    "stripLabel": "Lv {level} · {title}: see profile",
     "xpBar": "Level experience"
   },
   "today": {

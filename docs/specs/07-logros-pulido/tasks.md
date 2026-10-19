@@ -2,7 +2,7 @@
 
 Derivadas de spec.md (aprobada, D-083).
 
-**Estado (2026-10-18):** 0.7.0 implementada (T01–T08) con las insignias generadas por el responsable; falta T09 (despliegue). Decisiones menores tomadas al implementar:
+**Estado (2026-10-18):** 0.7.0 desplegada (T01–T09). 0.7.1 con T10–T13 hechas: axe en `e2e/a11y.spec.ts` (sin infracciones tras corregir el nombre de la franja de nivel), un año de datos en `domain/testing/yearData.ts` con `src/domain/perf.test.ts` y `e2e/perf.spec.ts`, y Lighthouse en producción (resultados en tests.md). Falta T14 (despliegue). Pendiente del responsable: desactivar la insignia de Netlify, cuyo script choca con la CSP. Decisiones menores tomadas al implementar:
 - **Ligaduras:** Pixelify dibujaba "fi" y "fl" como otro carácter ("PerAl"); se desactivan las ligaduras en toda la interfaz y, en la burbuja del lienzo, se separan con un carácter invisible.
 - **Progreso:** la barra va justo debajo de la insignia, para que los nombres de una y dos líneas queden alineados.
 - **Aviso:** tocarlo lleva a Perfil con la hoja del logro abierta.

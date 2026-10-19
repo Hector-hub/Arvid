@@ -35,7 +35,17 @@ Tipos: **U** unitario · **C** componente · **E** E2E (Chromium + WebKit) · **
 ## Resultados de Lighthouse (RE-01)
 | Fecha | Versión | Rendimiento | Accesibilidad | Buenas prácticas |
 |---|---|---|---|---|
-| — | — | — | — | — |
+| 2026-10-18 | 0.7.0 (producción, móvil) | 94 | 100 | 93 |
+
+- **Página medida:** la primera carga (onboarding), porque Lighthouse abre un navegador sin datos. Hoy con datos se mide en RE-02.
+- **FCP y LCP:** 2,1 s; TBT 170 ms; CLS 0.
+- **Buenas prácticas:** el único error de consola es el script `/.netlify/scripts/hud` que Netlify inyecta en el plan gratuito (la insignia de Netlify), bloqueado por la CSP de ARVID. Se quita desactivando esa insignia en el panel de Netlify (responsable del producto).
+- **JavaScript sin usar:** unos 117 KB del paquete principal en la primera carga. Con los mínimos cumplidos no se divide en más trozos (RE-03).
+
+## Resultados de RE-02 y AC-01 (2026-10-18)
+- **Dominio con un año de datos** (12 actividades, ~2 700 registros, 60 misiones): 4,2 ms (límite: 150 ms).
+- **Hoy usable con ese año importado:** 82 ms en Chromium y 690 ms en WebKit (límite: 2 s).
+- **axe:** sin infracciones en las 25 pantallas (onboarding paso a paso y la app en español e inglés). La única que salió, "label-content-name-mismatch" en la franja de nivel de Hoy (su nombre accesible no empezaba por el texto visible "Nv 1 · Recluta"), se corrigió.
 
 ## Checklist manual (M7)
 | # | Paso | iPhone | Android |

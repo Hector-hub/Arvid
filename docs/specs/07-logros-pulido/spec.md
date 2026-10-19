@@ -1,6 +1,6 @@
 # Spec 07 — Logros y pulido
 
-Estado: **aprobada** (D-083, 2026-10-18) · 0.7.0 implementada (logros, insignias y botones; pendiente: despliegue) · Incremento 7 de implementation-plan.md (último del MVP)
+Estado: **aprobada** (D-083, 2026-10-18) · 0.7.0 desplegada y 0.7.1 implementada (accesibilidad y rendimiento verificados; pendiente: desplegar la 0.7.1 y la checklist M7) · Incremento 7 de implementation-plan.md (último del MVP)
 Cubre: MVP-07 (logros), MVP-10 (botones y contraste AA) y la revisión de accesibilidad y rendimiento del MVP
 Decisiones que implementa: D-076 a D-082
 Modifica:

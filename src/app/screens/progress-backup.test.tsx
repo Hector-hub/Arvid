@@ -67,7 +67,7 @@ describe('Hoy (PRG-04, STR-02)', () => {
   it('indicador de nivel enlazado a Perfil y racha en la fila', async () => {
     await addDaily('Caminar', [1, 2, 3]);
     renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
-    expect(await screen.findByRole('link', { name: /Nivel 1, Recluta/ })).toHaveAttribute('href', '/perfil');
+    expect(await screen.findByRole('link', { name: /Nv 1 · Recluta/ })).toHaveAttribute('href', '/perfil');
     expect(await screen.findByText('0 de 1 · racha 3 días')).toBeInTheDocument();
   });
 
