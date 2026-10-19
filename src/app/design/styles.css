@@ -83,6 +83,8 @@ body {
   margin: 0;
   /* Pixelify dibuja mal las ligaduras "fi" y "fl" ("PerAl") */
   font-variant-ligatures: none;
+  /* Nombres sin espacios ("Ejercicios(Pecho/Triceps)") se parten en vez de salirse */
+  overflow-wrap: break-word;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-text);
@@ -230,6 +232,16 @@ select {
   text-underline-offset: 4px;
 }
 .btn-ghost.btn-icon { text-decoration: none; }
+/* Desactivado sin marco: si no, parece un botón más disponible que los activos */
+.btn-ghost:disabled {
+  --btn-fill: transparent;
+  --btn-edge: transparent;
+  color: var(--c-slate);
+  opacity: 0.5;
+}
+/* Título de pantalla con botón: si no caben en una línea, el botón baja (no tapa el título) */
+.page-header { flex-wrap: wrap; }
+.page-header > h1 { flex: 1 0 auto; min-width: auto; }
 .btn-ghost:focus-visible { --btn-edge: var(--focus); }
 .btn-icon { padding: var(--s1) var(--s2) calc(var(--s1) + var(--btn-depth) - 2px); }
 .btn-block { width: 100%; }

@@ -55,11 +55,10 @@ export function MissionsScreen() {
 
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
-      <header className="row">
+      <header className="row page-header">
         <h1 className="grow">{t('activities.title')}</h1>
-        <Link to="/actividades/misiones/nueva" className="btn btn-primary">
+        <Link to="/actividades/misiones/nueva" className="btn btn-primary btn-icon" aria-label={t('missions.new')} title={t('missions.new')}>
           <Sprite name="plus" />
-          {t('missions.new')}
         </Link>
       </header>
       <ActivitiesTabs />

@@ -33,11 +33,10 @@ export function ActivitiesScreen() {
 
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
-      <header className="row">
+      <header className="row page-header">
         <h1 className="grow">{t('activities.title')}</h1>
-        <Link to="/actividades/nueva" className="btn btn-primary">
+        <Link to="/actividades/nueva" className="btn btn-primary btn-icon" aria-label={t('activities.new')} title={t('activities.new')}>
           <Sprite name="plus" />
-          {t('activities.new')}
         </Link>
       </header>
       <ActivitiesTabs />
@@ -103,7 +102,7 @@ function ActivityItem({
         <>
           <button
             type="button"
-            className="btn btn-icon btn-ghost"
+            className="btn btn-icon btn-primary"
             aria-label={t('activities.moveUp', { name })}
             disabled={reorder.first}
             onClick={() => void moveActivity(ctx, record.activity.id, -1)}
@@ -112,7 +111,7 @@ function ActivityItem({
           </button>
           <button
             type="button"
-            className="btn btn-icon btn-ghost"
+            className="btn btn-icon btn-primary"
             aria-label={t('activities.moveDown', { name })}
             disabled={reorder.last}
             onClick={() => void moveActivity(ctx, record.activity.id, 1)}
