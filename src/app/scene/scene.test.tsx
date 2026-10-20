@@ -79,6 +79,12 @@ describe('escena en Hoy', () => {
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
   });
 
+  it('MUS-09: si la música quedó activada, la bocina lo muestra al volver a abrir la app', async () => {
+    await saveSetting(ctx.db, 'music', { enabled: true, volume: 0.4 } satisfies Settings['music']);
+    renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
+    expect(await screen.findByRole('button', { name: 'Música' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('PAR-01/PAR-04: registrar lanza partículas; deshacer, no', async () => {
     await addCaminar();
     const user = userEvent.setup();

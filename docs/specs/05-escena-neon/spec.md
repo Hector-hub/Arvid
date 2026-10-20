@@ -124,6 +124,7 @@ La exploración se hizo con prototipos sucesivos.
 - **MUS-06.** **Controles:** en Ajustes → Sonido (activar, volumen y pista actual con "Siguiente"), y un botón ♪ de activar/pausar en la esquina de la escena de Hoy.
 - **MUS-07.** **Offline:** las pistas **no** se precachean (≈13 MB). Se guardan en caché la primera vez que suenan (`CacheFirst` con soporte de peticiones por rangos), así que una pista ya escuchada suena sin conexión. Sin conexión solo se eligen las pistas en caché, y si no hay ninguna se avisa con "La música necesita conexión la primera vez".
 - **MUS-08.** **Nombre de la pista:** cada vez que empieza una pista, su nombre ("♪ Black Chrome Horizon") aparece abajo a la izquierda de la escena (D-085) y se desvanece a los 5 s (fundido de 0,8 s). Al cambiar de pantalla no vuelve a aparecer. Con movimiento reducido desaparece sin fundido (D-071).
+- **MUS-09.** **Preferencia guardada** (D-089): si el usuario sale con la música activada, al volver la bocina sigue activada y la música empieza con el primer toque en cualquier parte (en iPhone, al levantar el dedo: es cuando el navegador deja sonar). La bocina muestra la preferencia, no si ya está sonando, y tocarla la cambia.
 
 ### 4.6 Interfaz "neón sutil" (DIS)
 - **DIS-01.** La interfaz mantiene Sweetie 16 (paleta A, D-037) y añade **brillo sutil**:

@@ -30,20 +30,18 @@ export function MusicProvider({ children }: { children: ReactNode }) {
 
   const get = useCallback(() => (player.current ??= new MusicPlayer(TRACKS, volume, setState)), [volume]);
 
-  // Si quedó activada, empieza con la primera interacción de la sesión (los navegadores no permiten autoarranque)
+  // Si quedó activada, empieza con la primera interacción de la sesión (los navegadores no permiten autoarranque).
+  // Solo sirven los eventos que dan permiso para sonar: en iPhone, al levantar el dedo, no al apoyarlo.
   useEffect(() => {
     if (!music.enabled) return;
+    const events = ['pointerup', 'touchend', 'click', 'keydown'] as const;
     const start = (e: Event) => {
       if (e.target instanceof Element && e.target.closest(`[${MUSIC_CONTROL}]`)) return;
       if (!get().isEnabled()) void get().start();
       remove();
     };
-    const remove = () => {
-      window.removeEventListener('pointerdown', start);
-      window.removeEventListener('keydown', start);
-    };
-    window.addEventListener('pointerdown', start);
-    window.addEventListener('keydown', start);
+    const remove = () => events.forEach((name) => window.removeEventListener(name, start));
+    events.forEach((name) => window.addEventListener(name, start));
     return remove;
   }, [music.enabled, get]);
 
@@ -55,8 +53,9 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       enabled: music.enabled,
       volume,
       toggle() {
+        // Cambia la preferencia guardada (lo que muestra la bocina), aunque la música aún espere al primer toque
         const p = get();
-        const on = !(music.enabled && p.isEnabled());
+        const on = !music.enabled;
         if (on) void p.start();
         else p.stop();
         void saveSetting(db, 'music', { enabled: on, volume });
@@ -79,7 +78,7 @@ export function useMusic(): Music {
   return ctx;
 }
 
-/** Bocina de la música arriba a la derecha de la escena: con ondas si suena y tachada si no (MU-01). */
+/** Bocina de la música arriba a la derecha de la escena: con ondas si está activada y tachada si no (MU-01, MUS-09). */
 export function MusicButton() {
   const music = useMusic();
   const t = useT();
@@ -87,13 +86,13 @@ export function MusicButton() {
     <button
       type="button"
       className="btn btn-icon scene-icon"
-      aria-pressed={music.playing}
+      aria-pressed={music.enabled}
       aria-label={t('scene.music')}
       title={t('scene.music')}
       {...{ [MUSIC_CONTROL]: '' }}
       onClick={music.toggle}
     >
-      {music.playing ? <SpeakerOnIcon /> : <SpeakerOffIcon />}
+      {music.enabled ? <SpeakerOnIcon /> : <SpeakerOffIcon />}
     </button>
   );
 }

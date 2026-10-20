@@ -33,6 +33,7 @@ Tipos: **U** unitario · **I** integración · **C** componente · **E** E2E (Ch
 | MUS-05 | Al ocultar la app, la música se pausa; al volver, se reanuda | C |
 | MUS-06 | Botón ♪ con `aria-pressed`; volumen y "Siguiente" en Ajustes | C |
 | MUS-07 | Sin conexión, solo se eligen pistas en caché; sin ninguna, se muestra el aviso | E |
+| MUS-09 | Con la música guardada como activada, la bocina aparece activada al abrir la app | C |
 | MUS-08 | Al empezar una pista se ve su nombre y a los 5 s ya no; al volver a montar la escena después, no reaparece | C |
 | DIS-01 | Contraste de los tokens de texto sin brillo (script de contraste) | U |
 | LIC-01 | Script: todo archivo de `public/scene` y `public/music` figura en `asset-licenses.md` | U |
