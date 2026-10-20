@@ -236,6 +236,8 @@ Comportamiento con valores ausentes o desconocidos:
 | Midnight Sector Drive (Gemini, IA) | Propia | ✔ Declaración del responsable (2026-10-18) |
 | Glass Tower Horizon (Gemini, IA) | Propia | ✔ Declaración del responsable (2026-10-18) |
 | Black Chrome Horizon (Gemini, IA) | Propia | ✔ Declaración del responsable (2026-10-18, D-073) |
+| Chrome Horizon Drive (Gemini, IA) | Propia | ✔ Declaración del responsable (2026-10-19, D-088) |
+| Rain on the Expressway (Gemini, IA) | Propia | ✔ Declaración del responsable (2026-10-19, D-088) |
 
 **Riesgos:**
 - **R5-1 · Licencias sin verificar.** Resuelto para todo salvo las 5 pistas de CombinaDos, que quedan fuera (D-051). *Mitigación:* LIC-01 deja que el incremento se publique con lo que esté verificado.
