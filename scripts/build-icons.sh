@@ -12,10 +12,11 @@ SRC=assets-src/app-icon.png
 OUT=public/icons
 BG="#091032"
 mkdir -p "$OUT"
-icon() { magick "$SRC" -filter Lanczos -resize "${1}x${1}" -strip "$OUT/$2"; }
+# Paleta de 256 colores: la diferencia apenas se ve y pesan 3-4 veces menos (van en el precache)
+icon() { magick "$SRC" -filter Lanczos -resize "${1}x${1}" -colors 256 -strip "PNG8:$OUT/$2"; }
 icon 192 icon-192.png
 icon 512 icon-512.png
 icon 180 apple-touch-icon.png
 icon 32 favicon-32.png
-magick "$SRC" -filter Lanczos -resize 400x400 -background "$BG" -gravity center -extent 512x512 -strip "$OUT/icon-maskable-512.png"
+magick "$SRC" -filter Lanczos -resize 400x400 -background "$BG" -gravity center -extent 512x512 -colors 256 -strip "PNG8:$OUT/icon-maskable-512.png"
 ls -la "$OUT"
