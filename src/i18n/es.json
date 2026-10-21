@@ -449,8 +449,8 @@
     "gender": "Género",
     "language": "Idioma",
     "character": "Personaje",
-    "arvidColor": "Color de ARVID",
-    "arvidTalks": "ARVID habla por iniciativa propia",
+    "arvidColor": "Color de {companion}",
+    "arvidTalks": "{companion} habla por iniciativa propia",
     "arvidTalksHelp": "Saludo del día, día completo, primera actividad y retomar tras fallar.",
     "sound": "Sonido",
     "music": "Música de fondo",
@@ -461,8 +461,9 @@
     "nowPlaying": "{state}: {track}",
     "needsConnection": "La música necesita conexión la primera vez.",
     "musicNote": "Desactivada por defecto. Una pista que ya ha sonado se puede escuchar sin conexión.",
-    "arvidAi": "ARVID con IA",
-    "arvidAiHelp": "Para darte consejos, ARVID envía tu progreso y tus actividades a Mistral AI (Francia). Puedes desactivarlo cuando quieras."
+    "arvidAi": "{companion} con IA",
+    "arvidAiHelp": "Para darte consejos, {companion} envía tu progreso y tus actividades a Mistral AI (Francia). Puedes desactivarlo cuando quieras.",
+    "companion": "Compañero"
   },
   "backup": {
     "title": "Copia de seguridad",
@@ -538,13 +539,13 @@
     "freeUse": "Uso libre"
   },
   "scene": {
-    "label": "Tu protagonista camina por un puente de la ciudad de noche, con ARVID a su lado",
+    "label": "Tu protagonista camina por un puente de la ciudad de noche, con {companion} a su lado",
     "music": "Música",
-    "chat": "Hablar con ARVID",
+    "chat": "Hablar con {companion}",
     "send": "Enviar",
-    "chatPlaceholder": "Escribe a ARVID…",
-    "chatInput": "Mensaje para ARVID",
-    "arvidSays": "ARVID dice"
+    "chatPlaceholder": "Escribe a {companion}…",
+    "chatInput": "Mensaje para {companion}",
+    "arvidSays": "{companion} dice"
   },
   "avatar": {
     "carousel": "Elige tu personaje",
@@ -581,7 +582,7 @@
     "en": "English"
   },
   "arvid": {
-    "name": "ARVID",
+    "name": "{companion}",
     "colors": {
       "original": "Ámbar",
       "cian": "Cian",
@@ -611,9 +612,9 @@
         "0": "¡Día completo, {alias}! Así se construye la constancia.",
         "1": "Todo hecho por hoy. Descansa, te lo has ganado.",
         "2": {
-          "m": "¡Lo lograste! Estoy orgulloso de ti, campeón.",
-          "f": "¡Lo lograste! Estoy orgulloso de ti, campeona.",
-          "x": "¡Lo lograste! Estoy orgulloso de lo que has hecho."
+          "m": "¡Lo lograste! Estoy orgullos{selfO} de ti, campeón.",
+          "f": "¡Lo lograste! Estoy orgullos{selfO} de ti, campeona.",
+          "x": "¡Lo lograste! Estoy orgullos{selfO} de lo que has hecho."
         }
       },
       "firstActivity": {
@@ -644,24 +645,27 @@
     "chat": {
       "offline": "Ahora no tengo conexión. Cuando vuelva, hablamos.",
       "thinking": "…",
-      "needsPermission": "Para conversar conmigo, activa «ARVID con IA» en Ajustes → Perfil.",
+      "needsPermission": "Para conversar conmigo, activa «{companion} con IA» en Ajustes → Perfil.",
       "quota": "Por ahora no puedo conversar más. Inténtalo un poco más tarde.",
       "error": "Ahora mismo no consigo pensar bien. Inténtalo de nuevo en un momento."
     },
     "onboarding": {
       "welcome": {
-        "0": "Hola. Soy ARVID, tu compañero de ruta.",
+        "0": "Hola. Soy {companion}, tu compañer{selfO} de ruta.",
         "1": "Voy a acompañarte cada día: te recordaré lo pendiente y celebraré cada avance contigo.",
         "2": "Antes de empezar, quiero conocerte un poco."
       },
       "language": {
         "0": "Hola. ¿En qué idioma prefieres que hablemos?"
       },
+      "companion": {
+        "0": "Antes de nada: elige quién te acompañará cada día. Podrás cambiarlo cuando quieras en Ajustes."
+      },
       "alias": {
         "0": "¿Cómo quieres que te llame?"
       },
       "gender": {
-        "0": "Encantado de conocerte, {alias}. ¿Cómo prefieres que me dirija a ti?"
+        "0": "Encantad{selfO} de conocerte, {alias}. ¿Cómo prefieres que me dirija a ti?"
       },
       "character": {
         "0": "Elige quién te representa en la ciudad. Desliza para verlos a todos."
@@ -683,7 +687,7 @@
         }
       },
       "intro": {
-        "0": "Hola, soy ARVID. Desde ahora te acompaño cada día.",
+        "0": "Hola, soy {companion}. Desde ahora te acompaño cada día.",
         "1": "Antes de nada, me gustaría conocerte un poco."
       },
       "ai": {
@@ -702,10 +706,31 @@
     "categoriesError": "Activa al menos una categoría",
     "goToday": "Ir a Hoy",
     "understood": "Entendido",
-    "dialogue": "Diálogo con ARVID",
+    "dialogue": "Diálogo con {companion}",
     "tapToContinue": "Toca para continuar",
-    "introTitle": "ARVID se presenta",
+    "introTitle": "{companion} se presenta",
     "aiActivate": "Activar",
-    "aiNotNow": "Ahora no"
+    "aiNotNow": "Ahora no",
+    "companionTitle": "Elige a tu compañero"
+  },
+  "companion": {
+    "arvid": {
+      "name": "ARVID",
+      "tagline": "Dron explorador: vuela por la ciudad y lo escanea todo."
+    },
+    "daris": {
+      "name": "DARIS",
+      "tagline": "Dron conejo: va a tu lado y celebra cada paso contigo."
+    }
+  },
+  "daris": {
+    "colors": {
+      "rosa": "Rosa",
+      "cian": "Cian",
+      "lima": "Lima",
+      "ambar": "Ámbar",
+      "rojo": "Rojo y negro",
+      "violeta": "Violeta"
+    }
   }
 }

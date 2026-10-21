@@ -4,7 +4,9 @@ import { useRef, useState } from 'react';
 import { ALIAS_MAX, ARVID_COLORS, GENDERS, type ArvidColor, type Gender } from '../../domain/arvid/arvid';
 import { VARIANT_IDS, type Avatar, type CastId, type VariantId } from '../../domain/avatar/catalog';
 import { LOCALES, t, type Locale } from '../../i18n';
-import { ArvidPreview, AvatarPreview } from '../scene/Scene';
+import { COMPANIONS, DARIS_COLORS, DARIS_SWATCH, type Companion, type DarisColor } from '../../domain/arvid/companion';
+import { applyCompanion } from '../companion';
+import { ArvidPreview, AvatarPreview, DarisPreview } from '../scene/Scene';
 import { ARVID_RAMPS } from '../../domain/arvid/arvid';
 
 /**
@@ -144,6 +146,87 @@ export function ArvidColorPicker({ value: saved, onChange: save }: { value: Arvi
         </div>
       </fieldset>
     </div>
+  );
+}
+
+/** Color de DARIS con su vista previa (spec 08, DC-01). */
+export function DarisColorPicker({ value: saved, onChange: save }: { value: DarisColor; onChange: (c: DarisColor) => void }) {
+  const [value, setValue] = useOptimistic(saved);
+  const onChange = (c: DarisColor) => {
+    setValue(c);
+    save(c);
+  };
+  return (
+    <div className="stack" style={{ alignItems: 'center' }}>
+      <DarisPreview color={value} size={96} />
+      <fieldset className="field">
+        <legend className="sr-only">{t('settings.arvidColor')}</legend>
+        <div className="swatches">
+          {DARIS_COLORS.map((color) => (
+            <label key={color} className="swatch" style={{ background: DARIS_SWATCH[color] }} title={t(`daris.colors.${color}`)}>
+              <input
+                type="radio"
+                name="daris-color"
+                checked={value === color}
+                onChange={() => onChange(color)}
+                aria-label={t(`daris.colors.${color}`)}
+              />
+            </label>
+          ))}
+        </div>
+      </fieldset>
+    </div>
+  );
+}
+
+/** Color del compañero elegido (ARVID o DARIS). */
+export function CompanionColorPicker({
+  companion,
+  arvidColor,
+  darisColor,
+  onArvid,
+  onDaris,
+}: {
+  companion: Companion;
+  arvidColor: ArvidColor;
+  darisColor: DarisColor;
+  onArvid: (c: ArvidColor) => void;
+  onDaris: (c: DarisColor) => void;
+}) {
+  return companion === 'daris' ? (
+    <DarisColorPicker value={darisColor} onChange={onDaris} />
+  ) : (
+    <ArvidColorPicker value={arvidColor} onChange={onArvid} />
+  );
+}
+
+/** Elección de compañero: ARVID o DARIS, cada uno animado, con su nombre y su frase (spec 08, CO-02, CO-03). */
+export function CompanionPicker({ value: saved, onChange: save }: { value: Companion; onChange: (c: Companion) => void }) {
+  const [value, setValue] = useOptimistic(saved);
+  return (
+    <fieldset className="field">
+      <legend className="sr-only">{t('settings.companion')}</legend>
+      <div className="companion-cards">
+        {COMPANIONS.map((c) => (
+          <label key={c} className="companion-card">
+            <input
+              type="radio"
+              name="companion"
+              checked={value === c}
+              onChange={() => {
+                setValue(c);
+                // Como el idioma: los textos y la escena cambian al momento, antes de que vuelva lo guardado
+                applyCompanion(c);
+                save(c);
+              }}
+            />
+            {c === 'daris' ? <DarisPreview size={72} /> : <ArvidPreview size={72} />}
+            <span className="pixel">{t(`companion.${c}.name`)}</span>
+            <span className="small muted">{t(`companion.${c}.tagline`)}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 

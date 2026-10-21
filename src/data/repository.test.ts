@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { asLocalDate } from '../domain/time/localDate';
 import { ArvidDB } from './db';
 import {
+  loadSettings,
+  saveSetting,
   changeStatus,
   createActivity,
   ensureSeed,
@@ -167,5 +169,22 @@ describe('registro', () => {
     const id = await gym();
     await changeStatus(ctx, id, 'paused');
     expect(await logCompletion(ctx, id, asLocalDate('2026-10-14'))).toEqual({ ok: false, reason: 'inactive' });
+  });
+});
+
+describe('compañero (spec 08, CO-01, DC-02)', () => {
+  it('por defecto ARVID y DARIS rosa; los valores desconocidos se normalizan; cada color es independiente', async () => {
+    let s = await loadSettings(db);
+    expect([s.companion, s.darisColor]).toEqual(['arvid', 'rosa']);
+    await db.settings.bulkPut([
+      { key: 'companion', value: 'gato' },
+      { key: 'darisColor', value: 'oro' },
+    ]);
+    s = await loadSettings(db);
+    expect([s.companion, s.darisColor]).toEqual(['arvid', 'rosa']);
+    await saveSetting(db, 'companion', 'daris');
+    await saveSetting(db, 'darisColor', 'lima');
+    s = await loadSettings(db);
+    expect([s.companion, s.darisColor, s.arvidColor]).toEqual(['daris', 'lima', 'cian']);
   });
 });

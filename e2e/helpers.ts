@@ -6,10 +6,13 @@ export async function skipDialogue(page: Page) {
 }
 
 /** Onboarding con ARVID (spec 06, ON-02) hasta el paso de áreas de vida. */
-export async function onboardingToCategories(page: Page, alias = 'Prueba', ai = false) {
+export async function onboardingToCategories(page: Page, alias = 'Prueba', ai = false, companion: 'ARVID' | 'DARIS' = 'ARVID') {
   await page.goto('/');
   await skipDialogue(page);
   await page.getByRole('button', { name: 'Continuar' }).click(); // idioma
+  await skipDialogue(page);
+  if (companion === 'DARIS') await page.getByRole('radio', { name: /DARIS/ }).click();
+  await page.getByRole('button', { name: 'Continuar' }).click(); // compañero (spec 08)
   await skipDialogue(page);
   await page.getByRole('button', { name: 'Empezar' }).click();
   await skipDialogue(page);
@@ -40,8 +43,8 @@ export async function finishOnboarding(page: Page) {
   await expect(page).toHaveURL(/\/hoy$/);
 }
 
-export async function completeOnboarding(page: Page, { ai = false } = {}) {
-  await onboardingToCategories(page, 'Prueba', ai);
+export async function completeOnboarding(page: Page, { ai = false, companion = 'ARVID' as 'ARVID' | 'DARIS' } = {}) {
+  await onboardingToCategories(page, 'Prueba', ai, companion);
   await page.getByRole('button', { name: 'Continuar' }).click();
   await finishOnboarding(page);
 }

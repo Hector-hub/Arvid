@@ -7,6 +7,7 @@ import type {
 } from '../domain/activities/types';
 import { DEFAULT_AVATAR, normalizeAvatar, type Avatar } from '../domain/avatar/catalog';
 import { ARVID_COLORS, DEFAULT_ARVID_COLOR, normalizeProfile, type ArvidColor, type ArvidSeen, type Profile } from '../domain/arvid/arvid';
+import { DEFAULT_COMPANION, DEFAULT_DARIS_COLOR, isCompanion, isDarisColor, type Companion, type DarisColor } from '../domain/arvid/companion';
 import { isLocale, type Locale } from '../i18n';
 import { CATEGORY_PRESETS, checkCategoryToggle, type Category, type CategoryToggleCheck } from '../domain/categories';
 import { toLocalDate, tzOffsetMinutes, type LocalDate } from '../domain/time/localDate';
@@ -240,6 +241,10 @@ export interface Settings {
   /** Alias y género (spec 06 §4); sin él se muestra la presentación de ARVID (PR-01). */
   profile?: Profile;
   arvidColor: ArvidColor;
+  /** Compañero elegido (spec 08, CO-01). */
+  companion: Companion;
+  /** Color de DARIS, independiente del de ARVID (DC-02). */
+  darisColor: DarisColor;
   /** ARVID habla por iniciativa propia (DL-03). */
   arvidTalks: boolean;
   /** ARVID con IA: desactivado hasta que el usuario lo acepte (spec 06, IA-06). */
@@ -267,6 +272,8 @@ export const DEFAULT_SETTINGS: Settings = {
   avatar: DEFAULT_AVATAR,
   music: DEFAULT_MUSIC,
   arvidColor: DEFAULT_ARVID_COLOR,
+  companion: DEFAULT_COMPANION,
+  darisColor: DEFAULT_DARIS_COLOR,
   arvidTalks: true,
   arvidAi: false,
 };
@@ -291,6 +298,8 @@ export async function loadSettings(db: ArvidDB): Promise<Settings> {
     locale: isLocale(raw.locale) ? raw.locale : undefined,
     profile: normalizeProfile(raw.profile),
     arvidColor: (ARVID_COLORS as readonly string[]).includes(raw.arvidColor) ? raw.arvidColor : DEFAULT_ARVID_COLOR,
+    companion: isCompanion(raw.companion) ? raw.companion : DEFAULT_COMPANION,
+    darisColor: isDarisColor(raw.darisColor) ? raw.darisColor : DEFAULT_DARIS_COLOR,
     arvidTalks: raw.arvidTalks !== false,
     arvidAi: raw.arvidAi === true,
   };

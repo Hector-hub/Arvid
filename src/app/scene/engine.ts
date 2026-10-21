@@ -4,7 +4,9 @@
 // Este módulo es ligero (solo dominio): lo importan las pantallas para lanzar partículas o hacer hablar a ARVID
 // sin cargar el dibujo.
 import { createSpeech, pageText, stepSpeech, tapSpeech, type Speech } from '../../domain/arvid/speech';
+import type { Companion } from '../../domain/arvid/companion';
 import { isHome, startEntrance } from '../../domain/scene/arvid';
+import { DARIS_ENTRY_FRAMES } from './daris';
 import {
   burst,
   createScene,
@@ -47,6 +49,46 @@ let entered = false;
 /** La presentación de la fecha (UB-06) retiene la entrada de ARVID hasta que se abre la escena. */
 let entranceHeld = false;
 let introPlayed = false;
+
+// ---------- Compañero (spec 08) ----------
+let companion: Companion = 'arvid';
+/** Fotograma (scene.t) en que empezó la entrada de DARIS y su última celebración. */
+let darisEntryT: number | undefined;
+let darisCheerT: number | undefined;
+
+/** Cambia el compañero de la escena; si ya se había visto, el nuevo hace su entrada (CO-03). */
+export function setCompanion(next: Companion): void {
+  if (next === companion) return;
+  companion = next;
+  hush();
+  if (entered && !isReduced()) beginEntrance();
+}
+
+export function getCompanion(): Companion {
+  return companion;
+}
+
+function beginEntrance() {
+  if (companion === 'daris') darisEntryT = scene.t;
+  else startEntrance(scene.arvid, rng);
+}
+
+const darisEntering = () => darisEntryT !== undefined && scene.t - darisEntryT < DARIS_ENTRY_FRAMES;
+
+/** El compañero está en su sitio (para empezar a hablar, MV-04). */
+function companionHome(): boolean {
+  return companion === 'daris' ? !darisEntering() : isHome(scene.arvid);
+}
+
+/** DARIS hace su salto de corazones (DE-02): subida de nivel, logro y día completo. */
+export function cheer(): void {
+  if (companion === 'daris' && !isReduced()) darisCheerT = scene.t;
+}
+
+/** Estado de DARIS para dibujarla. */
+export function darisState(): { entryT?: number; cheerT?: number } {
+  return { entryT: darisEntryT, cheerT: darisCheerT };
+}
 
 const isReduced = () => typeof document !== 'undefined' && document.documentElement.dataset.motion === 'reduced';
 
@@ -121,7 +163,7 @@ export function tapScene(): void {
 }
 
 function stepVoice(dt: number, reduced: boolean) {
-  if (queued && (isHome(scene.arvid) || reduced)) {
+  if (queued && (companionHome() || reduced)) {
     speech = createSpeech(queued);
     queued = undefined;
   }
@@ -140,13 +182,20 @@ export function advance(now: number, reduced: boolean): void {
   const dt = lastTime === undefined ? 1 : Math.min(3, (now - lastTime) / (1000 / 60));
   lastTime = now;
   stepScene(scene, dt, rng, config, reduced);
+  parkArvid();
   stepVoice(dt, reduced);
   notifyReady();
+}
+
+/** Con DARIS, ARVID no sale de paseo (su simulación sigue, invisible, en su sitio). */
+function parkArvid() {
+  if (companion === 'daris') scene.arvid.nextOuting = Number.MAX_SAFE_INTEGER;
 }
 
 /** Avanza un número fijo de fotogramas de 60 Hz (movimiento reducido: ticks lentos de duración conocida). */
 export function advanceFrames(dt: number, reduced: boolean): void {
   stepScene(scene, dt, rng, config, reduced);
+  parkArvid();
   stepVoice(dt, reduced);
   notifyReady();
 }
@@ -162,7 +211,7 @@ export function setActive(visible: boolean): void {
   if (!visible) return;
   if (!entered && !entranceHeld) {
     entered = true;
-    if (!isReduced()) startEntrance(scene.arvid, rng);
+    if (!isReduced()) beginEntrance();
   }
   for (const kind of duePendingBursts(pending, Date.now())) if (!isReduced()) burst(scene, kind, rng);
   pending = [];
@@ -171,7 +220,7 @@ export function setActive(visible: boolean): void {
 
 /** ARVID ya terminó de llegar y está en su sitio (para empezar a hablar al abrir la app). */
 export function arvidReady(): boolean {
-  return entered && isHome(scene.arvid);
+  return entered && companionHome();
 }
 
 /**
@@ -192,7 +241,7 @@ export function releaseEntrance(): void {
   entranceHeld = false;
   if (active > 0 && !entered) {
     entered = true;
-    if (!isReduced()) startEntrance(scene.arvid, rng);
+    if (!isReduced()) beginEntrance();
     notifyReady();
   }
 }
@@ -222,6 +271,7 @@ function notifyReady() {
  */
 export function celebrate(kind: BurstKind): void {
   if (isReduced()) return;
+  if (kind === 'big') cheer();
   if (active > 0) burst(scene, kind, rng);
   else pending.push({ kind, at: Date.now() });
 }

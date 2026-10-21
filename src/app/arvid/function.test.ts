@@ -35,6 +35,13 @@ describe('función /api/arvid', () => {
     expect((await handle(post(big), { apiKey: 'k', fetch: mistral(200) })).status).toBe(413);
   });
 
+  it('ID-03: acepta el compañero y usa su persona; un compañero desconocido es un 400', async () => {
+    const fetch = mistral(200);
+    expect((await handle(post(body({ companion: 'daris' })), { apiKey: 'k', fetch })).status).toBe(200);
+    expect(JSON.parse(vi.mocked(fetch).mock.calls[0]![1]!.body as string).messages[0].content).toMatch(/You are DARIS/);
+    expect((await handle(post(body({ companion: 'otro' })), { apiKey: 'k', fetch: mistral(200) })).status).toBe(400);
+  });
+
   it('valida la petición y el método; sin clave responde 503', async () => {
     expect((await handle(post('no es json'), { apiKey: 'k', fetch: mistral(200) })).status).toBe(400);
     expect((await handle(post(body({ moment: 'otro' })), { apiKey: 'k', fetch: mistral(200) })).status).toBe(400);

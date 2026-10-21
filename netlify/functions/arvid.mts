@@ -13,6 +13,7 @@ import {
   sanitizeReply,
   type AiRequest,
 } from '../../src/domain/arvid/ai';
+import { COMPANIONS } from '../../src/domain/arvid/companion';
 
 const MISTRAL_URL = 'https://api.mistral.ai/v1/chat/completions';
 /** El plan gratuito de Netlify corta las funciones a los 10 s. */
@@ -25,6 +26,7 @@ const RequestSchema = z.object({
     .array(z.object({ role: z.enum(['user', 'assistant']), content: z.string().min(1).max(AI_MAX_USER_MESSAGE * 5) }))
     .max(AI_MAX_HISTORY),
   context: z.record(z.string(), z.unknown()),
+  companion: z.enum(COMPANIONS).optional(),
 });
 
 const json = (status: number, body: unknown) =>

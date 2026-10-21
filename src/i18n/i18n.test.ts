@@ -3,7 +3,8 @@ import { detectLocale, keysOf, rawText, setLocale, t } from './index';
 
 afterEach(() => setLocale('es'));
 
-const vars = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+// `{selfO}` es la terminación de género del compañero en español: no tiene equivalente en inglés
+const vars = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).filter((v) => v !== 'selfO').sort();
 
 describe('idiomas (I18N-05)', () => {
   it('es y en tienen exactamente las mismas claves', () => {

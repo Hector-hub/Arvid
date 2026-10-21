@@ -882,3 +882,37 @@ fieldset { border: 0; padding: 0; margin: 0; }
   from { opacity: 0; transform: translateY(-12px); }
 }
 [data-motion='reduced'] .achievement-toast { animation: none; }
+
+/* ---------- Elección de compañero (spec 08, CO) ---------- */
+.companion-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s3);
+}
+.companion-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s1);
+  padding: var(--s3) var(--s2);
+  text-align: center;
+  background: var(--surface-sunken);
+  border: 3px solid var(--border);
+  cursor: pointer;
+}
+.companion-card input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.companion-card:has(input:checked) {
+  border-color: var(--level);
+  box-shadow: var(--glow-gold);
+}
+.companion-card:has(input:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}

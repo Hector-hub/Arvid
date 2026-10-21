@@ -5,6 +5,18 @@ import { activity, d, days, missionFixture } from '../testing/fixtures';
 import { AI_MAX_REPLY, buildMessages, sanitizeReply, systemPrompt } from './ai';
 import { buildAiContext } from './context';
 
+describe('compañero en la IA (spec 08, ID-03)', () => {
+  it('ARVID en masculino por defecto; DARIS con su nombre, en femenino y con su tono', () => {
+    expect(systemPrompt('es')).toMatch(/You are ARVID/);
+    expect(systemPrompt('es')).toMatch(/masculine/);
+    const daris = systemPrompt('es', 'daris');
+    expect(daris).toMatch(/You are DARIS/);
+    expect(daris).toMatch(/feminine/);
+    expect(daris).toMatch(/tender/);
+    expect(buildMessages({ locale: 'es', moment: 'greeting', messages: [], context: {}, companion: 'daris' })[0]!.content).toMatch(/DARIS/);
+  });
+});
+
 describe('instrucciones y mensajes (IA-03, IA-05)', () => {
   it('las instrucciones fijan el idioma de iniciativa propia y prohíben inventar y diagnosticar', () => {
     const es = systemPrompt('es');

@@ -18,6 +18,7 @@ import {
 } from '../../domain/scene/scene';
 import type { HeroSheets, SceneImages } from './assets';
 import { BUBBLE_FONT } from './bubble';
+import { DARIS_AHEAD, DARIS_ANIM, DARIS_BOTTOM, DARIS_CELL, DARIS_ENTRY_FRAMES, type DarisAnim } from './daris';
 import { DRONE, EXTRAS_FRAME, PEDESTRIANS } from './extras';
 import { skySprite } from './sky';
 
@@ -35,6 +36,7 @@ const C = {
 const PARTICLE_COLORS = [C.cyan, C.lamp, C.magenta];
 
 const mod = (a: number, n: number) => ((a % n) + n) % n;
+
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -92,9 +94,46 @@ function drawSky(c: Ctx, s: SceneState, img: HTMLImageElement, depth: number) {
   }
 }
 
+/** DARIS: atlas en su color y momentos de su entrada y su última celebración (spec 08, DE). */
+export interface DarisExtras {
+  /** Sin atlas todavía (cargando), no se dibuja: así no asoma ARVID. */
+  atlas?: CanvasImageSource;
+  entryT?: number;
+  cheerT?: number;
+}
+
+/**
+ * DARIS en tierra, por delante del protagonista (DE-01): entra con el acelerón desde la izquierda, pone la cara
+ * contenta al hablar y hace el salto de corazones al celebrar (DE-02). Devuelve dónde sale su burbuja (DE-03).
+ */
+function drawDaris(c: Ctx, s: SceneState, d: DarisExtras, talking: boolean, reduced: boolean) {
+  const home = LAYOUT.heroX + DARIS_AHEAD;
+  const since = (t?: number) => (t === undefined ? Infinity : s.t - t);
+  const entry = since(d.entryT);
+  const cheering = since(d.cheerT) < DARIS_ANIM.cheer.frames * DARIS_ANIM.cheer.ticks;
+  let x = home;
+  let anim: DarisAnim = 'idle';
+  let elapsed = s.t;
+  if (!reduced && entry < DARIS_ENTRY_FRAMES) {
+    const p = entry / DARIS_ENTRY_FRAMES;
+    x = Math.round(-DARIS_CELL / 2 + (home + DARIS_CELL / 2) * (1 - (1 - p) ** 2));
+    anim = 'dash';
+  } else if (!reduced && cheering) {
+    anim = 'cheer';
+    elapsed = since(d.cheerT);
+  } else if (talking) anim = 'happy';
+  const a = DARIS_ANIM[anim];
+  const f = reduced ? 0 : Math.floor(elapsed / a.ticks) % a.frames;
+  const top = PROP_BASELINE - DARIS_BOTTOM;
+  if (d.atlas) c.drawImage(d.atlas, f * DARIS_CELL, a.row * DARIS_CELL, DARIS_CELL, DARIS_CELL, x - DARIS_CELL / 2, top, DARIS_CELL, DARIS_CELL);
+  return { x, y: top + 14 };
+}
+
 export interface SceneExtras {
   /** Atlas con ARVID en su color (si aún no está, se usa el original). */
   arvid?: CanvasImageSource;
+  /** DARIS en lugar de ARVID (spec 08). */
+  daris?: DarisExtras;
   /** Lo que ARVID está diciendo (BP). */
   speech?: Speech;
 }
@@ -148,32 +187,39 @@ export function drawScene(
     if (img) c.drawImage(img, Math.round(p.wx - off), PROP_BASELINE - img.height);
   }
 
-  // ARVID: escanea (luz encendida) al hablar, al inspeccionar un detalle y de vez en cuando en su sitio (AV-02)
-  const pose = arvidPose(s);
+  // Compañero: DARIS en tierra (spec 08) o ARVID en el aire
   const talking = !!extras.speech;
-  const scanning = talking || isScanningProp(s.arvid) || s.drone.scanT >= 0;
-  const anim = scanning ? DRONE.scan : DRONE.walk;
-  const df = reduced
-    ? 0
-    : s.drone.scanT >= 0 && !talking
-      ? Math.floor(s.drone.scanT / DRONE_SCAN_TICKS) % anim.frames
-      : Math.floor(s.t / anim.ticks) % anim.frames;
-  const size = DRONE.size * pose.scale;
-  // Al escanear (no al hablar), un cono de luz baja hasta la acera, como un rayo de abducción (MV-03)
-  if (scanning && !talking) drawBeam(c, pose.x, pose.y - size / 2 + DRONE_BOTTOM * size, pose.alpha, reduced ? 0 : s.t);
-  c.globalAlpha = pose.alpha;
-  c.drawImage(
-    extras.arvid ?? imgs.extras,
-    df * EXTRAS_FRAME,
-    anim.row * EXTRAS_FRAME,
-    EXTRAS_FRAME,
-    EXTRAS_FRAME,
-    Math.round(pose.x - size / 2),
-    Math.round(pose.y - size / 2),
-    Math.round(size),
-    Math.round(size),
-  );
-  c.globalAlpha = 1;
+  let anchor: { x: number; y: number };
+  if (extras.daris) {
+    anchor = drawDaris(c, s, extras.daris, talking, reduced);
+  } else {
+    // ARVID: escanea (luz encendida) al hablar, al inspeccionar un detalle y de vez en cuando en su sitio (AV-02)
+    const pose = arvidPose(s);
+    anchor = pose;
+    const scanning = talking || isScanningProp(s.arvid) || s.drone.scanT >= 0;
+    const anim = scanning ? DRONE.scan : DRONE.walk;
+    const df = reduced
+      ? 0
+      : s.drone.scanT >= 0 && !talking
+        ? Math.floor(s.drone.scanT / DRONE_SCAN_TICKS) % anim.frames
+        : Math.floor(s.t / anim.ticks) % anim.frames;
+    const size = DRONE.size * pose.scale;
+    // Al escanear (no al hablar), un cono de luz baja hasta la acera, como un rayo de abducción (MV-03)
+    if (scanning && !talking) drawBeam(c, pose.x, pose.y - size / 2 + DRONE_BOTTOM * size, pose.alpha, reduced ? 0 : s.t);
+    c.globalAlpha = pose.alpha;
+    c.drawImage(
+      extras.arvid ?? imgs.extras,
+      df * EXTRAS_FRAME,
+      anim.row * EXTRAS_FRAME,
+      EXTRAS_FRAME,
+      EXTRAS_FRAME,
+      Math.round(pose.x - size / 2),
+      Math.round(pose.y - size / 2),
+      Math.round(size),
+      Math.round(size),
+    );
+    c.globalAlpha = 1;
+  }
 
   drawHero(c, hero.cast, hero.sheets, s.t, reduced, LAYOUT.heroX, LAYOUT.heroFeet);
 
@@ -214,7 +260,7 @@ export function drawScene(
   }
   c.globalAlpha = 1;
 
-  if (extras.speech) drawBubble(c, extras.speech, pose.x, pose.y);
+  if (extras.speech) drawBubble(c, extras.speech, anchor.x, anchor.y);
 }
 
 // ---------- Cono de escaneo ----------

@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect, useEffectEvent, useLayoutEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { DEFAULT_ARVID_COLOR, type ArvidColor } from '../../domain/arvid/arvid';
+import { DEFAULT_COMPANION, DEFAULT_DARIS_COLOR, type Companion, type DarisColor } from '../../domain/arvid/companion';
 import { DEFAULT_AVATAR, type Avatar } from '../../domain/avatar/catalog';
 import { useT } from '../../i18n';
 import { useSettings } from '../data';
@@ -12,6 +13,7 @@ import { claimIntro, currentSpeechText, introAvailable, releaseEntrance, subscri
 const SceneCanvas = lazy(() => import('./SceneCanvas').then((m) => ({ default: m.SceneCanvas })));
 const AvatarCanvas = lazy(() => import('./SceneCanvas').then((m) => ({ default: m.AvatarCanvas })));
 const ArvidCanvas = lazy(() => import('./SceneCanvas').then((m) => ({ default: m.ArvidCanvas })));
+const DarisCanvas = lazy(() => import('./SceneCanvas').then((m) => ({ default: m.DarisCanvas })));
 
 /** Lo que ARVID dice ahora, para lectores de pantalla: el texto del lienzo no se lee (BP-04). */
 function SpeechAnnouncer() {
@@ -94,7 +96,7 @@ export function Scene({ overlay, controls = true, intro }: { overlay?: ReactNode
   return (
     <div className="scene">
       <Suspense fallback={null}>
-        <SceneCanvas avatar={avatar} arvidColor={arvidColor} />
+        <SceneCanvas avatar={avatar} arvidColor={arvidColor} companion={settings?.companion} darisColor={settings?.darisColor} />
       </Suspense>
       {overlay && <div className={playing ? 'scene-overlay hidden' : 'scene-overlay'}>{overlay}</div>}
       {playing && intro && <SceneIntro text={intro} onDone={() => setPlaying(false)} />}
@@ -139,4 +141,22 @@ export function ArvidPreview({ color, size = 64, talking = false }: { color?: Ar
       </Suspense>
     </span>
   );
+}
+
+/** DARIS en su color; por defecto, el elegido en los ajustes (spec 08). */
+export function DarisPreview({ color, size = 64, talking = false }: { color?: DarisColor; size?: number; talking?: boolean }) {
+  const saved = useSettings()?.darisColor ?? DEFAULT_DARIS_COLOR;
+  return (
+    <span className="avatar-preview" style={{ width: size, height: size }}>
+      <Suspense fallback={null}>
+        <DarisCanvas color={color ?? saved} size={size} talking={talking} />
+      </Suspense>
+    </span>
+  );
+}
+
+/** El compañero elegido (ARVID o DARIS) en su color: retrato de los diálogos y del aviso de nivel. */
+export function CompanionPreview({ companion, size = 64, talking = false }: { companion?: Companion; size?: number; talking?: boolean }) {
+  const saved = useSettings()?.companion ?? DEFAULT_COMPANION;
+  return (companion ?? saved) === 'daris' ? <DarisPreview size={size} talking={talking} /> : <ArvidPreview size={size} talking={talking} />;
 }

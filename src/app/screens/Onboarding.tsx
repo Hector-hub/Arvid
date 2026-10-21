@@ -11,16 +11,17 @@ import { DialogueBox } from '../arvid/DialogueBox';
 import { lines } from '../arvid/lines';
 import { useCategories, useData, useSettings } from '../data';
 import { CategoryIcon } from '../design/components';
-import { AliasField, ArvidColorPicker, CharacterCarousel, GenderPicker, LanguagePicker } from '../profile/pickers';
+import { AliasField, CharacterCarousel, CompanionColorPicker, CompanionPicker, GenderPicker, LanguagePicker } from '../profile/pickers';
 import { Scene } from '../scene/Scene';
 import { categoryName, errorText } from '../text';
+import { useCompanionSync } from '../companion';
 import { InstallGuide } from './InstallGuide';
 
-type Step = 'language' | 'welcome' | 'alias' | 'gender' | 'character' | 'arvidColor' | 'ai' | 'categories' | 'install' | 'done';
+type Step = 'language' | 'companion' | 'welcome' | 'alias' | 'gender' | 'character' | 'arvidColor' | 'ai' | 'categories' | 'install' | 'done';
 
-/** Pasos del onboarding (ON-02); el de instalar, solo en iPhone sin instalar. */
+/** Pasos del onboarding (ON-02); el de instalar, solo en iPhone sin instalar; el compañero, tras el idioma (CO-02). */
 function onboardingSteps(): Step[] {
-  return ['language', 'welcome', 'alias', 'gender', 'character', 'arvidColor', 'ai', 'categories', ...(needsInstallForSafety() ? (['install'] as const) : []), 'done'];
+  return ['language', 'companion', 'welcome', 'alias', 'gender', 'character', 'arvidColor', 'ai', 'categories', ...(needsInstallForSafety() ? (['install'] as const) : []), 'done'];
 }
 
 /** Lo que el usuario va eligiendo; se guarda paso a paso para que la escena lo refleje al momento. */
@@ -49,6 +50,8 @@ function Wizard({
   banner?: ReactNode;
 }) {
   const settings = useSettings();
+  // El compañero elegido narra desde el paso siguiente (CO-02)
+  useCompanionSync(settings?.companion);
   const [index, setIndex] = useState(0);
   const [ready, setReady] = useState(false);
   const step = steps[index]!;
@@ -171,10 +174,23 @@ function useProfileControls() {
             <ContinueButton onClick={next} />
           </>
         );
+      case 'companion':
+        return (
+          <>
+            <CompanionPicker value={settings.companion} onChange={(c) => void saveSetting(ctx.db, 'companion', c)} />
+            <ContinueButton onClick={next} />
+          </>
+        );
       case 'arvidColor':
         return (
           <>
-            <ArvidColorPicker value={settings.arvidColor} onChange={(c: ArvidColor) => void saveSetting(ctx.db, 'arvidColor', c)} />
+            <CompanionColorPicker
+              companion={settings.companion}
+              arvidColor={settings.arvidColor}
+              darisColor={settings.darisColor}
+              onArvid={(c: ArvidColor) => void saveSetting(ctx.db, 'arvidColor', c)}
+              onDaris={(c) => void saveSetting(ctx.db, 'darisColor', c)}
+            />
             <ContinueButton onClick={next} />
           </>
         );

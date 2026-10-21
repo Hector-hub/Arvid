@@ -104,6 +104,8 @@ Guardar eventos (y no solo el estado) permite saber **cuándo** venció la misi�
 | locale | `'es' \| 'en'` | Idioma (spec 06, I18N-03); sin él, el del navegador |
 | profile | `{ alias, gender: 'm' \| 'f' \| 'x' }` | Alias y género (spec 06 §4); sin él se muestra la presentación de ARVID |
 | arvidColor | `'original' \| 'cian' \| 'magenta' \| 'lima' \| 'oro' \| 'violeta'` | Color de ARVID; por defecto `cian` |
+| companion | `'arvid' \| 'daris'` | Compañero elegido (spec 08); por defecto `arvid` |
+| darisColor | `'rosa' \| 'cian' \| 'lima' \| 'ambar' \| 'rojo' \| 'violeta'` | Color de DARIS, independiente del de ARVID; por defecto `rosa` |
 | arvidTalks | boolean | ARVID habla por iniciativa propia; por defecto `true` |
 | arvidAi | boolean | ARVID con IA (spec 06, IA-06); desactivado hasta que el usuario lo acepta |
 | arvidSeen | `{ said, lastLine }` | Momentos dichos hoy y última frase de cada uno. Del dispositivo: no va en el backup |

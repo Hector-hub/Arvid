@@ -449,8 +449,8 @@
     "gender": "Gender",
     "language": "Language",
     "character": "Character",
-    "arvidColor": "ARVID's color",
-    "arvidTalks": "ARVID speaks on its own",
+    "arvidColor": "{companion}'s color",
+    "arvidTalks": "{companion} speaks on its own",
     "arvidTalksHelp": "Daily greeting, day complete, first activity and getting back on track.",
     "sound": "Sound",
     "music": "Background music",
@@ -461,8 +461,9 @@
     "nowPlaying": "{state}: {track}",
     "needsConnection": "Music needs a connection the first time.",
     "musicNote": "Off by default. A track that has already played can be heard offline.",
-    "arvidAi": "ARVID with AI",
-    "arvidAiHelp": "To give you advice, ARVID sends your progress and activities to Mistral AI (France). You can turn it off anytime."
+    "arvidAi": "{companion} with AI",
+    "arvidAiHelp": "To give you advice, {companion} sends your progress and activities to Mistral AI (France). You can turn it off anytime.",
+    "companion": "Companion"
   },
   "backup": {
     "title": "Backup",
@@ -538,13 +539,13 @@
     "freeUse": "Free to use"
   },
   "scene": {
-    "label": "Your character walks across a city bridge at night, with ARVID by their side",
+    "label": "Your character walks across a city bridge at night, with {companion} by their side",
     "music": "Music",
-    "chat": "Talk to ARVID",
+    "chat": "Talk to {companion}",
     "send": "Send",
-    "chatPlaceholder": "Write to ARVID…",
-    "chatInput": "Message for ARVID",
-    "arvidSays": "ARVID says"
+    "chatPlaceholder": "Write to {companion}…",
+    "chatInput": "Message for {companion}",
+    "arvidSays": "{companion} says"
   },
   "avatar": {
     "carousel": "Choose your character",
@@ -581,7 +582,7 @@
     "en": "English"
   },
   "arvid": {
-    "name": "ARVID",
+    "name": "{companion}",
     "colors": {
       "original": "Amber",
       "cian": "Cyan",
@@ -644,18 +645,21 @@
     "chat": {
       "offline": "I'm offline right now. Let's talk when the connection is back.",
       "thinking": "…",
-      "needsPermission": "To chat with me, turn on “ARVID with AI” in Settings → Profile.",
+      "needsPermission": "To chat with me, turn on “{companion} with AI” in Settings → Profile.",
       "quota": "I can't chat any more for now. Try again a bit later.",
       "error": "I can't think straight right now. Try again in a moment."
     },
     "onboarding": {
       "welcome": {
-        "0": "Hi. I'm ARVID, your companion on the road.",
+        "0": "Hi. I'm {companion}, your companion on the road.",
         "1": "I'll be with you every day: I'll remind you what's pending and celebrate every step with you.",
         "2": "Before we start, I'd like to get to know you a little."
       },
       "language": {
         "0": "Hi. Which language would you like us to speak?"
+      },
+      "companion": {
+        "0": "First things first: choose who will keep you company every day. You can change it anytime in Settings."
       },
       "alias": {
         "0": "What should I call you?"
@@ -683,7 +687,7 @@
         }
       },
       "intro": {
-        "0": "Hi, I'm ARVID. From now on I'll be with you every day.",
+        "0": "Hi, I'm {companion}. From now on I'll be with you every day.",
         "1": "First of all, I'd like to get to know you a little."
       },
       "ai": {
@@ -702,10 +706,31 @@
     "categoriesError": "Activate at least one category",
     "goToday": "Go to Today",
     "understood": "Got it",
-    "dialogue": "Dialogue with ARVID",
+    "dialogue": "Dialogue with {companion}",
     "tapToContinue": "Tap to continue",
-    "introTitle": "Meet ARVID",
+    "introTitle": "Meet {companion}",
     "aiActivate": "Turn on",
-    "aiNotNow": "Not now"
+    "aiNotNow": "Not now",
+    "companionTitle": "Choose your companion"
+  },
+  "companion": {
+    "arvid": {
+      "name": "ARVID",
+      "tagline": "Scout drone: flies over the city and scans everything."
+    },
+    "daris": {
+      "name": "DARIS",
+      "tagline": "Bunny drone: walks by your side and celebrates every step with you."
+    }
+  },
+  "daris": {
+    "colors": {
+      "rosa": "Pink",
+      "cian": "Cyan",
+      "lima": "Lime",
+      "ambar": "Amber",
+      "rojo": "Red and black",
+      "violeta": "Violet"
+    }
   }
 }

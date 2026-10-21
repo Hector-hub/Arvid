@@ -2,6 +2,7 @@
 // Con "ARVID con IA" activado y conexión, pregunta a la función /api/arvid; si no, o si falla, usa sus frases fijas.
 import { AI_MAX_HISTORY, type AiMoment, type ChatMessage } from '../../domain/arvid/ai';
 import { getLocale, t } from '../../i18n';
+import { getCompanion } from '../scene/engine';
 
 export interface BrainDeps {
   aiEnabled: boolean;
@@ -23,7 +24,7 @@ async function askAi(moment: AiMoment, messages: ChatMessage[], deps: BrainDeps,
     const res = await fetch('/api/arvid', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ locale: getLocale(), moment, messages, context: deps.context() }),
+      body: JSON.stringify({ locale: getLocale(), moment, messages, context: deps.context(), companion: getCompanion() }),
       signal: AbortSignal.timeout(timeoutMs),
     });
     if (res.status === 429) return { ok: false, reason: 'quota' };

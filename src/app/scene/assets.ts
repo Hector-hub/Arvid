@@ -3,6 +3,7 @@
 import { CASTS, type Avatar, type SheetSpec } from '../../domain/avatar/catalog';
 import { recolorSheet } from '../../domain/avatar/recolor';
 import { recolorArvid, type ArvidColor } from '../../domain/arvid/arvid';
+import { recolorDaris, type DarisColor } from '../../domain/arvid/companion';
 import { CAR_FILES, PROP_FILES } from './engine';
 import { DRONE, EXTRAS_FRAME } from './extras';
 
@@ -107,6 +108,30 @@ export function loadArvidAtlas(color: ArvidColor): Promise<HTMLCanvasElement> {
     });
     p.catch(() => arvids.delete(color));
     arvids.set(color, p);
+  }
+  return p;
+}
+
+const darises = new Map<DarisColor, Promise<HTMLCanvasElement>>();
+
+/** Atlas de DARIS en su color (spec 08, DC-01). */
+export function loadDarisAtlas(color: DarisColor): Promise<HTMLCanvasElement> {
+  let p = darises.get(color);
+  if (!p) {
+    p = loadImage('daris.png').then((img) => {
+      const cv = document.createElement('canvas');
+      cv.width = img.width;
+      cv.height = img.height;
+      const ctx = cv.getContext('2d', { willReadFrequently: true });
+      if (!ctx) throw new Error('Canvas 2D no disponible');
+      ctx.drawImage(img, 0, 0);
+      const data = ctx.getImageData(0, 0, cv.width, cv.height);
+      recolorDaris(data.data, color);
+      ctx.putImageData(data, 0, 0);
+      return cv;
+    });
+    p.catch(() => darises.delete(color));
+    darises.set(color, p);
   }
   return p;
 }

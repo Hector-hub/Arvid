@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadSettings, saveSetting, type DataContext } from '../../data/repository';
 import { addDays, toLocalDate } from '../../domain/time/localDate';
-import { setLocale } from '../../i18n';
+import { setLocale, tDynamic } from '../../i18n';
 import { routes } from '../router';
 import { ActivitiesScreen } from '../screens/ActivitiesScreen';
 import { Onboarding } from '../screens/Onboarding';
@@ -73,6 +73,10 @@ describe('onboarding con ARVID (ON)', () => {
     await skipDialogue(user);
     expect(screen.getByRole('radio', { name: 'Español' })).toBeChecked();
     await user.click(screen.getByRole('button', { name: 'Continuar' }));
+    // 1b. Compañero: ARVID por defecto (CO-02)
+    await skipDialogue(user);
+    expect(screen.getByRole('radio', { name: /ARVID/ })).toBeChecked();
+    await user.click(screen.getByRole('button', { name: 'Continuar' }));
     // 2. Bienvenida
     await skipDialogue(user);
     await user.click(screen.getByRole('button', { name: 'Empezar' }));
@@ -118,9 +122,41 @@ describe('onboarding con ARVID (ON)', () => {
     expect(s.onboardingCompletedAt).toBeDefined();
   });
 
+  it('CO-02 · ID-01: elegir a DARIS hace que ella narre el resto y que el color sea el suyo', async () => {
+    const user = userEvent.setup();
+    renderRoutes(ctx, [{ path: '/', element: <Onboarding /> }], '/');
+    await skipDialogue(user);
+    await user.click(screen.getByRole('button', { name: 'Continuar' }));
+    await skipDialogue(user);
+    await user.click(screen.getByRole('radio', { name: /DARIS/ }));
+    await waitFor(async () => expect((await loadSettings(ctx.db)).companion).toBe('daris'));
+    await user.click(screen.getByRole('button', { name: 'Continuar' }));
+    // Bienvenida en boca de DARIS, en femenino
+    expect(await screen.findByRole('group', { name: 'Diálogo con DARIS' })).toBeInTheDocument();
+    await skipDialogue(user);
+    expect(screen.getByText('DARIS', { selector: '.dialogue-name' })).toBeInTheDocument();
+    expect(tDynamic('arvid.onboarding.welcome.0')).toBe('Hola. Soy DARIS, tu compañera de ruta.');
+    await user.click(screen.getByRole('button', { name: 'Empezar' }));
+    await skipDialogue(user);
+    await user.type(screen.getByLabelText('Tu nombre o alias'), 'Ana');
+    await user.click(screen.getByRole('button', { name: 'Continuar' }));
+    await skipDialogue(user);
+    await user.click(screen.getByRole('radio', { name: 'Femenino' }));
+    await user.click(screen.getByRole('button', { name: 'Continuar' }));
+    await skipDialogue(user);
+    await user.click(screen.getByRole('button', { name: 'Continuar' }));
+    // Color de DARIS (DC-01)
+    await skipDialogue(user);
+    await user.click(screen.getByRole('radio', { name: 'Lima' }));
+    await waitFor(async () => expect((await loadSettings(ctx.db)).darisColor).toBe('lima'));
+    expect((await loadSettings(ctx.db)).arvidColor).toBe('cian');
+  });
+
   it('ON-05: Atrás conserva lo elegido', async () => {
     const user = userEvent.setup();
     renderRoutes(ctx, [{ path: '/', element: <Onboarding /> }], '/');
+    await skipDialogue(user);
+    await user.click(screen.getByRole('button', { name: 'Continuar' }));
     await skipDialogue(user);
     await user.click(screen.getByRole('button', { name: 'Continuar' }));
     await skipDialogue(user);

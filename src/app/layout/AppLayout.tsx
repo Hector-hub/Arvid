@@ -5,6 +5,7 @@ import { useMotionPreference } from '../motion';
 import { Onboarding } from '../screens/Onboarding';
 import type { SpriteName } from '../design/sprites.generated';
 import { detectLocale, setLocale, t, useLocale, type TKey } from '../../i18n';
+import { useCompanionSync } from '../companion';
 import { useEffect } from 'react';
 import { UpdateBanner } from './UpdateBanner';
 import { AnalysisProvider } from '../analysis';
@@ -27,6 +28,7 @@ export function AppLayout() {
   useEffect(() => {
     if (settings) setLocale(settings.locale ?? detectLocale());
   }, [settings]);
+  useCompanionSync(settings?.companion);
 
   if (!settings) return null;
   // El service worker se registra desde UpdateBanner: debe montarse también durante el onboarding (PWA-02).

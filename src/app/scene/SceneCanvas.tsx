@@ -2,12 +2,14 @@
 // primera pintura (NFR5-04); las pantallas usan los envoltorios de `Scene.tsx`.
 import { useEffect, useRef, useState } from 'react';
 import type { ArvidColor } from '../../domain/arvid/arvid';
+import type { Companion, DarisColor } from '../../domain/arvid/companion';
 import { CASTS, type Avatar } from '../../domain/avatar/catalog';
 import { SCENE_H, SCENE_W } from '../../domain/scene/scene';
 import { t, useLocale } from '../../i18n';
 import { useReducedMotion } from '../motion';
-import { loadArvidAtlas, loadHero, loadSceneImages, type HeroSheets, type SceneImages } from './assets';
+import { loadArvidAtlas, loadDarisAtlas, loadHero, loadSceneImages, type HeroSheets, type SceneImages } from './assets';
 import { drawHero, drawScene } from './draw';
+import { DARIS_ANIM, DARIS_CELL } from './daris';
 import { DRONE, EXTRAS_FRAME } from './extras';
 import {
   advance,
@@ -15,6 +17,7 @@ import {
   currentSpeech,
   currentSpeechText,
   isTalking,
+  darisState,
   resetClock,
   scene,
   setActive,
@@ -57,12 +60,38 @@ function useArvidAtlas(color: ArvidColor) {
   return atlas;
 }
 
+function useDarisAtlas(color: DarisColor | undefined) {
+  const [atlas, setAtlas] = useState<{ color: DarisColor; atlas: HTMLCanvasElement }>();
+  useEffect(() => {
+    if (!color) return;
+    let live = true;
+    loadDarisAtlas(color).then(
+      (a) => live && setAtlas({ color, atlas: a }),
+      () => undefined,
+    );
+    return () => {
+      live = false;
+    };
+  }, [color]);
+  return color && atlas?.color === color ? atlas.atlas : undefined;
+}
+
 /**
  * Escena animada (ESC) con ARVID (MV) y su burbuja (BP). Solo se anima con la app visible y el lienzo en pantalla
  * (ESC-10); con movimiento reducido se dibuja una imagen fija (ESC-11). Si algo no carga, no se dibuja nada y queda
  * el panel de fondo (ESC-12). Un toque completa o pasa la página de lo que dice ARVID.
  */
-export function SceneCanvas({ avatar, arvidColor }: { avatar: Avatar; arvidColor: ArvidColor }) {
+export function SceneCanvas({
+  avatar,
+  arvidColor,
+  companion = 'arvid',
+  darisColor,
+}: {
+  avatar: Avatar;
+  arvidColor: ArvidColor;
+  companion?: Companion;
+  darisColor?: DarisColor;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
   const reduced = useReducedMotion();
   useLocale();
@@ -70,6 +99,7 @@ export function SceneCanvas({ avatar, arvidColor }: { avatar: Avatar; arvidColor
   const [imagesFailed, setImagesFailed] = useState(false);
   const hero = useHero(avatar);
   const arvid = useArvidAtlas(arvidColor);
+  const daris = useDarisAtlas(companion === 'daris' ? darisColor ?? 'rosa' : undefined);
   const cast = CASTS[avatar.cast];
 
   useEffect(() => {
@@ -90,7 +120,12 @@ export function SceneCanvas({ avatar, arvidColor }: { avatar: Avatar; arvidColor
     const c = canvas.getContext('2d');
     if (!c) return;
     c.imageSmoothingEnabled = false;
-    const draw = () => drawScene(c, scene, images, { cast, sheets }, reduced, { arvid, speech: currentSpeech() });
+    const draw = () =>
+      drawScene(c, scene, images, { cast, sheets }, reduced, {
+        arvid,
+        daris: companion === 'daris' ? { atlas: daris, ...darisState() } : undefined,
+        speech: currentSpeech(),
+      });
 
     let raf = 0;
     // `undefined` = sin temporizador (un id puede ser 0, p. ej. con relojes simulados)
@@ -154,7 +189,7 @@ export function SceneCanvas({ avatar, arvidColor }: { avatar: Avatar; arvidColor
       stop();
       if (running) setActive(false);
     };
-  }, [images, sheets, cast, reduced, arvid]);
+  }, [images, sheets, cast, reduced, arvid, daris, companion]);
 
   if (imagesFailed || hero.failed) return null;
   return (
@@ -258,7 +293,51 @@ export function ArvidCanvas({ color, size = 64, talking = false }: { color: Arvi
       className="avatar-canvas"
       style={{ width: size, height: size }}
       role="img"
-      aria-label={`${t('arvid.name')} · ${t(`arvid.colors.${color}`)}`}
+      aria-label={`${t('companion.arvid.name')} · ${t(`arvid.colors.${color}`)}`}
+    />
+  );
+}
+
+/** DARIS en su color: flotando, o con la cara contenta mientras `talking` (retratos y selectores, spec 08). */
+export function DarisCanvas({ color, size = 64, talking = false }: { color: DarisColor; size?: number; talking?: boolean }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const reduced = useReducedMotion();
+  const atlas = useDarisAtlas(color);
+
+  useEffect(() => {
+    if (!atlas) return;
+    const c = ref.current?.getContext('2d');
+    if (!c) return;
+    c.imageSmoothingEnabled = false;
+    const anim = DARIS_ANIM[talking ? 'happy' : 'idle'];
+    const draw = (frameTime: number) => {
+      c.clearRect(0, 0, DARIS_CELL, DARIS_CELL);
+      const f = reduced ? 0 : Math.floor(frameTime / anim.ticks) % anim.frames;
+      c.drawImage(atlas, f * DARIS_CELL, anim.row * DARIS_CELL, DARIS_CELL, DARIS_CELL, 0, 0, DARIS_CELL, DARIS_CELL);
+    };
+    if (reduced) {
+      draw(0);
+      return;
+    }
+    const start = performance.now();
+    let raf = 0;
+    const loop = (now: number) => {
+      draw((now - start) / (1000 / 60));
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [atlas, talking, reduced]);
+
+  return (
+    <canvas
+      ref={ref}
+      width={DARIS_CELL}
+      height={DARIS_CELL}
+      className="avatar-canvas"
+      style={{ width: size, height: size }}
+      role="img"
+      aria-label={`${t('companion.daris.name')} · ${t(`daris.colors.${color}`)}`}
     />
   );
 }

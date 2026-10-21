@@ -2,6 +2,8 @@
 // - Interpolación: "{nombre}".
 // - Plurales: claves hermanas `x_one` / `x_other`, elegidas con Intl.PluralRules y la variable `count`.
 // - El idioma activo es un estado global: `t()` sirve en cualquier función y `useLocale()` re-renderiza al cambiarlo.
+// - Variables globales (spec 08): `{companion}` (nombre del compañero) y `{selfO}` ("o"/"a", su género en español)
+//   valen en todos los textos; cambiarlas también re-renderiza.
 import { useSyncExternalStore } from 'react';
 import en from './en.json';
 import es from './es.json';
@@ -30,6 +32,8 @@ const DICTS: Record<Locale, Map<string, string>> = { es: flatten(es), en: flatte
 
 let current: Locale = 'es';
 const listeners = new Set<() => void>();
+let globals: Vars = { companion: 'ARVID', selfO: 'o' };
+let version = 0;
 
 export const isLocale = (v: unknown): v is Locale => typeof v === 'string' && (LOCALES as readonly string[]).includes(v);
 
@@ -58,9 +62,20 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
-/** Re-renderiza el componente al cambiar el idioma. */
+/** Variables disponibles en todos los textos (compañero elegido). */
+export function setGlobalVars(vars: Vars): void {
+  if (Object.entries(vars).every(([k, v]) => globals[k] === v)) return;
+  globals = { ...globals, ...vars };
+  version++;
+  for (const l of listeners) l();
+}
+
+const snapshot = () => `${current}:${version}`;
+
+/** Re-renderiza el componente al cambiar el idioma o el compañero. */
 export function useLocale(): Locale {
-  return useSyncExternalStore(subscribe, getLocale, () => current);
+  useSyncExternalStore(subscribe, snapshot, snapshot);
+  return current;
 }
 
 /** Lo mismo que `useLocale`, para componentes que solo necesitan traducir. */
@@ -83,7 +98,8 @@ export function t(key: TKey, vars?: Vars, locale: Locale = current): string {
   if (typeof vars?.count === 'number') text = dict.get(`${key}_${plural(locale, vars.count)}`);
   text ??= dict.get(key) ?? DICTS.es.get(key);
   if (text === undefined) return key;
-  return vars ? text.replace(/\{(\w+)\}/g, (m, name: string) => (name in vars ? String(vars[name]) : m)) : text;
+  const all = vars ? { ...globals, ...vars } : globals;
+  return text.replace(/\{(\w+)\}/g, (m, name: string) => (name in all ? String(all[name]) : m));
 }
 
 /** Para claves construidas en tiempo de ejecución (p. ej. códigos de error del dominio). */

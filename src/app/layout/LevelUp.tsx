@@ -7,7 +7,7 @@ import { line, lineCount } from '../arvid/lines';
 import { levelTitle } from '../text';
 import { useAnalysis } from '../analysis';
 import { useData, useSettings } from '../data';
-import { ArvidPreview } from '../scene/Scene';
+import { CompanionPreview } from '../scene/Scene';
 import { celebrate } from '../scene/engine';
 
 /**
@@ -83,7 +83,7 @@ function LevelUpModal({
         }}
       >
         <div className="row" style={{ justifyContent: 'center' }}>
-          <ArvidPreview size={96} talking />
+          <CompanionPreview size={96} talking />
         </div>
         <h2 id="levelup-title" style={{ fontSize: '1.75rem', color: 'var(--level)' }}>
           {t('levelUp.title', { level })}

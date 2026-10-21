@@ -9,7 +9,7 @@ import { currentPersistState, isIOS, requestPersistentStorage, type PersistState
 import { useCategories, useData, useSettings } from '../data';
 import { BackLink, CategoryIcon, Panel } from '../design/components';
 import { useMusic } from '../music/MusicProvider';
-import { AliasField, ArvidColorPicker, CharacterCarousel, GenderPicker, LanguagePicker } from '../profile/pickers';
+import { AliasField, CharacterCarousel, CompanionColorPicker, CompanionPicker, GenderPicker, LanguagePicker } from '../profile/pickers';
 import { categoryName, errorText } from '../text';
 import { BackupPanel, DeletePanel } from './DataPanels';
 
@@ -183,8 +183,17 @@ function ProfilePanel({ settings }: { settings: Settings }) {
         }}
       />
 
+      <h3>{t('settings.companion')}</h3>
+      <CompanionPicker value={settings.companion} onChange={(c) => void saveSetting(db, 'companion', c)} />
+
       <h3>{t('settings.arvidColor')}</h3>
-      <ArvidColorPicker value={settings.arvidColor} onChange={(c) => void saveSetting(db, 'arvidColor', c)} />
+      <CompanionColorPicker
+        companion={settings.companion}
+        arvidColor={settings.arvidColor}
+        darisColor={settings.darisColor}
+        onArvid={(c) => void saveSetting(db, 'arvidColor', c)}
+        onDaris={(c) => void saveSetting(db, 'darisColor', c)}
+      />
 
       <label className="choice">
         <input type="checkbox" checked={settings.arvidAi} onChange={(e) => void saveSetting(db, 'arvidAi', e.target.checked)} />

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createSpeech, hasMore, paginate, stepSpeech, tapSpeech, visibleLines, type Speech } from '../../domain/arvid/speech';
 import { t } from '../../i18n';
 import { useReducedMotion } from '../motion';
-import { ArvidPreview } from '../scene/Scene';
+import { CompanionPreview } from '../scene/Scene';
 
 const FONT = '15px "Pixelify Sans"';
 let measureCtx: CanvasRenderingContext2D | null | undefined;
@@ -102,7 +102,7 @@ export function DialogueBox({ lines, onDone }: { lines: string[]; onDone: () => 
 
   return (
     <div className="dialogue" role="group" aria-label={t('onboarding.dialogue')}>
-      <ArvidPreview size={56} talking={!done} />
+      <CompanionPreview size={56} talking={!done} />
       <div className="dialogue-body" onClick={tap}>
         <p className="dialogue-name pixel">{t('arvid.name')}</p>
         <div ref={textRef} className="dialogue-text pixel" aria-hidden="true">

@@ -31,6 +31,7 @@ async function auditOnboarding(page: Page, found: Finding[]) {
   await page.goto('/');
   const steps: [string, () => Promise<void>][] = [
     ['onboarding · idioma', () => page.getByRole('button', { name: 'Continuar' }).click()],
+    ['onboarding · compañero', () => page.getByRole('button', { name: 'Continuar' }).click()],
     ['onboarding · bienvenida', () => page.getByRole('button', { name: 'Empezar' }).click()],
     [
       'onboarding · alias',
