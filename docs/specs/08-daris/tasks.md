@@ -2,7 +2,7 @@
 
 Derivadas de spec.md (aprobada, D-094).
 
-**Estado (2026-10-20):** 0.8.0 implementada (T01–T08); falta T09 (despliegue).
+**Estado (2026-10-20):** 0.8.0 desplegada (T01–T09).
 
 | # | Tarea | Requisitos | Hecho cuando |
 |---|---|---|---|

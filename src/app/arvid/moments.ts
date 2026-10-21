@@ -7,7 +7,7 @@ import type { TodayView } from '../../domain/activities/today';
 import { t } from '../../i18n';
 import { useToday } from '../clock';
 import { useData, useSettings } from '../data';
-import { hasUserChatted, isTalking, onArvidReady } from '../scene/engine';
+import { cheer, hasUserChatted, isTalking, onArvidReady } from '../scene/engine';
 import { momentLine } from './brain';
 import { line, lineCount } from './lines';
 import { useArvidContext } from './useArvidContext';
@@ -83,6 +83,10 @@ export function useArvidMoments(view: TodayView | undefined, comeback: boolean, 
   useEffect(() => {
     const prev = prevPending.current;
     prevPending.current = pending;
-    if (pending === 0 && prev !== undefined && prev > 0 && hasDaily) void decide(['dayComplete']);
+    if (pending === 0 && prev !== undefined && prev > 0 && hasDaily) {
+      // DARIS celebra el día completo con su salto de corazones (spec 08, DE-02), hable o no
+      cheer();
+      void decide(['dayComplete']);
+    }
   }, [pending, hasDaily]);
 }

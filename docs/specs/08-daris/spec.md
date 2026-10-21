@@ -1,6 +1,6 @@
 # Spec 08 — DARIS, compañera alternativa a ARVID
 
-Estado: **aprobada** (D-094, 2026-10-20) · 0.8.0 implementada (pendiente: despliegue) · Incremento posterior al MVP
+Estado: **aprobada** (D-094, 2026-10-20) · 0.8.0 desplegada · Incremento posterior al MVP
 Decisiones que implementa: D-090 a D-093
 Modifica:
 - spec 06: AV (colores), MV (movimiento), BP-01 (burbuja), ON (onboarding), PF-03 (Ajustes → Perfil), IA-03 (instrucciones);
