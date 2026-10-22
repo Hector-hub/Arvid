@@ -416,7 +416,9 @@
     "disciplineNote": "It counts everything you set out to do across all your areas, including missions with a deadline. Missions without a date don't count.",
     "whatSubtracts": "What takes points away",
     "recover_one": "; complete it to recover them.",
-    "recover_other": "; complete them to recover them."
+    "recover_other": "; complete them to recover them.",
+    "aiTipTitle": "Tip from {companion}",
+    "aiTipToday": "Today · refreshed daily"
   },
   "settings": {
     "title": "Settings",

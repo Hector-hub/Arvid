@@ -105,6 +105,7 @@ Guardar eventos (y no solo el estado) permite saber **cuándo** venció la misi�
 | profile | `{ alias, gender: 'm' \| 'f' \| 'x' }` | Alias y género (spec 06 §4); sin él se muestra la presentación de ARVID |
 | arvidColor | `'original' \| 'cian' \| 'magenta' \| 'lima' \| 'oro' \| 'violeta'` | Color de ARVID; por defecto `cian` |
 | companion | `'arvid' \| 'daris'` | Compañero elegido (spec 08); por defecto `arvid` |
+| disciplineTip | `{ date, locale, companion, text }`? | Consejo de IA sobre la Disciplina del día (D-097). Del dispositivo: no va en el backup |
 | darisColor | `'rosa' \| 'cian' \| 'lima' \| 'ambar' \| 'rojo' \| 'violeta'` | Color de DARIS, independiente del de ARVID; por defecto `rosa` |
 | arvidTalks | boolean | ARVID habla por iniciativa propia; por defecto `true` |
 | arvidAi | boolean | ARVID con IA (spec 06, IA-06); desactivado hasta que el usuario lo acepta |

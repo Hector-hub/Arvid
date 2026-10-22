@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router';
+import { CompanionPreview } from '../../scene/Scene';
 import { trend, type Score } from '../../../domain/attributes/attributes';
 import { addDays, compareDates } from '../../../domain/time/localDate';
 import { useAnalysis } from '../../analysis';
@@ -102,18 +103,34 @@ export function AttributeDetailScreen() {
 /** Detalle de Disciplina (DA-05). */
 export function DisciplineDetailScreen() {
   const settings = useSettings();
+  const today = useToday();
   const window = settings?.radarWindow ?? 30;
   const view = useProfile(window);
   const { activityName, missionTitle } = useNames();
   if (!view) return null;
   const score = view.profile.current.discipline;
   const penalties = score.breakdown.filter((b) => b.source === 'penalty');
+  // Consejo del día con IA (D-097): solo el de hoy y con la IA activada
+  const tip = settings?.arvidAi && settings.disciplineTip?.date === today ? settings.disciplineTip : undefined;
 
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
       <BackLink to="/perfil" label={t('nav.profile')} />
       <h1>{t('profile.discipline')}</h1>
       <ScoreHeader score={score} previous={view.profile.previous.discipline} window={window} />
+
+      {tip && (
+        <Panel className="stack" labelledBy="tip-title">
+          <div className="row">
+            <CompanionPreview companion={tip.companion} size={48} />
+            <h2 id="tip-title" className="grow">
+              {t('attribute.aiTipTitle')}
+            </h2>
+          </div>
+          <p>{tip.text}</p>
+          <p className="small muted">{t('attribute.aiTipToday')}</p>
+        </Panel>
+      )}
 
       <Panel className="stack" labelledBy="explain-title">
         <h2 id="explain-title">{t('attribute.howCalculated')}</h2>

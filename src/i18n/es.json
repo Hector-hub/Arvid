@@ -416,7 +416,9 @@
     "disciplineNote": "Cuenta todo lo que te propusiste en todas tus áreas, incluidas las misiones con fecha límite. Las misiones sin fecha no cuentan.",
     "whatSubtracts": "Lo que resta",
     "recover_one": "; complétala para recuperarlos.",
-    "recover_other": "; complétalas para recuperarlos."
+    "recover_other": "; complétalas para recuperarlos.",
+    "aiTipTitle": "Consejo de {companion}",
+    "aiTipToday": "De hoy · se renueva cada día"
   },
   "settings": {
     "title": "Ajustes",

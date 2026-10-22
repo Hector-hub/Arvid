@@ -245,6 +245,8 @@ export interface Settings {
   companion: Companion;
   /** Color de DARIS, independiente del de ARVID (DC-02). */
   darisColor: DarisColor;
+  /** Consejo de IA sobre la Disciplina del día (D-097). Del dispositivo: no va en el backup. */
+  disciplineTip?: DisciplineTip;
   /** ARVID habla por iniciativa propia (DL-03). */
   arvidTalks: boolean;
   /** ARVID con IA: desactivado hasta que el usuario lo acepte (spec 06, IA-06). */
@@ -255,6 +257,14 @@ export interface Settings {
   introSnoozedUntil?: string;
   /** Los logros ya se evaluaron una vez en este dispositivo (spec 07, LO-05). No va en el backup. */
   achievementsReady?: boolean;
+}
+
+export interface DisciplineTip {
+  /** Fecha local en que se generó: vale para ese día. */
+  date: string;
+  locale: Locale;
+  companion: Companion;
+  text: string;
 }
 
 export interface MusicSettings {

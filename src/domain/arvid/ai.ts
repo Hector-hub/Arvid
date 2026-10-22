@@ -14,8 +14,8 @@ export const AI_MAX_HISTORY = 20;
 export const AI_MAX_USER_MESSAGE = 280;
 export const AI_MAX_REPLY = 1200;
 
-export type AiMoment = Exclude<Moment, 'levelUp'> | 'achievement' | 'chat';
-export const AI_MOMENTS: readonly AiMoment[] = ['greeting', 'dayComplete', 'firstActivity', 'comeback', 'achievement', 'chat'];
+export type AiMoment = Exclude<Moment, 'levelUp'> | 'achievement' | 'discipline' | 'chat';
+export const AI_MOMENTS: readonly AiMoment[] = ['greeting', 'dayComplete', 'firstActivity', 'comeback', 'achievement', 'discipline', 'chat'];
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -71,6 +71,8 @@ const MOMENT_PROMPT: Record<Exclude<AiMoment, 'chat'>, string> = {
     'The user just created their first activity. Encourage them and remind them they can log it from Today when they do it. At most 2 sentences.',
   comeback:
     'Yesterday some daily activities were left undone. Encourage the user to restart today with one small activity, without any guilt. At most 3 sentences.',
+  discipline:
+    'Write today\'s short note about the user\'s Discipline (the share of everything they planned that they actually did), using the context: its value and trend over 7 and 30 days, and which activities and missions help or weigh it down. Say in one sentence what is going well, then give one small, concrete suggestion for today. At most 3 sentences. Never invent numbers.',
   achievement:
     'The user just unlocked the achievements listed in the context under "unlockedAchievements". Congratulate them briefly, naming the achievement, and relate it to their data. At most 2 sentences.',
 };
