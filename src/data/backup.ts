@@ -11,7 +11,7 @@ export const BACKUP_FORMAT = 'arvid-backup';
 export const BACKUP_FORMAT_VERSION = 1;
 
 /** Ajustes propios de cada dispositivo: un import no los sobrescribe (BAK-06). */
-const DEVICE_SETTINGS = new Set(['persistGranted', 'installHintDismissedAt', 'backupReminderSnoozedUntil', 'arvidSeen', 'introSnoozedUntil', 'disciplineTip']);
+const DEVICE_SETTINGS = new Set(['persistGranted', 'installHintDismissedAt', 'backupReminderSnoozedUntil', 'arvidSeen', 'introSnoozedUntil', 'disciplineTip', 'chatLog']);
 /** Ajustes que no van en el backup y que un import borra: tras importar, los logros se evalúan en silencio (LO-05). */
 const RESET_ON_IMPORT = new Set(['achievementsReady']);
 const exported = (key: string) => !DEVICE_SETTINGS.has(key) && !RESET_ON_IMPORT.has(key);

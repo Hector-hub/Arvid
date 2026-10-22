@@ -1,22 +1,25 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router';
 import { useT } from '../../i18n';
 import { replyTo } from '../arvid/brain';
 import { useArvidContext } from '../arvid/useArvidContext';
 import { useSettings } from '../data';
-import { speak } from '../arvid/voice';
-import { ChatIcon, SendIcon } from '../design/icons';
+import { logChat, speak } from '../arvid/voice';
+import { ChatIcon, ExpandIcon, SendIcon } from '../design/icons';
 import { markUserChat } from './engine';
 
 export const CHAT_MAX = 280;
 
 /**
- * Chat con ARVID (spec 06, CH): el botón despliega un campo hacia la izquierda y pasa a "Enviar". Se cierra con Esc,
- * tocando fuera o enviando vacío. ARVID responde en la burbuja de la escena.
+ * Chat con el compañero (spec 06, CH; D-098): el botón despliega un campo hacia la izquierda con dos botones, la
+ * flecha (envía y cierra) y expandir (abre la conversación completa con lo escrito). Se cierra con Esc, tocando fuera
+ * o enviando vacío. El compañero responde en la burbuja de la escena.
  */
 export function ChatControl() {
   const t = useT();
   const settings = useSettings();
   const context = useArvidContext();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
@@ -54,11 +57,13 @@ export function ChatControl() {
     }
     if (busy) return;
     setText('');
+    setOpen(false);
     setBusy(true);
     markUserChat();
+    logChat('user', message);
     try {
-      // ARVID "piensa" mientras espera la respuesta (CH-03)
-      await speak(t('arvid.chat.thinking'));
+      // ARVID "piensa" mientras espera la respuesta (CH-03); los "…" no van a la conversación
+      await speak(t('arvid.chat.thinking'), { log: false });
       await speak(await replyTo(message, { aiEnabled: settings?.arvidAi ?? false, context }));
     } finally {
       setBusy(false);
@@ -86,15 +91,19 @@ export function ChatControl() {
           onChange={(e) => setText(e.target.value)}
         />
       )}
+      {open && (
+        <button
+          type="button"
+          className="btn chat-button"
+          aria-label={t('chat.expand')}
+          title={t('chat.expand')}
+          onClick={() => void navigate('/chat', { state: { draft: text } })}
+        >
+          <ExpandIcon />
+        </button>
+      )}
       <button type="submit" className="btn chat-button" aria-label={open ? t('scene.send') : t('scene.chat')} disabled={busy}>
-        {open ? (
-          <>
-            <SendIcon />
-            <span className="chat-send-label">{t('scene.send')}</span>
-          </>
-        ) : (
-          <ChatIcon />
-        )}
+        {open ? <SendIcon /> : <ChatIcon />}
       </button>
     </form>
   );

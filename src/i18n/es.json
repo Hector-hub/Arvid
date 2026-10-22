@@ -734,5 +734,15 @@
       "rojo": "Rojo y negro",
       "violeta": "Violeta"
     }
+  },
+  "chat": {
+    "title": "Conversación con {companion}",
+    "expand": "Ver toda la conversación",
+    "empty": "Aún no habéis hablado. Escribe algo para empezar.",
+    "clear": "Borrar conversación",
+    "clearConfirm": "¿Borrar toda la conversación? No se puede deshacer.",
+    "clearYes": "Borrar",
+    "you": "Tú",
+    "placeholder": "Escribe a {companion}…"
   }
 }

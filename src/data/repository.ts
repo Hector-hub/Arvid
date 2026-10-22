@@ -247,6 +247,8 @@ export interface Settings {
   darisColor: DarisColor;
   /** Consejo de IA sobre la Disciplina del día (D-097). Del dispositivo: no va en el backup. */
   disciplineTip?: DisciplineTip;
+  /** Conversación con el compañero (D-098), las últimas CHAT_LOG_MAX líneas. Del dispositivo: no va en el backup. */
+  chatLog?: ChatEntry[];
   /** ARVID habla por iniciativa propia (DL-03). */
   arvidTalks: boolean;
   /** ARVID con IA: desactivado hasta que el usuario lo acepte (spec 06, IA-06). */
@@ -258,6 +260,16 @@ export interface Settings {
   /** Los logros ya se evaluaron una vez en este dispositivo (spec 07, LO-05). No va en el backup. */
   achievementsReady?: boolean;
 }
+
+export interface ChatEntry {
+  at: string;
+  from: 'user' | 'companion';
+  /** Quién hablaba (spec 08): la conversación conserva su nombre aunque luego se cambie de compañero. */
+  companion: Companion;
+  text: string;
+}
+
+export const CHAT_LOG_MAX = 200;
 
 export interface DisciplineTip {
   /** Fecha local en que se generó: vale para ese día. */
@@ -331,4 +343,18 @@ export async function unlockAchievements(db: ArvidDB, ids: readonly string[], at
     const existing = new Set((await db.achievements.bulkGet([...ids])).filter((r) => r).map((r) => r!.id));
     await db.achievements.bulkAdd(ids.filter((id) => !existing.has(id)).map((id) => ({ id, unlockedAt: at })));
   });
+}
+
+// ---------- Conversación (D-098) ----------
+
+export async function appendChatLog(db: ArvidDB, entries: ChatEntry[]): Promise<void> {
+  await db.transaction('rw', db.settings, async () => {
+    const row = await db.settings.get('chatLog');
+    const log = Array.isArray(row?.value) ? (row.value as ChatEntry[]) : [];
+    await db.settings.put({ key: 'chatLog', value: [...log, ...entries].slice(-CHAT_LOG_MAX) });
+  });
+}
+
+export async function clearChatLog(db: ArvidDB): Promise<void> {
+  await db.settings.delete('chatLog');
 }

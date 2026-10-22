@@ -734,5 +734,15 @@
       "rojo": "Red and black",
       "violeta": "Violet"
     }
+  },
+  "chat": {
+    "title": "Conversation with {companion}",
+    "expand": "See the whole conversation",
+    "empty": "You haven't talked yet. Write something to start.",
+    "clear": "Delete conversation",
+    "clearConfirm": "Delete the whole conversation? This cannot be undone.",
+    "clearYes": "Delete",
+    "you": "You",
+    "placeholder": "Write to {companion}…"
   }
 }

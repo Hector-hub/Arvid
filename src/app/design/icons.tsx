@@ -84,3 +84,23 @@ export function SendIcon() {
     </PixelIcon>
   );
 }
+
+/** Expandir: cuatro esquinas hacia fuera. */
+export function ExpandIcon() {
+  return (
+    <PixelIcon>
+      <rect x="1" y="1" width="4" height="1" />
+      <rect x="1" y="1" width="1" height="4" />
+      <rect x="7" y="1" width="4" height="1" />
+      <rect x="10" y="1" width="1" height="4" />
+      <rect x="1" y="10" width="4" height="1" />
+      <rect x="1" y="7" width="1" height="4" />
+      <rect x="7" y="10" width="4" height="1" />
+      <rect x="10" y="7" width="1" height="4" />
+      <rect x="3" y="3" width="1" height="1" />
+      <rect x="8" y="3" width="1" height="1" />
+      <rect x="3" y="8" width="1" height="1" />
+      <rect x="8" y="8" width="1" height="1" />
+    </PixelIcon>
+  );
+}

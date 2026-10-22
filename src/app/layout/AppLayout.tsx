@@ -10,6 +10,7 @@ import { useEffect } from 'react';
 import { UpdateBanner } from './UpdateBanner';
 import { AnalysisProvider } from '../analysis';
 import { AchievementsWatcher } from '../achievements/AchievementsWatcher';
+import { ChatLogWatcher } from '../arvid/chatLog';
 import { DisciplineTipWatcher } from '../arvid/disciplineTip';
 import { LevelUpWatcher } from './LevelUp';
 import { MusicProvider } from '../music/MusicProvider';
@@ -54,6 +55,7 @@ export function AppLayout() {
         <LevelUpWatcher />
         <AchievementsWatcher />
         <DisciplineTipWatcher />
+        <ChatLogWatcher />
       </div>
       </MusicProvider>
     </AnalysisProvider>

@@ -3,6 +3,7 @@ import { AppLayout } from './layout/AppLayout';
 import { ActivitiesScreen } from './screens/ActivitiesScreen';
 import { ActivityDetailScreen } from './screens/ActivityDetailScreen';
 import { ActivityFormScreen } from './screens/ActivityFormScreen';
+import { ChatScreen } from './screens/ChatScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
 import { InstallGuideScreen } from './screens/InstallGuideScreen';
 import { MissionDetailScreen } from './screens/missions/MissionDetailScreen';
@@ -30,6 +31,7 @@ export const routes: RouteObject[] = [
       { path: 'actividades/:id', element: <ActivityDetailScreen /> },
       { path: 'actividades/:id/editar', element: <ActivityFormScreen /> },
       { path: 'perfil', element: <ProfileScreen /> },
+      { path: 'chat', element: <ChatScreen /> },
       { path: 'perfil/atributo/:categoryId', element: <AttributeDetailScreen /> },
       { path: 'perfil/disciplina', element: <DisciplineDetailScreen /> },
       // La pantalla se llamaba Personaje hasta la 0.5.0 (PF-01)
