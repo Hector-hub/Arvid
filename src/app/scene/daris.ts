@@ -2,7 +2,7 @@
 export const DARIS_CELL = 48;
 /** Fila, fotogramas y duración de cada fotograma (en fotogramas de 60 Hz) de cada animación (DE-02). */
 export const DARIS_ANIM = {
-  idle: { row: 0, frames: 12, ticks: 6 },
+  idle: { row: 0, frames: 11, ticks: 6 },
   happy: { row: 1, frames: 11, ticks: 6 },
   dash: { row: 2, frames: 10, ticks: 5 },
   cheer: { row: 3, frames: 15, ticks: 6 },

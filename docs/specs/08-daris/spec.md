@@ -45,7 +45,7 @@ Principio: lo que el compañero **dice y hace** sigue las mismas reglas que ARVI
 
   | Fila | Animación | Fotogramas | Cuándo |
   |---|---|---|---|
-  | 1 | Flotar | 12 | En reposo |
+  | 1 | Flotar | 11 | En reposo |
   | 2 | Contenta (ojos «^^» y corazones) | 11 | Mientras habla |
   | 3 | Acelerón (estela) | 10 | Entrada: llega desde la izquierda de la escena hasta su sitio (MV-01) |
   | 4 | Corazones (salto con anillo) | 15 | Al celebrar: subida de nivel, logro nuevo y día completo; una vez |
