@@ -62,12 +62,13 @@ export const CASTS: Record<CastId, CastSpec> = {
   },
   el: {
     id: 'el',
-    walk: { file: 'el-walk.png', frameW: 64, frameH: 64, frames: 8, ticks: 7.5 },
-    restFrame: 0,
-    anchorX: 29,
-    feetY: 64,
-    scale: 0.8,
-    flip: true,
+    // Ninja generado con IA a partir de un vídeo: 35 fotogramas (un paso con cada pierna), mirando a la derecha
+    walk: { file: 'el-walk.png', frameW: 64, frameH: 64, frames: 35, ticks: 3.5 },
+    restFrame: 13, // piernas juntas
+    anchorX: 31,
+    feetY: 62,
+    scale: 1,
+    flip: false,
   },
   el2: {
     id: 'el2',

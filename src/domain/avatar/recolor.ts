@@ -2,7 +2,7 @@
 // Trabaja sobre píxeles RGBA en bruto (el canvas lo pone app/scene), así que es puro y se prueba sin navegador.
 // Cada protagonista tiene su método, heredado del prototipo, porque sus paletas se organizan de forma distinta:
 // - Ella: colores exactos por rol; un tono es a la vez sombra del pelo y medias, y se separa por altura.
-// - Él: decenas de tonos casi iguales; se clasifica por tono y luminosidad (HSL) y por zonas del cuerpo.
+// - Ghost (Él): tres materiales (armadura, luces y piezas blancas) por tono y luminosidad (HSL).
 // - Ella 2 y Él 2: roles con varios tonos; cada tono se asigna a la gama nueva por orden de luminosidad.
 import type { CastId, VariantId } from './catalog';
 
@@ -117,16 +117,37 @@ function recolorElla(f: Frame, variant: Exclude<VariantId, 'original'>) {
     }
 }
 
-// ---------------- Él (sprite-ai.art, 64×64) ----------------
-const EL_HEAD_END = 11; // filas 0–10: pelo o capucha
-const EL_BELT_Y = 26; // por encima: chaqueta; por debajo: pantalón
-type ElRamp = [string, string, string]; // sombra, base, luz
-const EL_VARIANTS: Record<Exclude<VariantId, 'original'>, { skin: Skin; hair: ElRamp; jacket: ElRamp; pants: ElRamp; belt: ElRamp }> = {
-  neon: { skin: 'media', hair: ['#05d9e8', '#05d9e8', '#d1f7ff'], jacket: ['#0b347f', '#177daa', '#05d9e8'], pants: ['#050912', '#031b70', '#0b347f'], belt: ['#540052', '#ff2a6d', '#ff2a6d'] },
-  carmesi: { skin: 'palida', hair: ['#050912', '#1a1c2c', '#333c57'], jacket: ['#540052', '#b13e53', '#ec1e44'], pants: ['#050912', '#1a1c2c', '#333c57'], belt: ['#1a1c2c', '#ffd800', '#ffd800'] },
-  bosque: { skin: 'oscura', hair: ['#050912', '#1a1c2c', '#333c57'], jacket: ['#173404', '#38b764', '#a7f070'], pants: ['#2a1c12', '#5c3a24', '#8a5a3a'], belt: ['#2a1c12', '#ffcd75', '#ffcd75'] },
-  plata: { skin: 'clara', hair: ['#566c86', '#94b0c2', '#f4f4f4'], jacket: ['#566c86', '#94b0c2', '#f4f4f4'], pants: ['#050912', '#1a1c2c', '#333c57'], belt: ['#0b347f', '#05d9e8', '#05d9e8'] },
-  ocaso: { skin: 'media', hair: ['#b13e53', '#f07c36', '#ffcd75'], jacket: ['#3b2a8c', '#7a4fd1', '#a884f3'], pants: ['#031325', '#072b3a', '#177daa'], belt: ['#540052', '#f07c36', '#f07c36'] },
+// ---------------- Ghost (Él), ninja generado con IA (64 × 64, 35 fotogramas) ----------------
+// Tres materiales por tono y luminosidad: armadura (azules oscuros), luces (cian del visor y las juntas) y piezas
+// blancas (banda, cinturón, faldón y suelas). Dentro de cada uno, los tonos se reparten por luminosidad sobre la gama
+// de la variante. El contorno no cambia.
+type GhostMaterial = 'armor' | 'energy' | 'light';
+const GHOST_VARIANTS: Record<Exclude<VariantId, 'original'>, Record<GhostMaterial, readonly string[]>> = {
+  neon: {
+    armor: ['#0d0a1f', '#1d1238', '#2a1c52', '#3b2a8c', '#4d3fa0', '#5a3fb0'],
+    energy: ['#540052', '#c42a8d', '#ff7ad9'],
+    light: ['#c9c0e8', '#e2dcf5', '#f4f1ff'],
+  },
+  carmesi: {
+    armor: ['#0b0b10', '#14141c', '#1d1d27', '#2a2a36', '#3a3a48', '#4a4a5a'],
+    energy: ['#5d0e1e', '#b13e53', '#ff4a5a'],
+    light: ['#94b0c2', '#d1dbe3', '#f4f4f4'],
+  },
+  bosque: {
+    armor: ['#0b1408', '#132412', '#1c331a', '#284426', '#365a33', '#466e40'],
+    energy: ['#257179', '#38b764', '#a7f070'],
+    light: ['#c8b88a', '#e4d8b0', '#f6f0d8'],
+  },
+  plata: {
+    armor: ['#333c57', '#4c546a', '#566c86', '#6f849c', '#94b0c2', '#b8c8d6'],
+    energy: ['#177daa', '#41a6f6', '#73eff7'],
+    light: ['#e0e6ea', '#f0f4f6', '#ffffff'],
+  },
+  ocaso: {
+    armor: ['#140a1e', '#24123a', '#3a1c52', '#4d2a6a', '#5e3a80', '#6e4a94'],
+    energy: ['#a04a05', '#f07c36', '#ffcd75'],
+    light: ['#e4d2bd', '#f2e6d6', '#fff8ec'],
+  },
 };
 
 function hsl(r: number, g: number, b: number): [number, number, number] {
@@ -143,42 +164,44 @@ function hsl(r: number, g: number, b: number): [number, number, number] {
   return [h * 60, s, l];
 }
 
-/** Elige sombra, base o luz de la gama según la luminosidad original dentro de su familia. */
-function pick(ramp: readonly string[], l: number, lo: number, hi: number): RGB {
-  const t = Math.max(0, Math.min(1, (l - lo) / (hi - lo)));
-  return hex(ramp[t < 0.34 ? 0 : t < 0.67 ? 1 : 2]!);
-}
-
-type ElKind = 'outline' | 'skin' | 'belt' | 'gun' | 'cloth';
-function classifyEl(r: number, g: number, b: number, x: number, y: number): ElKind {
+/** Material de un color de Ghost; el contorno no cambia (`undefined`). */
+export function ghostMaterial(r: number, g: number, b: number): GhostMaterial | undefined {
   const [h, s, l] = hsl(r, g, b);
-  if (l < 0.07) return 'outline';
-  if ((h < 40 || h > 340) && s > 0.12 && l > 0.32) return 'skin';
-  if (b > r + 18 && b > g + 18 && x < 24 && y > 26) return 'gun';
-  if ((h > 300 || h < 20) && s > 0.15 && l < 0.4 && y >= EL_BELT_Y - 4 && y <= EL_BELT_Y + 3) return 'belt';
-  return 'cloth';
+  if (l < 0.08) return undefined;
+  if (h >= 180 && h <= 212 && s >= 0.38 && l >= 0.17) return 'energy';
+  if (l >= 0.5) return 'light';
+  return 'armor';
 }
 
-/** Él siempre va sin arma: se borra en todas las variantes (spec 05, PRO-01). */
-function recolorEl(f: Frame, variant: VariantId) {
-  const v = variant === 'original' ? undefined : EL_VARIANTS[variant];
-  const skin = v ? [...SKINS[v.skin]] : undefined;
-  for (let y = 0; y < f.height; y++)
-    for (let lx = 0; lx < f.frameW; lx++) {
-      const i = (y * f.width + f.x0 + lx) * 4;
-      if (ch(f.px, i + 3) < 128) continue;
-      const [r, g, b] = [ch(f.px, i), ch(f.px, i + 1), ch(f.px, i + 2)];
-      const kind = classifyEl(r, g, b, lx, y);
-      if (kind === 'gun' || (lx < 23 && y > 28 && kind !== 'skin')) {
-        f.px[i + 3] = 0;
-        continue;
+function recolorGhost(f: Frame, variant: Exclude<VariantId, 'original'>) {
+  const ramps = GHOST_VARIANTS[variant];
+  const groups = new Map<GhostMaterial, Set<string>>();
+  const each = (fn: (i: number, h: string) => void) => {
+    for (let y = 0; y < f.height; y++)
+      for (let lx = 0; lx < f.frameW; lx++) {
+        const i = (y * f.width + f.x0 + lx) * 4;
+        if (ch(f.px, i + 3) < 128) continue;
+        fn(i, toHex(ch(f.px, i), ch(f.px, i + 1), ch(f.px, i + 2)));
       }
-      if (!v || kind === 'outline') continue;
-      const [, , l] = hsl(r, g, b);
-      if (kind === 'skin') set(f.px, i, pick(skin!, l, 0.32, 0.75));
-      else if (kind === 'belt') set(f.px, i, pick(v.belt, l, 0.1, 0.35));
-      else set(f.px, i, pick(y < EL_HEAD_END ? v.hair : y < EL_BELT_Y ? v.jacket : v.pants, l, 0.07, 0.3));
-    }
+  };
+  each((_i, h) => {
+    const [r, g, b] = hex(h);
+    const m = ghostMaterial(r, g, b);
+    if (!m) return;
+    let set_ = groups.get(m);
+    if (!set_) groups.set(m, (set_ = new Set()));
+    set_.add(h);
+  });
+  const table = new Map<string, RGB>();
+  for (const [m, set_] of groups) {
+    const cs = [...set_].sort((a, b) => lum(hex(a)) - lum(hex(b)));
+    const ramp = ramps[m];
+    cs.forEach((c, i) => table.set(c, hex(ramp[cs.length === 1 ? ramp.length - 1 : Math.round((i / (cs.length - 1)) * (ramp.length - 1))]!)));
+  }
+  each((i, h) => {
+    const to = table.get(h);
+    if (to) set(f.px, i, to);
+  });
 }
 
 // ---------------- Ella 2 y Él 2: roles con varios tonos ----------------
@@ -272,12 +295,12 @@ function recolorByRoles<R extends string>(f: Frame, spec: RoleSpec<R>, variant: 
 
 /**
  * Recolorea en el sitio una hoja de `castId` (todos sus fotogramas) a la variante indicada.
- * `original` solo aplica los retoques fijos (Él sin arma).
+ * `original` deja la hoja tal cual.
  */
 export function recolorSheet(px: Uint8ClampedArray, width: number, height: number, frameW: number, castId: CastId, variant: VariantId) {
   for (const f of frames(px, width, height, frameW)) {
-    if (castId === 'el') recolorEl(f, variant);
-    else if (variant === 'original') continue;
+    if (variant === 'original') continue;
+    if (castId === 'el') recolorGhost(f, variant);
     else if (castId === 'ella') recolorElla(f, variant);
     else recolorByRoles<string>(f, (castId === 'ella2' ? BRAWLER : MALE2) as RoleSpec<string>, variant);
   }

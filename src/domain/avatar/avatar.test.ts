@@ -53,20 +53,24 @@ describe('recoloreado por variante (PRO-04)', () => {
     expect(at(px, 4, 3, 12)).toBe('#d9925b');
   });
 
-  it('la variante original no cambia nada (salvo el arma de Él)', () => {
+  it('la variante original no cambia nada', () => {
     const px = sheet(4, 20, [[2, 10, '#ffd800']]);
     recolorSheet(px, 4, 20, 4, 'ella', 'original');
     expect(at(px, 4, 2, 10)).toBe('#ffd800');
   });
 
-  it('Él va siempre sin arma, también en la variante original', () => {
+  it('Ghost: armadura, luces y piezas blancas cambian a su gama; el contorno se conserva', () => {
     const px = sheet(64, 64, [
-      [10, 35, '#2040c0'], // arma (azul, a la izquierda y abajo)
-      [40, 35, '#303040'], // pantalón
+      [30, 5, '#040206'], // contorno
+      [30, 20, '#262937'], // armadura
+      [32, 10, '#a3e2f0'], // luz del visor
+      [30, 30, '#f8f8f9'], // banda blanca
     ]);
-    recolorSheet(px, 64, 64, 64, 'el', 'original');
-    expect(at(px, 64, 10, 35)).toBe('transparente');
-    expect(at(px, 64, 40, 35)).toBe('#303040');
+    recolorSheet(px, 64, 64, 64, 'el', 'carmesi');
+    expect(at(px, 64, 30, 5)).toBe('#040206');
+    expect(at(px, 64, 30, 20)).toBe('#4a4a5a');
+    expect(at(px, 64, 32, 10)).toBe('#ff4a5a');
+    expect(at(px, 64, 30, 30)).toBe('#f4f4f4');
   });
 
   it('Ella 2: el rojo es pelo en la cabeza y ropa en el cuerpo', () => {
