@@ -9,7 +9,7 @@ const INK = '#1a1c2c';
 const CSP =
   "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; " +
   "connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; " +
-  "frame-ancestors 'none'";
+  "frame-src https://velvety-pasca-9a2e5c.netlify.app; frame-ancestors 'none'";
 
 export default defineConfig({
   define: {

@@ -1,0 +1,71 @@
+// Juego incrustado desde su sitio (spec 09, JG): ocupa la pantalla bajo el enlace de volver; sin conexión, un aviso.
+// Pantalla completa (JG-06): el marco cubre toda la ventana. No se usa la del navegador: con ella el juego de Unity
+// deja de responder a los toques, y Safari en iPhone no la permite para un marco.
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { Navigate } from 'react-router';
+import { t, useLocale } from '../../i18n';
+import { BackLink } from '../design/components';
+import { CollapseIcon, ExpandIcon } from '../design/icons';
+import { GAMES } from '../games';
+import { useMusic } from '../music/MusicProvider';
+import { useSettings } from '../data';
+
+const subscribe = (on: () => void) => {
+  window.addEventListener('online', on);
+  window.addEventListener('offline', on);
+  return () => {
+    window.removeEventListener('online', on);
+    window.removeEventListener('offline', on);
+  };
+};
+
+export function GameScreen() {
+  useLocale();
+  const online = useSyncExternalStore(subscribe, () => navigator.onLine);
+  const [full, setFull] = useState(false);
+  const game = GAMES[0]!;
+  const settings = useSettings();
+  const { hush } = useMusic();
+
+  // La música de ARVID calla mientras se juega (el juego trae la suya) y vuelve al salir (JG-07)
+  useEffect(() => hush(), [hush]);
+
+  useEffect(() => {
+    if (!full) return;
+    // Esc sale (si el foco no está dentro del juego)
+    const escape = (e: KeyboardEvent) => e.key === 'Escape' && setFull(false);
+    document.addEventListener('keydown', escape);
+    return () => document.removeEventListener('keydown', escape);
+  }, [full]);
+
+
+  // Con los juegos desactivados en Ajustes, la dirección lleva a Hoy (JG-08)
+  if (!settings) return null;
+  if (!settings.games) return <Navigate to="/hoy" replace />;
+
+  return (
+    <div className="stack game-page" style={{ gap: 'var(--s3)' }}>
+      <div className="row">
+        <BackLink to="/hoy" label={t('nav.today')} />
+        {online && (
+          <button type="button" className="btn chat-button" style={{ marginLeft: 'auto' }} aria-label={t('game.fullscreen')} title={t('game.fullscreen')} onClick={() => setFull(true)}>
+            <ExpandIcon />
+          </button>
+        )}
+      </div>
+      <h1 className="sr-only">{game.name}</h1>
+      {online ? (
+        <div className={`game-stage${full ? ' full' : ''}`}>
+          <iframe className="game-frame" src={game.url} title={game.name} allow="fullscreen; autoplay; gamepad" allowFullScreen />
+          {full && (
+            <button type="button" className="btn chat-button game-exit" aria-label={t('game.exitFullscreen')} title={t('game.exitFullscreen')} onClick={() => setFull(false)}>
+              <CollapseIcon />
+            </button>
+          )}
+        </div>
+      ) : (
+        <p className="banner">{t('game.offline')}</p>
+      )}
+    </div>
+  );
+}

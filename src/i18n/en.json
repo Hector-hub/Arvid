@@ -465,7 +465,9 @@
     "musicNote": "Off by default. A track that has already played can be heard offline.",
     "arvidAi": "{companion} with AI",
     "arvidAiHelp": "To give you advice, {companion} sends your progress and activities to Mistral AI (France). You can turn it off anytime.",
-    "companion": "Companion"
+    "companion": "Companion",
+    "games": "Games",
+    "gamesHelp": "Shows the “Play” button in the Today scene."
   },
   "backup": {
     "title": "Backup",
@@ -744,5 +746,11 @@
     "clearYes": "Delete",
     "you": "You",
     "placeholder": "Write to {companion}…"
+  },
+  "game": {
+    "open": "Play",
+    "offline": "The game needs a connection. Try again when you're online.",
+    "fullscreen": "Full screen",
+    "exitFullscreen": "Exit full screen"
   }
 }

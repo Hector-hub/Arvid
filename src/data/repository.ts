@@ -251,6 +251,8 @@ export interface Settings {
   chatLog?: ChatEntry[];
   /** ARVID habla por iniciativa propia (DL-03). */
   arvidTalks: boolean;
+  /** Botón «Jugar» en la escena (spec 09, JG-08); activado por defecto. */
+  games: boolean;
   /** ARVID con IA: desactivado hasta que el usuario lo acepte (spec 06, IA-06). */
   arvidAi: boolean;
   /** Momentos ya dichos hoy y última frase de cada uno (del dispositivo, no va en el backup). */
@@ -298,6 +300,7 @@ export const DEFAULT_SETTINGS: Settings = {
   darisColor: DEFAULT_DARIS_COLOR,
   arvidTalks: true,
   arvidAi: false,
+  games: true,
 };
 
 function normalizeMusic(value: unknown): MusicSettings {
@@ -324,6 +327,7 @@ export async function loadSettings(db: ArvidDB): Promise<Settings> {
     darisColor: isDarisColor(raw.darisColor) ? raw.darisColor : DEFAULT_DARIS_COLOR,
     arvidTalks: raw.arvidTalks !== false,
     arvidAi: raw.arvidAi === true,
+    games: raw.games !== false,
   };
 }
 

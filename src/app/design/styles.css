@@ -572,6 +572,10 @@ fieldset { border: 0; padding: 0; margin: 0; }
   position: absolute;
   right: var(--s2);
   bottom: var(--s2);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--s1);
 }
 .scene-corner .btn {
   --btn-fill: rgb(26 28 44 / 0.8);
@@ -961,4 +965,33 @@ fieldset { border: 0; padding: 0; margin: 0; }
   flex: 1;
   width: auto;
   animation: none;
+}
+
+/* Juego incrustado (spec 09) */
+.game-frame {
+  width: 100%;
+  /* Cabe entre «‹ Hoy» y la barra de navegación de abajo (móvil); en pantallas anchas la barra va al lado */
+  height: calc(100dvh - 180px - env(safe-area-inset-bottom));
+  min-height: 320px;
+  border: 2px solid var(--border);
+  background: #000;
+}
+@media (min-width: 768px) {
+  .game-frame { height: calc(100dvh - 120px); }
+}
+.game-stage.full {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #000;
+}
+.game-stage.full .game-frame {
+  height: 100%;
+  min-height: 0;
+  border: 0;
+}
+.game-exit {
+  position: absolute;
+  top: max(var(--s2), env(safe-area-inset-top));
+  right: max(var(--s2), env(safe-area-inset-right));
 }

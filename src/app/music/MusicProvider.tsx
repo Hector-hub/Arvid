@@ -13,6 +13,8 @@ export interface Music extends PlayerState {
   toggle: () => void;
   next: () => void;
   setVolume: (volume: number) => void;
+  /** Calla la música mientras suena otra cosa (un juego, spec 09) sin tocar la preferencia guardada; devuelve cómo reanudarla. */
+  hush: () => () => void;
 }
 
 const MusicCtx = createContext<Music | null>(null);
@@ -47,6 +49,14 @@ export function MusicProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => () => player.current?.destroy(), []);
 
+  // Estable: quien la usa en un efecto no debe volver a callarla en cada cambio de estado
+  const hush = useCallback(() => {
+    const p = player.current;
+    if (!p?.isEnabled()) return () => undefined;
+    p.stop();
+    return () => void p.start();
+  }, []);
+
   const value = useMemo<Music>(
     () => ({
       ...state,
@@ -61,12 +71,13 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         void saveSetting(db, 'music', { enabled: on, volume });
       },
       next: () => get().skip(),
+      hush,
       setVolume(v) {
         player.current?.setVolume(v);
         void saveSetting(db, 'music', { enabled: music.enabled, volume: v });
       },
     }),
-    [state, music.enabled, volume, get, db],
+    [state, music.enabled, volume, get, db, hush],
   );
 
   return <MusicCtx.Provider value={value}>{children}</MusicCtx.Provider>;

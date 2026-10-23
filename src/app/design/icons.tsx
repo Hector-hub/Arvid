@@ -104,3 +104,37 @@ export function ExpandIcon() {
     </PixelIcon>
   );
 }
+
+/** Mando de juego (spec 09). */
+export function GameIcon() {
+  return (
+    <PixelIcon>
+      <rect x="1" y="3" width="10" height="1" />
+      <rect x="0" y="4" width="1" height="5" />
+      <rect x="11" y="4" width="1" height="5" />
+      <rect x="1" y="9" width="3" height="1" />
+      <rect x="8" y="9" width="3" height="1" />
+      <rect x="4" y="8" width="4" height="1" />
+      <rect x="2" y="6" width="3" height="1" />
+      <rect x="3" y="5" width="1" height="3" />
+      <rect x="8" y="5" width="1" height="1" />
+      <rect x="9" y="7" width="1" height="1" />
+    </PixelIcon>
+  );
+}
+
+/** Esquinas hacia dentro: salir de pantalla completa (spec 09). */
+export function CollapseIcon() {
+  return (
+    <PixelIcon>
+      <rect x="1" y="4" width="4" height="1" />
+      <rect x="4" y="1" width="1" height="4" />
+      <rect x="7" y="4" width="4" height="1" />
+      <rect x="7" y="1" width="1" height="4" />
+      <rect x="1" y="7" width="4" height="1" />
+      <rect x="4" y="7" width="1" height="4" />
+      <rect x="7" y="7" width="4" height="1" />
+      <rect x="7" y="7" width="1" height="4" />
+    </PixelIcon>
+  );
+}

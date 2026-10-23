@@ -214,6 +214,16 @@ function ProfilePanel({ settings }: { settings: Settings }) {
           </span>
         </span>
       </label>
+
+      <label className="choice">
+        <input type="checkbox" checked={settings.games} onChange={(e) => void saveSetting(db, 'games', e.target.checked)} />
+        <span className="grow">
+          {t('settings.games')}
+          <span className="small muted" style={{ display: 'block' }}>
+            {t('settings.gamesHelp')}
+          </span>
+        </span>
+      </label>
     </Panel>
   );
 }

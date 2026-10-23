@@ -465,7 +465,9 @@
     "musicNote": "Desactivada por defecto. Una pista que ya ha sonado se puede escuchar sin conexión.",
     "arvidAi": "{companion} con IA",
     "arvidAiHelp": "Para darte consejos, {companion} envía tu progreso y tus actividades a Mistral AI (Francia). Puedes desactivarlo cuando quieras.",
-    "companion": "Compañero"
+    "companion": "Compañero",
+    "games": "Juegos",
+    "gamesHelp": "Muestra el botón «Jugar» en la escena de Hoy."
   },
   "backup": {
     "title": "Copia de seguridad",
@@ -744,5 +746,11 @@
     "clearYes": "Borrar",
     "you": "Tú",
     "placeholder": "Escribe a {companion}…"
+  },
+  "game": {
+    "open": "Jugar",
+    "offline": "El juego necesita conexión. Vuelve a intentarlo cuando tengas internet.",
+    "fullscreen": "Pantalla completa",
+    "exitFullscreen": "Salir de pantalla completa"
   }
 }

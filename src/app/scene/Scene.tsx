@@ -6,6 +6,8 @@ import { useT } from '../../i18n';
 import { useSettings } from '../data';
 import { MusicButton } from '../music/MusicProvider';
 import { TrackName } from '../music/TrackName';
+import { Link } from 'react-router';
+import { GameIcon } from '../design/icons';
 import { ChatControl } from './Chat';
 import { claimIntro, currentSpeechText, introAvailable, releaseEntrance, subscribeSpeech } from './engine';
 
@@ -83,6 +85,16 @@ function SceneIntro({ text, onDone }: { text: string; onDone: () => void }) {
  * - Con `controls`: bocina arriba a la derecha (MU-01), nombre de la pista abajo a la izquierda (MUS-08) y chat
  *   abajo a la derecha (CH-01).
  */
+/** Abre el juego (spec 09, JG-01), encima del chat. */
+function GameButton() {
+  const t = useT();
+  return (
+    <Link to="/juego" className="btn chat-button" aria-label={t('game.open')} title={t('game.open')}>
+      <GameIcon />
+    </Link>
+  );
+}
+
 export function Scene({ overlay, controls = true, intro }: { overlay?: ReactNode; controls?: boolean; intro?: string }) {
   const settings = useSettings();
   const avatar = settings?.avatar ?? DEFAULT_AVATAR;
@@ -109,6 +121,7 @@ export function Scene({ overlay, controls = true, intro }: { overlay?: ReactNode
             <MusicButton />
           </div>
           <div className="scene-corner">
+            {settings?.games !== false && <GameButton />}
             <ChatControl />
           </div>
         </>
