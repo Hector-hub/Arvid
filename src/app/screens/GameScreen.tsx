@@ -19,16 +19,32 @@ const subscribe = (on: () => void) => {
   };
 };
 
+/** Tiempo que se ve el botón de salir de pantalla completa antes de desvanecerse. */
+const EXIT_VISIBLE_MS = 3000;
+
 export function GameScreen() {
   useLocale();
   const online = useSyncExternalStore(subscribe, () => navigator.onLine);
   const [full, setFull] = useState(false);
+  // En pantalla completa el botón de salir se desvanece; un toque en su esquina lo vuelve a mostrar (JG-09)
+  const [shown, setShown] = useState(0);
   const game = GAMES[0]!;
   const settings = useSettings();
   const { hush } = useMusic();
 
   // La música de ARVID calla mientras se juega (el juego trae la suya) y vuelve al salir (JG-07)
   useEffect(() => hush(), [hush]);
+
+  useEffect(() => {
+    if (!full) return;
+    const id = window.setTimeout(() => setShown(0), EXIT_VISIBLE_MS);
+    return () => clearTimeout(id);
+  }, [full, shown]);
+
+  const enter = () => {
+    setShown(Date.now());
+    setFull(true);
+  };
 
   useEffect(() => {
     if (!full) return;
@@ -48,7 +64,7 @@ export function GameScreen() {
       <div className="row">
         <BackLink to="/hoy" label={t('nav.today')} />
         {online && (
-          <button type="button" className="btn chat-button" style={{ marginLeft: 'auto' }} aria-label={t('game.fullscreen')} title={t('game.fullscreen')} onClick={() => setFull(true)}>
+          <button type="button" className="btn chat-button" style={{ marginLeft: 'auto' }} aria-label={t('game.fullscreen')} title={t('game.fullscreen')} onClick={enter}>
             <ExpandIcon />
           </button>
         )}
@@ -57,7 +73,11 @@ export function GameScreen() {
       {online ? (
         <div className={`game-stage${full ? ' full' : ''}`}>
           <iframe className="game-frame" src={game.url} title={game.name} allow="fullscreen; autoplay; gamepad" allowFullScreen />
-          {full && (
+          {full && !shown && (
+            // Los toques dentro del juego no llegan a ARVID: esta esquina invisible es la que los recoge
+            <button type="button" className="game-exit-zone" aria-label={t('game.exitFullscreen')} onClick={() => setShown(Date.now())} />
+          )}
+          {full && !!shown && (
             <button type="button" className="btn chat-button game-exit" aria-label={t('game.exitFullscreen')} title={t('game.exitFullscreen')} onClick={() => setFull(false)}>
               <CollapseIcon />
             </button>

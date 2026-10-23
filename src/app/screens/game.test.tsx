@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { saveSetting, type DataContext } from '../../data/repository';
 import { renderRoutes, setupData } from '../test-utils';
@@ -35,5 +35,20 @@ describe('GameScreen (spec 09)', () => {
     renderRoutes(ctx, [{ path: '/juego', element: <GameScreen /> }, { path: '/hoy', element: <p>Pantalla Hoy</p> }], '/juego');
     expect(await screen.findByText('Pantalla Hoy')).toBeInTheDocument();
     expect(screen.queryByTitle('CombinaDos')).toBeNull();
+  });
+
+  it('JG-09: en pantalla completa el botón de salir se oculta a los 3 s y un toque en su esquina lo muestra', async () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true);
+    page();
+    const button = await screen.findByRole('button', { name: 'Pantalla completa' });
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    fireEvent.click(button);
+    const exit = () => document.querySelector('.game-exit');
+    expect(exit()).not.toBeNull();
+    act(() => vi.advanceTimersByTime(3100));
+    expect(exit()).toBeNull();
+    fireEvent.click(document.querySelector('.game-exit-zone')!);
+    expect(exit()).not.toBeNull();
+    vi.useRealTimers();
   });
 });
