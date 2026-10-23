@@ -2,11 +2,13 @@
 // Función de Netlify /api/arvid (spec 06, IA-01 a IA-08), con Mistral simulado.
 import { describe, expect, it, vi } from 'vitest';
 import { handle } from '../../../netlify/functions/arvid.mts';
+import { createCode, verifyCode } from '../../../netlify/lib/accessCode.mts';
 
 const body = (extra: Record<string, unknown> = {}) =>
   JSON.stringify({ locale: 'es', moment: 'chat', messages: [{ role: 'user', content: 'Hola' }], context: { level: { level: 2 } }, ...extra });
 
 const post = (text: string) => new Request('https://x/api/arvid', { method: 'POST', body: text });
+const withCode = (code: string) => new Request('https://x/api/arvid', { method: 'POST', body: body(), headers: { 'X-Arvid-Code': code } });
 
 function mistral(status: number, content = 'Hola, **Ana**. Sigue así.') {
   return vi.fn(async (_url: string | URL | Request, _init?: RequestInit) =>
@@ -55,5 +57,39 @@ describe('función /api/arvid', () => {
       throw new Error('timeout');
     }) as unknown as typeof fetch;
     expect((await handle(post(body()), { apiKey: 'k', fetch: failing })).status).toBe(504);
+  });
+
+  it('D-100: con ARVID_CODE_SECRET, sin código o con uno inventado, 401 y no llama a Mistral', async () => {
+    const fetch = mistral(200);
+    const usage = { take: vi.fn(async () => true) };
+    expect((await handle(post(body()), { apiKey: 'k', codeSecret: 's', usage, fetch })).status).toBe(401);
+    expect((await handle(withCode('ARVID-ANA-AAAAAAAAAA'), { apiKey: 'k', codeSecret: 's', usage, fetch })).status).toBe(401);
+    // Firmado con otro secreto
+    expect((await handle(withCode(createCode('ana', 'otro')), { apiKey: 'k', codeSecret: 's', usage, fetch })).status).toBe(401);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('D-100: un código válido (sin importar mayúsculas) gasta un crédito del día de su dueño', async () => {
+    const fetch = mistral(200);
+    const usage = { take: vi.fn(async () => true) };
+    const code = createCode('ana', 's').toLowerCase();
+    const res = await handle(withCode(code), { apiKey: 'k', codeSecret: 's', usage, now: () => new Date('2026-10-23T12:00:00Z'), fetch });
+    expect(res.status).toBe(200);
+    expect(usage.take).toHaveBeenCalledWith('ana/2026-10-23', 25);
+  });
+
+  it('D-100: sin créditos del día, 429 «daily» y no llama a Mistral', async () => {
+    const fetch = mistral(200);
+    const res = await handle(withCode(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage: { take: async () => false }, fetch });
+    expect(res.status).toBe(429);
+    expect(await res.json()).toEqual({ error: 'daily' });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('D-100: códigos distintos por persona con el patrón ARVID-NOMBRE-FIRMA', () => {
+    expect(createCode('ana', 's')).toMatch(/^ARVID-ANA-[A-Z2-9]{10}$/);
+    expect(createCode('ana', 's')).not.toBe(createCode('luis', 's'));
+    expect(verifyCode(createCode('luis', 's'), 's')).toBe('luis');
+    expect(() => createCode('Ana López', 's')).toThrow();
   });
 });

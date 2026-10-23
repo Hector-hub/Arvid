@@ -467,7 +467,9 @@
     "arvidAiHelp": "To give you advice, {companion} sends your progress and activities to Mistral AI (France). You can turn it off anytime.",
     "companion": "Companion",
     "games": "Games",
-    "gamesHelp": "Shows the “Play” button in the Today scene."
+    "gamesHelp": "Shows the “Play” button in the Today scene.",
+    "aiCode": "Access code",
+    "aiCodeHelp": "Ask whoever runs the app (it looks like ARVID-NAME-XXXXXXXXXX). Without it, {companion} can't use AI. Each code has 25 AI messages per day."
   },
   "backup": {
     "title": "Backup",
@@ -651,7 +653,9 @@
       "thinking": "…",
       "needsPermission": "To chat with me, turn on “{companion} with AI” in Settings → Profile.",
       "quota": "I can't chat any more for now. Try again a bit later.",
-      "error": "I can't think straight right now. Try again in a moment."
+      "error": "I can't think straight right now. Try again in a moment.",
+      "code": "To talk with AI I need the access code. Add it in Settings → Profile.",
+      "daily": "You've used your 25 AI messages for today. We can keep going tomorrow; meanwhile I'll answer with my usual lines."
     },
     "onboarding": {
       "welcome": {

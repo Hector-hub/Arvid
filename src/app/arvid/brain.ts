@@ -10,7 +10,13 @@ export interface BrainDeps {
   context: () => Record<string, unknown>;
 }
 
-type AiResult = { ok: true; reply: string } | { ok: false; reason: 'offline' | 'quota' | 'error' };
+type AiResult = { ok: true; reply: string } | { ok: false; reason: 'offline' | 'quota' | 'daily' | 'code' | 'error' };
+
+/** Código de acceso a la IA guardado en el dispositivo (D-100); lo fija la app al cargar los ajustes. */
+let accessCode = '';
+export function setAccessCode(code: string | undefined): void {
+  accessCode = code?.trim() ?? '';
+}
 
 /** Tiempo máximo de espera: 15 s en el chat y 6 s por iniciativa propia (IA-05). */
 export const CHAT_TIMEOUT_MS = 15_000;
@@ -23,11 +29,16 @@ async function askAi(moment: AiMoment, messages: ChatMessage[], deps: BrainDeps,
   try {
     const res = await fetch('/api/arvid', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(accessCode ? { 'X-Arvid-Code': accessCode } : {}) },
       body: JSON.stringify({ locale: getLocale(), moment, messages, context: deps.context(), companion: getCompanion() }),
       signal: AbortSignal.timeout(timeoutMs),
     });
-    if (res.status === 429) return { ok: false, reason: 'quota' };
+    // 429: créditos del día de este código agotados (D-100) o cuota de Mistral (IA-07)
+    if (res.status === 429) {
+      const data = (await res.json().catch(() => ({}))) as { error?: unknown };
+      return { ok: false, reason: data.error === 'daily' ? 'daily' : 'quota' };
+    }
+    if (res.status === 401) return { ok: false, reason: 'code' };
     if (!res.ok) return { ok: false, reason: 'error' };
     const data = (await res.json()) as { reply?: unknown };
     return typeof data.reply === 'string' && data.reply ? { ok: true, reply: data.reply } : { ok: false, reason: 'error' };
@@ -49,7 +60,7 @@ export async function replyTo(message: string, deps: BrainDeps): Promise<string>
   if (offline()) return t('arvid.chat.offline');
   const asked = [...history, { role: 'user' as const, content: message }].slice(-AI_MAX_HISTORY);
   const result = await askAi('chat', asked, deps, CHAT_TIMEOUT_MS);
-  if (!result.ok) return t(result.reason === 'quota' ? 'arvid.chat.quota' : result.reason === 'offline' ? 'arvid.chat.offline' : 'arvid.chat.error');
+  if (!result.ok) return t(`arvid.chat.${result.reason}`);
   history = [...asked, { role: 'assistant' as const, content: result.reply }].slice(-AI_MAX_HISTORY);
   return result.reply;
 }

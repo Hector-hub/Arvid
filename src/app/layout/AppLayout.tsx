@@ -1,3 +1,4 @@
+import { setAccessCode } from '../arvid/brain';
 import { NavLink, Outlet } from 'react-router';
 import { useSettings } from '../data';
 import { Sprite } from '../design/components';
@@ -31,6 +32,7 @@ export function AppLayout() {
     if (settings) setLocale(settings.locale ?? detectLocale());
   }, [settings]);
   useCompanionSync(settings?.companion);
+  setAccessCode(settings?.aiCode);
 
   if (!settings) return null;
   // El service worker se registra desde UpdateBanner: debe montarse también durante el onboarding (PWA-02).

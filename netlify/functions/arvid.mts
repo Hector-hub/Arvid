@@ -1,6 +1,10 @@
 // Función de Netlify para ARVID con IA (spec 06, IA-01): única pieza de servidor de la app (D-066).
 // Añade la clave de Mistral (variable de entorno MISTRAL_API_KEY, nunca en el código) y reenvía la petición.
+// Protección contra abuso (D-100): código de acceso por persona (cabecera X-Arvid-Code, firmado con la variable
+// ARVID_CODE_SECRET), DAILY_CREDITS mensajes por código y día (contados en Netlify Blobs) y límite por IP de Netlify.
+import { getStore } from '@netlify/blobs';
 import { z } from 'zod';
+import { DAILY_CREDITS, verifyCode } from '../lib/accessCode.mts';
 import {
   AI_MAX_BODY,
   AI_MAX_HISTORY,
@@ -32,10 +36,36 @@ const RequestSchema = z.object({
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
 
+/** Contador de mensajes por código y día. */
+export interface Usage {
+  /** Suma uno si queda crédito y devuelve si se pudo. */
+  take(key: string, limit: number): Promise<boolean>;
+}
+
+/** Contador en Netlify Blobs. Dos peticiones a la vez pueden contar una sola: es un tope de gasto, no de facturación. */
+const blobUsage: Usage = {
+  async take(key, limit) {
+    const store = getStore('ai-usage');
+    const used = Number((await store.get(key)) ?? 0);
+    if (used >= limit) return false;
+    await store.set(key, String(used + 1));
+    return true;
+  },
+};
+
 /** Lógica de la función con dependencias inyectables (pruebas). */
-export async function handle(req: Request, deps: { apiKey?: string; fetch: typeof fetch }): Promise<Response> {
+export async function handle(
+  req: Request,
+  deps: { apiKey?: string; codeSecret?: string; usage?: Usage; now?: () => Date; fetch: typeof fetch },
+): Promise<Response> {
   if (req.method !== 'POST') return json(405, { error: 'method' });
   if (!deps.apiKey) return json(503, { error: 'unavailable' });
+  // Sin el secreto configurado no se exige código (para no cortar la IA al desplegar antes de crearlo)
+  let owner: string | undefined;
+  if (deps.codeSecret) {
+    owner = verifyCode(req.headers.get('X-Arvid-Code') ?? '', deps.codeSecret);
+    if (!owner) return json(401, { error: 'code' });
+  }
 
   const raw = await req.text();
   if (raw.length > AI_MAX_BODY) return json(413, { error: 'too-large' });
@@ -47,6 +77,12 @@ export async function handle(req: Request, deps: { apiKey?: string; fetch: typeo
   }
   const parsed = RequestSchema.safeParse(body);
   if (!parsed.success) return json(400, { error: 'invalid' });
+
+  // El crédito se gasta solo con peticiones válidas
+  if (owner) {
+    const day = (deps.now?.() ?? new Date()).toISOString().slice(0, 10);
+    if (!(await (deps.usage ?? blobUsage).take(`${owner}/${day}`, DAILY_CREDITS))) return json(429, { error: 'daily' });
+  }
 
   let res: Response;
   try {
@@ -78,6 +114,11 @@ export async function handle(req: Request, deps: { apiKey?: string; fetch: typeo
   return json(200, { reply });
 }
 
-export default (req: Request): Promise<Response> => handle(req, { apiKey: process.env.MISTRAL_API_KEY, fetch });
+export default (req: Request): Promise<Response> =>
+  handle(req, { apiKey: process.env.MISTRAL_API_KEY, codeSecret: process.env.ARVID_CODE_SECRET, fetch });
 
-export const config = { path: '/api/arvid' };
+/** Más de 20 peticiones por minuto desde la misma IP las rechaza Netlify (429) antes de llegar aquí. */
+export const config = {
+  path: '/api/arvid',
+  rateLimit: { windowLimit: 20, windowSize: 60, aggregateBy: ['ip', 'domain'] },
+};

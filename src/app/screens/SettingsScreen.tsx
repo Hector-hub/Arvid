@@ -205,6 +205,23 @@ function ProfilePanel({ settings }: { settings: Settings }) {
         </span>
       </label>
 
+      {settings.arvidAi && (
+        <div className="field">
+          <label htmlFor="ai-code">{t('settings.aiCode')}</label>
+          <input
+            id="ai-code"
+            type="password"
+            autoComplete="off"
+            defaultValue={settings.aiCode ?? ''}
+            aria-describedby="ai-code-help"
+            onChange={(e) => void saveSetting(db, 'aiCode', e.target.value.trim())}
+          />
+          <p id="ai-code-help" className="small muted">
+            {t('settings.aiCodeHelp')}
+          </p>
+        </div>
+      )}
+
       <label className="choice">
         <input type="checkbox" checked={settings.arvidTalks} onChange={(e) => void saveSetting(db, 'arvidTalks', e.target.checked)} />
         <span className="grow">

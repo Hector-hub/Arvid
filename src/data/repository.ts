@@ -251,6 +251,8 @@ export interface Settings {
   chatLog?: ChatEntry[];
   /** ARVID habla por iniciativa propia (DL-03). */
   arvidTalks: boolean;
+  /** Código de acceso a la IA (D-100). Del dispositivo: no va en el backup. */
+  aiCode?: string;
   /** Botón «Jugar» en la escena (spec 09, JG-08); activado por defecto. */
   games: boolean;
   /** ARVID con IA: desactivado hasta que el usuario lo acepte (spec 06, IA-06). */

@@ -467,7 +467,9 @@
     "arvidAiHelp": "Para darte consejos, {companion} envía tu progreso y tus actividades a Mistral AI (Francia). Puedes desactivarlo cuando quieras.",
     "companion": "Compañero",
     "games": "Juegos",
-    "gamesHelp": "Muestra el botón «Jugar» en la escena de Hoy."
+    "gamesHelp": "Muestra el botón «Jugar» en la escena de Hoy.",
+    "aiCode": "Código de acceso",
+    "aiCodeHelp": "Te lo da quien administra la app (tiene la forma ARVID-NOMBRE-XXXXXXXXXX). Sin él, {companion} no puede usar la IA. Cada código tiene 25 mensajes con IA al día."
   },
   "backup": {
     "title": "Copia de seguridad",
@@ -651,7 +653,9 @@
       "thinking": "…",
       "needsPermission": "Para conversar conmigo, activa «{companion} con IA» en Ajustes → Perfil.",
       "quota": "Por ahora no puedo conversar más. Inténtalo un poco más tarde.",
-      "error": "Ahora mismo no consigo pensar bien. Inténtalo de nuevo en un momento."
+      "error": "Ahora mismo no consigo pensar bien. Inténtalo de nuevo en un momento.",
+      "code": "Para hablar con IA necesito el código de acceso. Ponlo en Ajustes → Perfil.",
+      "daily": "Hoy ya usaste tus 25 mensajes con IA. Mañana podemos seguir; mientras, te respondo con mis frases de siempre."
     },
     "onboarding": {
       "welcome": {
