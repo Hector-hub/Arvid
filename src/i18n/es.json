@@ -700,7 +700,8 @@
       },
       "ai": {
         "0": "También puedo darte consejos con inteligencia artificial y conversar contigo.",
-        "1": "Para eso enviaría tu progreso y tus actividades a Mistral AI (Francia). ¿Lo activamos?"
+        "1": "Para eso enviaría tu progreso y tus actividades a Mistral AI (Francia).",
+        "2": "Si tienes un código de acceso, escríbelo abajo. ¿Lo activamos?"
       }
     },
     "achievementsFound_one": "Revisé tu historial: ya tenías 1 logro. Lo tienes en tu perfil.",

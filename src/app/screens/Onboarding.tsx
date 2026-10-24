@@ -11,7 +11,7 @@ import { DialogueBox } from '../arvid/DialogueBox';
 import { lines } from '../arvid/lines';
 import { useCategories, useData, useSettings } from '../data';
 import { CategoryIcon } from '../design/components';
-import { AliasField, CharacterCarousel, CompanionColorPicker, CompanionPicker, GenderPicker, LanguagePicker } from '../profile/pickers';
+import { AiCodeField, AliasField, CharacterCarousel, CompanionColorPicker, CompanionPicker, GenderPicker, LanguagePicker } from '../profile/pickers';
 import { Scene } from '../scene/Scene';
 import { categoryName, errorText } from '../text';
 import { useCompanionSync } from '../companion';
@@ -97,6 +97,7 @@ function useProfileControls() {
   const settings = useSettings();
   const draft = useDraft(settings);
   const [aliasError, setAliasError] = useState<string>();
+  const [aiCode, setAiCode] = useState(settings?.aiCode ?? '');
   // El activo: cambia al momento al elegirlo, antes de que se guarde
   const locale: Locale = getLocale();
 
@@ -199,7 +200,17 @@ function useProfileControls() {
         return (
           <>
             <p className="small muted">{t('settings.arvidAiHelp')}</p>
-            <ContinueButton label={t('onboarding.aiActivate')} onClick={() => void saveSetting(ctx.db, 'arvidAi', true).then(next)} />
+            {/* Sin código la IA no responde (D-100); se puede poner luego en Ajustes → Perfil */}
+            <AiCodeField value={aiCode} onChange={setAiCode} />
+            <ContinueButton
+              label={t('onboarding.aiActivate')}
+              onClick={() =>
+                void Promise.all([
+                  saveSetting(ctx.db, 'arvidAi', true),
+                  aiCode.trim() ? saveSetting(ctx.db, 'aiCode', aiCode.trim()) : undefined,
+                ]).then(next)
+              }
+            />
             <button type="button" className="btn btn-block" onClick={() => void saveSetting(ctx.db, 'arvidAi', false).then(next)}>
               {t('onboarding.aiNotNow')}
             </button>

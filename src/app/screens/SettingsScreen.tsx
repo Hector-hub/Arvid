@@ -9,7 +9,7 @@ import { currentPersistState, isIOS, requestPersistentStorage, type PersistState
 import { useCategories, useData, useSettings } from '../data';
 import { BackLink, CategoryIcon, Panel } from '../design/components';
 import { useMusic } from '../music/MusicProvider';
-import { AliasField, CharacterCarousel, CompanionColorPicker, CompanionPicker, GenderPicker, LanguagePicker } from '../profile/pickers';
+import { AiCodeField, AliasField, CharacterCarousel, CompanionColorPicker, CompanionPicker, GenderPicker, LanguagePicker } from '../profile/pickers';
 import { categoryName, errorText } from '../text';
 import { BackupPanel, DeletePanel } from './DataPanels';
 
@@ -130,6 +130,7 @@ function ProfilePanel({ settings }: { settings: Settings }) {
   const [alias, setAlias] = useState(settings.profile?.alias ?? '');
   const [aliasError, setAliasError] = useState<string>();
   const [avatar, setAvatar] = useState<Avatar>(settings.avatar);
+  const [aiCode, setAiCode] = useState(settings.aiCode ?? '');
   const gender = settings.profile?.gender;
 
   function saveAlias() {
@@ -206,20 +207,13 @@ function ProfilePanel({ settings }: { settings: Settings }) {
       </label>
 
       {settings.arvidAi && (
-        <div className="field">
-          <label htmlFor="ai-code">{t('settings.aiCode')}</label>
-          <input
-            id="ai-code"
-            type="password"
-            autoComplete="off"
-            defaultValue={settings.aiCode ?? ''}
-            aria-describedby="ai-code-help"
-            onChange={(e) => void saveSetting(db, 'aiCode', e.target.value.trim())}
-          />
-          <p id="ai-code-help" className="small muted">
-            {t('settings.aiCodeHelp')}
-          </p>
-        </div>
+        <AiCodeField
+          value={aiCode}
+          onChange={(code) => {
+            setAiCode(code);
+            void saveSetting(db, 'aiCode', code.trim());
+          }}
+        />
       )}
 
       <label className="choice">

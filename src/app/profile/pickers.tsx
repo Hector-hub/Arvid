@@ -295,3 +295,25 @@ export function AliasField({
     </div>
   );
 }
+
+/** Código de acceso a la IA (D-100): Ajustes → Perfil y el paso de la IA del onboarding y la presentación. */
+export function AiCodeField({ value, onChange }: { value: string; onChange: (code: string) => void }) {
+  return (
+    <div className="field">
+      <label htmlFor="ai-code">{t('settings.aiCode')}</label>
+      <input
+        id="ai-code"
+        type="password"
+        autoComplete="off"
+        autoCapitalize="characters"
+        spellCheck={false}
+        value={value}
+        aria-describedby="ai-code-help"
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <p id="ai-code-help" className="small muted">
+        {t('settings.aiCodeHelp')}
+      </p>
+    </div>
+  );
+}

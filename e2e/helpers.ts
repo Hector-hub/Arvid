@@ -26,6 +26,8 @@ export async function onboardingToCategories(page: Page, alias = 'Prueba', ai = 
   await skipDialogue(page);
   await page.getByRole('button', { name: 'Continuar' }).click(); // color de ARVID
   await skipDialogue(page);
+  // D-100: el código de acceso se puede escribir en el mismo paso
+  if (ai) await page.getByLabel('Código de acceso').fill('ARVID-PRUEBA-AAAAAAAAAA');
   await page.getByRole('button', { name: ai ? 'Activar' : 'Ahora no' }).click(); // permiso para la IA
   await skipDialogue(page);
   await expect(page.getByRole('heading', { name: 'Tus áreas de vida' })).toBeVisible();

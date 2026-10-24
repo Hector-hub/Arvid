@@ -700,7 +700,8 @@
       },
       "ai": {
         "0": "I can also give you advice with artificial intelligence and chat with you.",
-        "1": "For that I'd send your progress and activities to Mistral AI (France). Shall we turn it on?"
+        "1": "For that I'd send your progress and activities to Mistral AI (France).",
+        "2": "If you have an access code, enter it below. Shall we turn it on?"
       }
     },
     "achievementsFound_one": "I checked your history: you already had 1 achievement. It's on your profile.",
