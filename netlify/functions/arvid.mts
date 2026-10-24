@@ -38,17 +38,27 @@ const json = (status: number, body: unknown) =>
 
 /** Contador de mensajes por código y día. */
 export interface Usage {
-  /** Suma uno si queda crédito y devuelve si se pudo. */
-  take(key: string, limit: number): Promise<boolean>;
+  /** Suma uno al día `day` del código `owner` si queda crédito y devuelve si se pudo. */
+  take(owner: string, day: string, limit: number): Promise<boolean>;
 }
 
-/** Contador en Netlify Blobs. Dos peticiones a la vez pueden contar una sola: es un tope de gasto, no de facturación. */
+/**
+ * Contador en Netlify Blobs: una sola entrada por código ({ day, used }), que se sobrescribe al cambiar de día, así
+ * que no se acumulan registros de días pasados (Blobs no los caduca). Dos peticiones a la vez pueden contar una sola:
+ * es un tope de gasto, no de facturación.
+ */
+/** Lo usado hoy según la entrada guardada: si es de otro día (o no hay), cero. */
+export function usedToday(saved: unknown, day: string): number {
+  const entry = saved as { day?: unknown; used?: unknown } | null | undefined;
+  return entry?.day === day && typeof entry.used === 'number' ? entry.used : 0;
+}
+
 const blobUsage: Usage = {
-  async take(key, limit) {
+  async take(owner, day, limit) {
     const store = getStore('ai-usage');
-    const used = Number((await store.get(key)) ?? 0);
+    const used = usedToday(await store.get(owner, { type: 'json' }).catch(() => null), day);
     if (used >= limit) return false;
-    await store.set(key, String(used + 1));
+    await store.setJSON(owner, { day, used: used + 1 });
     return true;
   },
 };
@@ -81,7 +91,7 @@ export async function handle(
   // El crédito se gasta solo con peticiones válidas
   if (owner) {
     const day = (deps.now?.() ?? new Date()).toISOString().slice(0, 10);
-    if (!(await (deps.usage ?? blobUsage).take(`${owner}/${day}`, DAILY_CREDITS))) return json(429, { error: 'daily' });
+    if (!(await (deps.usage ?? blobUsage).take(owner, day, DAILY_CREDITS))) return json(429, { error: 'daily' });
   }
 
   let res: Response;

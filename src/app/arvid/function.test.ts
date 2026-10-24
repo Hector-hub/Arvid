@@ -1,7 +1,7 @@
 // @vitest-environment node
 // Función de Netlify /api/arvid (spec 06, IA-01 a IA-08), con Mistral simulado.
 import { describe, expect, it, vi } from 'vitest';
-import { handle } from '../../../netlify/functions/arvid.mts';
+import { handle, usedToday } from '../../../netlify/functions/arvid.mts';
 import { createCode, verifyCode } from '../../../netlify/lib/accessCode.mts';
 
 const body = (extra: Record<string, unknown> = {}) =>
@@ -75,7 +75,7 @@ describe('función /api/arvid', () => {
     const code = createCode('ana', 's').toLowerCase();
     const res = await handle(withCode(code), { apiKey: 'k', codeSecret: 's', usage, now: () => new Date('2026-10-23T12:00:00Z'), fetch });
     expect(res.status).toBe(200);
-    expect(usage.take).toHaveBeenCalledWith('ana/2026-10-23', 25);
+    expect(usage.take).toHaveBeenCalledWith('ana', '2026-10-23', 25);
   });
 
   it('D-100: sin créditos del día, 429 «daily» y no llama a Mistral', async () => {
@@ -91,5 +91,12 @@ describe('función /api/arvid', () => {
     expect(createCode('ana', 's')).not.toBe(createCode('luis', 's'));
     expect(verifyCode(createCode('luis', 's'), 's')).toBe('luis');
     expect(() => createCode('Ana López', 's')).toThrow();
+  });
+
+  it('D-100: la entrada de un código vale solo para su día; la de ayer cuenta como cero', () => {
+    expect(usedToday({ day: '2026-10-24', used: 7 }, '2026-10-24')).toBe(7);
+    expect(usedToday({ day: '2026-10-23', used: 25 }, '2026-10-24')).toBe(0);
+    expect(usedToday(null, '2026-10-24')).toBe(0);
+    expect(usedToday('basura', '2026-10-24')).toBe(0);
   });
 });
