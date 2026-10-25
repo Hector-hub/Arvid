@@ -16,12 +16,13 @@ import { Scene } from '../scene/Scene';
 import { categoryName, errorText } from '../text';
 import { useCompanionSync } from '../companion';
 import { InstallGuide } from './InstallGuide';
+import { enablePush, pushSupport } from '../notifications/push';
 
-type Step = 'language' | 'companion' | 'welcome' | 'alias' | 'gender' | 'character' | 'arvidColor' | 'ai' | 'categories' | 'install' | 'done';
+type Step = 'language' | 'companion' | 'welcome' | 'alias' | 'gender' | 'character' | 'arvidColor' | 'ai' | 'notifications' | 'categories' | 'install' | 'done';
 
 /** Pasos del onboarding (ON-02); el de instalar, solo en iPhone sin instalar; el compañero, tras el idioma (CO-02). */
 function onboardingSteps(): Step[] {
-  return ['language', 'companion', 'welcome', 'alias', 'gender', 'character', 'arvidColor', 'ai', 'categories', ...(needsInstallForSafety() ? (['install'] as const) : []), 'done'];
+  return ['language', 'companion', 'welcome', 'alias', 'gender', 'character', 'arvidColor', 'ai', 'notifications', 'categories', ...(needsInstallForSafety() ? (['install'] as const) : []), 'done'];
 }
 
 /** Lo que el usuario va eligiendo; se guarda paso a paso para que la escena lo refleje al momento. */
@@ -300,6 +301,21 @@ export function Onboarding({ banner }: { banner?: ReactNode }) {
                   </p>
                 )}
                 <ContinueButton onClick={() => void confirmCategories(next)} />
+              </>
+            );
+          case 'notifications':
+            // Spec 10, NT-02: en iPhone sin instalar o sin soporte, solo se explica (se pueden activar luego en Ajustes)
+            return pushSupport() === 'ok' ? (
+              <>
+                <ContinueButton label={t('onboarding.notificationsActivate')} onClick={() => void enablePush(ctx.db).finally(next)} />
+                <button type="button" className="btn btn-block" onClick={next}>
+                  {t('onboarding.aiNotNow')}
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="small muted">{t(pushSupport() === 'install' ? 'settings.notifications.install' : 'settings.notifications.unsupported')}</p>
+                <ContinueButton onClick={next} />
               </>
             );
           case 'install':

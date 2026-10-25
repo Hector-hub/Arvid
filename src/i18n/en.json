@@ -167,7 +167,17 @@
     "timesPer": "Times per {unit}",
     "difficulty": "Difficulty",
     "changesNote": "Changes to category, frequency or difficulty apply from the start of the current period.",
-    "create": "Create activity"
+    "create": "Create activity",
+    "reminders": "Reminders (optional)",
+    "remindersHint": "One per time in the period. They arrive with notifications turned on in Settings and are skipped once you're done.",
+    "reminderN": "Reminder {n}",
+    "reminderTime": "time",
+    "reminderWeekday": "day of the week",
+    "reminderMonthDay": "day of the month",
+    "reminderDayOfMonth": "Day {day}",
+    "reminderClear": "Remove",
+    "remindersDropped_one": "With fewer times, 1 reminder will no longer be used.",
+    "remindersDropped_other": "With fewer times, {count} reminders will no longer be used."
   },
   "activityDetail": {
     "paused": "Paused",
@@ -469,7 +479,20 @@
     "games": "Games",
     "gamesHelp": "Shows the “Play” button in the Today scene.",
     "aiCode": "Access code",
-    "aiCodeHelp": "Ask whoever runs the app (it looks like ARVID-NAME-XXXXXXXXXX). Without it, {companion} can't use AI. Each code has 25 AI messages per day."
+    "aiCodeHelp": "Ask whoever runs the app (it looks like ARVID-NAME-XXXXXXXXXX). Without it, {companion} can't use AI. Each code has 25 AI messages per day.",
+    "notifications": {
+      "title": "Notifications",
+      "enable": "Notifications on this device",
+      "help": "{companion} lets you know in the morning what you have today and at night what's left, plus your activity reminders. The server only knows the times: the text is written on your phone.",
+      "morning": "Morning summary",
+      "night": "Night summary",
+      "badge": "Pending count on the icon",
+      "remindersHint": "Each activity's reminders are set when you create or edit it.",
+      "denied": "Notifications aren't allowed. You can allow them in the system settings for this app.",
+      "error": "Couldn't turn them on. Check your connection and try again.",
+      "unsupported": "This browser doesn't support ARVID notifications.",
+      "install": "On iPhone, notifications only work with ARVID installed on the home screen (iOS 16.4 or later)."
+    }
   },
   "backup": {
     "title": "Backup",
@@ -702,6 +725,10 @@
         "0": "I can also give you advice with artificial intelligence and chat with you.",
         "1": "For that I'd send your progress and activities to Mistral AI (France).",
         "2": "If you have an access code, enter it below. Shall we turn it on?"
+      },
+      "notifications": {
+        "0": "I can also remind you: in the morning about what you have today, and at night about what's left.",
+        "1": "You can change the times in Settings, and your data stays on your phone. Shall I remind you?"
       }
     },
     "achievementsFound_one": "I checked your history: you already had 1 achievement. It's on your profile.",
@@ -720,7 +747,8 @@
     "introTitle": "Meet {companion}",
     "aiActivate": "Turn on",
     "aiNotNow": "Not now",
-    "companionTitle": "Choose your companion"
+    "companionTitle": "Choose your companion",
+    "notificationsActivate": "Turn on reminders"
   },
   "companion": {
     "arvid": {
@@ -757,5 +785,29 @@
     "offline": "The game needs a connection. Try again when you're online.",
     "fullscreen": "Full screen",
     "exitFullscreen": "Exit full screen"
+  },
+  "notifications": {
+    "and": "and",
+    "calm": "All good for now. Nice!",
+    "activity": {
+      "day": "Time for {name} ({count} of {target} today).",
+      "week": "Time for {name} ({count} of {target} this week).",
+      "month": "Time for {name} ({count} of {target} this month)."
+    },
+    "morning": {
+      "activities_one": "You have 1 activity to do today.",
+      "activities_other": "You have {count} activities to do today.",
+      "noActivities": "No activities pending today.",
+      "missionDue": "The mission “{name}” is due today.",
+      "missionsDue": "{count} missions are due today."
+    },
+    "night": {
+      "left_one": "1 activity left for today.",
+      "left_other": "{count} activities left for today.",
+      "missionsDue_one": "And 1 mission is due today.",
+      "missionsDue_other": "And {count} missions are due today.",
+      "streak": "Your {name} streak breaks today unless you log it.",
+      "streaks": "Your {names} streaks break today unless you log them."
+    }
   }
 }

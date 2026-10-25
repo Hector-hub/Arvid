@@ -13,6 +13,7 @@ import { AnalysisProvider } from '../analysis';
 import { AchievementsWatcher } from '../achievements/AchievementsWatcher';
 import { ChatLogWatcher } from '../arvid/chatLog';
 import { DisciplineTipWatcher } from '../arvid/disciplineTip';
+import { NotificationsWatcher } from '../notifications/NotificationsWatcher';
 import { LevelUpWatcher } from './LevelUp';
 import { MusicProvider } from '../music/MusicProvider';
 
@@ -57,6 +58,7 @@ export function AppLayout() {
         <LevelUpWatcher />
         <AchievementsWatcher />
         <DisciplineTipWatcher />
+        <NotificationsWatcher />
         <ChatLogWatcher />
       </div>
       </MusicProvider>

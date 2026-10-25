@@ -1013,3 +1013,13 @@ fieldset { border: 0; padding: 0; margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   .game-exit { animation: none; }
 }
+
+/* Hora de un resumen o recordatorio (spec 10) */
+.time-input {
+  min-height: 40px;
+  padding: 0 var(--s2);
+  background: var(--c-ink);
+  color: var(--text);
+  border: var(--b) solid var(--border);
+  font: inherit;
+}

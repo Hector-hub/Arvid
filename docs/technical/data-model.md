@@ -28,6 +28,7 @@ Estado: **aprobado** (D-040, 2026-10-17) · Implementa: game-design §0 (todo se
 | id | string | PK |
 | name | string | 1–40 caracteres |
 | order | number | |
+| reminders | `{ day?, time: 'HH:MM' }[]`? | Recordatorios (spec 10, RA-01): como mucho uno por cada vez del periodo. `day`: 1–7 (lunes…) en las semanales, 1–31 en las mensuales. Va en el backup |
 
 ### `activityVersions` — configuración versionada (R-A1)
 | Campo | Tipo | Notas |
@@ -111,6 +112,8 @@ Guardar eventos (y no solo el estado) permite saber **cuándo** venció la misi�
 | arvidAi | boolean | ARVID con IA (spec 06, IA-06); desactivado hasta que el usuario lo acepta |
 | arvidSeen | `{ said, lastLine }` | Momentos dichos hoy y última frase de cada uno. Del dispositivo: no va en el backup |
 | introSnoozedUntil | LocalDate? | Presentación pospuesta. Del dispositivo: no va en el backup |
+| notifications | `{ enabled, morning, night, badge, deviceId }`? | Notificaciones de este dispositivo (spec 10): horas `HH:MM` o `null` si ese resumen está desactivado; `deviceId` aleatorio para el servidor. No va en el backup |
+| aiCode | string? | Código de acceso a la IA (D-100). No va en el backup |
 | achievementsReady | boolean? | Los logros ya se evaluaron una vez en este dispositivo (spec 07, LO-05). No va en el backup y un import lo borra, para que los logros importados se ganen en silencio |
 
 ## 3. Estado derivado (no se guarda)

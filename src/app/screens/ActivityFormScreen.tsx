@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { createActivity, renameActivity, updateActivityConfig } from '../../data/repository';
+import { createActivity, renameActivity, setReminders, updateActivityConfig } from '../../data/repository';
+import { RemindersField, toReminders, type ReminderSlot } from '../notifications/RemindersField';
 import { celebrate } from '../scene/engine';
 import { validateActivityInput, versionAt, type ConfigErrors } from '../../domain/activities/rules';
 import type { ActivityConfig } from '../../domain/activities/types';
@@ -34,6 +35,7 @@ export function ActivityFormScreen() {
       key={id ?? 'new'}
       activityId={id}
       initialName={record?.activity.name ?? ''}
+      initialReminders={record?.activity.reminders ?? []}
       initialConfig={
         version ?? {
           period: 'day',
@@ -50,10 +52,12 @@ function ActivityForm({
   activityId,
   initialName,
   initialConfig,
+  initialReminders,
 }: {
   activityId?: string;
   initialName: string;
   initialConfig: ActivityConfig;
+  initialReminders: ReminderSlot[];
 }) {
   const ctx = useData();
   const navigate = useNavigate();
@@ -66,6 +70,7 @@ function ActivityForm({
     difficulty: initialConfig.difficulty,
     categoryId: initialConfig.categoryId,
   });
+  const [reminders, setReminderSlots] = useState<ReminderSlot[]>(initialReminders);
   const [errors, setErrors] = useState<ConfigErrors>({});
   const [saving, setSaving] = useState(false);
 
@@ -89,7 +94,7 @@ function ActivityForm({
     try {
       if (!activityId) {
         const first = (records?.length ?? 0) === 0;
-        await createActivity(ctx, { name, config });
+        await createActivity(ctx, { name, config, reminders: toReminders(reminders, config.period, config.target) });
         if (first) flagFirstActivity();
         celebrate('small');
         navigate('/hoy');
@@ -98,6 +103,8 @@ function ActivityForm({
       if (name.trim() !== initialName) await renameActivity(ctx, activityId, name);
       const changed = (Object.keys(config) as (keyof ActivityConfig)[]).some((k) => config[k] !== initialConfig[k]);
       if (changed) await updateActivityConfig(ctx, activityId, config);
+      const saved = toReminders(reminders, config.period, config.target);
+      if (JSON.stringify(saved) !== JSON.stringify(initialReminders)) await setReminders(ctx, activityId, saved);
       navigate(`/actividades/${activityId}`, { replace: true });
     } finally {
       setSaving(false);
@@ -162,7 +169,11 @@ function ActivityForm({
                 name="period"
                 value={p}
                 checked={config.period === p}
-                onChange={() => set({ period: p, target: Math.min(config.target, TARGET_LIMITS[p]) })}
+                onChange={() => {
+                  set({ period: p, target: Math.min(config.target, TARGET_LIMITS[p]) });
+                  // El día de cada recordatorio depende de la frecuencia: se conserva solo la hora
+                  setReminderSlots((r) => r.map((slot) => ({ time: slot.time })));
+                }}
               />
               {periodLabel(p)}
             </label>
@@ -196,6 +207,8 @@ function ActivityForm({
           </p>
         )}
       </div>
+
+      <RemindersField period={config.period} target={config.target} value={reminders} onChange={setReminderSlots} />
 
       <fieldset className="field">
         <legend>{t('activityForm.difficulty')}</legend>

@@ -5,6 +5,12 @@ export async function skipDialogue(page: Page) {
   await page.getByRole('button', { name: 'Saltar' }).click({ timeout: 1500 }).catch(() => undefined);
 }
 
+/** Paso de las notificaciones (spec 10, NT-02): «Ahora no», o «Continuar» si el navegador no las admite. */
+export async function skipNotifications(page: Page) {
+  await page.getByRole('button', { name: 'Ahora no' }).or(page.getByRole('button', { name: 'Continuar' })).first().click();
+  await skipDialogue(page);
+}
+
 /** Onboarding con ARVID (spec 06, ON-02) hasta el paso de áreas de vida. */
 export async function onboardingToCategories(page: Page, alias = 'Prueba', ai = false, companion: 'ARVID' | 'DARIS' = 'ARVID') {
   await page.goto('/');
@@ -30,6 +36,7 @@ export async function onboardingToCategories(page: Page, alias = 'Prueba', ai = 
   if (ai) await page.getByLabel('Código de acceso').fill('ARVID-PRUEBA-AAAAAAAAAA');
   await page.getByRole('button', { name: ai ? 'Activar' : 'Ahora no' }).click(); // permiso para la IA
   await skipDialogue(page);
+  await skipNotifications(page);
   await expect(page.getByRole('heading', { name: 'Tus áreas de vida' })).toBeVisible();
 }
 

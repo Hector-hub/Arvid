@@ -14,3 +14,4 @@ tsconfig.tsbuildinfo
 # Secretos locales (D-100: ARVID_CODE_SECRET)
 .env
 .env.*
+.vapid.json

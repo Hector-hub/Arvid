@@ -4,6 +4,7 @@ import type {
   ActivityRecord,
   ActivityStatusType,
   ActivityStatusEvent,
+  Reminder,
 } from '../domain/activities/types';
 import { DEFAULT_AVATAR, normalizeAvatar, type Avatar } from '../domain/avatar/catalog';
 import { ARVID_COLORS, DEFAULT_ARVID_COLOR, normalizeProfile, type ArvidColor, type ArvidSeen, type Profile } from '../domain/arvid/arvid';
@@ -108,6 +109,8 @@ export async function setCategoryActive(ctx: DataContext, id: string, active: bo
 export interface ActivityInput {
   name: string;
   config: ActivityConfig;
+  /** Spec 10, RA-01. */
+  reminders?: Reminder[];
 }
 
 /** ACT-02: actividad + versión desde el inicio del periodo actual + evento `created`. */
@@ -118,7 +121,7 @@ export async function createActivity(ctx: DataContext, input: ActivityInput): Pr
   const at = ctx.now().toISOString();
   await db.transaction('rw', [db.activities, db.activityVersions, db.activityStatusEvents], async () => {
     const last = await db.activities.orderBy('order').last();
-    await db.activities.add({ id, name: input.name.trim(), order: (last?.order ?? -1) + 1 });
+    await db.activities.add({ id, name: input.name.trim(), order: (last?.order ?? -1) + 1, ...(input.reminders?.length ? { reminders: input.reminders } : {}) });
     const { effectiveFrom } = planNewVersion([], input.config, t);
     await db.activityVersions.add({ id: ctx.newId(), activityId: id, effectiveFrom, ...input.config });
     await db.activityStatusEvents.add({ id: ctx.newId(), activityId: id, date: t, type: 'created', at });
@@ -129,6 +132,11 @@ export async function createActivity(ctx: DataContext, input: ActivityInput): Pr
 /** ACT-03: el nombre no se versiona. */
 export async function renameActivity(ctx: DataContext, id: string, name: string): Promise<void> {
   await ctx.db.activities.update(id, { name: name.trim() });
+}
+
+/** Recordatorios de la actividad (spec 10, RA-01); sin ninguno se quita el campo. */
+export async function setReminders(ctx: DataContext, id: string, reminders: Reminder[]): Promise<void> {
+  await ctx.db.activities.update(id, { reminders: reminders.length ? reminders : undefined });
 }
 
 /** ACT-04: nueva versión desde el inicio del periodo actual; sustituye las de igual o posterior vigencia. */
@@ -251,6 +259,8 @@ export interface Settings {
   chatLog?: ChatEntry[];
   /** ARVID habla por iniciativa propia (DL-03). */
   arvidTalks: boolean;
+  /** Notificaciones de este dispositivo (spec 10). No va en el backup. */
+  notifications?: NotificationSettings;
   /** Código de acceso a la IA (D-100). Del dispositivo: no va en el backup. */
   aiCode?: string;
   /** Botón «Jugar» en la escena (spec 09, JG-08); activado por defecto. */
@@ -264,6 +274,18 @@ export interface Settings {
   /** Los logros ya se evaluaron una vez en este dispositivo (spec 07, LO-05). No va en el backup. */
   achievementsReady?: boolean;
 }
+
+/** Notificaciones (spec 10, NT, RS, BG): horas locales `HH:MM` o `null` si ese resumen está desactivado. */
+export interface NotificationSettings {
+  enabled: boolean;
+  morning: string | null;
+  night: string | null;
+  badge: boolean;
+  /** Identificador aleatorio del dispositivo en el servidor (PV-01). */
+  deviceId: string;
+}
+
+export const DEFAULT_NOTIFICATIONS: Omit<NotificationSettings, 'deviceId'> = { enabled: false, morning: '07:00', night: '22:00', badge: true };
 
 export interface ChatEntry {
   at: string;

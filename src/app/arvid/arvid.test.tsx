@@ -105,6 +105,10 @@ describe('onboarding con ARVID (ON)', () => {
     await skipDialogue(user);
     expect(screen.getByText(/envía tu progreso y tus actividades a Mistral AI/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Activar' }));
+    // 7b. Notificaciones (spec 10, NT-02): sin Web Push en el entorno de pruebas, solo se explica
+    await skipDialogue(user);
+    expect(screen.getByText(/no admite notificaciones/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Continuar' }));
     // 7. Áreas de vida
     await skipDialogue(user);
     await user.click(screen.getByRole('button', { name: 'Continuar' }));

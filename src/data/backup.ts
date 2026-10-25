@@ -11,7 +11,7 @@ export const BACKUP_FORMAT = 'arvid-backup';
 export const BACKUP_FORMAT_VERSION = 1;
 
 /** Ajustes propios de cada dispositivo: un import no los sobrescribe (BAK-06). */
-const DEVICE_SETTINGS = new Set(['persistGranted', 'installHintDismissedAt', 'backupReminderSnoozedUntil', 'arvidSeen', 'introSnoozedUntil', 'disciplineTip', 'chatLog', 'aiCode']);
+const DEVICE_SETTINGS = new Set(['persistGranted', 'installHintDismissedAt', 'backupReminderSnoozedUntil', 'arvidSeen', 'introSnoozedUntil', 'disciplineTip', 'chatLog', 'aiCode', 'notifications']);
 /** Ajustes que no van en el backup y que un import borra: tras importar, los logros se evalúan en silencio (LO-05). */
 const RESET_ON_IMPORT = new Set(['achievementsReady']);
 const exported = (key: string) => !DEVICE_SETTINGS.has(key) && !RESET_ON_IMPORT.has(key);
@@ -35,7 +35,8 @@ const category = z.object({
   order: z.number().int(),
 });
 
-const activity = z.object({ id, name: z.string().min(1).max(40), order: z.number().int() });
+const reminder = z.object({ day: z.number().int().min(1).max(31).optional(), time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/) });
+const activity = z.object({ id, name: z.string().min(1).max(40), order: z.number().int(), reminders: z.array(reminder).max(100).optional() });
 
 const activityVersion = z
   .object({

@@ -50,6 +50,7 @@ async function auditOnboarding(page: Page, found: Finding[]) {
     ['onboarding · personaje', () => page.getByRole('button', { name: 'Continuar' }).click()],
     ['onboarding · color de ARVID', () => page.getByRole('button', { name: 'Continuar' }).click()],
     ['onboarding · IA', () => page.getByRole('button', { name: 'Ahora no' }).click()],
+    ['onboarding · notificaciones', () => page.getByRole('button', { name: 'Ahora no' }).or(page.getByRole('button', { name: 'Continuar' })).first().click()],
     ['onboarding · áreas de vida', () => page.getByRole('button', { name: 'Continuar' }).click()],
   ];
   for (const [name, next] of steps) {

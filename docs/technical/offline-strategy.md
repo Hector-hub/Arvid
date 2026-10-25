@@ -14,6 +14,8 @@ Estado: **aprobado** (D-040, 2026-10-17) · Implementa: D-023, D-024, C-001 · C
 
 **La caché del service worker no guarda datos del usuario.**
 
+Desde la 1.1.0 (spec 10) el service worker es propio (`src/sw.ts`, estrategia `injectManifest` de vite-plugin-pwa): hace la misma precarga y la misma caché de música que antes, y además recibe las notificaciones Web Push. Al recibir una, **lee** IndexedDB para escribir el texto y el número del icono; nunca la modifica.
+
 ## 3. Matriz de capacidades
 Investigación del 2026-10-17; detalle y fuentes en decision-log.md.
 

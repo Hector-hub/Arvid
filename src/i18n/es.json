@@ -167,7 +167,17 @@
     "timesPer": "Veces por {unit}",
     "difficulty": "Dificultad",
     "changesNote": "Los cambios de categoría, frecuencia o dificultad se aplican desde el inicio del periodo actual.",
-    "create": "Crear actividad"
+    "create": "Crear actividad",
+    "reminders": "Recordatorios (opcional)",
+    "remindersHint": "Un aviso por cada vez del periodo. Llegan con las notificaciones activadas en Ajustes y se saltan si ya cumpliste.",
+    "reminderN": "Recordatorio {n}",
+    "reminderTime": "hora",
+    "reminderWeekday": "día de la semana",
+    "reminderMonthDay": "día del mes",
+    "reminderDayOfMonth": "Día {day}",
+    "reminderClear": "Quitar",
+    "remindersDropped_one": "Al bajar las veces, 1 recordatorio dejará de usarse.",
+    "remindersDropped_other": "Al bajar las veces, {count} recordatorios dejarán de usarse."
   },
   "activityDetail": {
     "paused": "Pausada",
@@ -469,7 +479,20 @@
     "games": "Juegos",
     "gamesHelp": "Muestra el botón «Jugar» en la escena de Hoy.",
     "aiCode": "Código de acceso",
-    "aiCodeHelp": "Te lo da quien administra la app (tiene la forma ARVID-NOMBRE-XXXXXXXXXX). Sin él, {companion} no puede usar la IA. Cada código tiene 25 mensajes con IA al día."
+    "aiCodeHelp": "Te lo da quien administra la app (tiene la forma ARVID-NOMBRE-XXXXXXXXXX). Sin él, {companion} no puede usar la IA. Cada código tiene 25 mensajes con IA al día.",
+    "notifications": {
+      "title": "Notificaciones",
+      "enable": "Notificaciones en este dispositivo",
+      "help": "{companion} te avisa por la mañana de lo que tienes hoy y por la noche de lo que falta, y con los recordatorios de tus actividades. El servidor solo conoce las horas: el texto se escribe en tu móvil.",
+      "morning": "Resumen de la mañana",
+      "night": "Resumen de la noche",
+      "badge": "Número de pendientes en el icono",
+      "remindersHint": "Los recordatorios de cada actividad se ponen al crearla o editarla.",
+      "denied": "No hay permiso para notificaciones. Puedes darlo en los ajustes del sistema para esta app.",
+      "error": "No se pudieron activar. Revisa la conexión e inténtalo de nuevo.",
+      "unsupported": "Este navegador no admite notificaciones de ARVID.",
+      "install": "En iPhone, las notificaciones solo funcionan con ARVID instalada en la pantalla de inicio (iOS 16.4 o posterior)."
+    }
   },
   "backup": {
     "title": "Copia de seguridad",
@@ -702,6 +725,10 @@
         "0": "También puedo darte consejos con inteligencia artificial y conversar contigo.",
         "1": "Para eso enviaría tu progreso y tus actividades a Mistral AI (Francia).",
         "2": "Si tienes un código de acceso, escríbelo abajo. ¿Lo activamos?"
+      },
+      "notifications": {
+        "0": "También puedo avisarte: por la mañana de lo que tienes hoy y por la noche de lo que falta.",
+        "1": "Las horas se pueden cambiar en Ajustes, y tus datos no salen del móvil. ¿Te aviso?"
       }
     },
     "achievementsFound_one": "Revisé tu historial: ya tenías 1 logro. Lo tienes en tu perfil.",
@@ -720,7 +747,8 @@
     "introTitle": "{companion} se presenta",
     "aiActivate": "Activar",
     "aiNotNow": "Ahora no",
-    "companionTitle": "Elige a tu compañero"
+    "companionTitle": "Elige a tu compañero",
+    "notificationsActivate": "Activar avisos"
   },
   "companion": {
     "arvid": {
@@ -757,5 +785,29 @@
     "offline": "El juego necesita conexión. Vuelve a intentarlo cuando tengas internet.",
     "fullscreen": "Pantalla completa",
     "exitFullscreen": "Salir de pantalla completa"
+  },
+  "notifications": {
+    "and": "y",
+    "calm": "Todo en orden por ahora. ¡Bien!",
+    "activity": {
+      "day": "Es hora de {name} ({count} de {target} hoy).",
+      "week": "Es hora de {name} ({count} de {target} esta semana).",
+      "month": "Es hora de {name} ({count} de {target} este mes)."
+    },
+    "morning": {
+      "activities_one": "Hoy tienes 1 actividad por hacer.",
+      "activities_other": "Hoy tienes {count} actividades por hacer.",
+      "noActivities": "Hoy no tienes actividades pendientes.",
+      "missionDue": "La misión «{name}» vence hoy.",
+      "missionsDue": "Hoy vencen {count} misiones."
+    },
+    "night": {
+      "left_one": "Te queda 1 actividad para hoy.",
+      "left_other": "Te quedan {count} actividades para hoy.",
+      "missionsDue_one": "Y 1 misión vence hoy.",
+      "missionsDue_other": "Y {count} misiones vencen hoy.",
+      "streak": "Tu racha de {name} se rompe hoy si no la registras.",
+      "streaks": "Tus rachas de {names} se rompen hoy si no las registras."
+    }
   }
 }

@@ -9,6 +9,17 @@ export interface Activity {
   id: string;
   name: string;
   order: number;
+  /** Recordatorios (spec 10, RA-01): como mucho uno por cada vez del periodo. */
+  reminders?: Reminder[];
+}
+
+/**
+ * Recordatorio de una actividad (RA-01): hora local `HH:MM` y, en las semanales, el día de la semana (1 = lunes … 7)
+ * o, en las mensuales, el día del mes (1–31; en meses más cortos, el último día).
+ */
+export interface Reminder {
+  day?: number;
+  time: string;
 }
 
 export interface ActivityConfig {

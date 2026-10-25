@@ -9,6 +9,7 @@ import { currentPersistState, isIOS, requestPersistentStorage, type PersistState
 import { useCategories, useData, useSettings } from '../data';
 import { BackLink, CategoryIcon, Panel } from '../design/components';
 import { useMusic } from '../music/MusicProvider';
+import { NotificationsPanel } from '../notifications/NotificationsPanel';
 import { AiCodeField, AliasField, CharacterCarousel, CompanionColorPicker, CompanionPicker, GenderPicker, LanguagePicker } from '../profile/pickers';
 import { categoryName, errorText } from '../text';
 import { BackupPanel, DeletePanel } from './DataPanels';
@@ -52,6 +53,8 @@ export function SettingsScreen() {
       <ProfilePanel settings={settings} />
 
       <SoundPanel />
+
+      <NotificationsPanel />
 
       <Panel className="stack">
         <h2>{t('settings.storage')}</h2>
