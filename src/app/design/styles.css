@@ -1023,3 +1023,17 @@ fieldset { border: 0; padding: 0; margin: 0; }
   border: var(--b) solid var(--border);
   font: inherit;
 }
+
+/* Tu ciudad (spec 11) */
+.city-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.city-thumb {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  background: var(--c-ink);
+  border: var(--b) solid var(--border);
+}

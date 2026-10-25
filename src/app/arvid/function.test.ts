@@ -61,7 +61,7 @@ describe('función /api/arvid', () => {
 
   it('D-100: con ARVID_CODE_SECRET, sin código o con uno inventado, 401 y no llama a Mistral', async () => {
     const fetch = mistral(200);
-    const usage = { take: vi.fn(async () => true) };
+    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true) };
     expect((await handle(post(body()), { apiKey: 'k', codeSecret: 's', usage, fetch })).status).toBe(401);
     expect((await handle(withCode('ARVID-ANA-AAAAAAAAAA'), { apiKey: 'k', codeSecret: 's', usage, fetch })).status).toBe(401);
     // Firmado con otro secreto
@@ -71,7 +71,7 @@ describe('función /api/arvid', () => {
 
   it('D-100: un código válido (sin importar mayúsculas) gasta un crédito del día de su dueño', async () => {
     const fetch = mistral(200);
-    const usage = { take: vi.fn(async () => true) };
+    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true) };
     const code = createCode('ana', 's').toLowerCase();
     const res = await handle(withCode(code), { apiKey: 'k', codeSecret: 's', usage, now: () => new Date('2026-10-23T12:00:00Z'), fetch });
     expect(res.status).toBe(200);
@@ -80,7 +80,7 @@ describe('función /api/arvid', () => {
 
   it('D-100: sin créditos del día, 429 «daily» y no llama a Mistral', async () => {
     const fetch = mistral(200);
-    const res = await handle(withCode(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage: { take: async () => false }, fetch });
+    const res = await handle(withCode(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage: { take: async () => false, takeNeighbor: async () => true }, fetch });
     expect(res.status).toBe(429);
     expect(await res.json()).toEqual({ error: 'daily' });
     expect(fetch).not.toHaveBeenCalled();
@@ -98,5 +98,24 @@ describe('función /api/arvid', () => {
     expect(usedToday({ day: '2026-10-23', used: 25 }, '2026-10-24')).toBe(0);
     expect(usedToday(null, '2026-10-24')).toBe(0);
     expect(usedToday('basura', '2026-10-24')).toBe(0);
+  });
+
+  it('spec 11, VC-06: la frase de un vecino no gasta créditos y se limita a una al día', async () => {
+    const fetch = mistral(200, 'Esta canción va por ti.');
+    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true) };
+    const req = new Request('https://x/api/arvid', {
+      method: 'POST',
+      body: body({ moment: 'neighbor', neighbor: 'dex', messages: [] }),
+      headers: { 'X-Arvid-Code': createCode('ana', 's') },
+    });
+    const res = await handle(req, { apiKey: 'k', codeSecret: 's', usage, fetch });
+    expect(res.status).toBe(200);
+    expect(usage.take).not.toHaveBeenCalled();
+    expect(usage.takeNeighbor).toHaveBeenCalledTimes(1);
+    const sent = JSON.parse(vi.mocked(fetch).mock.calls[0]![1]!.body as string);
+    expect(sent.messages[0].content).toMatch(/You are Dex/);
+    usage.takeNeighbor.mockResolvedValue(false);
+    const again = new Request('https://x/api/arvid', { method: 'POST', body: body({ moment: 'neighbor', neighbor: 'dex', messages: [] }), headers: { 'X-Arvid-Code': createCode('ana', 's') } });
+    expect((await handle(again, { apiKey: 'k', codeSecret: 's', usage, fetch })).status).toBe(429);
   });
 });

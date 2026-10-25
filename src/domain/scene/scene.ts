@@ -52,6 +52,8 @@ export interface Car {
   /** Posición en el mundo (x de pantalla = wx − offset). */
   wx: number;
   v: number;
+  /** Fotogramas de brillo restantes: recién llegado a la ciudad (spec 11, AN-02). */
+  glow?: number;
 }
 
 export interface Pedestrian {
@@ -64,6 +66,7 @@ export interface Pedestrian {
   t0: number;
   /** Lado del sprite cuadrado escalado a la altura del protagonista. */
   size: number;
+  glow?: number;
 }
 
 export interface Particle {
@@ -117,6 +120,27 @@ export interface SceneConfig {
   props?: PropSpec[];
   /** Modelos de drones del cielo disponibles (ESC-13). */
   skyModels?: number;
+  /** Ciudad viva (spec 11, CV): modelos de vehículo y tipos de peatón que pueden aparecer (sin ellos, todos). */
+  carModels?: readonly number[];
+  pedTypes?: readonly number[];
+  /**
+   * Recién llegados que aún no han aparecido (AN-02): `car:<modelo>`, `ped:<tipo>`. La primera vez que aparecen
+   * brillan unos segundos y se quitan de aquí.
+   */
+  fresh?: Set<string>;
+}
+
+/** Duración del brillo de un recién llegado (3 s). */
+export const GLOW_FRAMES = 180;
+
+function takeFresh(cfg: SceneConfig, key: string): number | undefined {
+  return cfg.fresh?.delete(key) ? GLOW_FRAMES : undefined;
+}
+
+/** Elige al azar uno de los permitidos (o de todos), o `undefined` si no hay ninguno. */
+function pick(rng: Rng, allowed: readonly number[] | undefined, count: number): number | undefined {
+  const pool = allowed ?? Array.from({ length: count }, (_, i) => i);
+  return pool.length ? pool[Math.floor(rng() * pool.length)] : undefined;
 }
 
 /** Base de los detalles de la acera (un poco por detrás del protagonista). */
@@ -216,20 +240,30 @@ function spawnCar(s: SceneState, cfg: SceneConfig, rng: Rng) {
     s.nextCar = 30;
     return;
   }
+  const model = pick(rng, cfg.carModels, cfg.carWidths.length);
+  if (model === undefined) {
+    s.nextCar = 120;
+    return;
+  }
   s.carDir = dir;
-  const model = Math.floor(rng() * cfg.carWidths.length);
   const w = cfg.carWidths[model] ?? 0;
-  s.cars.push({ model, dir, wx: dir > 0 ? s.offset - w - 10 : s.offset + SCENE_W + 10, v: R(rng, 2.0, 3.2) });
+  s.cars.push({ model, dir, wx: dir > 0 ? s.offset - w - 10 : s.offset + SCENE_W + 10, v: R(rng, 2.0, 3.2), glow: takeFresh(cfg, `car:${model}`) });
   s.nextCar = Math.round(R(rng, 140, 340));
 }
 
 function spawnPed(s: SceneState, cfg: SceneConfig, rng: Rng) {
-  const type = Math.floor(rng() * cfg.pedestrians.length);
+  // Un recién llegado tiene prioridad para que se vea pronto (AN-02)
+  const freshPed = [...(cfg.fresh ?? [])].find((k) => k.startsWith('ped:'));
+  const type = freshPed ? Number(freshPed.slice(4)) : pick(rng, cfg.pedTypes, cfg.pedestrians.length);
+  if (type === undefined) {
+    s.nextPed = 120;
+    return;
+  }
   s.pedDir = -s.pedDir as 1 | -1; // siempre alterna
   const size = Math.round(cfg.frameSize * (LAYOUT.heroHeight / (cfg.pedestrians[type]?.height ?? LAYOUT.heroHeight)));
   // Todos entran por la derecha y caminan tranquilos: la cámara sigue al protagonista, que adelanta a quien va
   // en su sentido y se cruza con quien viene de frente.
-  s.peds.push({ type, dir: s.pedDir, size, v: R(rng, 0.26, 0.34), wx: s.offset + SCENE_W + 10, t0: Math.floor(R(rng, 0, 60)) });
+  s.peds.push({ type, dir: s.pedDir, size, v: R(rng, 0.26, 0.34), wx: s.offset + SCENE_W + 10, t0: Math.floor(R(rng, 0, 60)), glow: takeFresh(cfg, `ped:${type}`) });
   s.nextPed = Math.round(R(rng, 900, 1500)); // uno cada 15–25 s (ESC-06)
 }
 
@@ -277,6 +311,18 @@ export function stepScene(s: SceneState, rawDt: number, rng: Rng, cfg: SceneConf
     const x = p.wx - s.offset;
     return x > -p.size - 20 && x < SCENE_W + 40;
   });
+
+  // Brillo de los recién llegados: chispas que salen de ellos (AN-02)
+  for (const e of [...s.cars, ...s.peds]) {
+    if (!e.glow) continue;
+    e.glow = Math.max(0, e.glow - dt);
+    if (rng() < 0.25 * dt) {
+      const isPed = 'type' in e;
+      const x = e.wx - s.offset + (isPed ? e.size / 2 : (cfg.carWidths[(e as Car).model] ?? 60) / 2) + R(rng, -10, 10);
+      const y = isPed ? LAYOUT.backFeet - e.size * 0.5 : carBaseline((e as Car).dir) - 12;
+      s.particles.push({ x, y: y + R(rng, -12, 12), vx: R(rng, -0.3, 0.3), vy: R(rng, -0.8, -0.2), life: 1, size: rng() < 0.6 ? 1 : 2, color: 2 });
+    }
+  }
 
   // Detalles de la acera (MV-03)
   const specs = cfg.props ?? [];

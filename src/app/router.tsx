@@ -5,6 +5,7 @@ import { ActivityDetailScreen } from './screens/ActivityDetailScreen';
 import { ActivityFormScreen } from './screens/ActivityFormScreen';
 import { ChatScreen } from './screens/ChatScreen';
 import { GameScreen } from './screens/GameScreen';
+import { CityScreen } from './city/CityScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
 import { InstallGuideScreen } from './screens/InstallGuideScreen';
 import { MissionDetailScreen } from './screens/missions/MissionDetailScreen';
@@ -36,6 +37,7 @@ export const routes: RouteObject[] = [
       { path: 'juego', element: <GameScreen /> },
       { path: 'perfil/atributo/:categoryId', element: <AttributeDetailScreen /> },
       { path: 'perfil/disciplina', element: <DisciplineDetailScreen /> },
+      { path: 'perfil/ciudad', element: <CityScreen /> },
       // La pantalla se llamaba Personaje hasta la 0.5.0 (PF-01)
       { path: 'personaje/*', element: <LegacyProfileRedirect /> },
       { path: 'ajustes', element: <SettingsScreen /> },

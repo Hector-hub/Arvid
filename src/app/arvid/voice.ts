@@ -5,7 +5,7 @@ import { say } from '../scene/engine';
 
 let ctx: CanvasRenderingContext2D | null | undefined;
 
-function measure(text: string): number {
+export function measure(text: string): number {
   ctx ??= document.createElement('canvas').getContext('2d');
   if (!ctx) return text.length * 8; // sin canvas (pruebas): 8 px por carácter
   ctx.font = BUBBLE_FONT;

@@ -113,6 +113,8 @@ Guardar eventos (y no solo el estado) permite saber **cuándo** venció la misi�
 | arvidSeen | `{ said, lastLine }` | Momentos dichos hoy y última frase de cada uno. Del dispositivo: no va en el backup |
 | introSnoozedUntil | LocalDate? | Presentación pospuesta. Del dispositivo: no va en el backup |
 | notifications | `{ enabled, morning, night, badge, deviceId }`? | Notificaciones de este dispositivo (spec 10): horas `HH:MM` o `null` si ese resumen está desactivado; `deviceId` aleatorio para el servidor. No va en el backup |
+| cityAnnounced | number? | Último nivel cuyas llegadas a la ciudad se anunciaron (spec 11, AN-01, CV-04). Del dispositivo: no va en el backup |
+| neighborSpoke | LocalDate? | Día en que habló un vecino (spec 11, VC-02). Del dispositivo: no va en el backup |
 | aiCode | string? | Código de acceso a la IA (D-100). No va en el backup |
 | achievementsReady | boolean? | Los logros ya se evaluaron una vez en este dispositivo (spec 07, LO-05). No va en el backup y un import lo borra, para que los logros importados se ganen en silencio |
 

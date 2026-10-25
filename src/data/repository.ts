@@ -238,6 +238,10 @@ export interface Settings {
   installHintDismissedAt?: string;
   /** Último nivel celebrado con el modal (PRG-06). */
   lastCelebratedLevel?: number;
+  /** Último nivel cuyas llegadas a la ciudad se anunciaron (spec 11, AN-01, CV-04). Del dispositivo. */
+  cityAnnounced?: number;
+  /** Fecha local en que habló un vecino (spec 11, VC-02). Del dispositivo. */
+  neighborSpoke?: string;
   /** El aviso de backup no se muestra antes de esta fecha local (BAK-07). */
   backupReminderSnoozedUntil?: string;
   /** Protagonista y variante de color (spec 05, PRO). */

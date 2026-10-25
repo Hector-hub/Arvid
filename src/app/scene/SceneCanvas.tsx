@@ -17,6 +17,9 @@ import {
   currentSpeech,
   currentSpeechText,
   isTalking,
+  lampsState,
+  layersState,
+  currentNeighborSpeech,
   darisState,
   resetClock,
   scene,
@@ -125,6 +128,9 @@ export function SceneCanvas({
         arvid,
         daris: companion === 'daris' ? { atlas: daris, ...darisState() } : undefined,
         speech: currentSpeech(),
+        lamps: lampsState(),
+        layers: layersState(),
+        neighbor: currentNeighborSpeech(),
       });
 
     let raf = 0;

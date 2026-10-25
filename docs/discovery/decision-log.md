@@ -122,6 +122,13 @@ Fuente de verdad de las decisiones de producto y técnicas. Cada spec debe refer
 | D-106 | Notificaciones apagadas por defecto; se activan en Ajustes → Notificaciones y en un paso nuevo del onboarding | A | 2026-10-25 |
 | D-107 | Si a la hora del aviso ya no queda nada, se muestra un mensaje breve de ánimo (Safari obliga a mostrar algo en cada push) | A | 2026-10-25 |
 | D-108 | Envío de notificaciones con dos funciones programadas: cada minuto de 7:00 a 21:59 y cada hora en punto de 22:00 a 6:00, en la hora de Santo Domingo (UTC−4). Los avisos de día llegan como mucho 1 minuto tarde; los recordatorios nocturnos, hasta 59 minutos. Unas 28.000 ejecuciones al mes, dentro del plan gratuito | A | 2026-10-25 |
+| D-109 | Ciudad viva (spec 11): la escena se completa en el nivel 10 (~3 meses), con llegadas repartidas desde el nivel 2 | A | 2026-10-25 |
+| D-110 | Un usuario nuevo empieza con lo imprescindible: ciudad de fondo, carretera, acera, barandilla, protagonista y compañero; las farolas también se ganan | A | 2026-10-25 |
+| D-111 | Los peatones se desbloquean uno a uno, cada uno como vecino con nombre y carácter | A | 2026-10-25 |
+| D-112 | Las llegadas las anuncia el compañero y se consultan en la pantalla «Tu ciudad» (desbloqueados y siluetas con su nivel) | A | 2026-10-25 |
+| D-113 | Vecinos que hablan: 10 % al verlos, como mucho uno al día; con IA usan el mismo contexto que el compañero y no gastan créditos; sin IA, frases fijas | A | 2026-10-25 |
+| D-114 | La burbuja del vecino le sigue mientras camina, sin detenerse | A | 2026-10-25 |
+| D-115 | El fondo también se gana: en el nivel 1 solo la capa 1 (cielo y horizonte lejano); la capa 2 (rascacielos) llega en el nivel 3 y la 3 (edificios cercanos) en el nivel 7. La ciudad pasa a tener 17 elementos | A | 2026-10-25 |
 | D-050 | Spec 05 (Escena neón, protagonistas y música) aprobada con S5-01 a S5-09: escena de Warped City en Hoy y Personaje; Sweetie 16 + neón sutil, con la escena como excepción a los 16 colores; 4 protagonistas × 6 variantes (enmienda D-029 y D-036); partículas; música opcional desactivada por defecto y sin precache; la escena es el incremento 5 y Logros el 6; solo se publican assets con licencia verificada; nombres de protagonistas provisionales | A | 2026-10-18 |
 | C-001 | El onboarding guía la instalación en la pantalla de inicio y solicita `navigator.storage.persist()` | C | 2026-10-17 |
 | C-002 | Una categoría sin datos suficientes se muestra como "sin datos", nunca como 0. El radar tiene una alternativa accesible en forma de lista | C | 2026-10-17 |

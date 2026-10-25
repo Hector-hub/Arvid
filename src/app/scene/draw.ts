@@ -136,6 +136,12 @@ export interface SceneExtras {
   daris?: DarisExtras;
   /** Lo que ARVID está diciendo (BP). */
   speech?: Speech;
+  /** Lo que dice un vecino y dónde está su cabeza (spec 11, VC-04). */
+  neighbor?: { speech: Speech; x: number; y: number };
+  /** Capas del fondo según el nivel (spec 11) y opacidad de la última si acaba de llegar; sin esto, las tres. */
+  layers?: { count: number; fade: number };
+  /** Farolas según el nivel (spec 11, CV-02) y brillo de recién llegadas (AN-02); sin esto, encendidas. */
+  lamps?: { on: boolean; glow: boolean };
 }
 
 export function drawScene(
@@ -150,8 +156,13 @@ export function drawScene(
   const { road, walk, rail, lampTop } = LAYOUT;
   c.clearRect(0, 0, SCENE_W, SCENE_H);
   // Fondo: tras cada capa, los drones de esa distancia, así que pasan por detrás y por delante de edificios (ESC-13)
+  const layers = extras.layers?.count ?? imgs.bg.length;
   imgs.bg.forEach((img, i) => {
-    tiled(c, img, off, PARALLAX[i] ?? 0);
+    if (i < layers) {
+      if (i === layers - 1 && i > 0) c.globalAlpha = extras.layers?.fade ?? 1;
+      tiled(c, img, off, PARALLAX[i] ?? 0);
+      c.globalAlpha = 1;
+    }
     drawSky(c, s, imgs.sky, i);
   });
 
@@ -225,11 +236,12 @@ export function drawScene(
 
   // Farolas al frente, por delante de peatones, ARVID y protagonista, de ~2× la altura del protagonista; el haz sale
   // de la bombilla (ESC-03)
-  for (const i of visibleLamps(off)) {
+  for (const i of extras.lamps?.on === false ? [] : visibleLamps(off)) {
     const x = lampScreenX(i, off);
     const on = s.lit.get(i) ?? true;
     if (on) {
-      c.globalAlpha = 0.14;
+      // Recién llegadas: el haz late más fuerte unos segundos
+      c.globalAlpha = extras.lamps?.glow ? 0.14 + 0.16 * (0.5 + 0.5 * Math.sin(s.t / 6)) : 0.14;
       c.fillStyle = C.glow;
       c.beginPath();
       c.moveTo(x + 11, lampTop + 3);
@@ -261,6 +273,8 @@ export function drawScene(
   c.globalAlpha = 1;
 
   if (extras.speech) drawBubble(c, extras.speech, anchor.x, anchor.y);
+  // Vecino (spec 11): borde ámbar para distinguirlo del compañero
+  else if (extras.neighbor) drawBubble(c, extras.neighbor.speech, extras.neighbor.x, extras.neighbor.y, C.lamp);
 }
 
 // ---------- Cono de escaneo ----------
@@ -304,7 +318,7 @@ const BUBBLE_RIGHT_GAP = 50;
 const PAD = 7;
 
 /** Burbuja anclada a ARVID, con cola hacia él y ▼ si hay más páginas (BP-01 a BP-03). */
-function drawBubble(c: Ctx, sp: Speech, ax: number, ay: number) {
+function drawBubble(c: Ctx, sp: Speech, ax: number, ay: number, border: string = C.cyanLight) {
   const lines = sp.pages[sp.page] ?? [];
   if (lines.length === 0) return;
   c.font = BUBBLE_FONT;
@@ -316,8 +330,8 @@ function drawBubble(c: Ctx, sp: Speech, ax: number, ay: number) {
   const y = Math.round(Math.max(4, ay - 22 - h));
   c.fillStyle = 'rgba(5, 9, 18, 0.92)';
   c.fillRect(x, y, w, h);
-  // Borde de 2 px y cola en escalera hacia ARVID
-  c.fillStyle = C.cyanLight;
+  // Borde de 2 px y cola en escalera hacia quien habla
+  c.fillStyle = border;
   c.fillRect(x, y, w, 2);
   c.fillRect(x, y + h - 2, w, 2);
   c.fillRect(x, y, 2, h);

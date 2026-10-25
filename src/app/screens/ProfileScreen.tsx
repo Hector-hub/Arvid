@@ -3,6 +3,7 @@ import { saveSetting } from '../../data/repository';
 import { trend, type Score, type WindowDays } from '../../domain/attributes/attributes';
 import { MIN_RADAR_AXES } from '../../domain/attributes/radar';
 import { AchievementsSection } from '../achievements/AchievementsSection';
+import { CITY_ITEMS } from '../../domain/scene/city';
 import { useAnalysis } from '../analysis';
 import { useData, useSettings } from '../data';
 import { CategoryIcon, Panel, Sprite, XpBar, categoryColor } from '../design/components';
@@ -55,6 +56,9 @@ export function ProfileScreen() {
         ) : (
           <p className="muted small">{t('profile.totalXp', { xp: intText(p.xp) })}</p>
         )}
+        <Link to="/perfil/ciudad" className="btn">
+          {t('city.title')} · {t('city.progress', { done: CITY_ITEMS.filter((u) => u.level <= p.level).length, total: CITY_ITEMS.length })}
+        </Link>
       </Panel>
 
       <div className="tabs" role="group" aria-label={t('profile.windowLabel')}>

@@ -14,6 +14,8 @@ import { AchievementsWatcher } from '../achievements/AchievementsWatcher';
 import { ChatLogWatcher } from '../arvid/chatLog';
 import { DisciplineTipWatcher } from '../arvid/disciplineTip';
 import { NotificationsWatcher } from '../notifications/NotificationsWatcher';
+import { CityWatcher } from '../city/CityWatcher';
+import { NeighborTalk } from '../city/NeighborTalk';
 import { LevelUpWatcher } from './LevelUp';
 import { MusicProvider } from '../music/MusicProvider';
 
@@ -59,6 +61,8 @@ export function AppLayout() {
         <AchievementsWatcher />
         <DisciplineTipWatcher />
         <NotificationsWatcher />
+        <CityWatcher />
+        <NeighborTalk />
         <ChatLogWatcher />
       </div>
       </MusicProvider>

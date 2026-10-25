@@ -809,5 +809,137 @@
       "streak": "Tu racha de {name} se rompe hoy si no la registras.",
       "streaks": "Tus rachas de {names} se rompen hoy si no las registras."
     }
+  },
+  "city": {
+    "welcome": "Tu ciudad ahora crece contigo: con cada nivel llegan luces, tráfico y vecinos. Míralo en «Tu ciudad», en tu perfil.",
+    "welcomeNew": "Tu calle está tranquila por ahora. Con cada nivel llegarán luces, tráfico y vecinos.",
+    "arrived": "¡Novedades en tu calle! Han llegado {list}.",
+    "title": "Tu ciudad",
+    "progress": "{done} de {total}",
+    "next": "Siguiente: nivel {level}",
+    "complete": "¡Tu ciudad está completa!",
+    "level": "Nivel {level}",
+    "locked": "Por descubrir",
+    "neighborsTitle": "Vecinos",
+    "thingsTitle": "La calle",
+    "things": {
+      "lamps": {
+        "name": "Farolas",
+        "phrase": "las farolas",
+        "description": "Iluminan la acera; alguna parpadea."
+      },
+      "sky": {
+        "name": "Drones del cielo",
+        "phrase": "los drones del cielo",
+        "description": "Cruzan entre los edificios, a lo lejos."
+      },
+      "cars": {
+        "name": "Coches",
+        "phrase": "los coches",
+        "description": "Tráfico en los dos sentidos."
+      },
+      "props": {
+        "name": "Cajas de la acera",
+        "phrase": "las cajas de la acera",
+        "description": "{companion} se acerca a inspeccionarlas."
+      },
+      "police": {
+        "name": "Coche de policía",
+        "phrase": "el coche de policía",
+        "description": "Patrulla la avenida."
+      },
+      "skyline": {
+        "name": "Rascacielos",
+        "phrase": "los rascacielos del centro",
+        "description": "El skyline de la ciudad, con sus luces."
+      },
+      "buildings": {
+        "name": "Edificios cercanos",
+        "phrase": "los edificios de tu barrio",
+        "description": "Ventanas encendidas, la gran torre y el cartel de neón."
+      }
+    },
+    "neighbors": {
+      "kenji": {
+        "role": "mecánico del turno de noche",
+        "lines": {
+          "0": "¿Tú otra vez por aquí? Así se hace.",
+          "1": "Las máquinas y las personas: si las cuidas a diario, no fallan.",
+          "2": "Turno largo hoy. Tú también vas con ritmo, ¿eh?"
+        }
+      },
+      "sombra": {
+        "role": "el mensajero encapuchado",
+        "lines": {
+          "0": "Te observo desde hace tiempo. Has llegado lejos.",
+          "1": "Mensaje para ti: sigue así.",
+          "2": "Pocos llegan hasta aquí. Tú lo has hecho."
+        }
+      },
+      "nova": {
+        "role": "estudiante",
+        "lines": {
+          "0": "¡Ey! Yo también intento estudiar un poco cada día.",
+          "1": "Si tú puedes con tu lista, yo puedo con mis apuntes.",
+          "2": "Me inspira verte pasar cada día."
+        }
+      },
+      "lia": {
+        "role": "que vuelve del trabajo",
+        "lines": {
+          "0": "Día largo… pero verte me da ánimo.",
+          "1": "Paso a paso, ¿verdad? Igual que tú.",
+          "2": "¡Buenas! Se te ve con energía."
+        }
+      },
+      "dex": {
+        "role": "músico callejero",
+        "lines": {
+          "0": "Esta canción va por tu constancia.",
+          "1": "Un acorde cada día y al final suena una canción. Como tú.",
+          "2": "¡Eh! Tu ritmo se nota desde aquí."
+        }
+      },
+      "omar": {
+        "role": "repartidor",
+        "lines": {
+          "0": "¡Entrega especial: ánimo para hoy!",
+          "1": "Te veo cada día por esta calle. Eso es constancia.",
+          "2": "Voy con prisa, pero: ¡bien hecho!"
+        }
+      },
+      "roxy": {
+        "role": "DJ",
+        "lines": {
+          "0": "Tu racha suena mejor que mi última sesión.",
+          "1": "Sube el volumen, que vas bien.",
+          "2": "Esta noche pincho en tu honor."
+        }
+      },
+      "teo": {
+        "role": "programador del barrio",
+        "lines": {
+          "0": "Pequeños commits cada día: así se construye todo.",
+          "1": "He visto tu progreso. Buen trabajo.",
+          "2": "Un bug menos, un hábito más. ¡Seguimos!"
+        }
+      },
+      "pip": {
+        "role": "el niño que corre",
+        "lines": {
+          "0": "¡Te echo una carrera! …Bueno, mañana.",
+          "1": "¡Mi hermana dice que eres muy constante!",
+          "2": "¡Hola! ¡Hoy he corrido un montón!"
+        }
+      },
+      "mia": {
+        "role": "la hermana de Pip",
+        "lines": {
+          "0": "Pip no para de hablar de ti.",
+          "1": "¡Hola! ¿Hoy también lo vas a lograr?",
+          "2": "Yo también tengo mi lista de cosas. ¡Hoy voy bien!"
+        }
+      }
+    }
   }
 }

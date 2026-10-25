@@ -809,5 +809,137 @@
       "streak": "Your {name} streak breaks today unless you log it.",
       "streaks": "Your {names} streaks break today unless you log them."
     }
+  },
+  "city": {
+    "welcome": "Your city now grows with you: each level brings lights, traffic and neighbors. Check “Your city” in your profile.",
+    "welcomeNew": "Your street is quiet for now. Each level will bring lights, traffic and neighbors.",
+    "arrived": "News on your street! Here come {list}.",
+    "title": "Your city",
+    "progress": "{done} of {total}",
+    "next": "Next: level {level}",
+    "complete": "Your city is complete!",
+    "level": "Level {level}",
+    "locked": "Yet to discover",
+    "neighborsTitle": "Neighbors",
+    "thingsTitle": "The street",
+    "things": {
+      "lamps": {
+        "name": "Street lamps",
+        "phrase": "the street lamps",
+        "description": "They light up the sidewalk; one flickers now and then."
+      },
+      "sky": {
+        "name": "Sky drones",
+        "phrase": "the sky drones",
+        "description": "They fly between the buildings, far away."
+      },
+      "cars": {
+        "name": "Cars",
+        "phrase": "the cars",
+        "description": "Traffic both ways."
+      },
+      "props": {
+        "name": "Sidewalk boxes",
+        "phrase": "the sidewalk boxes",
+        "description": "{companion} goes over to inspect them."
+      },
+      "police": {
+        "name": "Police car",
+        "phrase": "the police car",
+        "description": "It patrols the avenue."
+      },
+      "skyline": {
+        "name": "Skyscrapers",
+        "phrase": "the downtown skyscrapers",
+        "description": "The city skyline and its lights."
+      },
+      "buildings": {
+        "name": "Nearby buildings",
+        "phrase": "your neighborhood's buildings",
+        "description": "Lit windows, the big tower and the neon sign."
+      }
+    },
+    "neighbors": {
+      "kenji": {
+        "role": "night-shift mechanic",
+        "lines": {
+          "0": "You again? That's the way.",
+          "1": "Machines and people: look after them daily and they don't fail.",
+          "2": "Long shift today. You've got a rhythm too, huh?"
+        }
+      },
+      "sombra": {
+        "role": "the hooded courier",
+        "lines": {
+          "0": "I've been watching for a while. You've come far.",
+          "1": "Message for you: keep going.",
+          "2": "Few make it this far. You did."
+        }
+      },
+      "nova": {
+        "role": "student",
+        "lines": {
+          "0": "Hey! I try to study a bit every day too.",
+          "1": "If you can handle your list, I can handle my notes.",
+          "2": "Seeing you every day inspires me."
+        }
+      },
+      "lia": {
+        "role": "heading home from work",
+        "lines": {
+          "0": "Long day… but seeing you cheers me up.",
+          "1": "Step by step, right? Just like you.",
+          "2": "Hi! You look full of energy."
+        }
+      },
+      "dex": {
+        "role": "street musician",
+        "lines": {
+          "0": "This song's for your consistency.",
+          "1": "One chord a day and soon it's a song. Like you.",
+          "2": "Hey! I can feel your rhythm from here."
+        }
+      },
+      "omar": {
+        "role": "delivery rider",
+        "lines": {
+          "0": "Special delivery: a boost for today!",
+          "1": "I see you on this street every day. That's consistency.",
+          "2": "In a rush, but: well done!"
+        }
+      },
+      "roxy": {
+        "role": "DJ",
+        "lines": {
+          "0": "Your streak sounds better than my last set.",
+          "1": "Turn it up, you're doing great.",
+          "2": "Tonight's set is in your honor."
+        }
+      },
+      "teo": {
+        "role": "the neighborhood coder",
+        "lines": {
+          "0": "Small commits every day: that's how everything gets built.",
+          "1": "I've seen your progress. Nice work.",
+          "2": "One bug less, one habit more. Let's go!"
+        }
+      },
+      "pip": {
+        "role": "the kid who runs",
+        "lines": {
+          "0": "Race you! …OK, tomorrow.",
+          "1": "My sister says you're super consistent!",
+          "2": "Hi! I ran so much today!"
+        }
+      },
+      "mia": {
+        "role": "Pip's sister",
+        "lines": {
+          "0": "Pip won't stop talking about you.",
+          "1": "Hi! Are you going to make it today too?",
+          "2": "I have my own list too. Today's going well!"
+        }
+      }
+    }
   }
 }

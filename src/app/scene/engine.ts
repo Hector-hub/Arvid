@@ -15,9 +15,14 @@ import {
   stepScene,
   type BurstKind,
   type PendingBurst,
+  GLOW_FRAMES,
+  LAYOUT,
+  SCENE_W,
+  type Pedestrian,
   type SceneConfig,
 } from '../../domain/scene/scene';
 import { EXTRAS_FRAME, PEDESTRIANS } from './extras';
+import { cityAt, isNeighbor, neighbor, type City, type CityItem } from '../../domain/scene/city';
 import { SKY_MODELS } from './sky';
 
 /** Vehículos de Warped City; sus anchos van en `config.carWidths`, en el mismo orden. */
@@ -25,16 +30,61 @@ export const CAR_FILES = ['v-red.png', 'v-yellow.png', 'v-police.png'];
 /** Detalles de la acera (MV-03); sus medidas van en `config.props`, en el mismo orden. */
 export const PROP_FILES = ['prop-control-box-1.png', 'prop-control-box-2.png'];
 
+const PROPS = [
+  { width: 32, height: 30 },
+  { width: 17, height: 27 },
+];
+
+// Hasta saber el nivel (spec 11), la ciudad está completa, como antes
 const config: SceneConfig = {
   carWidths: [96, 93, 163],
   pedestrians: PEDESTRIANS,
   frameSize: EXTRAS_FRAME,
-  props: [
-    { width: 32, height: 30 },
-    { width: 17, height: 27 },
-  ],
+  props: PROPS,
   skyModels: SKY_MODELS,
+  fresh: new Set(),
 };
+
+// ---------- Ciudad viva (spec 11) ----------
+let city: City | undefined;
+/** Fotograma hasta el que brillan las farolas recién llegadas (AN-02). */
+let lampsGlowUntil = -1;
+/** Fotograma en que empezó a aparecer la última capa del fondo recién llegada (AN-02). */
+let layerSince = -Infinity;
+
+/** Lo que hay en la escena según el nivel (CV-01, CV-02). `fresh`: lo recién llegado, que brilla al aparecer. */
+export function setCity(level: number, fresh: readonly CityItem[] = []): void {
+  city = cityAt(level);
+  config.carModels = city.cars;
+  config.pedTypes = city.peds;
+  config.props = city.props ? PROPS : [];
+  config.skyModels = city.sky ? SKY_MODELS : 0;
+  // Si el nivel baja (p. ej. al importar un backup) desaparece lo que ya no corresponde
+  scene.cars = scene.cars.filter((c) => city!.cars.includes(c.model));
+  scene.peds = scene.peds.filter((p) => city!.peds.includes(p.type));
+  if (!city.props) scene.props = [];
+  if (!city.sky) scene.sky = [];
+  for (const item of fresh) {
+    if (item === 'lamps') lampsGlowUntil = scene.t + GLOW_FRAMES;
+    else if (item === 'skyline' || item === 'buildings') layerSince = scene.t;
+    else if (item === 'cars') ['car:0', 'car:1'].forEach((k) => config.fresh!.add(k));
+    else if (item === 'police') config.fresh!.add('car:2');
+    else if (isNeighbor(item)) {
+      config.fresh!.add(`ped:${neighbor(item).ped}`);
+      scene.nextPed = Math.min(scene.nextPed, 60); // que llegue pronto
+    }
+  }
+}
+
+/** Capas del fondo y opacidad de la última, que aparece poco a poco si acaba de llegar (AN-02). */
+export function layersState(): { count: number; fade: number } {
+  return { count: city?.layers ?? 3, fade: Math.min(1, Math.max(0, (scene.t - layerSince) / GLOW_FRAMES)) };
+}
+
+/** Farolas en la escena y si brillan por recién llegadas. */
+export function lampsState(): { on: boolean; glow: boolean } {
+  return { on: city?.lamps ?? true, glow: scene.t < lampsGlowUntil };
+}
 
 const rng = seededRng(Date.now());
 export const scene = createScene(rng);
@@ -176,6 +226,62 @@ function stepVoice(dt: number, reduced: boolean) {
   publishSpeech();
 }
 
+// ---------- Vecinos que hablan (spec 11, VC) ----------
+/** Lo que dice un vecino: la burbuja sigue a ese peatón mientras camina (VC-04). */
+let neighborTalk: { ped: Pedestrian; speech: Speech } | undefined;
+/** Tipos de peatón ya vistos hoy (VC-02: la primera vez que entran en pantalla cada día). */
+let seenDay = '';
+const seenToday = new Set<number>();
+const neighborListeners = new Set<(type: number) => void>();
+
+const onScreen = (p: Pedestrian) => {
+  const x = p.wx - scene.offset;
+  return x >= 0 && x + p.size <= SCENE_W;
+};
+
+/** Avisa cuando un peatón entra en pantalla por primera vez en el día. Devuelve la baja. */
+export function onNeighborSeen(listener: (type: number) => void): () => void {
+  neighborListeners.add(listener);
+  return () => neighborListeners.delete(listener);
+}
+
+/** Hace hablar al peatón de ese tipo si sigue en pantalla y el compañero no habla (VC-03). Devuelve si habló. */
+export function neighborSay(type: number, pages: string[][]): boolean {
+  const ped = scene.peds.find((p) => p.type === type && onScreen(p));
+  if (!ped || isTalking() || pages.length === 0) return false;
+  neighborTalk = { ped, speech: createSpeech(pages) };
+  return true;
+}
+
+/** Lo que dice un vecino ahora, con la posición de su cabeza en pantalla. */
+export function currentNeighborSpeech(): { speech: Speech; x: number; y: number } | undefined {
+  if (!neighborTalk) return undefined;
+  const { ped, speech: sp } = neighborTalk;
+  return { speech: sp, x: ped.wx - scene.offset + ped.size / 2, y: LAYOUT.backFeet - ped.size * 0.75 };
+}
+
+function stepNeighbors(dt: number, reduced: boolean) {
+  const day = new Date().toDateString();
+  if (day !== seenDay) {
+    seenDay = day;
+    seenToday.clear();
+  }
+  // Con movimiento reducido la calle está quieta: los vecinos no hablan
+  for (const p of reduced ? [] : scene.peds) {
+    if (seenToday.has(p.type) || !onScreen(p)) continue;
+    seenToday.add(p.type);
+    for (const l of neighborListeners) l(p.type);
+  }
+  if (!neighborTalk) return;
+  // Si el compañero empieza a hablar o el vecino se va, la burbuja desaparece
+  if (isTalking() || !scene.peds.includes(neighborTalk.ped) || neighborTalk.ped.wx - scene.offset + neighborTalk.ped.size < 0) {
+    neighborTalk = undefined;
+    return;
+  }
+  stepSpeech(neighborTalk.speech, dt, reduced);
+  if (neighborTalk.speech.done) neighborTalk = undefined;
+}
+
 // ---------- Tiempo ----------
 /** Avanza la simulación hasta `now` (ms). Varios lienzos en el mismo fotograma no la aceleran. */
 export function advance(now: number, reduced: boolean): void {
@@ -184,6 +290,7 @@ export function advance(now: number, reduced: boolean): void {
   stepScene(scene, dt, rng, config, reduced);
   parkArvid();
   stepVoice(dt, reduced);
+  stepNeighbors(dt, reduced);
   notifyReady();
 }
 
@@ -197,6 +304,7 @@ export function advanceFrames(dt: number, reduced: boolean): void {
   stepScene(scene, dt, rng, config, reduced);
   parkArvid();
   stepVoice(dt, reduced);
+  stepNeighbors(dt, reduced);
   notifyReady();
 }
 

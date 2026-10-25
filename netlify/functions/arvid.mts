@@ -13,6 +13,7 @@ import {
   AI_MODEL,
   AI_MOMENTS,
   AI_TEMPERATURE,
+  NEIGHBOR_IDS,
   buildMessages,
   sanitizeReply,
   type AiRequest,
@@ -31,6 +32,7 @@ const RequestSchema = z.object({
     .max(AI_MAX_HISTORY),
   context: z.record(z.string(), z.unknown()),
   companion: z.enum(COMPANIONS).optional(),
+  neighbor: z.enum(NEIGHBOR_IDS).optional(),
 });
 
 const json = (status: number, body: unknown) =>
@@ -40,6 +42,8 @@ const json = (status: number, body: unknown) =>
 export interface Usage {
   /** Suma uno al día `day` del código `owner` si queda crédito y devuelve si se pudo. */
   take(owner: string, day: string, limit: number): Promise<boolean>;
+  /** Frase de vecino del día (spec 11, VC-06): aparte de los créditos, como mucho una al día. */
+  takeNeighbor(owner: string, day: string): Promise<boolean>;
 }
 
 /**
@@ -53,12 +57,22 @@ export function usedToday(saved: unknown, day: string): number {
   return entry?.day === day && typeof entry.used === 'number' ? entry.used : 0;
 }
 
+type UsageEntry = { day?: string; used?: number; neighborDay?: string };
+
 const blobUsage: Usage = {
   async take(owner, day, limit) {
     const store = getStore('ai-usage');
-    const used = usedToday(await store.get(owner, { type: 'json' }).catch(() => null), day);
+    const saved = ((await store.get(owner, { type: 'json' }).catch(() => null)) ?? {}) as UsageEntry;
+    const used = usedToday(saved, day);
     if (used >= limit) return false;
-    await store.setJSON(owner, { day, used: used + 1 });
+    await store.setJSON(owner, { ...saved, day, used: used + 1 });
+    return true;
+  },
+  async takeNeighbor(owner, day) {
+    const store = getStore('ai-usage');
+    const saved = ((await store.get(owner, { type: 'json' }).catch(() => null)) ?? {}) as UsageEntry;
+    if (saved.neighborDay === day) return false;
+    await store.setJSON(owner, { ...saved, neighborDay: day });
     return true;
   },
 };
@@ -91,7 +105,9 @@ export async function handle(
   // El crédito se gasta solo con peticiones válidas
   if (owner) {
     const day = (deps.now?.() ?? new Date()).toISOString().slice(0, 10);
-    if (!(await (deps.usage ?? blobUsage).take(owner, day, DAILY_CREDITS))) return json(429, { error: 'daily' });
+    const usage = deps.usage ?? blobUsage;
+    const ok = parsed.data.moment === 'neighbor' ? await usage.takeNeighbor(owner, day) : await usage.take(owner, day, DAILY_CREDITS);
+    if (!ok) return json(429, { error: 'daily' });
   }
 
   let res: Response;
