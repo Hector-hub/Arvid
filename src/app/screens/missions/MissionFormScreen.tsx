@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { DraftBanner, useDraft } from '../../arvid/draft';
 import { createMission, updateMission } from '../../../data/missions';
 import { celebrate } from '../../scene/engine';
 import { DIFFICULTY_POINTS, type Difficulty } from '../../../domain/config';
@@ -33,11 +34,13 @@ function MissionForm({ record, defaultCategoryId }: { record?: MissionRecord; de
   const today = useToday();
   const analysis = useAnalysis();
   const categories = useCategories() ?? [];
-  const [title, setTitle] = useState(record?.mission.title ?? '');
-  const [categoryId, setCategoryId] = useState(defaultCategoryId);
-  const [difficulty, setDifficulty] = useState<Difficulty>(record?.mission.difficulty ?? 'medium');
-  const [deadline, setDeadline] = useState('');
-  const [time, setTime] = useState(record?.mission.time ?? '');
+  // Datos propuestos por el compañero (spec 12, AC-05, AC-06)
+  const draft = useDraft<{ title?: string; categoryId?: string; difficulty?: Difficulty; deadline?: string; time?: string }>(!record);
+  const [title, setTitle] = useState(record?.mission.title ?? draft?.title ?? '');
+  const [categoryId, setCategoryId] = useState(draft?.categoryId ?? defaultCategoryId);
+  const [difficulty, setDifficulty] = useState<Difficulty>(record?.mission.difficulty ?? draft?.difficulty ?? 'medium');
+  const [deadline, setDeadline] = useState(draft?.deadline ?? '');
+  const [time, setTime] = useState(record?.mission.time ?? draft?.time ?? '');
   const [errors, setErrors] = useState<MissionInputErrors>({});
   const [saving, setSaving] = useState(false);
 
@@ -74,6 +77,7 @@ function MissionForm({ record, defaultCategoryId }: { record?: MissionRecord; de
   return (
     <form className="stack" style={{ gap: 'var(--s5)' }} onSubmit={(e) => void submit(e)} noValidate>
       <h1>{record ? t('missionForm.editTitle') : t('missionForm.newTitle')}</h1>
+      {draft && <DraftBanner />}
 
       <div className="field">
         <label htmlFor="mission-title">{t('missionForm.title')}</label>

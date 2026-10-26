@@ -32,3 +32,19 @@
 | M12-06 | Completar el hito: el siguiente se activa; el último celebra el objetivo | ☐ | ☐ |
 | M12-07 | Misión con fecha de hoy y hora dentro de unos minutos: llega el aviso «Es hora de…» | ☐ | ☐ |
 | M12-08 | La barra con 4 pestañas se ve bien en el móvil | ☐ | ☐ |
+
+## 1.5.0 · Crear con el compañero
+| Requisito | Prueba |
+|---|---|
+| AC-03, AC-04 | `src/domain/arvid/actions.test.ts`: calendario (fin de semana y de mes, próximos días); validación y limpieza (categoría, fechas pasadas, títulos largos, recordatorios imposibles, límites); catálogo de 4 acciones |
+| AC-03, AC-06, D-124 | `src/app/arvid/function.test.ts`: envía el catálogo y las reglas; devuelve la propuesta validada; reintenta una vez con el error; si sigue mal, borrador; sin acciones en los momentos |
+| AC-05, AC-06 | `src/app/arvid/proposal.test.tsx`: tarjeta y «Crear» de una misión con fecha y hora y de un objetivo con hitos; «Editar» abre el formulario rellenado; una propuesta inválida abre el formulario sin tarjeta |
+
+## Manual (1.5.0) — con la IA real (R12-2)
+| # | Paso | iPhone | Android |
+|---|---|---|---|
+| M12-09 | «Crea una misión para pagar la luz el viernes a las 6» → tarjeta con la fecha correcta → Crear | ☐ | ☐ |
+| M12-10 | «Quiero correr 10 km antes de Navidad, con hitos de 3, 5, 7 y 10» → objetivo con 4 hitos | ☐ | ☐ |
+| M12-11 | «El sábado y el domingo voy de viaje» → descanso de esos dos días | ☐ | ☐ |
+| M12-12 | «Quiero leer 3 veces por semana» → actividad semanal × 3 | ☐ | ☐ |
+| M12-13 | Una conversación normal («¿cómo voy?») no propone nada | ☐ | ☐ |

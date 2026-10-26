@@ -10,6 +10,7 @@ import { useToday } from '../clock';
 import { useData, useRecords, useRests } from '../data';
 import { BackLink, Panel } from '../design/components';
 import { dayMonth, longDate } from '../text';
+import { DraftBanner, useDraft } from '../arvid/draft';
 
 export function RestsScreen() {
   useLocale();
@@ -89,12 +90,17 @@ function RestForm({ rest, onDone }: { rest?: Rest; onDone: () => void }) {
   const ctx = useData();
   const today = useToday();
   const records = useRecords();
+  // Datos propuestos por el compañero (spec 12, AC-05, AC-06): las actividades llegan por nombre
+  const draft = useDraft<{ from?: string; to?: string; activities?: string[]; note?: string }>(!rest);
+  const named = (draft?.activities ?? [])
+    .map((n) => records?.find((r) => r.activity.name.trim().toLowerCase() === n.trim().toLowerCase())?.activity.id)
+    .filter((id): id is string => !!id);
   const started = !!rest && compareDates(rest.from, today) < 0;
-  const [from, setFrom] = useState<string>(rest?.from ?? today);
-  const [to, setTo] = useState<string>(rest?.to ?? today);
-  const [some, setSome] = useState(!!rest?.activityIds);
-  const [chosen, setChosen] = useState<Set<string>>(new Set(rest?.activityIds ?? []));
-  const [note, setNote] = useState(rest?.note ?? '');
+  const [from, setFrom] = useState<string>(rest?.from ?? draft?.from ?? today);
+  const [to, setTo] = useState<string>(rest?.to ?? draft?.to ?? today);
+  const [some, setSome] = useState(!!rest?.activityIds || named.length > 0);
+  const [chosen, setChosen] = useState<Set<string>>(new Set(rest?.activityIds ?? named));
+  const [note, setNote] = useState(rest?.note ?? draft?.note ?? '');
   const [error, setError] = useState<RestError | 'invalid-date'>();
   const [saved, setSaved] = useState(false);
   const active = (records ?? []).filter((r) => statusAt(r.events, today) === 'active');
@@ -118,6 +124,7 @@ function RestForm({ rest, onDone }: { rest?: Rest; onDone: () => void }) {
   return (
     <Panel className="stack">
       <h2>{rest ? t('rests.editTitle') : t('rests.newTitle')}</h2>
+      {draft && <DraftBanner />}
       <form className="stack" onSubmit={(e) => void submit(e)} noValidate>
         <div className="row" style={{ flexWrap: 'wrap', gap: 'var(--s3)' }}>
           <div className="field">

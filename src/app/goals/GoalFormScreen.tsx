@@ -18,6 +18,7 @@ import { useToday } from '../clock';
 import { useCategories, useData, useGoals } from '../data';
 import { CategoryIcon, Sprite } from '../design/components';
 import { celebrate } from '../scene/engine';
+import { DraftBanner, useDraft } from '../arvid/draft';
 import { categoryName, difficultyLabel, errorText } from '../text';
 
 const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard'];
@@ -43,14 +44,22 @@ function GoalForm({ goal, defaultCategoryId }: { goal?: Goal; defaultCategoryId:
   const navigate = useNavigate();
   const today = useToday();
   const categories = useCategories() ?? [];
-  const [title, setTitle] = useState(goal?.title ?? '');
-  const [categoryId, setCategoryId] = useState(defaultCategoryId);
-  const [targetDate, setTargetDate] = useState<string>(goal?.targetDate ?? '');
+  // Datos propuestos por el compañero (spec 12, AC-05, AC-06)
+  const draft = useDraft<{
+    title?: string;
+    categoryId?: string;
+    targetDate?: string;
+    milestones?: { title?: string; difficulty?: Difficulty; deadline?: string; time?: string }[];
+  }>(!goal);
+  const [title, setTitle] = useState(goal?.title ?? draft?.title ?? '');
+  const [categoryId, setCategoryId] = useState(draft?.categoryId ?? defaultCategoryId);
+  const [targetDate, setTargetDate] = useState<string>(goal?.targetDate ?? draft?.targetDate ?? '');
   const [description, setDescription] = useState(goal?.description ?? '');
   const [rows, setRows] = useState<Row[]>(
-    goal?.milestones.map((m) => ({ id: m.id, title: m.title, difficulty: m.difficulty, deadline: m.deadline ?? '', time: m.time ?? '', fixed: !!m.missionId })) ?? [
-      { title: '', difficulty: 'medium', deadline: '', time: '', fixed: false },
-    ],
+    goal?.milestones.map((m) => ({ id: m.id, title: m.title, difficulty: m.difficulty, deadline: m.deadline ?? '', time: m.time ?? '', fixed: !!m.missionId })) ??
+      draft?.milestones?.map((m) => ({ title: m.title ?? '', difficulty: m.difficulty ?? 'medium', deadline: m.deadline ?? '', time: m.time ?? '', fixed: false })) ?? [
+        { title: '', difficulty: 'medium', deadline: '', time: '', fixed: false },
+      ],
   );
   const [errors, setErrors] = useState<GoalInputErrors>({});
   const [saving, setSaving] = useState(false);
@@ -97,6 +106,7 @@ function GoalForm({ goal, defaultCategoryId }: { goal?: Goal; defaultCategoryId:
   return (
     <form className="stack" style={{ gap: 'var(--s5)' }} onSubmit={(e) => void submit(e)} noValidate>
       <h1>{goal ? t('goals.editTitle') : t('goals.newTitle')}</h1>
+      {draft && <DraftBanner />}
 
       <div className="field">
         <label htmlFor="goal-title">{t('goals.fieldTitle')}</label>

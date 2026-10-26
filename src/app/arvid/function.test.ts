@@ -134,4 +134,54 @@ describe('función /api/arvid', () => {
     expect((await handle(withCode(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage, fetch: mistral(200) })).status).toBe(200);
     expect(usage.refund).not.toHaveBeenCalled();
   });
+
+  describe('crear con el compañero (spec 12, AC)', () => {
+    const ctx = { calendar: { today: '2026-10-26' }, categories: [{ id: 'money', name: 'Dinero' }, { id: 'order', name: 'Orden' }] };
+    const chat = (text: string) => body({ messages: [{ role: 'user', content: text }], context: ctx });
+    const toolReply = (name: string, args: unknown, content = '') =>
+      new Response(JSON.stringify({ choices: [{ message: { content, tool_calls: [{ function: { name, arguments: JSON.stringify(args) } }] } }] }), { status: 200 });
+    const seq = (...responses: Response[]) => {
+      const f = vi.fn(async () => responses.shift()!);
+      return f as unknown as typeof fetch & ReturnType<typeof vi.fn>;
+    };
+
+    it('AC-03: envía el catálogo de acciones y devuelve la propuesta validada', async () => {
+      const fetch = seq(toolReply('create_mission', { title: 'Pagar la luz', categoryId: 'money', difficulty: 'easy', deadline: '2026-10-30', time: '18:00' }, 'Te la preparo.'));
+      const res = await handle(post(chat('crea una misión para pagar la luz el viernes a las 6')), { apiKey: 'k', fetch });
+      expect(await res.json()).toEqual({
+        reply: 'Te la preparo.',
+        proposal: { action: 'create_mission', args: { title: 'Pagar la luz', categoryId: 'money', difficulty: 'easy', deadline: '2026-10-30', time: '18:00' } },
+      });
+      const sent = JSON.parse(vi.mocked(fetch).mock.calls[0]![1]!.body as string);
+      expect(sent.tools.map((t: { function: { name: string } }) => t.function.name)).toEqual(['create_mission', 'create_goal', 'create_rest', 'create_activity']);
+      expect(sent.messages.some((m: { content: string }) => /call exactly ONE tool/.test(m.content))).toBe(true);
+    });
+
+    it('si la propuesta no es válida, reintenta una vez con el error', async () => {
+      const fetch = seq(
+        toolReply('create_mission', { title: 'Pagar la luz', categoryId: 'casa', difficulty: 'easy' }),
+        toolReply('create_mission', { title: 'Pagar la luz', categoryId: 'money', difficulty: 'easy' }),
+      );
+      const data = await (await handle(post(chat('misión pagar la luz')), { apiKey: 'k', fetch })).json();
+      expect(data.proposal.args.categoryId).toBe('money');
+      expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2);
+      expect(JSON.parse(vi.mocked(fetch).mock.calls[1]![1]!.body as string).messages.at(-1).content).toMatch(/categoryId must be one of: money, order/);
+    });
+
+    it('AC-06: si sigue sin ser válida, devuelve lo entendido como borrador', async () => {
+      const bad = { title: 'Pagar la luz', categoryId: 'money', difficulty: 'easy', deadline: '2026-10-01' };
+      const fetch = seq(toolReply('create_mission', bad), toolReply('create_mission', bad));
+      const data = await (await handle(post(chat('misión pagar la luz ayer')), { apiKey: 'k', fetch })).json();
+      expect(data.proposal).toBeUndefined();
+      expect(data.draft).toEqual({ action: 'create_mission', args: bad });
+    });
+
+    it('sin pedir nada, conversación normal; los momentos no llevan acciones', async () => {
+      const fetch = mistral(200, 'Hola, Ana.');
+      expect(await (await handle(post(chat('hola')), { apiKey: 'k', fetch })).json()).toEqual({ reply: 'Hola, Ana.' });
+      const moment = mistral(200, 'Buenos días.');
+      await handle(post(body({ moment: 'greeting', messages: [] })), { apiKey: 'k', fetch: moment });
+      expect(JSON.parse(vi.mocked(moment).mock.calls[0]![1]!.body as string).tools).toBeUndefined();
+    });
+  });
 });

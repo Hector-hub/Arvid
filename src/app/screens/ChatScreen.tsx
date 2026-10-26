@@ -1,12 +1,14 @@
 // Conversación completa con el compañero (D-098): todo lo hablado, también lo que dijo por iniciativa propia,
 // agrupado por días, con campo para seguir hablando y opción de borrarla.
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { clearChatLog, type ChatEntry } from '../../data/repository';
 import { COMPANION_NAME } from '../../domain/arvid/companion';
 import { toLocalDate, type LocalDate } from '../../domain/time/localDate';
 import { getLocale, t, useLocale } from '../../i18n';
-import { replyTo } from '../arvid/brain';
+import { chatTurn } from '../arvid/brain';
+import { editPath, ProposalCard } from '../arvid/ProposalCard';
+import type { Proposal } from '../../domain/arvid/actions';
 import { useArvidContext } from '../arvid/useArvidContext';
 import { logChat } from '../arvid/voice';
 import { useData, useSettings } from '../data';
@@ -28,13 +30,15 @@ export function ChatScreen() {
   const [text, setText] = useState(() => (location.state as { draft?: string } | null)?.draft ?? '');
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState(false);
+  const [proposal, setProposal] = useState<Proposal>();
+  const navigate = useNavigate();
   const end = useRef<HTMLDivElement>(null);
   const log = settings?.chatLog;
 
   // Siempre a la vista lo último
   useEffect(() => {
     end.current?.scrollIntoView?.({ block: 'end' });
-  }, [log?.length, busy]);
+  }, [log?.length, busy, proposal]);
 
   async function send(e: FormEvent) {
     e.preventDefault();
@@ -45,7 +49,11 @@ export function ChatScreen() {
     markUserChat();
     logChat('user', message);
     try {
-      logChat('companion', await replyTo(message, { aiEnabled: settings?.arvidAi ?? false, context }));
+      const turn = await chatTurn(message, { aiEnabled: settings?.arvidAi ?? false, context });
+      logChat('companion', turn.text);
+      // Crear con el compañero (spec 12, AC-05, AC-06): tarjeta para confirmar, o el formulario con lo entendido
+      setProposal(turn.proposal);
+      if (turn.draft) void navigate(editPath(turn.draft.action), { state: { draft: turn.draft.args } });
     } finally {
       setBusy(false);
     }
@@ -89,6 +97,7 @@ export function ChatScreen() {
             <p>{t('arvid.chat.thinking')}</p>
           </div>
         )}
+        {proposal && <ProposalCard proposal={proposal} onDone={() => setProposal(undefined)} />}
         <div ref={end} />
       </section>
 

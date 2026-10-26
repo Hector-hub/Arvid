@@ -5,6 +5,8 @@
 import { getStore } from '@netlify/blobs';
 import { z } from 'zod';
 import { DAILY_CREDITS, verifyCode } from '../lib/accessCode.mts';
+import { ACTION_RULES, actionTools, checkProposal } from '../../src/domain/arvid/actions';
+import { isLocalDate, type LocalDate } from '../../src/domain/time/localDate';
 import {
   AI_MAX_BODY,
   AI_MAX_HISTORY,
@@ -129,7 +131,16 @@ export async function handle(
 }
 
 /** Llama a Mistral y devuelve la respuesta saneada, o el error. */
-async function generate(req: AiRequest, deps: { apiKey?: string; fetch: typeof fetch }): Promise<Response> {
+type MistralMessage = { role: 'system' | 'user' | 'assistant'; content: string };
+type MistralReply = { content?: unknown; tool_calls?: { function?: { name?: string; arguments?: unknown } }[] };
+
+/** Una llamada a Mistral; `undefined` con el error ya convertido en respuesta. */
+async function callMistral(
+  messages: MistralMessage[],
+  deps: { apiKey?: string; fetch: typeof fetch },
+  timeoutMs: number,
+  withTools: boolean,
+): Promise<{ message: MistralReply } | { error: Response }> {
   let res: Response;
   try {
     res = await deps.fetch(MISTRAL_URL, {
@@ -139,23 +150,84 @@ async function generate(req: AiRequest, deps: { apiKey?: string; fetch: typeof f
         model: AI_MODEL,
         temperature: AI_TEMPERATURE,
         max_tokens: AI_MAX_TOKENS,
-        messages: buildMessages(req),
+        messages,
+        ...(withTools ? { tools: actionTools(), tool_choice: 'auto' } : {}),
       }),
-      signal: AbortSignal.timeout(MISTRAL_TIMEOUT_MS),
+      signal: AbortSignal.timeout(timeoutMs),
     });
   } catch {
-    return json(504, { error: 'timeout' });
+    return { error: json(504, { error: 'timeout' }) };
   }
   if (!res.ok) {
     // El mensaje de Mistral solo va a los registros de la función (no contiene la clave ni el contexto)
     console.error(`Mistral ${res.status}: ${(await res.text().catch(() => '')).slice(0, 300)}`);
     // Cuota de la clave de pruebas agotada (IA-07): ARVID lo explica con su frase fija
-    return res.status === 429 ? json(429, { error: 'quota' }) : json(502, { error: 'upstream' });
+    return { error: res.status === 429 ? json(429, { error: 'quota' }) : json(502, { error: 'upstream' }) };
+  }
+  const data = (await res.json().catch(() => undefined)) as { choices?: { message?: MistralReply }[] } | undefined;
+  return { message: data?.choices?.[0]?.message ?? {} };
+}
+
+const parseArgs = (raw: unknown): unknown => {
+  if (typeof raw !== 'string') return raw;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return undefined;
+  }
+};
+
+/** Contexto que la app manda para validar las acciones (AC-04). */
+function actionContext(context: Record<string, unknown>) {
+  const calendar = context.calendar as { today?: string } | undefined;
+  const categories = (context.categories as { id?: unknown }[] | undefined) ?? [];
+  const today = typeof calendar?.today === 'string' && isLocalDate(calendar.today) ? calendar.today : new Date().toISOString().slice(0, 10);
+  return { today: today as LocalDate, categoryIds: categories.map((c) => c.id).filter((id): id is string => typeof id === 'string') };
+}
+
+/**
+ * Llama a Mistral y devuelve la respuesta saneada, o el error. En el chat, con el catálogo de acciones (spec 12, AC):
+ * si propone una, se valida; si no es válida, se reintenta una vez con el error (sin gastar otro crédito, D-124) y,
+ * si sigue sin serlo, se devuelve lo entendido como borrador para el formulario (AC-06).
+ */
+async function generate(req: AiRequest, deps: { apiKey?: string; fetch: typeof fetch }): Promise<Response> {
+  const started = Date.now();
+  const chat = req.moment === 'chat';
+  const messages: MistralMessage[] = buildMessages(req);
+  if (chat) messages.splice(2, 0, { role: 'system', content: ACTION_RULES });
+
+  const first = await callMistral(messages, deps, MISTRAL_TIMEOUT_MS, chat);
+  if ('error' in first) return first.error;
+  let message = first.message;
+  const text = () => (typeof message.content === 'string' ? sanitizeReply(message.content) : '');
+  const call = message.tool_calls?.[0]?.function;
+
+  if (chat && call?.name) {
+    const ctx = actionContext(req.context);
+    let check = checkProposal(call.name, parseArgs(call.arguments), ctx);
+    // Un reintento si queda tiempo (el plan gratuito corta a los 10 s)
+    const left = MISTRAL_TIMEOUT_MS - (Date.now() - started);
+    if (!check.ok && left > 3_000) {
+      const retry = await callMistral(
+        [...messages, { role: 'user', content: `Your ${call.name} call was invalid (${check.error}). Call the tool again with valid arguments.` }],
+        deps,
+        left - 500,
+        true,
+      );
+      if (!('error' in retry)) {
+        const again = retry.message.tool_calls?.[0]?.function;
+        if (again?.name) {
+          const second = checkProposal(again.name, parseArgs(again.arguments), ctx);
+          if (second.ok || !check.partial) check = second;
+          message = retry.message;
+        }
+      }
+    }
+    if (check.ok) return json(200, { reply: text(), proposal: check.proposal });
+    return json(200, { reply: text(), draft: check.partial ?? null });
   }
 
-  const data = (await res.json().catch(() => undefined)) as { choices?: { message?: { content?: unknown } }[] } | undefined;
-  const content = data?.choices?.[0]?.message?.content;
-  const reply = typeof content === 'string' ? sanitizeReply(content) : '';
+  const reply = text();
   if (!reply) return json(502, { error: 'empty' });
   return json(200, { reply });
 }

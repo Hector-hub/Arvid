@@ -14,6 +14,7 @@ import { categoryName, difficultyLabel, errorText, periodLabel } from '../text';
 import { DIFFICULTY_POINTS } from '../../domain/config';
 import { t } from '../../i18n';
 import { flagFirstActivity } from '../arvid/moments';
+import { DraftBanner, useDraft } from '../arvid/draft';
 
 const PERIODS: PeriodKind[] = ['day', 'week', 'month'];
 const DIFFICULTIES: Difficulty[] = ['easy', 'medium', 'hard'];
@@ -24,6 +25,8 @@ export function ActivityFormScreen() {
   const record = useRecord(id);
   const categories = useCategories();
   const today = useToday();
+  // Datos propuestos por el compañero (spec 12, AC-05, AC-06)
+  const draft = useDraft<{ name?: string; categoryId?: string; period?: PeriodKind; target?: number; difficulty?: Difficulty; reminders?: ReminderSlot[] }>(!id);
 
   if (id && record === null) return null;
   if (id && !record) return <p>{t('activities.notFound')}</p>;
@@ -34,16 +37,17 @@ export function ActivityFormScreen() {
     <ActivityForm
       key={id ?? 'new'}
       activityId={id}
-      initialName={record?.activity.name ?? ''}
-      initialReminders={record?.activity.reminders ?? []}
+      initialName={record?.activity.name ?? draft?.name ?? ''}
+      initialReminders={record?.activity.reminders ?? draft?.reminders ?? []}
       initialConfig={
         version ?? {
-          period: 'day',
-          target: 1,
-          difficulty: 'medium',
-          categoryId: categories.find((c) => c.active)?.id ?? '',
+          period: draft?.period ?? 'day',
+          target: draft?.target ?? 1,
+          difficulty: draft?.difficulty ?? 'medium',
+          categoryId: draft?.categoryId ?? categories.find((c) => c.active)?.id ?? '',
         }
       }
+      fromCompanion={!!draft}
     />
   );
 }
@@ -53,11 +57,13 @@ function ActivityForm({
   initialName,
   initialConfig,
   initialReminders,
+  fromCompanion = false,
 }: {
   activityId?: string;
   initialName: string;
   initialConfig: ActivityConfig;
   initialReminders: ReminderSlot[];
+  fromCompanion?: boolean;
 }) {
   const ctx = useData();
   const navigate = useNavigate();
@@ -114,6 +120,7 @@ function ActivityForm({
   return (
     <form className="stack" style={{ gap: 'var(--s5)' }} onSubmit={(e) => void submit(e)} noValidate>
       <h1>{activityId ? t('activityForm.editTitle') : t('activityForm.newTitle')}</h1>
+      {fromCompanion && <DraftBanner />}
 
       <div className="field">
         <label htmlFor="name">{t('activityForm.name')}</label>

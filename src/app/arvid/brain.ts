@@ -1,6 +1,8 @@
 // Qué dice ARVID cuando le escriben o cuando habla por iniciativa propia (spec 06, CH e IA-05).
 // Con "ARVID con IA" activado y conexión, pregunta a la función /api/arvid; si no, o si falla, usa sus frases fijas.
 import { AI_MAX_HISTORY, type AiMoment, type ChatMessage } from '../../domain/arvid/ai';
+import { checkProposal, type ActionName, type Proposal } from '../../domain/arvid/actions';
+import { toLocalDate, type LocalDate } from '../../domain/time/localDate';
 import { getLocale, t } from '../../i18n';
 import { getCompanion } from '../scene/engine';
 import type { NeighborId } from '../../domain/scene/city';
@@ -11,7 +13,12 @@ export interface BrainDeps {
   context: () => Record<string, unknown>;
 }
 
-type AiResult = { ok: true; reply: string } | { ok: false; reason: 'offline' | 'quota' | 'daily' | 'code' | 'error' };
+type AiResult =
+  | { ok: true; reply: string; proposal?: Proposal; draft?: Draft }
+  | { ok: false; reason: 'offline' | 'quota' | 'daily' | 'code' | 'error' };
+
+/** Lo entendido de una propuesta que no pasó la validación (spec 12, AC-06): abre el formulario. */
+export type Draft = { action: ActionName; args: unknown };
 
 /** Código de acceso a la IA guardado en el dispositivo (D-100); lo fija la app al cargar los ajustes. */
 let accessCode = '';
@@ -47,7 +54,20 @@ async function askAi(
     }
     if (res.status === 401) return { ok: false, reason: 'code' };
     if (!res.ok) return { ok: false, reason: 'error' };
-    const data = (await res.json()) as { reply?: unknown };
+    const data = (await res.json()) as { reply?: unknown; proposal?: unknown; draft?: unknown };
+    // Una propuesta de acción (spec 12, AC-03) se vuelve a validar en la app antes de mostrarla
+    const ctx = deps.context() as { calendar?: { today?: LocalDate }; categories?: { id: string }[] };
+    if (data.proposal && typeof data.proposal === 'object') {
+      const p = data.proposal as { action?: string; args?: unknown };
+      const check = checkProposal(p.action ?? '', p.args, { today: ctx.calendar?.today ?? toLocalDate(new Date()), categoryIds: ctx.categories?.map((c) => c.id) ?? [] });
+      const reply = typeof data.reply === 'string' ? data.reply : '';
+      if (check.ok) return { ok: true, reply, proposal: check.proposal };
+      if (check.partial) return { ok: true, reply, draft: check.partial };
+    }
+    if (data.draft && typeof data.draft === 'object') {
+      const d = data.draft as Draft;
+      return { ok: true, reply: typeof data.reply === 'string' ? data.reply : '', draft: d };
+    }
     return typeof data.reply === 'string' && data.reply ? { ok: true, reply: data.reply } : { ok: false, reason: 'error' };
   } catch {
     return { ok: false, reason: 'error' };
@@ -61,15 +81,28 @@ export function resetConversation(): void {
   history = [];
 }
 
-/** Respuesta a un mensaje del usuario (CH-03, CH-05). */
-export async function replyTo(message: string, deps: BrainDeps): Promise<string> {
-  if (!deps.aiEnabled) return t('arvid.chat.needsPermission');
-  if (offline()) return t('arvid.chat.offline');
+/** Turno del chat: lo que responde el compañero y, si lo pediste, su propuesta para crear algo (spec 12, AC). */
+export interface ChatTurn {
+  text: string;
+  proposal?: Proposal;
+  draft?: Draft;
+}
+
+/** Respuesta a un mensaje del usuario (CH-03, CH-05), con una propuesta de acción si la hay (AC-01). */
+export async function chatTurn(message: string, deps: BrainDeps): Promise<ChatTurn> {
+  if (!deps.aiEnabled) return { text: t('arvid.chat.needsPermission') };
+  if (offline()) return { text: t('arvid.chat.offline') };
   const asked = [...history, { role: 'user' as const, content: message }].slice(-AI_MAX_HISTORY);
   const result = await askAi('chat', asked, deps, CHAT_TIMEOUT_MS);
-  if (!result.ok) return t(`arvid.chat.${result.reason}`);
-  history = [...asked, { role: 'assistant' as const, content: result.reply }].slice(-AI_MAX_HISTORY);
-  return result.reply;
+  if (!result.ok) return { text: t(`arvid.chat.${result.reason}`) };
+  const text = result.reply || t(result.proposal ? 'actions.prepared' : result.draft ? 'actions.draft' : 'arvid.chat.error');
+  history = [...asked, { role: 'assistant' as const, content: text }].slice(-AI_MAX_HISTORY);
+  return { text, proposal: result.proposal, draft: result.draft };
+}
+
+/** Solo el texto de la respuesta (CH-03). */
+export async function replyTo(message: string, deps: BrainDeps): Promise<string> {
+  return (await chatTurn(message, deps)).text;
 }
 
 /** Lo que dice un vecino al pasar (spec 11, VC-05, VC-07): con IA si se puede; si no, su frase fija `fallback`. */

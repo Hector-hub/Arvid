@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router';
 import { useT } from '../../i18n';
-import { replyTo } from '../arvid/brain';
+import { chatTurn } from '../arvid/brain';
+import { editPath, ProposalCard } from '../arvid/ProposalCard';
+import type { Proposal } from '../../domain/arvid/actions';
 import { useArvidContext } from '../arvid/useArvidContext';
 import { useSettings } from '../data';
 import { logChat, speak } from '../arvid/voice';
@@ -23,6 +26,7 @@ export function ChatControl() {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
+  const [proposal, setProposal] = useState<Proposal>();
   const root = useRef<HTMLFormElement>(null);
   const input = useRef<HTMLInputElement>(null);
 
@@ -64,47 +68,72 @@ export function ChatControl() {
     try {
       // ARVID "piensa" mientras espera la respuesta (CH-03); los "…" no van a la conversación
       await speak(t('arvid.chat.thinking'), { log: false });
-      await speak(await replyTo(message, { aiEnabled: settings?.arvidAi ?? false, context }));
+      const turn = await chatTurn(message, { aiEnabled: settings?.arvidAi ?? false, context });
+      await speak(turn.text);
+      // Crear con el compañero (spec 12, AC-05): desde la escena, la tarjeta en una hoja; si no se entendió del
+      // todo, el formulario con lo entendido (AC-06)
+      setProposal(turn.proposal);
+      if (turn.draft) void navigate(editPath(turn.draft.action), { state: { draft: turn.draft.args } });
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <form
-      ref={root}
-      className={`chat${open ? ' open' : ''}`}
-      onSubmit={(e) => void submit(e)}
-    >
-      {open && (
-        <input
-          ref={input}
-          className="chat-input"
-          type="text"
-          value={text}
-          maxLength={CHAT_MAX}
-          disabled={busy}
-          placeholder={t('scene.chatPlaceholder')}
-          aria-label={t('scene.chatInput')}
-          autoComplete="off"
-          enterKeyHint="send"
-          onChange={(e) => setText(e.target.value)}
-        />
-      )}
-      {open && (
+    <>
+      {/* Fuera de la cabecera fija de la escena (portal): si no, la hoja queda bajo la barra de navegación */}
+      {proposal &&
+        createPortal(
+          <div
+            className="sheet-backdrop"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t(('actions.kinds.' + proposalKind(proposal)) as never)}
+          >
+            <div className="sheet" style={{ maxWidth: 420 }}>
+              <ProposalCard proposal={proposal} onDone={() => setProposal(undefined)} />
+            </div>
+          </div>,
+          document.body,
+        )}
+      <form ref={root} className={`chat${open ? ' open' : ''}`} onSubmit={(e) => void submit(e)}>
+        {open && (
+          <input
+            ref={input}
+            className="chat-input"
+            type="text"
+            value={text}
+            maxLength={CHAT_MAX}
+            disabled={busy}
+            placeholder={t('scene.chatPlaceholder')}
+            aria-label={t('scene.chatInput')}
+            autoComplete="off"
+            enterKeyHint="send"
+            onChange={(e) => setText(e.target.value)}
+          />
+        )}
+        {open && (
+          <button
+            type="button"
+            className="btn chat-button"
+            aria-label={t('chat.expand')}
+            title={t('chat.expand')}
+            onClick={() => void navigate('/chat', { state: { draft: text } })}
+          >
+            <ExpandIcon />
+          </button>
+        )}
         <button
-          type="button"
+          type="submit"
           className="btn chat-button"
-          aria-label={t('chat.expand')}
-          title={t('chat.expand')}
-          onClick={() => void navigate('/chat', { state: { draft: text } })}
+          aria-label={open ? t('scene.send') : t('scene.chat')}
+          disabled={busy}
         >
-          <ExpandIcon />
+          {open ? <SendIcon /> : <ChatIcon />}
         </button>
-      )}
-      <button type="submit" className="btn chat-button" aria-label={open ? t('scene.send') : t('scene.chat')} disabled={busy}>
-        {open ? <SendIcon /> : <ChatIcon />}
-      </button>
-    </form>
+      </form>
+    </>
   );
 }
+
+const proposalKind = (p: Proposal) => p.action.replace('create_', '');

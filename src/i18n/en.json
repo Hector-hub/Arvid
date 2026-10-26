@@ -1031,5 +1031,26 @@
     "abandonYes": "Abandon",
     "missionLabel": "Goal: {goal} · milestone {n}/{total}",
     "celebrate": "Goal achieved: {title}! Every milestone counted. I'm proud of you."
+  },
+  "actions": {
+    "prepared": "Here it is: check it and confirm.",
+    "draft": "I didn't fully get it: I'll open the form with what I understood.",
+    "noDate": "no date",
+    "reminders": "Reminders: {list}",
+    "create": "Create",
+    "failed": "Couldn't create it. Tap “Edit” to review it.",
+    "kinds": {
+      "mission": "Mission",
+      "goal": "Goal",
+      "rest": "Rest",
+      "activity": "Activity"
+    },
+    "created": {
+      "mission": "Created: mission “{name}”.",
+      "goal": "Created: goal “{name}”.",
+      "rest": "Created: rest {name}.",
+      "activity": "Created: activity “{name}”."
+    },
+    "draftBanner": "{companion} filled in what it understood: review and complete it."
   }
 }

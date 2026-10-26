@@ -1031,5 +1031,26 @@
     "abandonYes": "Abandonar",
     "missionLabel": "Objetivo: {goal} · hito {n}/{total}",
     "celebrate": "¡Objetivo cumplido: {title}! Cada hito ha contado. Estoy orgullos{selfO} de ti."
+  },
+  "actions": {
+    "prepared": "Te lo preparo: revísalo y confírmalo.",
+    "draft": "No lo he entendido del todo: te abro el formulario con lo que sí entendí.",
+    "noDate": "sin fecha",
+    "reminders": "Recordatorios: {list}",
+    "create": "Crear",
+    "failed": "No se pudo crear. Pulsa «Editar» para revisarlo.",
+    "kinds": {
+      "mission": "Misión",
+      "goal": "Objetivo",
+      "rest": "Descanso",
+      "activity": "Actividad"
+    },
+    "created": {
+      "mission": "Creada: misión «{name}».",
+      "goal": "Creado: objetivo «{name}».",
+      "rest": "Creado: descanso {name}.",
+      "activity": "Creada: actividad «{name}»."
+    },
+    "draftBanner": "{companion} rellenó lo que entendió: revisa y completa."
   }
 }
