@@ -93,10 +93,39 @@ Complejidad: S (días) · M (1–2 semanas) · L (más de 2 semanas), para una p
 - **Verificación:** revisión visual + chequeo automático de contraste.
 
 ## P1 — Después del lanzamiento
-Push con el resumen diario (micro-servidor) y badge en el icono · Insights (tendencias por actividad, resumen semanal) · Descansos planificados · Objetivos con hitos · Retos temporales · Efectos de sonido (la música opcional se adelanta al MVP, D-050).
+**Hecho:**
+- Push con el resumen diario y badge en el icono (spec 10, 1.1.0).
+- Descansos planificados (spec 12, 1.3.0).
+- Objetivos con hitos (spec 12, 1.4.0).
+
+**Pendiente:**
+- Insights: tendencias por actividad y resumen semanal.
+- Retos temporales.
+- Efectos de sonido (la música opcional se adelantó al MVP, D-050).
+
+**Fuera de la lista original, ya hecho:**
+- Juegos dentro de ARVID (spec 09).
+- Ciudad viva (spec 11).
+- Crear con el compañero (spec 12).
+- Memoria del compañero (spec 13).
+- Códigos de acceso y mensajes de prueba de la IA (D-100, D-135).
 
 ## P2 — Futuro o experimental
-Sync y cuentas · Cosméticos · Personaje evolutivo · Refugio o mundo · Tipo "hábito a reducir" · App nativa con Capacitor.
+- Sync y cuentas.
+- Cosméticos.
+- Personaje evolutivo.
+- Tipo «hábito a reducir».
+- App nativa con Capacitor.
+- *Refugio o mundo:* adelantado en forma sencilla como la ciudad viva (spec 11).
+
+## Ideas sin decidir
+- Bloquear un código de acceso concreto sin invalidar los demás.
+- Que los comentarios del compañero por iniciativa propia no gasten créditos.
+- Que la IA elija la animación del compañero.
+- Que CombinaDos dé XP o logros (requiere cambiar el juego).
+- Misiones vencidas ayer en «¿Olvidaste algo ayer?».
 
 ## Excluido explícitamente
-Monedas, tienda, inventario, equipamiento, competición o ranking social, generación de misiones con IA.
+Monedas, tienda, inventario, equipamiento, competición o ranking social.
+
+La «generación de misiones con IA» dejó de estar excluida en la forma limitada de D-121: la IA solo estructura lo que el usuario pide y nunca crea nada sin su confirmación.

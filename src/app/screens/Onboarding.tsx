@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { saveSetting, setCategoryActive, type Settings } from '../../data/repository';
 import { castOrder, validateAlias, ALIAS_MAX, type ArvidColor, type Gender } from '../../domain/arvid/arvid';
@@ -13,6 +13,7 @@ import { useCategories, useData, useSettings } from '../data';
 import { CategoryIcon } from '../design/components';
 import { AiCodeField, AliasField, CharacterCarousel, CompanionColorPicker, CompanionPicker, GenderPicker, LanguagePicker } from '../profile/pickers';
 import { Scene } from '../scene/Scene';
+import { setCity } from '../scene/engine';
 import { categoryName, errorText } from '../text';
 import { useCompanionSync } from '../companion';
 import { InstallGuide } from './InstallGuide';
@@ -197,7 +198,7 @@ function useProfileControls() {
           </>
         );
       case 'ai':
-        // Permiso explícito: la IA envía datos a Mistral AI (IA-06)
+        // Permiso explícito: la IA envía datos a un servicio externo (IA-06)
         return (
           <>
             <p className="small muted">{t('settings.arvidAiHelp')}</p>
@@ -236,6 +237,8 @@ function ContinueButton({ onClick, disabled, label = t('common.continue') }: { o
 /** Onboarding con ARVID (spec 06, ON). */
 export function Onboarding({ banner }: { banner?: ReactNode }) {
   const ctx = useData();
+  // Quien empieza está en el nivel 1: la escena ya muestra su calle (spec 11, CV-01), no la ciudad completa
+  useEffect(() => setCity(1), []);
   const navigate = useNavigate();
   const categories = useCategories();
   const { control } = useProfileControls();

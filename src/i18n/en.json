@@ -486,7 +486,7 @@
     "needsConnection": "Music needs a connection the first time.",
     "musicNote": "Off by default. A track that has already played can be heard offline.",
     "arvidAi": "{companion} with AI",
-    "arvidAiHelp": "To give you advice, {companion} sends your progress, activities and its notes about you to Mistral AI (France). You can turn it off anytime.",
+    "arvidAiHelp": "To give you advice, {companion} sends your progress, activities and its notes about you to an external AI service (in Europe). You can turn it off anytime.",
     "companion": "Companion",
     "games": "Games",
     "gamesHelp": "Shows the “Play” button in the Today scene.",
@@ -577,7 +577,10 @@
     "craftpix": "CraftPix free license",
     "own_m": "Own work",
     "own_f": "Own work",
-    "freeUse": "Free to use"
+    "freeUse": "Free to use",
+    "ai": "Artificial intelligence",
+    "aiWhat": "ministral-8b model, via API",
+    "aiWho": "Mistral AI (France)"
   },
   "scene": {
     "label": "Your character walks across a city bridge at night, with {companion} by their side",
@@ -737,7 +740,7 @@
       },
       "ai": {
         "0": "I can also give you advice with artificial intelligence and chat with you.",
-        "1": "For that I'd send your progress and activities to Mistral AI (France).",
+        "1": "For that I'd send your progress and activities to an external AI service (in Europe).",
         "2": "If you have an access code, enter it below. Shall we turn it on?"
       },
       "notifications": {
@@ -1075,7 +1078,7 @@
     "clearAllConfirm": "Delete everything {companion} knows about you? The conversation stays.",
     "clearAllYes": "Delete memory",
     "title": "What {companion} knows about you",
-    "intro": "{companion} keeps short notes about you to adapt: how you like to be spoken to, your schedule, what motivates you. They're sent to Mistral AI with every AI message. At most {max}.",
+    "intro": "{companion} keeps short notes about you to adapt: how you like to be spoken to, your schedule, what motivates you. They're sent to the AI service with every AI message. At most {max}.",
     "empty": "Nothing saved yet. You can say “remember that…”.",
     "asked": "You asked",
     "delete": "Forget this note",

@@ -1,5 +1,5 @@
 // Vecinos que hablan (spec 11, VC): la primera vez que un vecino entra en pantalla cada día tiene un 10 % de decir
-// algo; como mucho uno al día (VC-02), nunca a la vez que el compañero (VC-03). Con IA, Mistral escribe la frase
+// algo; como mucho uno al día (VC-02), nunca a la vez que el compañero (VC-03). Con IA, el modelo escribe la frase
 // sin gastar créditos (VC-05, VC-06); sin IA, una de sus frases fijas (VC-07). No va a la conversación (VC-08).
 import { useEffect, useRef } from 'react';
 import { saveSetting } from '../../data/repository';

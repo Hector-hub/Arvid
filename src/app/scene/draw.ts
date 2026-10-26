@@ -291,7 +291,7 @@ export function drawScene(
 
   if (extras.speech) drawBubble(c, extras.speech, anchor.x, anchor.y);
   // Vecino (spec 11): borde ámbar para distinguirlo del compañero
-  else if (extras.neighbor) drawBubble(c, extras.neighbor.speech, extras.neighbor.x, extras.neighbor.y, C.lamp);
+  else if (extras.neighbor) drawBubble(c, extras.neighbor.speech, extras.neighbor.x, extras.neighbor.y, 'neighbor');
 }
 
 // ---------- Cono de escaneo ----------
@@ -335,9 +335,21 @@ const BUBBLE_RIGHT_GAP = 50;
 const PAD = 7;
 
 /** Burbuja anclada a ARVID, con cola hacia él y ▼ si hay más páginas (BP-01 a BP-03). */
-function drawBubble(c: Ctx, sp: Speech, ax: number, ay: number, border: string = C.cyanLight) {
+/** Colores de la burbuja pixel (D-137): la del compañero, como en el chat; la de un vecino, con borde dorado. */
+const BUBBLE = {
+  companion: { fill: '#f4f4f4', line: '#8f9ad6', shade: '#4b55a8' },
+  neighbor: { fill: '#f4f4f4', line: '#ffcd75', shade: '#a8662f' },
+} as const;
+const U = 2;
+
+/**
+ * Burbuja pixel anclada a quien habla, con el mismo estilo que las del chat (D-137): relleno claro, contorno de 1 píxel
+ * con las esquinas en escalón, sombra debajo y a la derecha, y cola en escalera; ▼ si hay más páginas (BP-01 a BP-03).
+ */
+function drawBubble(c: Ctx, sp: Speech, ax: number, ay: number, kind: keyof typeof BUBBLE = 'companion') {
   const lines = sp.pages[sp.page] ?? [];
   if (lines.length === 0) return;
+  const col = BUBBLE[kind];
   c.font = BUBBLE_FONT;
   const textW = Math.max(...lines.map((l) => c.measureText(l).width), 40);
   const w = Math.ceil(textW) + PAD * 2 + 8;
@@ -345,21 +357,35 @@ function drawBubble(c: Ctx, sp: Speech, ax: number, ay: number, border: string =
   // Sin llegar a la esquina superior derecha, donde está la bocina (MU-01)
   const x = Math.round(Math.max(4, Math.min(SCENE_W - BUBBLE_RIGHT_GAP - w, ax - 24)));
   const y = Math.round(Math.max(4, ay - 22 - h));
-  c.fillStyle = 'rgba(5, 9, 18, 0.92)';
-  c.fillRect(x, y, w, h);
-  // Borde de 2 px y cola en escalera hacia quien habla
-  c.fillStyle = border;
-  c.fillRect(x, y, w, 2);
-  c.fillRect(x, y + h - 2, w, 2);
-  c.fillRect(x, y, 2, h);
-  c.fillRect(x + w - 2, y, 2, h);
-  const tx = Math.round(Math.min(x + w - 12, Math.max(x + 8, ax - 2)));
-  for (let i = 0; i < 6; i++) c.fillRect(tx - Math.floor(i / 2), y + h + i, 2, 1);
-  c.fillStyle = '#f4f4f4';
+  const tx = Math.round(Math.min(x + w - 6 * U, Math.max(x + 3 * U, ax - 4)));
+  // Sombra
+  c.fillStyle = col.shade;
+  c.fillRect(x + U, y + h, w - U, U);
+  c.fillRect(x + w, y + U, U, h);
+  // Contorno sin las esquinas (escalón) y relleno
+  c.fillStyle = col.line;
+  c.fillRect(x + U, y, w - 2 * U, U);
+  c.fillRect(x + U, y + h - U, w - 2 * U, U);
+  c.fillRect(x, y + U, U, h - 2 * U);
+  c.fillRect(x + w - U, y + U, U, h - 2 * U);
+  c.fillStyle = col.fill;
+  c.fillRect(x + U, y + U, w - 2 * U, h - 2 * U);
+  // Cola en escalera hacia quien habla: filas de 4, 3, 2 y 1 píxeles con su contorno
+  for (let i = 0; i < 4; i++) {
+    const row = y + h - U + i * U;
+    const width = (4 - i) * U;
+    c.fillStyle = col.fill;
+    c.fillRect(tx, row, width, U);
+    c.fillStyle = col.line;
+    c.fillRect(tx - U, row, U, U);
+    c.fillRect(tx + width, row, U, U);
+  }
+  c.fillRect(tx - U, y + h - U + 4 * U, 2 * U, U);
+  c.fillStyle = '#1a1c2c';
   c.textBaseline = 'top';
   visibleLines(sp).forEach((line, i) => c.fillText(line, x + PAD + 2, y + PAD + i * LINE_H));
   if (hasMore(sp)) {
-    c.fillStyle = C.cyanLight;
+    c.fillStyle = col.shade;
     const mx = x + w - 10;
     const my = y + h - 9;
     c.fillRect(mx - 2, my, 5, 1);

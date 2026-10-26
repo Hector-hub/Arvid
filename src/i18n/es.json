@@ -486,7 +486,7 @@
     "needsConnection": "La música necesita conexión la primera vez.",
     "musicNote": "Desactivada por defecto. Una pista que ya ha sonado se puede escuchar sin conexión.",
     "arvidAi": "{companion} con IA",
-    "arvidAiHelp": "Para darte consejos, {companion} envía tu progreso, tus actividades y sus notas sobre ti a Mistral AI (Francia). Puedes desactivarlo cuando quieras.",
+    "arvidAiHelp": "Para darte consejos, {companion} envía tu progreso, tus actividades y sus notas sobre ti a un servicio de IA externo (en Europa). Puedes desactivarlo cuando quieras.",
     "companion": "Compañero",
     "games": "Juegos",
     "gamesHelp": "Muestra el botón «Jugar» en la escena de Hoy.",
@@ -577,7 +577,10 @@
     "craftpix": "Licencia gratuita de CraftPix",
     "own_m": "Propios",
     "own_f": "Propias",
-    "freeUse": "Uso libre"
+    "freeUse": "Uso libre",
+    "ai": "Inteligencia artificial",
+    "aiWhat": "Modelo ministral-8b, por API",
+    "aiWho": "Mistral AI (Francia)"
   },
   "scene": {
     "label": "Tu protagonista camina por un puente de la ciudad de noche, con {companion} a su lado",
@@ -737,7 +740,7 @@
       },
       "ai": {
         "0": "También puedo darte consejos con inteligencia artificial y conversar contigo.",
-        "1": "Para eso enviaría tu progreso y tus actividades a Mistral AI (Francia).",
+        "1": "Para eso enviaría tu progreso y tus actividades a un servicio de IA externo (en Europa).",
         "2": "Si tienes un código de acceso, escríbelo abajo. ¿Lo activamos?"
       },
       "notifications": {
@@ -1075,7 +1078,7 @@
     "clearAllConfirm": "¿Borrar todo lo que {companion} sabe de ti? La conversación no se borra.",
     "clearAllYes": "Borrar memoria",
     "title": "Lo que {companion} sabe de ti",
-    "intro": "{companion} guarda notas breves sobre ti para adaptarse: cómo te gusta que te hable, tus horarios, lo que te motiva. Se envían a Mistral AI con cada mensaje con IA. Como mucho {max}.",
+    "intro": "{companion} guarda notas breves sobre ti para adaptarse: cómo te gusta que te hable, tus horarios, lo que te motiva. Se envían al servicio de IA con cada mensaje con IA. Como mucho {max}.",
     "empty": "Aún no ha guardado nada. Puedes decirle «recuerda que…».",
     "asked": "La pediste",
     "delete": "Olvidar esta nota",

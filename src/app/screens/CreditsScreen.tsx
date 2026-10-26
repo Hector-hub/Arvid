@@ -29,6 +29,11 @@ function credits(): { group: TKey; items: Credit[] }[] {
         { what: 'Sweetie 16', who: 'GrafxKid', license: t('credits.freeUse') },
       ],
     },
+    {
+      // El proveedor de IA solo se nombra aquí (D-136)
+      group: 'credits.ai',
+      items: [{ what: t('credits.aiWhat'), who: t('credits.aiWho'), license: '—' }],
+    },
   ];
 }
 

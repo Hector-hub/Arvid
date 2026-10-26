@@ -103,7 +103,7 @@ describe('onboarding con ARVID (ON)', () => {
     await user.click(screen.getByRole('button', { name: 'Continuar' }));
     // 7. Permiso para la IA (IA-06)
     await skipDialogue(user);
-    expect(screen.getByText(/envía tu progreso, tus actividades y sus notas sobre ti a Mistral AI/)).toBeInTheDocument();
+    expect(screen.getByText(/envía tu progreso, tus actividades y sus notas sobre ti a un servicio de IA externo/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Activar' }));
     // 7b. Notificaciones (spec 10, NT-02): sin Web Push en el entorno de pruebas, solo se explica
     await skipDialogue(user);
