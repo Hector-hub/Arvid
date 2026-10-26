@@ -21,4 +21,16 @@ describe('pantalla de carga (D-116)', () => {
     expect(screen.getByText('App')).toBeInTheDocument();
     expect(screen.queryByRole('status', { name: 'ARVID' })).toBeNull();
   });
+
+  it('la app aparece aunque la pantalla de carga se vuelva a pintar durante el fundido', async () => {
+    vi.useFakeTimers();
+    render(
+      <Splash>
+        <p>App</p>
+      </Splash>,
+    );
+    // Avance poco a poco, dejando que React pinte entre medias (como en un móvil)
+    for (let i = 0; i < 40; i++) await act(async () => vi.advanceTimersByTimeAsync(100));
+    expect(screen.getByText('App')).toBeInTheDocument();
+  });
 });
