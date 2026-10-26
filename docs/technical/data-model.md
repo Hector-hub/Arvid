@@ -94,6 +94,21 @@ Guardar eventos (y no solo el estado) permite saber **cuándo** venció la misi�
 | note | string? | ≤ 40 caracteres |
 | createdAt | Instant | |
 
+### `goals` — objetivos con hitos (spec 12, OB), desde el esquema 3
+| Campo | Tipo | Notas |
+|---|---|---|
+| id | string | PK |
+| title | string | 1–60 |
+| categoryId | string | Categoría de todos sus hitos |
+| targetDate | LocalDate? | Orientativa (OB-10) |
+| description | string? | ≤ 200 |
+| createdAt, createdOn | Instant, LocalDate | |
+| milestones | `{ id, title, difficulty, deadline?, time?, missionId?, deadlineDropped? }[]` | 1–20, en orden; `missionId` al activarse (OB-04) |
+| abandonedOn | LocalDate? | OB-09 |
+| celebrated | boolean? | OB-08 |
+
+Las misiones ganan `time` (`HH:MM`, MH-01) y `goalId` (hito de un objetivo).
+
 ### `achievements`
 | Campo | Tipo | Notas |
 |---|---|---|

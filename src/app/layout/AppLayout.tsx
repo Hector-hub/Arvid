@@ -16,12 +16,14 @@ import { DisciplineTipWatcher } from '../arvid/disciplineTip';
 import { NotificationsWatcher } from '../notifications/NotificationsWatcher';
 import { CityWatcher } from '../city/CityWatcher';
 import { NeighborTalk } from '../city/NeighborTalk';
+import { GoalWatcher } from '../goals/GoalWatcher';
 import { LevelUpWatcher } from './LevelUp';
 import { MusicProvider } from '../music/MusicProvider';
 
 const TABS: { to: string; label: TKey; icon: SpriteName }[] = [
   { to: '/hoy', label: 'nav.today', icon: 'nav-today' },
   { to: '/actividades', label: 'nav.activities', icon: 'nav-activities' },
+  { to: '/objetivos', label: 'nav.goals', icon: 'nav-goals' },
   { to: '/perfil', label: 'nav.profile', icon: 'nav-character' },
 ];
 
@@ -63,6 +65,7 @@ export function AppLayout() {
         <NotificationsWatcher />
         <CityWatcher />
         <NeighborTalk />
+        <GoalWatcher />
         <ChatLogWatcher />
       </div>
       </MusicProvider>

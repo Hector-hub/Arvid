@@ -18,6 +18,7 @@ export function NotificationsWatcher() {
         db.activityStatusEvents.count(),
         db.completions.count(),
         db.missionEvents.count(),
+        db.missions.toArray(),
         db.settings.get('notifications'),
       ]),
     );

@@ -46,9 +46,9 @@ describe('exportar (BAK-01)', () => {
   it('incluye todas las tablas, versiones y no los ajustes del dispositivo', async () => {
     await seedActivity();
     const b = await exported();
-    expect(b).toMatchObject({ format: 'arvid-backup', formatVersion: 1, schemaVersion: 2, appVersion: '0.2.0' });
+    expect(b).toMatchObject({ format: 'arvid-backup', formatVersion: 1, schemaVersion: 3, appVersion: '0.2.0' });
     expect(Object.keys(b.data).sort()).toEqual(
-      ['achievements', 'activities', 'activityStatusEvents', 'activityVersions', 'categories', 'completions', 'missionEvents', 'missions', 'rests', 'settings'].sort(),
+      ['achievements', 'activities', 'activityStatusEvents', 'activityVersions', 'categories', 'completions', 'goals', 'missionEvents', 'missions', 'rests', 'settings'].sort(),
     );
     expect(b.data.completions).toHaveLength(1);
     expect(b.data.settings.map((s) => s.key)).toContain('reducedMotion');

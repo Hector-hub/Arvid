@@ -4,7 +4,7 @@ import { loadMissions } from '../../data/missions';
 import { DEFAULT_NOTIFICATIONS, loadRecords, loadSettings, saveSetting, type NotificationSettings } from '../../data/repository';
 import type { ArvidDB } from '../../data/db';
 import { buildDigest } from '../../domain/notifications/digest';
-import { upcomingReminders } from '../../domain/notifications/schedule';
+import { missionReminders, upcomingReminders } from '../../domain/notifications/schedule';
 import { isIOS, isStandalone } from '../../pwa/platform';
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
@@ -72,7 +72,8 @@ export async function syncPush(db: ArvidDB, now = new Date()): Promise<boolean> 
   const registration = await navigator.serviceWorker.getRegistration();
   const subscription = await registration?.pushManager.getSubscription();
   if (!subscription) return false;
-  const reminders = upcomingReminders(await loadRecords(db), now);
+  const [records, missions] = await Promise.all([loadRecords(db), loadMissions(db)]);
+  const reminders = [...upcomingReminders(records, now), ...missionReminders(missions, now)].sort((a, b) => a.at.localeCompare(b.at));
   return post({
     deviceId: settings.deviceId,
     subscription: subscription.toJSON(),

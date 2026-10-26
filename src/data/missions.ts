@@ -11,6 +11,7 @@ import {
 } from '../domain/missions/missions';
 import { toLocalDate, type LocalDate } from '../domain/time/localDate';
 import type { ArvidDB } from './db';
+import { advanceGoal } from './goals';
 import type { DataContext } from './repository';
 
 export async function loadMissions(db: ArvidDB): Promise<MissionRecord[]> {
@@ -29,6 +30,10 @@ export interface MissionInput {
   categoryId: string;
   difficulty: Difficulty;
   deadline?: LocalDate;
+  /** Hora del aviso (spec 12, MH-01). */
+  time?: string;
+  /** Hito de un objetivo (OB-04). */
+  goalId?: string;
 }
 
 export type MissionResult = { ok: true; id: string } | { ok: false; errors: MissionInputErrors };
@@ -48,6 +53,8 @@ export async function createMission(ctx: DataContext, input: MissionInput): Prom
       difficulty: input.difficulty,
       createdAt: now.toISOString(),
       createdOn: today,
+      ...(input.time && input.deadline ? { time: input.time } : {}),
+      ...(input.goalId ? { goalId: input.goalId } : {}),
     });
     if (input.deadline) {
       await ctx.db.missionEvents.add({ id: ctx.newId(), missionId: id, type: 'deadlineSet', date: today, deadline: input.deadline, at: now.toISOString() });
@@ -57,17 +64,21 @@ export async function createMission(ctx: DataContext, input: MissionInput): Prom
 }
 
 /** MIS-06: el título siempre; categoría y dificultad solo si está pendiente. */
-export async function updateMission(ctx: DataContext, id: string, input: Omit<MissionInput, 'deadline'>): Promise<MissionResult> {
+export async function updateMission(ctx: DataContext, id: string, input: Omit<MissionInput, 'deadline' | 'goalId'>): Promise<MissionResult> {
   const today = toLocalDate(ctx.now());
   return ctx.db.transaction('rw', ctx.db.missions, ctx.db.missionEvents, async () => {
     const record = await loadMission(ctx.db, id);
     if (!record) return { ok: false, errors: { title: 'notFound' } };
-    const errors = validateMissionInput(input, today);
+    const analysis = analyzeMission(record, today);
+    // La hora se valida con la fecha límite vigente (MH-01)
+    const errors = validateMissionInput({ ...input, deadline: input.time ? analysis.deadline : undefined }, today);
+    delete errors.deadline;
     if (Object.keys(errors).length > 0) return { ok: false, errors };
-    const actions = missionActions(record, analyzeMission(record, today), today);
+    const actions = missionActions(record, analysis, today);
     const locked = !actions.editCategoryAndDifficulty;
     await ctx.db.missions.update(id, {
       title: input.title.trim(),
+      time: input.time || undefined,
       ...(locked ? {} : { categoryId: input.categoryId, difficulty: input.difficulty }),
     });
     return { ok: true, id };
@@ -103,16 +114,24 @@ async function applyEvent(
 
 const simple = (type: MissionEventType) => (_: MissionRecord, today: LocalDate) => ({ type, date: today });
 
-/** Completar con fecha de hoy o de ayer (R-M2, R-M10). */
-export function completeMission(ctx: DataContext, id: string, date: LocalDate): Promise<boolean> {
-  return applyEvent(ctx, id, 'complete', (record, today) =>
+/** Completar con fecha de hoy o de ayer (R-M2, R-M10); si es un hito, se activa el siguiente (spec 12, OB-04). */
+export async function completeMission(ctx: DataContext, id: string, date: LocalDate): Promise<boolean> {
+  const ok = await applyEvent(ctx, id, 'complete', (record, today) =>
     canCompleteOn(record, analyzeMission(record, today), date, today) ? { type: 'completed', date } : undefined,
   );
+  const goalId = ok ? (await ctx.db.missions.get(id))?.goalId : undefined;
+  if (goalId) await advanceGoal(ctx, goalId);
+  return ok;
 }
 
 export const uncompleteMission = (ctx: DataContext, id: string) => applyEvent(ctx, id, 'uncomplete', simple('uncompleted'));
 export const abandonMission = (ctx: DataContext, id: string) => applyEvent(ctx, id, 'abandon', simple('abandoned'));
-export const clearMissionDeadline = (ctx: DataContext, id: string) => applyEvent(ctx, id, 'clearDeadline', simple('deadlineCleared'));
+/** Sin fecha límite tampoco hay hora de aviso (MH-01). */
+export async function clearMissionDeadline(ctx: DataContext, id: string): Promise<boolean> {
+  const ok = await applyEvent(ctx, id, 'clearDeadline', simple('deadlineCleared'));
+  if (ok) await ctx.db.missions.update(id, { time: undefined });
+  return ok;
+}
 
 /** Reprogramar (R-M3, R-M4); la fecha no puede ser pasada (S3-01). */
 export function rescheduleMission(ctx: DataContext, id: string, deadline: LocalDate): Promise<boolean> {

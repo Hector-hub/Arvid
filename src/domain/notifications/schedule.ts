@@ -5,6 +5,7 @@ import type { ActivityRecord, Reminder } from '../activities/types';
 import { restingOn } from '../activities/rests';
 import { addDays, daysInMonth, isoWeekday, toLocalDate, type LocalDate } from '../time/localDate';
 import type { PeriodKind } from '../time/period';
+import { analyzeMission, type MissionRecord } from '../missions/missions';
 
 /** Días que cubre la lista que se sube (PV-04). */
 export const SCHEDULE_DAYS = 7;
@@ -55,6 +56,27 @@ export function upcomingReminders(records: readonly ActivityRecord[], now: Date,
         if (at > now) slots.push({ at: at.toISOString(), ref: `${record.activity.id}:${index}` });
       });
     }
+  }
+  return slots.sort((a, b) => a.at.localeCompare(b.at));
+}
+
+/**
+ * Avisos de misiones con hora (spec 12, MH-02): el día de su fecha límite a esa hora, si siguen pendientes y es en
+ * los próximos días. Referencia `mission:<id>` (sin títulos, PV-01).
+ */
+export function missionReminders(missions: readonly MissionRecord[], now: Date, days = SCHEDULE_DAYS): ReminderSlot[] {
+  const today = toLocalDate(now);
+  const last = addDays(today, days - 1);
+  const slots: ReminderSlot[] = [];
+  for (const record of missions) {
+    const time = record.mission.time;
+    if (!time || !TIME.test(time)) continue;
+    const analysis = analyzeMission(record, today);
+    if (analysis.state !== 'pending' || !analysis.deadline || analysis.deadline < today || analysis.deadline > last) continue;
+    const [y, m, d] = analysis.deadline.split('-').map(Number) as [number, number, number];
+    const [hh, mm] = time.split(':').map(Number) as [number, number];
+    const at = new Date(y, m - 1, d, hh, mm);
+    if (at > now) slots.push({ at: at.toISOString(), ref: `mission:${record.mission.id}` });
   }
   return slots.sort((a, b) => a.at.localeCompare(b.at));
 }

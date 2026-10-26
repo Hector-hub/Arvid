@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { createContext, useContext, type ReactNode } from 'react';
 import { loadMissions } from '../data/missions';
+import { loadGoals } from '../data/goals';
 import { loadAchievements, loadCategories, loadRecord, loadRecords, loadRests, loadSettings, type DataContext } from '../data/repository';
 
 const DataCtx = createContext<DataContext | null>(null);
@@ -51,4 +52,10 @@ export function useAchievements() {
 export function useRests() {
   const { db } = useData();
   return useLiveQuery(() => loadRests(db), [db]);
+}
+
+/** Objetivos con hitos (spec 12, OB). */
+export function useGoals() {
+  const { db } = useData();
+  return useLiveQuery(() => loadGoals(db), [db]);
 }

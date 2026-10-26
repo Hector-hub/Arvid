@@ -16,6 +16,7 @@ import { useToday } from '../../clock';
 import { useCategories, useData, useMissions } from '../../data';
 import { BackLink, CategoryIcon, Panel } from '../../design/components';
 import { categoryName, dayMonth, difficultyLabel, missionDueText } from '../../text';
+import { GoalLabel } from './MissionRow';
 import { MISSION_STATE_CHIP } from './MissionRow';
 import { celebrate } from '../../scene/engine';
 import { t } from '../../../i18n';
@@ -114,7 +115,9 @@ function Detail({ record, analysis }: { record: MissionRecord; analysis: Mission
           {t('missionDetail.meta', { category: categoryName(category), difficulty: difficultyLabel(record.mission.difficulty), value })}
           {(analysis.state === 'pending' || analysis.state === 'expired') &&
             ` · ${missionDueText(analysis.deadline, today)}`}
+          {analysis.deadline && record.mission.time ? ` · ${record.mission.time}` : ''}
         </p>
+        <GoalLabel record={record} />
       </header>
 
       {analysis.state === 'expired' && analysis.expiredOn && (

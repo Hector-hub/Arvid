@@ -8,6 +8,7 @@ import type {
 } from '../domain/activities/types';
 import type { Category } from '../domain/categories';
 import type { Mission, MissionEvent } from '../domain/missions/missions';
+import type { Goal } from '../domain/goals/goals';
 
 export interface SettingRow {
   key: string;
@@ -20,7 +21,7 @@ export interface AchievementRow {
   unlockedAt: string;
 }
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 export class ArvidDB extends Dexie {
   categories!: EntityTable<Category, 'id'>;
@@ -34,6 +35,8 @@ export class ArvidDB extends Dexie {
   settings!: EntityTable<SettingRow, 'key'>;
   /** Descansos planificados (spec 12, DS). Desde la versión 2 del esquema. */
   rests!: EntityTable<Rest, 'id'>;
+  /** Objetivos con hitos (spec 12, OB). Desde la versión 3 del esquema. */
+  goals!: EntityTable<Goal, 'id'>;
 
   constructor(name = 'arvid') {
     super(name);
@@ -50,5 +53,7 @@ export class ArvidDB extends Dexie {
     });
     // Versión 2 (spec 12): tabla nueva y vacía; los datos de la versión 1 no cambian
     this.version(2).stores({ rests: 'id, from, to' });
+    // Versión 3 (spec 12): objetivos; las misiones ganan `time` y `goalId` (campos opcionales, sin índice)
+    this.version(3).stores({ goals: 'id' });
   }
 }

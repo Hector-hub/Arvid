@@ -3,6 +3,7 @@ import { TARGET_LIMITS } from '../domain/config';
 import type { ActivityRecord, ActivityStatusEvent, ActivityVersion, Completion, Rest } from '../domain/activities/types';
 import { restsFor } from '../domain/activities/rests';
 import type { MissionRecord } from '../domain/missions/missions';
+import type { Goal } from '../domain/goals/goals';
 import { analyze } from '../domain/progress/progress';
 import { isLocalDate, toLocalDate } from '../domain/time/localDate';
 import { SCHEMA_VERSION, type ArvidDB } from './db';
@@ -61,7 +62,39 @@ const statusEvent = z.object({
 
 const completion = z.object({ id, activityId: id, date: localDate, at: instant, tzOffsetMin: z.number().int().min(-900).max(900) });
 
-const mission = z.object({ id, title: z.string().min(1).max(60), categoryId: id, difficulty, createdAt: instant, createdOn: localDate });
+const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
+const mission = z.object({
+  id,
+  title: z.string().min(1).max(60),
+  categoryId: id,
+  difficulty,
+  createdAt: instant,
+  createdOn: localDate,
+  // Desde el esquema 3 (spec 12)
+  time: time.optional(),
+  goalId: id.optional(),
+});
+const milestone = z.object({
+  id,
+  title: z.string().min(1).max(60),
+  difficulty,
+  deadline: localDate.optional(),
+  time: time.optional(),
+  missionId: id.optional(),
+  deadlineDropped: z.boolean().optional(),
+});
+const goal = z.object({
+  id,
+  title: z.string().min(1).max(60),
+  categoryId: id,
+  targetDate: localDate.optional(),
+  description: z.string().max(200).optional(),
+  createdAt: instant,
+  createdOn: localDate,
+  milestones: z.array(milestone).min(1).max(20),
+  abandonedOn: localDate.optional(),
+  celebrated: z.boolean().optional(),
+});
 const missionEvent = z
   .object({
     id,
@@ -101,6 +134,8 @@ const backupSchema = z.object({
     settings: z.array(setting),
     // Desde el esquema 2 (spec 12); los backups anteriores no la tienen
     rests: z.array(rest).default([]),
+    // Desde el esquema 3 (spec 12)
+    goals: z.array(goal).default([]),
   }),
 });
 
@@ -126,6 +161,7 @@ export async function buildBackup(db: ArvidDB, appVersion: string, now: Date): P
       achievements: await db.achievements.toArray(),
       settings: (await db.settings.toArray()).filter((s) => exported(s.key)),
       rests: await db.rests.toArray(),
+      goals: await db.goals.toArray(),
     },
   }));
 }
@@ -200,6 +236,7 @@ function findBrokenReference({ data }: Backup): string | undefined {
     ['missionEvents', data.missionEvents],
     ['achievements', data.achievements],
     ['rests', data.rests],
+    ['goals', data.goals],
   ];
   for (const [name, rows] of tables) {
     if (new Set(rows.map((r) => r.id)).size !== rows.length) return `${name}: IDs duplicados`;
@@ -217,6 +254,12 @@ function findBrokenReference({ data }: Backup): string | undefined {
   for (const m of data.missions) if (!categories.has(m.categoryId)) return `misión ${m.id} sin categoría`;
   for (const e of data.missionEvents) if (!missions.has(e.missionId)) return `evento ${e.id} sin misión`;
   for (const r of data.rests) if (r.activityIds?.some((a) => !activities.has(a))) return `descanso ${r.id} con una actividad que no existe`;
+  const goals = new Set(data.goals.map((g) => g.id));
+  for (const m of data.missions) if (m.goalId && !goals.has(m.goalId)) return `misión ${m.id} de un objetivo que no existe`;
+  for (const g of data.goals) {
+    if (!categories.has(g.categoryId)) return `objetivo ${g.id} sin categoría`;
+    if (g.milestones.some((m) => m.missionId && !missions.has(m.missionId))) return `objetivo ${g.id} con un hito sin misión`;
+  }
   for (const a of data.activities) {
     if (!data.activityVersions.some((v) => v.activityId === a.id)) return `actividad ${a.id} sin configuración`;
     if (!data.activityStatusEvents.some((e) => e.activityId === a.id && e.type === 'created')) return `actividad ${a.id} sin creación`;
@@ -257,6 +300,7 @@ export async function replaceAllData(ctx: DataContext, backup: Backup): Promise<
     await db.missionEvents.bulkAdd(data.missionEvents);
     await db.achievements.bulkAdd(data.achievements);
     await db.rests.bulkAdd(data.rests as Rest[]);
+    await db.goals.bulkAdd(data.goals as Goal[]);
     await db.settings.bulkPut([
       ...data.settings.filter((s) => exported(s.key)),
       ...device,

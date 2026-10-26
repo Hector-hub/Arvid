@@ -24,7 +24,8 @@
     "activities": "Actividades",
     "profile": "Perfil",
     "settings": "Ajustes",
-    "missions": "Misiones"
+    "missions": "Misiones",
+    "goals": "Objetivos"
   },
   "units": {
     "day_one": "día",
@@ -100,7 +101,12 @@
     "deadlinePast": "La fecha límite no puede ser pasada",
     "notFound": "No encontrado",
     "aliasRequired": "Escribe cómo quieres que te llame",
-    "aliasTooLong": "Máximo {max} caracteres"
+    "aliasTooLong": "Máximo {max} caracteres",
+    "milestonesRequired": "Añade al menos un hito",
+    "milestonesTooMany": "Como mucho {max} hitos",
+    "descriptionTooLong": "La descripción es demasiado larga",
+    "timeNeedsDeadline": "La hora necesita una fecha límite",
+    "timeInvalid": "Hora no válida"
   },
   "categories": {
     "body": "Cuerpo",
@@ -279,7 +285,9 @@
     "locked": "La categoría y la dificultad solo se pueden cambiar mientras la misión está pendiente.",
     "deadline": "Fecha límite (opcional)",
     "deadlineHint": "Si la dejas vencer, resta en tu Disciplina. Sin fecha, nunca penaliza.",
-    "create": "Crear misión"
+    "create": "Crear misión",
+    "time": "Hora del aviso (opcional)",
+    "timeHint": "Con notificaciones, te aviso a esa hora el día de la fecha límite."
   },
   "missionDetail": {
     "created": "Creada el {date}",
@@ -812,7 +820,8 @@
       "missionsDue_other": "Y {count} misiones vencen hoy.",
       "streak": "Tu racha de {name} se rompe hoy si no la registras.",
       "streaks": "Tus rachas de {names} se rompen hoy si no las registras."
-    }
+    },
+    "mission": "Es hora de «{name}»."
   },
   "city": {
     "welcome": "Tu ciudad ahora crece contigo: con cada nivel llegan luces, tráfico y vecinos. Míralo en «Tu ciudad», en tu perfil.",
@@ -981,5 +990,46 @@
       "invalid-date": "Revisa las fechas."
     },
     "summary": "Día de descanso"
+  },
+  "goals": {
+    "title": "Objetivos",
+    "new": "Nuevo objetivo",
+    "newTitle": "Nuevo objetivo",
+    "editTitle": "Editar objetivo",
+    "emptyTitle": "Aún no tienes objetivos",
+    "emptyText": "Divide una meta grande en hitos: cada hito es una misión, y al completarla se activa la siguiente.",
+    "history": "Historial",
+    "completed": "Cumplido",
+    "abandoned": "Abandonado",
+    "progress": "{done} de {total} hitos",
+    "current": "Ahora: {title}",
+    "target": "meta {date}",
+    "overdue": "La fecha meta ya pasó. Puedes seguir: no penaliza.",
+    "notFound": "No se encontró el objetivo.",
+    "fieldTitle": "Título",
+    "titlePlaceholder": "Correr 10 km, lanzar mi web…",
+    "category": "Categoría",
+    "targetDate": "Fecha meta (opcional)",
+    "targetHint": "Orientativa: no vence ni penaliza.",
+    "description": "Descripción (opcional)",
+    "milestones": "Hitos",
+    "milestonesHint": "En orden: solo el siguiente está activo. Cada hito es una misión con su XP.",
+    "milestoneN": "Hito {n}",
+    "activated": "Activado",
+    "moveUp": "Subir el hito {n}",
+    "moveDown": "Bajar el hito {n}",
+    "remove": "Quitar el hito {n}",
+    "deadline": "fecha límite",
+    "time": "hora",
+    "addMilestone": "Añadir hito",
+    "create": "Crear objetivo",
+    "done": "Hecho",
+    "activeChip": "Ahora",
+    "deadlineDropped": "Su fecha ya había pasado al activarse: ponle otra en la misión.",
+    "abandon": "Abandonar objetivo",
+    "abandonConfirm": "Se abandona el hito activo (como una misión) y no se crearán los demás. ¿Abandonar?",
+    "abandonYes": "Abandonar",
+    "missionLabel": "Objetivo: {goal} · hito {n}/{total}",
+    "celebrate": "¡Objetivo cumplido: {title}! Cada hito ha contado. Estoy orgullos{selfO} de ti."
   }
 }

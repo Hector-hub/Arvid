@@ -7,6 +7,9 @@ import { ChatScreen } from './screens/ChatScreen';
 import { GameScreen } from './screens/GameScreen';
 import { CityScreen } from './city/CityScreen';
 import { RestsScreen } from './rests/RestsScreen';
+import { GoalsScreen } from './goals/GoalsScreen';
+import { GoalFormScreen } from './goals/GoalFormScreen';
+import { GoalDetailScreen } from './goals/GoalDetailScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
 import { InstallGuideScreen } from './screens/InstallGuideScreen';
 import { MissionDetailScreen } from './screens/missions/MissionDetailScreen';
@@ -37,6 +40,10 @@ export const routes: RouteObject[] = [
       { path: 'chat', element: <ChatScreen /> },
       { path: 'juego', element: <GameScreen /> },
       { path: 'descansos', element: <RestsScreen /> },
+      { path: 'objetivos', element: <GoalsScreen /> },
+      { path: 'objetivos/nuevo', element: <GoalFormScreen /> },
+      { path: 'objetivos/:id', element: <GoalDetailScreen /> },
+      { path: 'objetivos/:id/editar', element: <GoalFormScreen /> },
       { path: 'perfil/atributo/:categoryId', element: <AttributeDetailScreen /> },
       { path: 'perfil/disciplina', element: <DisciplineDetailScreen /> },
       { path: 'perfil/ciudad', element: <CityScreen /> },

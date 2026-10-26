@@ -10,6 +10,7 @@ nav-today 27 11
 nav-activities 33 15
 nav-character 25 10
 nav-settings 45 16
+nav-goals 17 7
 plus 36 20
 minus 37 20
 arrow-up 28 20

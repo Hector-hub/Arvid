@@ -24,7 +24,8 @@
     "activities": "Activities",
     "profile": "Profile",
     "settings": "Settings",
-    "missions": "Missions"
+    "missions": "Missions",
+    "goals": "Goals"
   },
   "units": {
     "day_one": "day",
@@ -100,7 +101,12 @@
     "deadlinePast": "The deadline can't be in the past",
     "notFound": "Not found",
     "aliasRequired": "Tell me what to call you",
-    "aliasTooLong": "Maximum {max} characters"
+    "aliasTooLong": "Maximum {max} characters",
+    "milestonesRequired": "Add at least one milestone",
+    "milestonesTooMany": "At most {max} milestones",
+    "descriptionTooLong": "The description is too long",
+    "timeNeedsDeadline": "A time needs a deadline",
+    "timeInvalid": "Invalid time"
   },
   "categories": {
     "body": "Body",
@@ -279,7 +285,9 @@
     "locked": "Category and difficulty can only be changed while the mission is pending.",
     "deadline": "Deadline (optional)",
     "deadlineHint": "If it goes overdue, it lowers your Discipline. Without a date, it never penalizes.",
-    "create": "Create mission"
+    "create": "Create mission",
+    "time": "Reminder time (optional)",
+    "timeHint": "With notifications on, I'll remind you at that time on the deadline day."
   },
   "missionDetail": {
     "created": "Created on {date}",
@@ -812,7 +820,8 @@
       "missionsDue_other": "And {count} missions are due today.",
       "streak": "Your {name} streak breaks today unless you log it.",
       "streaks": "Your {names} streaks break today unless you log them."
-    }
+    },
+    "mission": "Time for “{name}”."
   },
   "city": {
     "welcome": "Your city now grows with you: each level brings lights, traffic and neighbors. Check “Your city” in your profile.",
@@ -981,5 +990,46 @@
       "invalid-date": "Check the dates."
     },
     "summary": "Rest day"
+  },
+  "goals": {
+    "title": "Goals",
+    "new": "New goal",
+    "newTitle": "New goal",
+    "editTitle": "Edit goal",
+    "emptyTitle": "No goals yet",
+    "emptyText": "Split a big goal into milestones: each milestone is a mission, and finishing it unlocks the next.",
+    "history": "History",
+    "completed": "Achieved",
+    "abandoned": "Abandoned",
+    "progress": "{done} of {total} milestones",
+    "current": "Now: {title}",
+    "target": "target {date}",
+    "overdue": "The target date has passed. You can keep going: no penalty.",
+    "notFound": "Goal not found.",
+    "fieldTitle": "Title",
+    "titlePlaceholder": "Run 10 km, launch my site…",
+    "category": "Category",
+    "targetDate": "Target date (optional)",
+    "targetHint": "Just a guide: it doesn't expire or penalize.",
+    "description": "Description (optional)",
+    "milestones": "Milestones",
+    "milestonesHint": "In order: only the next one is active. Each milestone is a mission with its XP.",
+    "milestoneN": "Milestone {n}",
+    "activated": "Activated",
+    "moveUp": "Move milestone {n} up",
+    "moveDown": "Move milestone {n} down",
+    "remove": "Remove milestone {n}",
+    "deadline": "deadline",
+    "time": "time",
+    "addMilestone": "Add milestone",
+    "create": "Create goal",
+    "done": "Done",
+    "activeChip": "Now",
+    "deadlineDropped": "Its date had already passed when it unlocked: set a new one in the mission.",
+    "abandon": "Abandon goal",
+    "abandonConfirm": "The active milestone is abandoned (like a mission) and the rest won't be created. Abandon?",
+    "abandonYes": "Abandon",
+    "missionLabel": "Goal: {goal} · milestone {n}/{total}",
+    "celebrate": "Goal achieved: {title}! Every milestone counted. I'm proud of you."
   }
 }

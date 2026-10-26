@@ -12,6 +12,10 @@ export interface Mission {
   createdAt: Instant;
   /** Fecha local de creación (R-M10). */
   createdOn: LocalDate;
+  /** Hora `HH:MM` del aviso el día de la fecha límite (spec 12, MH-01). */
+  time?: string;
+  /** Objetivo del que es hito (spec 12, OB-04). */
+  goalId?: string;
 }
 
 export type MissionEventType = 'deadlineSet' | 'deadlineCleared' | 'completed' | 'uncompleted' | 'abandoned';
@@ -149,7 +153,8 @@ export function missionActions(record: MissionRecord, analysis: MissionAnalysis,
     reschedule: open,
     clearDeadline: open && !!analysis.deadline,
     abandon: open,
-    delete: analysis.state === 'pending' && record.mission.createdOn === today,
+    // Un hito no se borra: rompería la secuencia del objetivo (OB-04)
+    delete: analysis.state === 'pending' && record.mission.createdOn === today && !record.mission.goalId,
     editCategoryAndDifficulty: analysis.state === 'pending',
   };
 }
@@ -166,15 +171,24 @@ export interface MissionInputErrors {
   title?: string;
   categoryId?: string;
   deadline?: string;
+  time?: string;
 }
 
+export const MISSION_TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
+
 /** Validación del formulario (MIS-07, S3-01). */
-export function validateMissionInput(input: { title: string; categoryId?: string; deadline?: LocalDate }, today: LocalDate): MissionInputErrors {
+export function validateMissionInput(
+  input: { title: string; categoryId?: string; deadline?: LocalDate; time?: string },
+  today: LocalDate,
+): MissionInputErrors {
   const errors: MissionInputErrors = {};
   const title = input.title.trim();
   if (!title) errors.title = 'titleRequired';
   else if (title.length > MISSION_TITLE_MAX) errors.title = 'titleTooLong';
   if (!input.categoryId) errors.categoryId = 'categoryRequired';
   if (input.deadline && compareDates(input.deadline, today) < 0) errors.deadline = 'deadlinePast';
+  // MH-01: la hora solo con fecha límite
+  if (input.time && !MISSION_TIME.test(input.time)) errors.time = 'timeInvalid';
+  else if (input.time && !input.deadline) errors.time = 'timeNeedsDeadline';
   return errors;
 }

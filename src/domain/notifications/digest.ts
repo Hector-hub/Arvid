@@ -48,6 +48,13 @@ export function buildDigest({ records, missions, now, kind, ref }: DigestInput):
   const badge = endingToday.length + dueToday.length;
   const calm = (): Digest => ({ body: t('notifications.calm'), badge, calm: true });
 
+  // Misión con hora (spec 12, MH-02): `mission:<id>`
+  if (kind === 'activity' && ref?.startsWith('mission:')) {
+    const record = missions.find((m) => m.mission.id === ref.slice('mission:'.length));
+    if (!record || analyzeMission(record, today).state !== 'pending') return calm();
+    return { body: t('notifications.mission', { name: record.mission.title }), badge, calm: false };
+  }
+
   if (kind === 'activity') {
     const [id, index] = (ref ?? '').split(':');
     const item = items.find((i) => i.activityId === id);

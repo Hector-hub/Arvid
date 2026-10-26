@@ -109,3 +109,23 @@ describe('descansos en los avisos (spec 12, DS-09)', () => {
     expect(buildDigest({ records: [leer], missions: [], now: new Date(2026, 9, 25, 22, 0), kind: 'night' })).toMatchObject({ calm: true, badge: 0 });
   });
 });
+
+describe('misiones con hora (spec 12, MH-02)', () => {
+  const mis = (title: string, deadline: string, time?: string): MissionRecord => ({
+    ...mission(title, deadline),
+    mission: { ...mission(title, deadline).mission, ...(time ? { time } : {}) },
+  });
+
+  it('aviso el día de la fecha límite a su hora, solo si sigue pendiente y es próximo', async () => {
+    const { missionReminders } = await import('./schedule');
+    const slots = missionReminders([mis('Pagar luz', '2026-10-30', '18:00'), mis('Sin hora', '2026-10-30'), mis('Lejos', '2026-11-20', '09:00')], now);
+    expect(slots).toEqual([{ at: new Date(2026, 9, 30, 18, 0).toISOString(), ref: 'm-Pagar luz'.replace(/^/, 'mission:') }]);
+  });
+
+  it('el texto nombra la misión; si ya está hecha, mensaje breve', () => {
+    const m = mis('Pagar luz', '2026-10-25', '18:00');
+    expect(buildDigest({ records: [], missions: [m], now: new Date(2026, 9, 25, 18, 0), kind: 'activity', ref: 'mission:m-Pagar luz' }).body).toBe('Es hora de «Pagar luz».');
+    const done = { ...m, events: [...m.events, { id: 'x', missionId: m.mission.id, type: 'completed' as const, date: d('2026-10-25'), at: '2026-10-25T17:00:00.000Z' }] };
+    expect(buildDigest({ records: [], missions: [done], now: new Date(2026, 9, 25, 18, 0), kind: 'activity', ref: 'mission:m-Pagar luz' }).calm).toBe(true);
+  });
+});

@@ -37,6 +37,7 @@ function MissionForm({ record, defaultCategoryId }: { record?: MissionRecord; de
   const [categoryId, setCategoryId] = useState(defaultCategoryId);
   const [difficulty, setDifficulty] = useState<Difficulty>(record?.mission.difficulty ?? 'medium');
   const [deadline, setDeadline] = useState('');
+  const [time, setTime] = useState(record?.mission.time ?? '');
   const [errors, setErrors] = useState<MissionInputErrors>({});
   const [saving, setSaving] = useState(false);
 
@@ -52,8 +53,8 @@ function MissionForm({ record, defaultCategoryId }: { record?: MissionRecord; de
     try {
       const date = deadline && isLocalDate(deadline) ? (deadline as LocalDate) : undefined;
       const result = record
-        ? await updateMission(ctx, record.mission.id, { title, categoryId, difficulty })
-        : await createMission(ctx, { title, categoryId, difficulty, deadline: date });
+        ? await updateMission(ctx, record.mission.id, { title, categoryId, difficulty, time: time || undefined })
+        : await createMission(ctx, { title, categoryId, difficulty, deadline: date, time: date && time ? time : undefined });
       if (!result.ok) {
         setErrors(result.errors);
         document
@@ -144,6 +145,29 @@ function MissionForm({ record, defaultCategoryId }: { record?: MissionRecord; de
           ) : (
             <p id="mission-deadline-hint" className="small muted">
               {t('missionForm.deadlineHint')}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Hora del aviso (spec 12, MH-01): con fecha límite (al crear, la elegida; al editar, la vigente) */}
+      {(record ? !!missionAnalysis?.deadline : !!deadline) && (
+        <div className="field">
+          <label htmlFor="mission-time">{t('missionForm.time')}</label>
+          <input
+            id="mission-time"
+            type="time"
+            className="time-input"
+            value={time}
+            aria-describedby="mission-time-hint"
+            onChange={(e) => setTime(e.target.value)}
+            style={{ maxWidth: 160 }}
+          />
+          {errors.time ? (
+            <p className="field-error">{errorText(errors.time)}</p>
+          ) : (
+            <p id="mission-time-hint" className="small muted">
+              {t('missionForm.timeHint')}
             </p>
           )}
         </div>
