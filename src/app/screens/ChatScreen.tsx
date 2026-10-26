@@ -1,6 +1,8 @@
 // Conversación completa con el compañero (D-098): todo lo hablado, también lo que dijo por iniciativa propia,
-// agrupado por días, con campo para seguir hablando y opción de borrarla.
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+// agrupado por días. Se comporta como el chat de una red social (D-127): pantalla completa, arriba con quién hablas,
+// volver y borrar; abajo, el campo de escribir siempre visible (también con el teclado abierto); en medio, los
+// mensajes con su propio scroll.
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { clearChatLog, type ChatEntry } from '../../data/repository';
 import { COMPANION_NAME } from '../../domain/arvid/companion';
@@ -12,8 +14,7 @@ import type { Proposal } from '../../domain/arvid/actions';
 import { useArvidContext } from '../arvid/useArvidContext';
 import { logChat } from '../arvid/voice';
 import { useData, useSettings } from '../data';
-import { BackLink } from '../design/components';
-import { SendIcon } from '../design/icons';
+import { BackIcon, TrashIcon } from '../design/icons';
 import { markUserChat } from '../scene/engine';
 import { CompanionPreview } from '../scene/Scene';
 import { CHAT_MAX } from '../scene/Chat';
@@ -21,27 +22,65 @@ import { longDate } from '../text';
 
 const time = (at: string) => new Date(at).toLocaleTimeString(getLocale(), { hour: '2-digit', minute: '2-digit' });
 
+/** Alto visible real: con el teclado abierto (iPhone), la pantalla se ajusta para que el campo siga a la vista. */
+function useVisibleHeight(): number | undefined {
+  const [height, setHeight] = useState<number>();
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => setHeight(Math.round(vv.height));
+    update();
+    vv.addEventListener('resize', update);
+    return () => vv.removeEventListener('resize', update);
+  }, []);
+  return height;
+}
+
+const TEXTAREA_MAX_ROWS = 5;
+
 export function ChatScreen() {
   useLocale();
   const { db } = useData();
   const settings = useSettings();
   const context = useArvidContext();
   const location = useLocation();
+  const navigate = useNavigate();
   const [text, setText] = useState(() => (location.state as { draft?: string } | null)?.draft ?? '');
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const [proposal, setProposal] = useState<Proposal>();
-  const navigate = useNavigate();
   const end = useRef<HTMLDivElement>(null);
+  const field = useRef<HTMLTextAreaElement>(null);
+  const cancel = useRef<HTMLButtonElement>(null);
+  const height = useVisibleHeight();
   const log = settings?.chatLog;
+  const name = settings ? COMPANION_NAME[settings.companion] : '';
 
   // Siempre a la vista lo último
   useEffect(() => {
     end.current?.scrollIntoView?.({ block: 'end' });
-  }, [log?.length, busy, proposal]);
+  }, [log?.length, busy, proposal, height]);
 
-  async function send(e: FormEvent) {
-    e.preventDefault();
+  // El campo crece con el texto, hasta 5 líneas
+  useLayoutEffect(() => {
+    const el = field.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    const line = parseFloat(getComputedStyle(el).lineHeight) || 22;
+    el.style.height = `${Math.min(el.scrollHeight, line * TEXTAREA_MAX_ROWS + 16)}px`;
+  }, [text]);
+
+  // Diálogo de borrar: el foco va a «Cancelar» y Esc lo cierra
+  useEffect(() => {
+    if (!confirm) return;
+    cancel.current?.focus();
+    const escape = (e: globalThis.KeyboardEvent) => e.key === 'Escape' && setConfirm(false);
+    document.addEventListener('keydown', escape);
+    return () => document.removeEventListener('keydown', escape);
+  }, [confirm]);
+
+  async function send(e?: FormEvent) {
+    e?.preventDefault();
     const message = text.trim();
     if (!message || busy) return;
     setText('');
@@ -59,6 +98,20 @@ export function ChatScreen() {
     }
   }
 
+  // Volver a donde estabas; si se abrió directamente, a Hoy
+  const back = () => {
+    if (((window.history.state as { idx?: number } | null)?.idx ?? 0) > 0) void navigate(-1);
+    else void navigate('/hoy');
+  };
+
+  // Intro envía; Mayúsculas + Intro, nueva línea (en el móvil, el botón del teclado es «Enviar»)
+  function onKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      void send();
+    }
+  }
+
   // Separadores por día
   const groups: { day: LocalDate; entries: ChatEntry[] }[] = [];
   for (const entry of log ?? []) {
@@ -68,17 +121,30 @@ export function ChatScreen() {
   }
 
   return (
-    <div className="stack chat-page" style={{ gap: 'var(--s4)' }}>
-      <BackLink to="/hoy" label={t('nav.today')} />
-      <div className="row">
-        <CompanionPreview size={48} />
-        <h1 className="grow" style={{ fontSize: '1.375rem' }}>
-          {t('chat.title')}
-        </h1>
-      </div>
+    <div className="chat-screen" style={height ? { height } : undefined}>
+      <header className="chat-header">
+        <button type="button" className="btn btn-ghost btn-icon" aria-label={t('common.back')} onClick={back}>
+          <BackIcon />
+        </button>
+        <CompanionPreview size={40} />
+        <div className="grow" style={{ minWidth: 0 }}>
+          <h1 className="chat-title">{name}</h1>
+          <p className="small muted">{settings?.arvidAi ? t('chat.withAi') : t('chat.withoutAi')}</p>
+        </div>
+        <button
+          type="button"
+          className="btn btn-ghost btn-icon"
+          aria-label={t('chat.clear')}
+          title={t('chat.clear')}
+          disabled={(log?.length ?? 0) === 0}
+          onClick={() => setConfirm(true)}
+        >
+          <TrashIcon />
+        </button>
+      </header>
 
-      <section className="chat-log" aria-label={t('chat.title')} aria-live="polite">
-        {groups.length === 0 && <p className="muted">{t('chat.empty')}</p>}
+      <section className="chat-log chat-scroll" aria-label={t('chat.title')} aria-live="polite">
+        {groups.length === 0 && <p className="muted chat-empty">{t('chat.empty')}</p>}
         {groups.map((g) => (
           <div key={g.day} className="stack" style={{ gap: 'var(--s2)' }}>
             <p className="chat-day small muted">{longDate(g.day)}</p>
@@ -101,45 +167,54 @@ export function ChatScreen() {
         <div ref={end} />
       </section>
 
-      <form className="chat-page-form" onSubmit={(e) => void send(e)}>
-        <input
-          className="chat-input"
-          type="text"
-          value={text}
-          maxLength={CHAT_MAX}
-          placeholder={t('chat.placeholder')}
-          aria-label={t('scene.chatInput')}
-          autoComplete="off"
-          enterKeyHint="send"
-          onChange={(e) => setText(e.target.value)}
-        />
-        <button type="submit" className="btn btn-primary btn-icon" aria-label={t('scene.send')} disabled={busy || !text.trim()}>
-          <SendIcon />
-        </button>
+      {/* Estilo terminal (D-127): «>», texto pixel, línea cian debajo y «ENVIAR» */}
+      <form className="chat-composer" onSubmit={(e) => void send(e)}>
+        <div className="chat-terminal">
+          <span className="chat-prompt" aria-hidden="true">
+            &gt;
+          </span>
+          <textarea
+            ref={field}
+            className="chat-terminal-input"
+            rows={1}
+            value={text}
+            maxLength={CHAT_MAX}
+            placeholder={t('chat.placeholder')}
+            aria-label={t('scene.chatInput')}
+            autoComplete="off"
+            enterKeyHint="send"
+            onKeyDown={onKeyDown}
+            onChange={(e) => setText(e.target.value)}
+          />
+          <button type="submit" className="chat-terminal-send" disabled={busy || !text.trim()}>
+            {t('scene.send')}
+          </button>
+        </div>
       </form>
 
-      {(log?.length ?? 0) > 0 &&
-        (confirm ? (
-          <div className="banner stack" role="alertdialog" aria-label={t('chat.clear')}>
-            <p>{t('chat.clearConfirm')}</p>
+      {confirm && (
+        <div className="sheet-backdrop chat-confirm" onClick={() => setConfirm(false)}>
+          <div
+            className="panel stack"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="chat-clear-title"
+            aria-describedby="chat-clear-text"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="chat-clear-title">{t('chat.clear')}</h2>
+            <p id="chat-clear-text">{t('chat.clearConfirm')}</p>
             <div className="row">
-              <button
-                type="button"
-                className="btn btn-danger grow"
-                onClick={() => void clearChatLog(db).then(() => setConfirm(false))}
-              >
-                {t('chat.clearYes')}
-              </button>
-              <button type="button" className="btn grow" onClick={() => setConfirm(false)}>
+              <button ref={cancel} type="button" className="btn grow" onClick={() => setConfirm(false)}>
                 {t('common.cancel')}
+              </button>
+              <button type="button" className="btn btn-danger grow" onClick={() => void clearChatLog(db).then(() => setConfirm(false))}>
+                {t('chat.clearYes')}
               </button>
             </div>
           </div>
-        ) : (
-          <button type="button" className="btn btn-ghost" style={{ alignSelf: 'center' }} onClick={() => setConfirm(true)}>
-            {t('chat.clear')}
-          </button>
-        ))}
+        </div>
+      )}
     </div>
   );
 }

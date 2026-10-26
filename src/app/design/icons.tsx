@@ -138,3 +138,34 @@ export function CollapseIcon() {
     </PixelIcon>
   );
 }
+
+/** Papelera: borrar la conversación (D-127). */
+export function TrashIcon() {
+  return (
+    <PixelIcon>
+      <rect x="4" y="0" width="4" height="1" />
+      <rect x="1" y="1" width="10" height="2" />
+      <rect x="2" y="3" width="1" height="8" />
+      <rect x="9" y="3" width="1" height="8" />
+      <rect x="3" y="10" width="6" height="1" />
+      <rect x="4" y="4" width="1" height="5" />
+      <rect x="7" y="4" width="1" height="5" />
+    </PixelIcon>
+  );
+}
+
+/** Flecha de volver. */
+export function BackIcon() {
+  return (
+    <PixelIcon>
+      <rect x="3" y="5" width="8" height="2" />
+      <rect x="5" y="2" width="1" height="1" />
+      <rect x="4" y="3" width="1" height="1" />
+      <rect x="3" y="4" width="1" height="1" />
+      <rect x="1" y="5" width="2" height="2" />
+      <rect x="3" y="7" width="1" height="1" />
+      <rect x="4" y="8" width="1" height="1" />
+      <rect x="5" y="9" width="1" height="1" />
+    </PixelIcon>
+  );
+}

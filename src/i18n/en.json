@@ -789,7 +789,9 @@
     "clearConfirm": "Delete the whole conversation? This cannot be undone.",
     "clearYes": "Delete",
     "you": "You",
-    "placeholder": "Write to {companion}…"
+    "placeholder": "Write to {companion}…",
+    "withAi": "With AI · your conversation is saved on this device",
+    "withoutAi": "Without AI · answers with its usual lines"
   },
   "game": {
     "open": "Play",

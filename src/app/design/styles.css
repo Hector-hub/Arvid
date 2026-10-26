@@ -931,40 +931,210 @@ fieldset { border: 0; padding: 0; margin: 0; }
   text-align: center;
   font-family: var(--font-pixel);
 }
+/*
+ * Burbujas pixel del chat (D-126), solo con CSS: contorno de 1 «píxel» (3 px) con las esquinas en escalón (las sombras
+ * de cada lado no se tocan en las esquinas), sombra lavanda debajo y cola en escalera con clip-path. El compañero, a
+ * la izquierda y en blanco; tú, a la derecha y en lavanda.
+ */
 .chat-msg {
+  --u: 3px;
+  --bubble-fill: var(--c-white);
+  --bubble-ink: var(--c-ink);
+  --bubble-line: #8f9ad6;
+  --bubble-shade: #4b55a8;
+  position: relative;
   max-width: 85%;
+  margin: var(--u) var(--u) calc(var(--u) * 7);
   padding: var(--s2) var(--s3);
-  border: 2px solid var(--border);
-  background: var(--surface);
+  background: var(--bubble-fill);
+  color: var(--bubble-ink);
+  box-shadow:
+    0 calc(var(--u) * -1) 0 0 var(--bubble-line),
+    0 var(--u) 0 0 var(--bubble-line),
+    calc(var(--u) * -1) 0 0 0 var(--bubble-line),
+    var(--u) 0 0 0 var(--bubble-line),
+    0 calc(var(--u) * 2) 0 0 var(--bubble-shade),
+    var(--u) var(--u) 0 0 var(--bubble-shade);
 }
 .chat-msg p { margin: 0; overflow-wrap: anywhere; }
+/* Cola: contorno (::before) y relleno (::after) en escalera de 6 y 5 filas */
+.chat-msg::before,
+.chat-msg::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+}
+.chat-msg::before {
+  left: calc(var(--u) * 2);
+  width: calc(var(--u) * 7);
+  height: calc(var(--u) * 6);
+  background: var(--bubble-line);
+  clip-path: polygon(0 0, calc(var(--u) * 7) calc(var(--u) * 0), calc(var(--u) * 7) calc(var(--u) * 1), calc(var(--u) * 6) calc(var(--u) * 1), calc(var(--u) * 6) calc(var(--u) * 2), calc(var(--u) * 5) calc(var(--u) * 2), calc(var(--u) * 5) calc(var(--u) * 3), calc(var(--u) * 4) calc(var(--u) * 3), calc(var(--u) * 4) calc(var(--u) * 4), calc(var(--u) * 3) calc(var(--u) * 4), calc(var(--u) * 3) calc(var(--u) * 5), calc(var(--u) * 2) calc(var(--u) * 5), calc(var(--u) * 2) calc(var(--u) * 6), 0 calc(var(--u) * 6));
+}
+.chat-msg::after {
+  left: calc(var(--u) * 3);
+  width: calc(var(--u) * 5);
+  height: calc(var(--u) * 5);
+  background: var(--bubble-fill);
+  clip-path: polygon(0 0, calc(var(--u) * 5) calc(var(--u) * 0), calc(var(--u) * 5) calc(var(--u) * 1), calc(var(--u) * 4) calc(var(--u) * 1), calc(var(--u) * 4) calc(var(--u) * 2), calc(var(--u) * 3) calc(var(--u) * 2), calc(var(--u) * 3) calc(var(--u) * 3), calc(var(--u) * 2) calc(var(--u) * 3), calc(var(--u) * 2) calc(var(--u) * 4), calc(var(--u) * 1) calc(var(--u) * 4), calc(var(--u) * 1) calc(var(--u) * 5), 0 calc(var(--u) * 5));
+}
 .chat-msg.companion {
   align-self: flex-start;
-  border-color: var(--c-cyan);
 }
 .chat-msg.user {
   align-self: flex-end;
-  background: var(--surface-sunken);
+  --bubble-fill: #b8c0f5;
+  --bubble-line: #6f7bd0;
+  --bubble-shade: #3f4896;
+}
+/* Tu cola, a la derecha y en espejo */
+.chat-msg.user::before,
+.chat-msg.user::after {
+  left: auto;
+  transform: scaleX(-1);
+}
+.chat-msg.user::before {
+  right: calc(var(--u) * 2);
+}
+.chat-msg.user::after {
+  right: calc(var(--u) * 3);
 }
 .chat-who {
   display: block;
   margin-bottom: var(--s1);
-  color: var(--text-muted);
+  color: var(--c-slate);
   font-family: var(--font-pixel);
 }
-.chat-page-form {
-  position: sticky;
-  bottom: var(--s2);
+.chat-msg.user .chat-who {
+  color: var(--c-navy);
+}
+/*
+ * Chat como en una red social (D-127): pantalla completa por encima de la barra de navegación; cabecera arriba,
+ * mensajes con su propio scroll y el campo de escribir siempre abajo. La altura sigue a la parte visible de la
+ * pantalla (con el teclado abierto en iPhone), que el componente fija en línea.
+ */
+.chat-screen {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 100dvh;
+  z-index: 30;
   display: flex;
-  gap: var(--s2);
-  align-items: center;
-  padding: var(--s2);
+  flex-direction: column;
   background: var(--bg);
 }
-.chat-page-form .chat-input {
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: calc(var(--s2) + env(safe-area-inset-top)) var(--s3) var(--s2);
+  border-bottom: var(--b) solid var(--border);
+  background: var(--c-ink);
+}
+.chat-title {
+  font-size: 1.125rem;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chat-header p {
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chat-scroll {
   flex: 1;
-  width: auto;
-  animation: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--s3) var(--s3) var(--s2);
+}
+.chat-scroll > *,
+.chat-composer,
+.chat-header > * {
+  max-width: 100%;
+}
+.chat-empty {
+  text-align: center;
+  margin-top: var(--s5);
+}
+.chat-composer {
+  padding: var(--s2) var(--s3) calc(var(--s3) + env(safe-area-inset-bottom));
+  background: var(--c-ink);
+}
+/* Campo estilo terminal (D-127) */
+.chat-terminal {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s2);
+  border-bottom: 3px solid var(--c-cyan);
+  padding-bottom: var(--s1);
+}
+.chat-terminal:focus-within {
+  border-bottom-color: var(--c-gold);
+}
+.chat-prompt {
+  font-family: var(--font-pixel);
+  font-size: 1.25rem;
+  line-height: 1.4;
+  color: var(--c-cyan);
+  padding: 6px 0;
+}
+.chat-terminal-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 36px;
+  padding: 6px 0;
+  border: 0;
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font-pixel);
+  font-size: 1rem;
+  line-height: 1.4;
+  caret-color: var(--c-cyan);
+}
+.chat-terminal-input::placeholder {
+  color: var(--c-slate);
+}
+.chat-terminal-send {
+  min-height: 44px;
+  padding: 0 var(--s1);
+  border: 0;
+  background: none;
+  color: var(--c-cyan);
+  font-family: var(--font-pixel);
+  font-size: 0.9375rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.chat-terminal-send:disabled {
+  color: var(--c-slate);
+  cursor: default;
+}
+.chat-terminal-send:focus-visible {
+  outline: 2px solid var(--focus);
+}
+/* En pantallas anchas, la conversación centrada */
+@media (min-width: 768px) {
+  .chat-header,
+  .chat-scroll,
+  .chat-composer {
+    padding-left: max(var(--s3), calc((100% - 760px) / 2));
+    padding-right: max(var(--s3), calc((100% - 760px) / 2));
+  }
+}
+/* El diálogo de borrar, flotante y por encima del chat */
+.chat-confirm {
+  z-index: 40;
+  align-items: center;
+  padding: var(--s4);
+}
+.chat-confirm .panel {
+  max-width: 360px;
+  width: 100%;
 }
 
 /* Juego incrustado (spec 09) */

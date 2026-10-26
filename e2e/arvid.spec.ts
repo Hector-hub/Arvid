@@ -92,8 +92,10 @@ test('D-098: desde la escena, expandir abre la conversación con lo escrito; env
   await expect(page).toHaveURL(/\/chat$/);
   await expect(page.getByLabel('Mensaje para ARVID')).toHaveValue('¿Qué tal?');
   await page.getByRole('button', { name: 'Enviar' }).click();
-  await expect(page.getByText('¿Qué tal?', { exact: true })).toBeVisible();
-  await expect(page.getByText(/activa «ARVID con IA»/)).toBeVisible();
+  // Dentro de la conversación (el campo de texto, un textarea, conserva su texto inicial en el DOM)
+  const log = page.getByRole('region', { name: 'Conversación con ARVID' });
+  await expect(log.getByText('¿Qué tal?', { exact: true })).toBeVisible();
+  await expect(log.getByText(/activa «ARVID con IA»/)).toBeVisible();
   await page.reload();
-  await expect(page.getByText('¿Qué tal?', { exact: true })).toBeVisible();
+  await expect(log.getByText('¿Qué tal?', { exact: true })).toBeVisible();
 });

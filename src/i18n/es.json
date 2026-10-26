@@ -789,7 +789,9 @@
     "clearConfirm": "¿Borrar toda la conversación? No se puede deshacer.",
     "clearYes": "Borrar",
     "you": "Tú",
-    "placeholder": "Escribe a {companion}…"
+    "placeholder": "Escribe a {companion}…",
+    "withAi": "Con IA · tu conversación se guarda en este dispositivo",
+    "withoutAi": "Sin IA · responde con sus frases de siempre"
   },
   "game": {
     "open": "Jugar",
