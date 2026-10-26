@@ -17,7 +17,7 @@ export interface BrainDeps {
 
 type AiResult =
   | { ok: true; reply: string; proposal?: Proposal; draft?: Draft; memoryOps?: MemoryOp[] }
-  | { ok: false; reason: 'offline' | 'quota' | 'daily' | 'code' | 'error' };
+  | { ok: false; reason: 'offline' | 'quota' | 'daily' | 'trial' | 'code' | 'error' };
 
 /** Lo entendido de una propuesta que no pasó la validación (spec 12, AC-06): abre el formulario. */
 export type Draft = { action: ActionName; args: unknown };
@@ -26,6 +26,14 @@ export type Draft = { action: ActionName; args: unknown };
 let memoryTexts: string[] = [];
 export function setMemoryTexts(texts: readonly string[]): void {
   memoryTexts = [...texts];
+}
+
+/** Mensajes de prueba sin código (D-135): identificador del dispositivo y aviso de cuántos quedan. */
+let trialDevice = '';
+let onTrialLeft: ((left: number) => void) | undefined;
+export function setTrial(device: string | undefined, onLeft?: (left: number) => void): void {
+  trialDevice = device ?? '';
+  onTrialLeft = onLeft;
 }
 
 /** Mensajes que se envían como historial (spec 13, MU-03). */
@@ -54,18 +62,23 @@ async function askAi(
   try {
     const res = await fetch('/api/arvid', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(accessCode ? { 'X-Arvid-Code': accessCode } : {}) },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessCode ? { 'X-Arvid-Code': accessCode } : trialDevice ? { 'X-Arvid-Device': trialDevice } : {}),
+      },
       body: JSON.stringify({ locale: getLocale(), moment, messages, context: deps.context(), companion: getCompanion(), memory: memoryTexts, ...extra }),
       signal: AbortSignal.timeout(timeoutMs),
     });
-    // 429: créditos del día de este código agotados (D-100) o cuota de Mistral (IA-07)
+    // 429: créditos del día de este código agotados (D-100), prueba sin código agotada (D-135) o cuota de Mistral
     if (res.status === 429) {
       const data = (await res.json().catch(() => ({}))) as { error?: unknown };
-      return { ok: false, reason: data.error === 'daily' ? 'daily' : 'quota' };
+      if (data.error === 'trial') onTrialLeft?.(0);
+      return { ok: false, reason: data.error === 'daily' ? 'daily' : data.error === 'trial' ? 'trial' : 'quota' };
     }
     if (res.status === 401) return { ok: false, reason: 'code' };
     if (!res.ok) return { ok: false, reason: 'error' };
-    const data = (await res.json()) as { reply?: unknown; proposal?: unknown; draft?: unknown; memoryOps?: unknown };
+    const data = (await res.json()) as { reply?: unknown; proposal?: unknown; draft?: unknown; memoryOps?: unknown; trialLeft?: unknown };
+    if (typeof data.trialLeft === 'number') onTrialLeft?.(data.trialLeft);
     // Operaciones de memoria (spec 13): se vuelven a validar en la app (MC-05)
     const memoryOps = (Array.isArray(data.memoryOps) ? data.memoryOps : [])
       .map((o) => {

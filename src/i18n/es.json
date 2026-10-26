@@ -691,7 +691,8 @@
       "quota": "Por ahora no puedo conversar más. Inténtalo un poco más tarde.",
       "error": "Ahora mismo no consigo pensar bien. Inténtalo de nuevo en un momento.",
       "code": "Para hablar con IA necesito el código de acceso. Ponlo en Ajustes → Perfil.",
-      "daily": "Hoy ya usaste tus 25 mensajes con IA. Mañana podemos seguir; mientras, te respondo con mis frases de siempre."
+      "daily": "Hoy ya usaste tus 25 mensajes con IA. Mañana podemos seguir; mientras, te respondo con mis frases de siempre.",
+      "trial": "Se acabaron tus 5 mensajes de prueba. Con un código de acceso tendrás 25 al día: pídeselo a quien administra la app y escríbelo en Ajustes → Perfil."
     },
     "onboarding": {
       "welcome": {
@@ -793,7 +794,9 @@
     "you": "Tú",
     "placeholder": "Escribe a {companion}…",
     "withAi": "Con IA · tu conversación se guarda en este dispositivo",
-    "withoutAi": "Sin IA · responde con sus frases de siempre"
+    "withoutAi": "Sin IA · responde con sus frases de siempre",
+    "trial_one": "Prueba con IA · te queda 1 mensaje (con código, 25 al día)",
+    "trial_other": "Prueba con IA · te quedan {count} mensajes (con código, 25 al día)"
   },
   "game": {
     "open": "Jugar",

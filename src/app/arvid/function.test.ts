@@ -225,4 +225,56 @@ describe('función /api/arvid', () => {
       expect(data.proposal.action).toBe('create_mission');
     });
   });
+
+  describe('mensajes de prueba sin código (D-135)', () => {
+    const device = '2f0e8a1c-3b4d-4e5f-8a6b-7c8d9e0f1a2b';
+    const trialReq = (extra: Record<string, unknown> = {}, headers: Record<string, string> = {}) =>
+      new Request('https://x/api/arvid', { method: 'POST', body: body(extra), headers: { 'X-Arvid-Device': device, 'x-nf-client-connection-ip': '203.0.113.9', ...headers } });
+    const memoryTrial = () => {
+      const used = new Map<string, number>();
+      return {
+        used,
+        trial: {
+          take: vi.fn(async (d: string, ip: string) => {
+            const ud = used.get(`d:${d}`) ?? 0;
+            const ui = used.get(`i:${ip}`) ?? 0;
+            if (ud >= 5 || ui >= 15) return undefined;
+            used.set(`d:${d}`, ud + 1);
+            used.set(`i:${ip}`, ui + 1);
+            return 5 - ud - 1;
+          }),
+          refund: vi.fn(async () => undefined),
+        },
+      };
+    };
+
+    it('sin código, el chat funciona 5 veces por dispositivo y dice cuántos quedan; el sexto, 429 «trial»', async () => {
+      const { trial } = memoryTrial();
+      const fetch = mistral(200);
+      for (let i = 4; i >= 0; i--) {
+        const res = await handle(trialReq(), { apiKey: 'k', codeSecret: 's', trial, fetch });
+        expect(await res.json()).toMatchObject({ trialLeft: i });
+      }
+      const sixth = await handle(trialReq(), { apiKey: 'k', codeSecret: 's', trial, fetch });
+      expect(sixth.status).toBe(429);
+      expect(await sixth.json()).toEqual({ error: 'trial' });
+    });
+
+    it('la IP no se guarda en claro y los momentos sin código no gastan prueba', async () => {
+      const { trial } = memoryTrial();
+      await handle(trialReq(), { apiKey: 'k', codeSecret: 's', trial, fetch: mistral(200) });
+      const ip = vi.mocked(trial.take).mock.calls[0]![1];
+      expect(ip).not.toContain('203.0.113.9');
+      expect(ip).toMatch(/^[0-9a-f]{32}$/);
+      expect((await handle(trialReq({ moment: 'greeting', messages: [] }), { apiKey: 'k', codeSecret: 's', trial, fetch: mistral(200) })).status).toBe(401);
+      expect(trial.take).toHaveBeenCalledTimes(1);
+    });
+
+    it('un código inventado no cae en la prueba; un fallo de la IA devuelve el crédito', async () => {
+      const { trial } = memoryTrial();
+      expect((await handle(trialReq({}, { 'X-Arvid-Code': 'ARVID-X-AAAAAAAAAA' }), { apiKey: 'k', codeSecret: 's', trial, fetch: mistral(200) })).status).toBe(401);
+      await handle(trialReq(), { apiKey: 'k', codeSecret: 's', trial, fetch: mistral(502) });
+      expect(trial.refund).toHaveBeenCalledTimes(1);
+    });
+  });
 });

@@ -276,6 +276,10 @@ export interface Settings {
   notifications?: NotificationSettings;
   /** Código de acceso a la IA (D-100). Del dispositivo: no va en el backup. */
   aiCode?: string;
+  /** Identificador aleatorio para los mensajes de prueba sin código (D-135). Del dispositivo. */
+  trialDeviceId?: string;
+  /** Mensajes de prueba que le quedan, según la última respuesta (D-135). Del dispositivo. */
+  trialLeft?: number;
   /** Botón «Jugar» en la escena (spec 09, JG-08); activado por defecto. */
   games: boolean;
   /** ARVID con IA: desactivado hasta que el usuario lo acepte (spec 06, IA-06). */

@@ -691,7 +691,8 @@
       "quota": "I can't chat any more for now. Try again a bit later.",
       "error": "I can't think straight right now. Try again in a moment.",
       "code": "To talk with AI I need the access code. Add it in Settings → Profile.",
-      "daily": "You've used your 25 AI messages for today. We can keep going tomorrow; meanwhile I'll answer with my usual lines."
+      "daily": "You've used your 25 AI messages for today. We can keep going tomorrow; meanwhile I'll answer with my usual lines.",
+      "trial": "Your 5 trial messages are used up. With an access code you get 25 a day: ask whoever runs the app and enter it in Settings → Profile."
     },
     "onboarding": {
       "welcome": {
@@ -793,7 +794,9 @@
     "you": "You",
     "placeholder": "Write to {companion}…",
     "withAi": "With AI · your conversation is saved on this device",
-    "withoutAi": "Without AI · answers with its usual lines"
+    "withoutAi": "Without AI · answers with its usual lines",
+    "trial_one": "AI trial · 1 message left (25 a day with a code)",
+    "trial_other": "AI trial · {count} messages left (25 a day with a code)"
   },
   "game": {
     "open": "Play",

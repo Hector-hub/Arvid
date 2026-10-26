@@ -2,6 +2,7 @@
 // Añade la clave de Mistral (variable de entorno MISTRAL_API_KEY, nunca en el código) y reenvía la petición.
 // Protección contra abuso (D-100): código de acceso por persona (cabecera X-Arvid-Code, firmado con la variable
 // ARVID_CODE_SECRET), DAILY_CREDITS mensajes por código y día (contados en Netlify Blobs) y límite por IP de Netlify.
+import { createHash } from 'node:crypto';
 import { getStore } from '@netlify/blobs';
 import { z } from 'zod';
 import { DAILY_CREDITS, verifyCode } from '../lib/accessCode.mts';
@@ -93,18 +94,59 @@ const blobUsage: Usage = {
   },
 };
 
+// ---------- Mensajes de prueba sin código (D-135) ----------
+/** 5 mensajes de prueba en total por dispositivo y, como mucho, 15 por IP. */
+export const TRIAL_DEVICE = 5;
+export const TRIAL_IP = 15;
+
+/** Contadores de la prueba: `device:<id>` e `ip:<resumen>`, en total (no por día). */
+export interface Trial {
+  /** Gasta uno de los dos si quedan; devuelve lo que le queda al dispositivo, o `undefined` si no quedan. */
+  take(device: string, ip: string): Promise<number | undefined>;
+  refund(device: string, ip: string): Promise<void>;
+}
+
+const blobTrial: Trial = {
+  async take(device, ip) {
+    const store = getStore('ai-trial');
+    const [d, i] = await Promise.all([store.get(`device:${device}`), store.get(`ip:${ip}`)]);
+    const usedD = Number(d ?? 0);
+    const usedI = Number(i ?? 0);
+    if (usedD >= TRIAL_DEVICE || usedI >= TRIAL_IP) return undefined;
+    await Promise.all([store.set(`device:${device}`, String(usedD + 1)), store.set(`ip:${ip}`, String(usedI + 1))]);
+    return TRIAL_DEVICE - usedD - 1;
+  },
+  async refund(device, ip) {
+    const store = getStore('ai-trial');
+    for (const key of [`device:${device}`, `ip:${ip}`]) {
+      const used = Number((await store.get(key)) ?? 0);
+      if (used > 0) await store.set(key, String(used - 1));
+    }
+  },
+};
+
+/** La IP no se guarda en claro: solo un resumen con el secreto (D-135). */
+const ipKey = (ip: string, secret: string) => createHash('sha256').update(`${secret}:${ip}`).digest('hex').slice(0, 32);
+const clientIp = (req: Request) => req.headers.get('x-nf-client-connection-ip') ?? req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+const DEVICE = /^[0-9a-f-]{36}$/;
+
 /** Lógica de la función con dependencias inyectables (pruebas). */
 export async function handle(
   req: Request,
-  deps: { apiKey?: string; codeSecret?: string; usage?: Usage; now?: () => Date; fetch: typeof fetch },
+  deps: { apiKey?: string; codeSecret?: string; usage?: Usage; trial?: Trial; now?: () => Date; fetch: typeof fetch },
 ): Promise<Response> {
   if (req.method !== 'POST') return json(405, { error: 'method' });
   if (!deps.apiKey) return json(503, { error: 'unavailable' });
   // Sin el secreto configurado no se exige código (para no cortar la IA al desplegar antes de crearlo)
   let owner: string | undefined;
+  // Sin código: mensajes de prueba, solo en el chat (D-135)
+  let trial: { device: string; ip: string } | undefined;
   if (deps.codeSecret) {
-    owner = verifyCode(req.headers.get('X-Arvid-Code') ?? '', deps.codeSecret);
-    if (!owner) return json(401, { error: 'code' });
+    const code = req.headers.get('X-Arvid-Code') ?? '';
+    owner = code ? verifyCode(code, deps.codeSecret) : undefined;
+    const device = req.headers.get('X-Arvid-Device') ?? '';
+    if (!owner && !code && DEVICE.test(device)) trial = { device, ip: ipKey(clientIp(req), deps.codeSecret) };
+    else if (!owner) return json(401, { error: 'code' });
   }
 
   const raw = await req.text();
@@ -126,6 +168,18 @@ export async function handle(
   if (owner) {
     const ok = neighbor ? await usage.takeNeighbor(owner, day) : await usage.take(owner, day, DAILY_CREDITS);
     if (!ok) return json(429, { error: 'daily' });
+  }
+  if (trial) {
+    // La prueba es solo para el chat: el resto (saludo, vecinos…) usa sus frases fijas sin gastarla
+    if (parsed.data.moment !== 'chat') return json(401, { error: 'code' });
+    const left = await (deps.trial ?? blobTrial).take(trial.device, trial.ip);
+    if (left === undefined) return json(429, { error: 'trial' });
+    const response = await generate(parsed.data as AiRequest, deps);
+    if (response.status !== 200) {
+      await (deps.trial ?? blobTrial).refund(trial.device, trial.ip).catch(() => undefined);
+      return response;
+    }
+    return json(200, { ...(await response.json()), trialLeft: left });
   }
   const response = await generate(parsed.data as AiRequest, deps);
   if (owner && response.status !== 200) await usage.refund(owner, day, neighbor).catch(() => undefined);

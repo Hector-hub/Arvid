@@ -1,6 +1,7 @@
-import { setAccessCode } from '../arvid/brain';
+import { setAccessCode, setTrial } from '../arvid/brain';
+import { saveSetting } from '../../data/repository';
 import { NavLink, Outlet } from 'react-router';
-import { useSettings } from '../data';
+import { useData, useSettings } from '../data';
 import { Sprite } from '../design/components';
 import { useMotionPreference } from '../motion';
 import { Onboarding } from '../screens/Onboarding';
@@ -39,6 +40,13 @@ export function AppLayout() {
   }, [settings]);
   useCompanionSync(settings?.companion);
   setAccessCode(settings?.aiCode);
+  // Mensajes de prueba sin código (D-135): identificador del dispositivo, creado la primera vez
+  const { db } = useData();
+  const trialId = settings?.trialDeviceId;
+  setTrial(trialId, (left) => void saveSetting(db, 'trialLeft', left));
+  useEffect(() => {
+    if (settings && !trialId) void saveSetting(db, 'trialDeviceId', crypto.randomUUID());
+  }, [db, settings, trialId]);
 
   if (!settings) return null;
   // El service worker se registra desde UpdateBanner: debe montarse también durante el onboarding (PWA-02).

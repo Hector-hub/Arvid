@@ -137,7 +137,13 @@ export function ChatScreen() {
         <CompanionPreview size={40} />
         <div className="grow" style={{ minWidth: 0 }}>
           <h1 className="chat-title">{name}</h1>
-          <p className="small muted">{settings?.arvidAi ? t('chat.withAi') : t('chat.withoutAi')}</p>
+          <p className="small muted">
+            {!settings?.arvidAi
+              ? t('chat.withoutAi')
+              : settings.aiCode
+                ? t('chat.withAi')
+                : t('chat.trial', { count: settings.trialLeft ?? 5 })}
+          </p>
         </div>
         <div className="chat-menu">
           <button
