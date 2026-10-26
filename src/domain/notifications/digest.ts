@@ -41,8 +41,10 @@ export function buildDigest({ records, missions, now, kind, ref }: DigestInput):
       return a.state === 'pending' && a.deadline === today;
     })
     .map((m) => m.mission.title);
-  // Lo que se tiene que hacer hoy: diarias pendientes, periodos que acaban hoy y misiones que vencen hoy
-  const endingToday = items.filter((i) => !i.done && i.daysRemaining <= 1);
+  // Lo que se tiene que hacer hoy: diarias pendientes, periodos que acaban hoy y misiones que vencen hoy; lo que
+  // descansa hoy no cuenta (spec 12, DS-09)
+  const endingToday = items.filter((i) => !i.done && !i.resting && i.daysRemaining <= 1);
+  const allResting = items.length > 0 && items.every((i) => i.resting || i.done);
   const badge = endingToday.length + dueToday.length;
   const calm = (): Digest => ({ body: t('notifications.calm'), badge, calm: true });
 
@@ -50,7 +52,7 @@ export function buildDigest({ records, missions, now, kind, ref }: DigestInput):
     const [id, index] = (ref ?? '').split(':');
     const item = items.find((i) => i.activityId === id);
     const reminder = records.find((r) => r.activity.id === id)?.activity.reminders?.[Number(index)];
-    if (!item || item.done || !reminder) return calm();
+    if (!item || item.done || item.resting || !reminder) return calm();
     return {
       body: t(`notifications.activity.${item.kind}`, { name: item.name, count: item.count + 1, target: item.target }),
       badge,
@@ -59,7 +61,8 @@ export function buildDigest({ records, missions, now, kind, ref }: DigestInput):
   }
 
   if (kind === 'morning') {
-    const pending = items.filter((i) => !i.done).length;
+    const pending = items.filter((i) => !i.done && !i.resting).length;
+    if (allResting && !dueToday.length) return { body: t('notifications.morning.rest'), badge, calm: false };
     if (!pending && !dueToday.length) return calm();
     const parts = [pending ? t('notifications.morning.activities', { count: pending }) : t('notifications.morning.noActivities')];
     if (dueToday.length === 1) parts.push(t('notifications.morning.missionDue', { name: dueToday[0]! }));

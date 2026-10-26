@@ -68,6 +68,18 @@ describe('anuncios (CV-04, AN-01)', () => {
   });
 });
 
+describe('anuncio en espera', () => {
+  it('si la vigilancia se desmonta antes de hablar, el anuncio se cancela', async () => {
+    level.value = 6;
+    await saveSetting(ctx.db, 'lastCelebratedLevel', 6);
+    const { unmount } = renderRoutes(ctx, [{ path: '/', element: <CityWatcher /> }], '/');
+    await waitFor(async () => expect((await loadSettings(ctx.db)).cityAnnounced).toBe(6));
+    unmount();
+    await new Promise((r) => setTimeout(r, 2000));
+    expect(speak).not.toHaveBeenCalled();
+  });
+});
+
 describe('Tu ciudad (TC)', () => {
   it('muestra el avance, lo desbloqueado y lo que falta con su nivel', async () => {
     level.value = 3;

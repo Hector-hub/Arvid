@@ -8,7 +8,9 @@ import { MAX_WILDCARDS, WILDCARD_EVERY, type StreakState } from '../../domain/pr
 import { daysRemaining, type PeriodKind } from '../../domain/time/period';
 import { useAnalysis } from '../analysis';
 import { useToday } from '../clock';
-import { useCategories, useData, useRecord } from '../data';
+import { restCovers, upcomingRests } from '../../domain/activities/rests';
+import { restRange } from '../rests/RestsScreen';
+import { useCategories, useData, useRecord, useRests } from '../data';
 import { BackLink, CategoryIcon, Panel, Segments, Sprite, categoryColor } from '../design/components';
 import {
   categoryName,
@@ -148,6 +150,7 @@ function Detail({ record }: { record: ActivityRecord }) {
 
       {analysis && version && <StreakPanel streak={analysis.streak} kind={version.period} />}
       {analysis && <RecentPeriods periods={analysis.periods} protectedStarts={analysis.streak.protectedPeriods} />}
+      <UpcomingRests activityId={record.activity.id} />
 
       <div className="stack">
         <Link to={`/actividades/${id}/editar`} className="btn">
@@ -208,10 +211,35 @@ const REASON_TEXT = {
   grace: () => t('activityDetail.reasonGrace'),
   paused: () => t('activityDetail.reasonPaused'),
   truncated: () => t('activityDetail.reasonTruncated'),
+  rest: () => t('activityDetail.reasonRest'),
   open: () => '',
 } as const;
 
 /** Últimos periodos cerrados con su resultado (STR-04). */
+/** Próximos días de descanso de esta actividad (spec 12, DS-03). */
+function UpcomingRests({ activityId }: { activityId: string }) {
+  const today = useToday();
+  const rests = useRests();
+  const mine = upcomingRests(rests ?? [], today).filter((r) => restCovers(r, activityId));
+  if (mine.length === 0) return null;
+  return (
+    <Panel className="stack">
+      <h2>{t('activityDetail.rests')}</h2>
+      <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 'var(--s1)' }}>
+        {mine.map((r) => (
+          <li key={r.id} className="small">
+            {restRange(r)}
+            {r.note ? ` · ${r.note}` : ''}
+          </li>
+        ))}
+      </ul>
+      <Link to="/descansos" className="btn btn-ghost" style={{ alignSelf: 'flex-start' }}>
+        {t('rests.title')}
+      </Link>
+    </Panel>
+  );
+}
+
 function RecentPeriods({ periods, protectedStarts }: { periods: EvaluatedPeriod[]; protectedStarts: string[] }) {
   const recent = periods
     .filter((p) => p.closed)

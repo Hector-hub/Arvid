@@ -2,6 +2,7 @@
 // nombres) que la app sube al servidor. Se saltan las actividades inactivas y los periodos ya cumplidos (RA-03).
 import { progressAt, statusAt, versionAt } from '../activities/rules';
 import type { ActivityRecord, Reminder } from '../activities/types';
+import { restingOn } from '../activities/rests';
 import { addDays, daysInMonth, isoWeekday, toLocalDate, type LocalDate } from '../time/localDate';
 import type { PeriodKind } from '../time/period';
 
@@ -40,7 +41,7 @@ export function upcomingReminders(records: readonly ActivityRecord[], now: Date,
     if (!reminders.length) continue;
     for (let i = 0; i < days; i++) {
       const date = addDays(today, i);
-      if (statusAt(record.events, date) !== 'active') continue;
+      if (statusAt(record.events, date) !== 'active' || restingOn(record.rests, date)) continue;
       const version = versionAt(record.versions, date);
       if (!version) continue;
       // Periodo ya cumplido con lo registrado hasta ahora (RA-03)

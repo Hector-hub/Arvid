@@ -6,6 +6,7 @@ import { ActivityFormScreen } from './screens/ActivityFormScreen';
 import { ChatScreen } from './screens/ChatScreen';
 import { GameScreen } from './screens/GameScreen';
 import { CityScreen } from './city/CityScreen';
+import { RestsScreen } from './rests/RestsScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
 import { InstallGuideScreen } from './screens/InstallGuideScreen';
 import { MissionDetailScreen } from './screens/missions/MissionDetailScreen';
@@ -35,6 +36,7 @@ export const routes: RouteObject[] = [
       { path: 'perfil', element: <ProfileScreen /> },
       { path: 'chat', element: <ChatScreen /> },
       { path: 'juego', element: <GameScreen /> },
+      { path: 'descansos', element: <RestsScreen /> },
       { path: 'perfil/atributo/:categoryId', element: <AttributeDetailScreen /> },
       { path: 'perfil/disciplina', element: <DisciplineDetailScreen /> },
       { path: 'perfil/ciudad', element: <CityScreen /> },

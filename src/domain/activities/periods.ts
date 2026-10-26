@@ -2,9 +2,9 @@ import { DIFFICULTY_POINTS } from '../config';
 import { addDays, compareDates, type LocalDate } from '../time/localDate';
 import { isClosed, periodOf, type Period, type PeriodKind } from '../time/period';
 import { createdOn, sortEvents, statusAt, versionAt } from './rules';
-import type { ActivityRecord, ActivityVersion } from './types';
+import type { ActivityRecord, ActivityVersion, DateRange } from './types';
 
-export type NotEvaluableReason = 'truncated' | 'paused' | 'grace' | 'open';
+export type NotEvaluableReason = 'truncated' | 'paused' | 'grace' | 'rest' | 'open';
 
 /** Un periodo de una actividad con sus puntos y su evaluabilidad (game-design §3.3–§3.4). */
 export interface EvaluatedPeriod {
@@ -45,7 +45,7 @@ export function evaluatePeriods(record: ActivityRecord, today: LocalDate): Evalu
   const versions = [...record.versions].sort((a, b) => compareDates(a.effectiveFrom, b.effectiveFrom));
   // Fechas ordenadas para contar por búsqueda binaria; eventos ordenados una sola vez (NFR2-01).
   const completionDates = record.completions.map((c) => c.date).sort();
-  const ctx: EvalContext = { record, events: sortEvents(record.events), completionDates, today };
+  const ctx: EvalContext = { record, events: sortEvents(record.events), completionDates, today, rests: record.rests ?? [] };
   const result: EvaluatedPeriod[] = [];
 
   versions.forEach((version, i) => {
@@ -72,6 +72,7 @@ interface EvalContext {
   events: ActivityRecord['events'];
   completionDates: LocalDate[];
   today: LocalDate;
+  rests: readonly DateRange[];
 }
 
 /** Primer índice con `dates[i] > date` (o `>=` si `inclusive` es falso). */
@@ -88,7 +89,7 @@ function bound(dates: readonly LocalDate[], date: LocalDate, inclusive: boolean)
 }
 
 function evaluateOne(
-  { events, completionDates, today }: EvalContext,
+  { events, completionDates, today, rests }: EvalContext,
   version: ActivityVersion,
   period: Period,
   flags: { truncated: boolean; graceByType: boolean },
@@ -101,11 +102,14 @@ function evaluateOne(
   const fulfilled = count >= target;
   const status = statusAt(events, closed ? period.end : today, true);
   const grace = flags.graceByType || events.some((e) => GRACE_EVENTS.has(e.type) && inPeriod(e.date));
+  // Descanso (spec 12, DS-05): como la gracia, el periodo solo cuenta si se cumple
+  const rest = rests.some((r) => compareDates(r.from, period.end) <= 0 && compareDates(period.start, r.to) <= 0);
 
   let reason: NotEvaluableReason | undefined;
   if (flags.truncated) reason = 'truncated';
   else if (status !== 'active') reason = 'paused';
   else if (grace && !fulfilled) reason = 'grace';
+  else if (rest && !fulfilled) reason = 'rest';
   else if (!closed && !fulfilled) reason = 'open';
 
   return {

@@ -236,3 +236,32 @@ describe('detalle (DET-01, DET-02)', () => {
     expect(detailDays(r, d('2026-10-17')).map((x) => x.date)).toEqual(['2026-10-16', '2026-10-17']);
   });
 });
+
+describe('descansos (spec 12, DS-05)', () => {
+  const rest = (r: ActivityRecord, from: string, to: string): ActivityRecord => ({ ...r, rests: [{ from: d(from), to: d(to) }] });
+
+  it('un día de descanso sin cumplir no rompe la racha ni cuenta; cumplido, cuenta', async () => {
+    const { evaluatePeriods } = await import('./periods');
+    const { computeStreak } = await import('../progress/streaks');
+    const base = activity('leer', { period: 'day', target: 1, createdOn: '2026-10-01', logs: ['2026-10-20', '2026-10-21', '2026-10-23'] });
+    // Sin descanso: el 22 rompe la racha
+    expect(computeStreak(evaluatePeriods(base, d('2026-10-23'))).current).toBe(1);
+    // Con descanso el 22: la racha sigue (3 días)
+    const rested = rest(base, '2026-10-22', '2026-10-22');
+    const periods = evaluatePeriods(rested, d('2026-10-23'));
+    expect(periods.find((p) => p.period.start === '2026-10-22')).toMatchObject({ evaluable: false, reason: 'rest' });
+    expect(computeStreak(periods).current).toBe(3);
+    // Descanso un día cumplido: cuenta igual
+    expect(evaluatePeriods(rest(base, '2026-10-21', '2026-10-21'), d('2026-10-23')).find((p) => p.period.start === '2026-10-21')!.evaluable).toBe(true);
+  });
+
+  it('semanal con un día de descanso: la semana solo cuenta si se cumple', async () => {
+    const { evaluatePeriods } = await import('./periods');
+    const gym = activity('gym', { period: 'week', target: 3, createdOn: '2026-09-28', logs: ['2026-10-13', '2026-10-15'] });
+    const week = (r: ActivityRecord) => evaluatePeriods(r, d('2026-10-26')).find((p) => p.period.start === '2026-10-12')!;
+    expect(week(gym)).toMatchObject({ evaluable: true, fulfilled: false });
+    expect(week(rest(gym, '2026-10-17', '2026-10-17'))).toMatchObject({ evaluable: false, reason: 'rest' });
+    // La XP no cambia (DS-06)
+    expect(week(rest(gym, '2026-10-17', '2026-10-17')).earnedCents).toBe(week(gym).earnedCents);
+  });
+});

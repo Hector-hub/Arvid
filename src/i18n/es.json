@@ -202,7 +202,9 @@
     "wildcardUsed": "Comodín usado",
     "reasonGrace": "Gracia",
     "reasonPaused": "Pausa",
-    "reasonTruncated": "Cambio de frecuencia"
+    "reasonTruncated": "Cambio de frecuencia",
+    "reasonRest": "Descanso",
+    "rests": "Próximos descansos"
   },
   "categoryForm": {
     "newTitle": "Nueva categoría",
@@ -629,7 +631,8 @@
       "pending_one": "Hoy te queda {count} actividad.",
       "pending_other": "Hoy te quedan {count} actividades.",
       "done": "Ya has completado todo lo de hoy.",
-      "none": "Hoy no tienes nada pendiente."
+      "none": "Hoy no tienes nada pendiente.",
+      "rest": "Hoy es tu día de descanso: aprovéchalo, también cuenta."
     },
     "lines": {
       "greeting": {
@@ -799,7 +802,8 @@
       "activities_other": "Hoy tienes {count} actividades por hacer.",
       "noActivities": "Hoy no tienes actividades pendientes.",
       "missionDue": "La misión «{name}» vence hoy.",
-      "missionsDue": "Hoy vencen {count} misiones."
+      "missionsDue": "Hoy vencen {count} misiones.",
+      "rest": "Hoy descansas. Disfrútalo."
     },
     "night": {
       "left_one": "Te queda 1 actividad para hoy.",
@@ -941,5 +945,41 @@
         }
       }
     }
+  },
+  "rests": {
+    "title": "Descansos",
+    "intro": "Para viajes, enfermedad o un día libre: lo que descansa no rompe tus rachas ni baja tus atributos.",
+    "newTitle": "Nuevo descanso",
+    "editTitle": "Editar descanso",
+    "from": "Desde",
+    "to": "Hasta",
+    "scope": "¿Qué descansa?",
+    "allActivities": "Todas las actividades",
+    "someActivities": "Solo algunas",
+    "note": "Nota (opcional)",
+    "notePlaceholder": "Viaje, enfermedad…",
+    "rule": "Si ese día cumples igualmente, cuenta a tu favor. La XP y las misiones no cambian.",
+    "create": "Planificar descanso",
+    "saved": "Descanso guardado.",
+    "upcoming": "Próximos y en curso",
+    "none": "No tienes descansos planificados.",
+    "ongoing": "En curso",
+    "cancel": "Cancelar descanso",
+    "cancelConfirm": "¿Cancelar este descanso?",
+    "cancelOngoing": "Ya empezó: los días pasados se quedan como descanso y termina ayer.",
+    "cancelYes": "Cancelar descanso",
+    "range": "{from} – {to}",
+    "today": "Hoy descansas",
+    "todayNote": "Hoy descansas · {note}",
+    "plan": "Planificar descanso",
+    "chip": "Descanso",
+    "errors": {
+      "from-past": "El descanso tiene que empezar hoy o más adelante.",
+      "to-before-from": "La fecha final no puede ser anterior a la inicial.",
+      "no-activities": "Elige al menos una actividad.",
+      "note-too-long": "La nota es demasiado larga.",
+      "invalid-date": "Revisa las fechas."
+    },
+    "summary": "Día de descanso"
   }
 }

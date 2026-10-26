@@ -58,6 +58,7 @@ Los valores se redondean a 2 decimales (redondeo a la mitad hacia arriba) por pe
 ### 3.4 Periodos que no se evalúan
 Estos periodos **aportan XP** por lo que se hizo, pero no cuentan en atributos, Disciplina ni rachas (salvo la excepción indicada):
 - **R-A6 (gracia).** El periodo en que se crea, se reactiva o cambia de tipo una actividad es de gracia. Solo se evalúa si se completa al 100 % (`r = 1`); si no, se excluye. Así, crear una actividad semanal en domingo no penaliza.
+- **R-A6b (descanso, spec 12).** Un periodo que contiene un día de descanso de la actividad se trata como la gracia: solo se evalúa si se completa al 100 %; si no, se excluye (no suma ni rompe la racha, ni cuenta en atributos y Disciplina). La XP no cambia.
 - **R-A7 (pausa).** Un periodo se excluye si la actividad estaba pausada o archivada en su último día. Los periodos completos dentro de una pausa no existen a efectos de evaluación.
 - **R-A8 (abierto).** Un periodo abierto solo se evalúa si ya está completo (`r = 1`). Así, completar algo hoy se refleja enseguida, pero un día a medias no penaliza antes de terminar.
 - **R-A9 (truncado, D-044).** Un periodo cortado por un cambio de tipo (p. ej. la semana del 28 sep al 4 oct cuando la versión mensual empieza el 1 oct) no se evalúa. Aporta XP por los registros de su tramo; los posteriores al corte pertenecen al periodo nuevo, que es de gracia (R-A2).

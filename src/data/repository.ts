@@ -5,13 +5,15 @@ import type {
   ActivityStatusType,
   ActivityStatusEvent,
   Reminder,
+  Rest,
 } from '../domain/activities/types';
+import { restsFor, validateRest, type RestError } from '../domain/activities/rests';
 import { DEFAULT_AVATAR, normalizeAvatar, type Avatar } from '../domain/avatar/catalog';
 import { ARVID_COLORS, DEFAULT_ARVID_COLOR, normalizeProfile, type ArvidColor, type ArvidSeen, type Profile } from '../domain/arvid/arvid';
 import { DEFAULT_COMPANION, DEFAULT_DARIS_COLOR, isCompanion, isDarisColor, type Companion, type DarisColor } from '../domain/arvid/companion';
 import { isLocale, type Locale } from '../i18n';
 import { CATEGORY_PRESETS, checkCategoryToggle, type Category, type CategoryToggleCheck } from '../domain/categories';
-import { toLocalDate, tzOffsetMinutes, type LocalDate } from '../domain/time/localDate';
+import { addDays, toLocalDate, tzOffsetMinutes, type LocalDate } from '../domain/time/localDate';
 import type { AchievementRow, ArvidDB } from './db';
 
 /** Dependencias inyectables: base de datos, reloj y generador de IDs (tests deterministas). */
@@ -31,30 +33,37 @@ function today(ctx: DataContext): LocalDate {
 
 // ---------- Lecturas ----------
 
+export async function loadRests(db: ArvidDB): Promise<Rest[]> {
+  return db.rests.toArray();
+}
+
 export async function loadRecords(db: ArvidDB): Promise<ActivityRecord[]> {
-  const [activities, versions, events, completions] = await Promise.all([
+  const [activities, versions, events, completions, rests] = await Promise.all([
     db.activities.orderBy('order').toArray(),
     db.activityVersions.toArray(),
     db.activityStatusEvents.toArray(),
     db.completions.toArray(),
+    db.rests.toArray(),
   ]);
   return activities.map((activity) => ({
     activity,
     versions: versions.filter((v) => v.activityId === activity.id),
     events: events.filter((e) => e.activityId === activity.id),
     completions: completions.filter((c) => c.activityId === activity.id),
+    rests: restsFor(rests, activity.id),
   }));
 }
 
 export async function loadRecord(db: ArvidDB, activityId: string): Promise<ActivityRecord | undefined> {
   const activity = await db.activities.get(activityId);
   if (!activity) return undefined;
-  const [versions, events, completions] = await Promise.all([
+  const [versions, events, completions, rests] = await Promise.all([
     db.activityVersions.where('activityId').equals(activityId).toArray(),
     db.activityStatusEvents.where('activityId').equals(activityId).toArray(),
     db.completions.where('activityId').equals(activityId).toArray(),
+    db.rests.toArray(),
   ]);
-  return { activity, versions, events, completions };
+  return { activity, versions, events, completions, rests: restsFor(rests, activityId) };
 }
 
 export async function loadCategories(db: ArvidDB): Promise<Category[]> {
@@ -95,7 +104,7 @@ async function activitiesUsingCategory(ctx: DataContext, categoryId: string): Pr
 }
 
 export async function setCategoryActive(ctx: DataContext, id: string, active: boolean): Promise<CategoryToggleCheck> {
-  return ctx.db.transaction('rw', [ctx.db.categories, ctx.db.activities, ctx.db.activityVersions, ctx.db.activityStatusEvents, ctx.db.completions], async () => {
+  return ctx.db.transaction('rw', [ctx.db.categories, ctx.db.activities, ctx.db.activityVersions, ctx.db.activityStatusEvents, ctx.db.completions, ctx.db.rests], async () => {
     const categories = await ctx.db.categories.toArray();
     const inUse = active ? 0 : await activitiesUsingCategory(ctx, id);
     const check = checkCategoryToggle(categories, id, active, inUse);
@@ -161,7 +170,7 @@ const ALLOWED_TRANSITIONS: Record<ActivityStatusType, ReadonlyArray<string | und
 /** ACT-05: pausar, reanudar, archivar y restaurar. Devuelve `false` si la transición no es válida. */
 export async function changeStatus(ctx: DataContext, id: string, type: Exclude<ActivityStatusType, 'created'>): Promise<boolean> {
   const { db } = ctx;
-  return db.transaction('rw', db.activityStatusEvents, async () => {
+  return db.transaction('rw', [db.activityStatusEvents, db.activities, db.activityVersions, db.completions, db.rests], async () => {
     const events = await db.activityStatusEvents.where('activityId').equals(id).toArray();
     const t = today(ctx);
     if (!ALLOWED_TRANSITIONS[type].includes(statusAt(events, t))) return false;
@@ -178,7 +187,7 @@ export async function changeStatus(ctx: DataContext, id: string, type: Exclude<A
 /** ACT-08: intercambia el orden con la actividad vecina del mismo grupo de estado. */
 export async function moveActivity(ctx: DataContext, id: string, direction: -1 | 1): Promise<void> {
   const { db } = ctx;
-  await db.transaction('rw', [db.activities, db.activityStatusEvents], async () => {
+  await db.transaction('rw', [db.activities, db.activityStatusEvents, db.rests], async () => {
     const t = today(ctx);
     const activities = await db.activities.orderBy('order').toArray();
     const events = await db.activityStatusEvents.toArray();
@@ -198,7 +207,7 @@ export async function moveActivity(ctx: DataContext, id: string, direction: -1 |
 /** LOG-01 a LOG-03. La comprobación y la escritura van en la misma transacción (LOG-06: sin duplicados). */
 export async function logCompletion(ctx: DataContext, activityId: string, date: LocalDate): Promise<LogCheck> {
   const { db } = ctx;
-  return db.transaction('rw', [db.activities, db.activityVersions, db.activityStatusEvents, db.completions], async () => {
+  return db.transaction('rw', [db.activities, db.activityVersions, db.activityStatusEvents, db.completions, db.rests], async () => {
     const record = await loadRecord(db, activityId);
     if (!record) return { ok: false, reason: 'no-version' } as const;
     const check = canLog(record, date, today(ctx));
@@ -216,7 +225,7 @@ export async function logCompletion(ctx: DataContext, activityId: string, date: 
 /** LOG-04: elimina el registro más reciente de esa fecha si es editable. */
 export async function undoCompletion(ctx: DataContext, activityId: string, date: LocalDate): Promise<boolean> {
   const { db } = ctx;
-  return db.transaction('rw', [db.activities, db.activityVersions, db.activityStatusEvents, db.completions], async () => {
+  return db.transaction('rw', [db.activities, db.activityVersions, db.activityStatusEvents, db.completions, db.rests], async () => {
     const record = await loadRecord(db, activityId);
     if (!record) return false;
     const target = completionToUndo(record, date, today(ctx));
@@ -389,4 +398,59 @@ export async function appendChatLog(db: ArvidDB, entries: ChatEntry[]): Promise<
 
 export async function clearChatLog(db: ArvidDB): Promise<void> {
   await db.settings.delete('chatLog');
+}
+
+// ---------- Descansos (spec 12, DS) ----------
+
+export interface RestInput {
+  from: LocalDate;
+  to: LocalDate;
+  /** Sin él, todas las actividades. */
+  activityIds?: string[];
+  note?: string;
+}
+
+export type RestResult = { ok: true; id: string } | { ok: false; error: RestError };
+
+/** DS-01, DS-02. */
+export async function createRest(ctx: DataContext, input: RestInput): Promise<RestResult> {
+  const error = validateRest(input, today(ctx));
+  if (error) return { ok: false, error };
+  const id = ctx.newId();
+  const note = input.note?.trim();
+  await ctx.db.rests.add({
+    id,
+    from: input.from,
+    to: input.to,
+    ...(input.activityIds ? { activityIds: input.activityIds } : {}),
+    ...(note ? { note } : {}),
+    createdAt: ctx.now().toISOString(),
+  });
+  return { ok: true, id };
+}
+
+/**
+ * Cambia un descanso en curso o futuro (DS-02): los días ya pasados no cambian, así que el inicio de uno en curso se
+ * mantiene.
+ */
+export async function updateRest(ctx: DataContext, id: string, input: RestInput): Promise<RestResult> {
+  const rest = await ctx.db.rests.get(id);
+  const t = today(ctx);
+  if (!rest || rest.to < t) return { ok: false, error: 'from-past' };
+  const started = rest.from < t;
+  const from = started ? rest.from : input.from;
+  const error = validateRest({ ...input, from: started ? t : input.from }, t);
+  if (error) return { ok: false, error };
+  const note = input.note?.trim();
+  await ctx.db.rests.put({ id, from, to: input.to, activityIds: input.activityIds, note: note || undefined, createdAt: rest.createdAt });
+  return { ok: true, id };
+}
+
+/** Cancela un descanso (DS-02): si ya empezó, termina ayer y se conservan los días pasados; si no, se borra. */
+export async function cancelRest(ctx: DataContext, id: string): Promise<void> {
+  const rest = await ctx.db.rests.get(id);
+  const t = today(ctx);
+  if (!rest || rest.to < t) return;
+  if (rest.from < t) await ctx.db.rests.update(id, { to: addDays(t, -1) });
+  else await ctx.db.rests.delete(id);
 }

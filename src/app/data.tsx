@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { createContext, useContext, type ReactNode } from 'react';
 import { loadMissions } from '../data/missions';
-import { loadAchievements, loadCategories, loadRecord, loadRecords, loadSettings, type DataContext } from '../data/repository';
+import { loadAchievements, loadCategories, loadRecord, loadRecords, loadRests, loadSettings, type DataContext } from '../data/repository';
 
 const DataCtx = createContext<DataContext | null>(null);
 
@@ -45,4 +45,10 @@ export function useMissions() {
 export function useAchievements() {
   const { db } = useData();
   return useLiveQuery(() => loadAchievements(db), [db]);
+}
+
+/** Descansos planificados (spec 12, DS). */
+export function useRests() {
+  const { db } = useData();
+  return useLiveQuery(() => loadRests(db), [db]);
 }

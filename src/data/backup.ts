@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { TARGET_LIMITS } from '../domain/config';
-import type { ActivityRecord, ActivityStatusEvent, ActivityVersion, Completion } from '../domain/activities/types';
+import type { ActivityRecord, ActivityStatusEvent, ActivityVersion, Completion, Rest } from '../domain/activities/types';
+import { restsFor } from '../domain/activities/rests';
 import type { MissionRecord } from '../domain/missions/missions';
 import { analyze } from '../domain/progress/progress';
 import { isLocalDate, toLocalDate } from '../domain/time/localDate';
@@ -72,6 +73,14 @@ const missionEvent = z
   })
   .refine((e) => e.type !== 'deadlineSet' || !!e.deadline, 'deadlineSet sin fecha límite');
 const achievement = z.object({ id, unlockedAt: instant });
+const rest = z.object({
+  id,
+  from: localDate,
+  to: localDate,
+  activityIds: z.array(id).optional(),
+  note: z.string().max(40).optional(),
+  createdAt: instant,
+});
 const setting = z.object({ key: z.string().min(1).max(60), value: z.unknown() });
 
 const backupSchema = z.object({
@@ -90,6 +99,8 @@ const backupSchema = z.object({
     missionEvents: z.array(missionEvent),
     achievements: z.array(achievement),
     settings: z.array(setting),
+    // Desde el esquema 2 (spec 12); los backups anteriores no la tienen
+    rests: z.array(rest).default([]),
   }),
 });
 
@@ -114,6 +125,7 @@ export async function buildBackup(db: ArvidDB, appVersion: string, now: Date): P
       missionEvents: await db.missionEvents.toArray(),
       achievements: await db.achievements.toArray(),
       settings: (await db.settings.toArray()).filter((s) => exported(s.key)),
+      rests: await db.rests.toArray(),
     },
   }));
 }
@@ -187,6 +199,7 @@ function findBrokenReference({ data }: Backup): string | undefined {
     ['missions', data.missions],
     ['missionEvents', data.missionEvents],
     ['achievements', data.achievements],
+    ['rests', data.rests],
   ];
   for (const [name, rows] of tables) {
     if (new Set(rows.map((r) => r.id)).size !== rows.length) return `${name}: IDs duplicados`;
@@ -203,6 +216,7 @@ function findBrokenReference({ data }: Backup): string | undefined {
   for (const c of data.completions) if (!activities.has(c.activityId)) return `registro ${c.id} sin actividad`;
   for (const m of data.missions) if (!categories.has(m.categoryId)) return `misión ${m.id} sin categoría`;
   for (const e of data.missionEvents) if (!missions.has(e.missionId)) return `evento ${e.id} sin misión`;
+  for (const r of data.rests) if (r.activityIds?.some((a) => !activities.has(a))) return `descanso ${r.id} con una actividad que no existe`;
   for (const a of data.activities) {
     if (!data.activityVersions.some((v) => v.activityId === a.id)) return `actividad ${a.id} sin configuración`;
     if (!data.activityStatusEvents.some((e) => e.activityId === a.id && e.type === 'created')) return `actividad ${a.id} sin creación`;
@@ -222,6 +236,7 @@ export function recordsFromBackup({ data }: Backup): ActivityRecord[] {
     versions: data.activityVersions.filter((v) => v.activityId === activity.id),
     events: data.activityStatusEvents.filter((e) => e.activityId === activity.id),
     completions: data.completions.filter((c) => c.activityId === activity.id),
+    rests: restsFor(data.rests as Rest[], activity.id),
   })) as ActivityRecord[];
 }
 
@@ -241,6 +256,7 @@ export async function replaceAllData(ctx: DataContext, backup: Backup): Promise<
     await db.missions.bulkAdd(data.missions);
     await db.missionEvents.bulkAdd(data.missionEvents);
     await db.achievements.bulkAdd(data.achievements);
+    await db.rests.bulkAdd(data.rests as Rest[]);
     await db.settings.bulkPut([
       ...data.settings.filter((s) => exported(s.key)),
       ...device,

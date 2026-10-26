@@ -61,7 +61,7 @@ describe('función /api/arvid', () => {
 
   it('D-100: con ARVID_CODE_SECRET, sin código o con uno inventado, 401 y no llama a Mistral', async () => {
     const fetch = mistral(200);
-    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true) };
+    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined) };
     expect((await handle(post(body()), { apiKey: 'k', codeSecret: 's', usage, fetch })).status).toBe(401);
     expect((await handle(withCode('ARVID-ANA-AAAAAAAAAA'), { apiKey: 'k', codeSecret: 's', usage, fetch })).status).toBe(401);
     // Firmado con otro secreto
@@ -71,7 +71,7 @@ describe('función /api/arvid', () => {
 
   it('D-100: un código válido (sin importar mayúsculas) gasta un crédito del día de su dueño', async () => {
     const fetch = mistral(200);
-    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true) };
+    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined) };
     const code = createCode('ana', 's').toLowerCase();
     const res = await handle(withCode(code), { apiKey: 'k', codeSecret: 's', usage, now: () => new Date('2026-10-23T12:00:00Z'), fetch });
     expect(res.status).toBe(200);
@@ -80,7 +80,7 @@ describe('función /api/arvid', () => {
 
   it('D-100: sin créditos del día, 429 «daily» y no llama a Mistral', async () => {
     const fetch = mistral(200);
-    const res = await handle(withCode(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage: { take: async () => false, takeNeighbor: async () => true }, fetch });
+    const res = await handle(withCode(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage: { take: async () => false, takeNeighbor: async () => true, refund: async () => undefined }, fetch });
     expect(res.status).toBe(429);
     expect(await res.json()).toEqual({ error: 'daily' });
     expect(fetch).not.toHaveBeenCalled();
@@ -102,7 +102,7 @@ describe('función /api/arvid', () => {
 
   it('spec 11, VC-06: la frase de un vecino no gasta créditos y se limita a una al día', async () => {
     const fetch = mistral(200, 'Esta canción va por ti.');
-    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true) };
+    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined) };
     const req = new Request('https://x/api/arvid', {
       method: 'POST',
       body: body({ moment: 'neighbor', neighbor: 'dex', messages: [] }),
@@ -117,5 +117,21 @@ describe('función /api/arvid', () => {
     usage.takeNeighbor.mockResolvedValue(false);
     const again = new Request('https://x/api/arvid', { method: 'POST', body: body({ moment: 'neighbor', neighbor: 'dex', messages: [] }), headers: { 'X-Arvid-Code': createCode('ana', 's') } });
     expect((await handle(again, { apiKey: 'k', codeSecret: 's', usage, fetch })).status).toBe(429);
+  });
+
+  it('D-124: si la generación falla, el crédito se devuelve; si va bien, no', async () => {
+    for (const [fetchMock, status] of [
+      [mistral(502), 502],
+      [mistral(200, ''), 502],
+      [vi.fn(async () => Promise.reject(new Error('timeout'))) as unknown as typeof globalThis.fetch, 504],
+    ] as const) {
+      const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined) };
+      const res = await handle(withCode(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage, now: () => new Date('2026-10-26T12:00:00Z'), fetch: fetchMock });
+      expect(res.status).toBe(status);
+      expect(usage.refund).toHaveBeenCalledWith('ana', '2026-10-26', false);
+    }
+    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined) };
+    expect((await handle(withCode(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage, fetch: mistral(200) })).status).toBe(200);
+    expect(usage.refund).not.toHaveBeenCalled();
   });
 });

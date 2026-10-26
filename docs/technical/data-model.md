@@ -85,6 +85,15 @@ Estado: **aprobado** (D-040, 2026-10-17) · Implementa: game-design §0 (todo se
 
 Guardar eventos (y no solo el estado) permite saber **cuándo** venció la misión aunque luego se haya reprogramado (R-M4) y recalcular todo tras deshacer (R-M5).
 
+### `rests` — descansos planificados (spec 12, DS), desde el esquema 2
+| Campo | Tipo | Notas |
+|---|---|---|
+| id | string | PK |
+| from, to | LocalDate | Ambos incluidos; `from` ≥ hoy al crearlo |
+| activityIds | string[]? | Sin él, todas las actividades |
+| note | string? | ≤ 40 caracteres |
+| createdAt | Instant | |
+
 ### `achievements`
 | Campo | Tipo | Notas |
 |---|---|---|

@@ -93,3 +93,19 @@ describe('texto de las notificaciones (RS, RA-04, PV-03)', () => {
     expect(buildDigest({ records: [], missions: [], now: night, kind: 'night' }).calm).toBe(true);
   });
 });
+
+describe('descansos en los avisos (spec 12, DS-09)', () => {
+  const rested = (r: ActivityRecord, from: string, to: string): ActivityRecord => ({ ...r, rests: [{ from: d(from), to: d(to) }] });
+
+  it('los recordatorios de una actividad en descanso no se envían', () => {
+    const agua = rested(activity('agua', 'day', 1, [], [{ time: '18:00' }]), '2026-10-25', '2026-10-27');
+    const days = upcomingReminders([agua], now).map((s) => new Date(s.at).getDate());
+    expect(days).toEqual([28, 29, 30, 31]);
+  });
+
+  it('si todo descansa, la mañana dice «Hoy descansas» y la noche no avisa ni cuenta en el número', () => {
+    const leer = rested(activity('Leer', 'day', 1, ['2026-10-22', '2026-10-23', '2026-10-24']), '2026-10-25', '2026-10-25');
+    expect(buildDigest({ records: [leer], missions: [], now: new Date(2026, 9, 25, 7, 0), kind: 'morning' }).body).toBe('Hoy descansas. Disfrútalo.');
+    expect(buildDigest({ records: [leer], missions: [], now: new Date(2026, 9, 25, 22, 0), kind: 'night' })).toMatchObject({ calm: true, badge: 0 });
+  });
+});

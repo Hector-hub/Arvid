@@ -44,6 +44,8 @@ export interface Usage {
   take(owner: string, day: string, limit: number): Promise<boolean>;
   /** Frase de vecino del día (spec 11, VC-06): aparte de los créditos, como mucho una al día. */
   takeNeighbor(owner: string, day: string): Promise<boolean>;
+  /** Devuelve lo gastado si la generación falla (D-124): un error de Mistral no cuesta un crédito. */
+  refund(owner: string, day: string, neighbor: boolean): Promise<void>;
 }
 
 /**
@@ -75,6 +77,16 @@ const blobUsage: Usage = {
     await store.setJSON(owner, { ...saved, neighborDay: day });
     return true;
   },
+  async refund(owner, day, neighbor) {
+    const store = getStore('ai-usage');
+    const saved = ((await store.get(owner, { type: 'json' }).catch(() => null)) ?? {}) as UsageEntry;
+    if (neighbor) {
+      if (saved.neighborDay === day) await store.setJSON(owner, { ...saved, neighborDay: undefined });
+      return;
+    }
+    const used = usedToday(saved, day);
+    if (used > 0) await store.setJSON(owner, { ...saved, day, used: used - 1 });
+  },
 };
 
 /** Lógica de la función con dependencias inyectables (pruebas). */
@@ -102,14 +114,22 @@ export async function handle(
   const parsed = RequestSchema.safeParse(body);
   if (!parsed.success) return json(400, { error: 'invalid' });
 
-  // El crédito se gasta solo con peticiones válidas
+  // El crédito se gasta solo con peticiones válidas; se descuenta antes de llamar a Mistral (así varias peticiones a la
+  // vez no se saltan el límite) y se devuelve si la generación falla (D-124)
+  const neighbor = parsed.data.moment === 'neighbor';
+  const day = (deps.now?.() ?? new Date()).toISOString().slice(0, 10);
+  const usage = deps.usage ?? blobUsage;
   if (owner) {
-    const day = (deps.now?.() ?? new Date()).toISOString().slice(0, 10);
-    const usage = deps.usage ?? blobUsage;
-    const ok = parsed.data.moment === 'neighbor' ? await usage.takeNeighbor(owner, day) : await usage.take(owner, day, DAILY_CREDITS);
+    const ok = neighbor ? await usage.takeNeighbor(owner, day) : await usage.take(owner, day, DAILY_CREDITS);
     if (!ok) return json(429, { error: 'daily' });
   }
+  const response = await generate(parsed.data as AiRequest, deps);
+  if (owner && response.status !== 200) await usage.refund(owner, day, neighbor).catch(() => undefined);
+  return response;
+}
 
+/** Llama a Mistral y devuelve la respuesta saneada, o el error. */
+async function generate(req: AiRequest, deps: { apiKey?: string; fetch: typeof fetch }): Promise<Response> {
   let res: Response;
   try {
     res = await deps.fetch(MISTRAL_URL, {
@@ -119,7 +139,7 @@ export async function handle(
         model: AI_MODEL,
         temperature: AI_TEMPERATURE,
         max_tokens: AI_MAX_TOKENS,
-        messages: buildMessages(parsed.data as AiRequest),
+        messages: buildMessages(req),
       }),
       signal: AbortSignal.timeout(MISTRAL_TIMEOUT_MS),
     });

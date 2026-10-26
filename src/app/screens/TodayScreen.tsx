@@ -19,7 +19,7 @@ import { IntroSheet } from './Onboarding';
 import { compareDates } from '../../domain/time/localDate';
 import { celebrate } from '../scene/engine';
 import { TodayMissionsSection, useTodayMissions } from './missions/TodayMissions';
-import { useCategories, useData, useRecords, useSettings } from '../data';
+import { useCategories, useData, useRecords, useRests, useSettings } from '../data';
 import { CategoryIcon, Panel, Segments, Sprite, XpBar, categoryColor } from '../design/components';
 import {
   daysLeftText,
@@ -60,13 +60,15 @@ export function TodayScreen() {
   useArvidMoments(view, forgotten.length > 0, showIntro);
 
   if (!view || !missions) return null;
+  // Día de descanso con cosas sin hacer: no es «día completo» (spec 12, DS-04)
+  const restingLeft = view.sections.some((sec) => sec.items.some((i) => i.kind === 'day' && i.resting && !i.done));
   const summary = [
-    view.hasDaily ? pendingTodayText(view.pendingToday) : undefined,
+    view.hasDaily ? (view.pendingToday === 0 && restingLeft ? t('rests.summary') : pendingTodayText(view.pendingToday)) : undefined,
     missions.dueCount > 0 ? missionsDueText(missions.dueCount) : undefined,
   ]
     .filter(Boolean)
     .join(' · ');
-  const allDone = view.pendingToday === 0 && missions.dueCount === 0;
+  const allDone = view.pendingToday === 0 && missions.dueCount === 0 && !restingLeft;
 
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
@@ -93,6 +95,8 @@ export function TodayScreen() {
       )}
 
       <BackupReminder records={records ?? []} />
+
+      <RestBanner />
 
       {view.isEmpty ? (
         <Panel className="stack">
@@ -128,6 +132,10 @@ export function TodayScreen() {
           {t('today.forgotYesterday')}
         </button>
       )}
+
+      <Link to="/descansos" className="btn btn-ghost">
+        {t('rests.plan')}
+      </Link>
 
       {forgottenOpen && (
         <ForgottenSheet records={records ?? []} categoryById={categoryById} onClose={() => setForgottenOpen(false)} />
@@ -203,6 +211,7 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
         <div className="row" style={{ gap: 'var(--s2)' }}>
           <Segments count={item.count} target={item.target} color={categoryColor(category)} />
           {item.done && <span className="chip chip-done">{t('common.completed')}</span>}
+          {item.resting && !item.done && <span className="chip chip-muted">{t('rests.chip')}</span>}
         </div>
         <p className="small muted">{meta}</p>
         <p aria-live="polite" className="small pixel" style={{ color: 'var(--success)', minHeight: '1.2em' }}>
@@ -300,6 +309,25 @@ function ForgottenSheet({
           </ul>
         )}
       </div>
+    </div>
+  );
+}
+
+/** «Hoy descansas» (spec 12, DS-04): con la nota del descanso que cubre todo el día, o del primero que afecte a algo. */
+function RestBanner() {
+  const today = useToday();
+  const rests = useRests();
+  const rest = rests
+    ?.filter((r) => compareDates(r.from, today) <= 0 && compareDates(today, r.to) <= 0)
+    .sort((a, b) => Number(!!a.activityIds) - Number(!!b.activityIds))[0];
+  if (!rest) return null;
+  return (
+    <div className="banner" role="status">
+      <Sprite name="info" color="var(--success)" />
+      <p className="grow small">{rest.note ? t('rests.todayNote', { note: rest.note }) : t('rests.today')}</p>
+      <Link to="/descansos" className="btn">
+        {t('common.edit')}
+      </Link>
     </div>
   );
 }

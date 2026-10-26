@@ -4,6 +4,7 @@ import type {
   ActivityStatusEvent,
   ActivityVersion,
   Completion,
+  Rest,
 } from '../domain/activities/types';
 import type { Category } from '../domain/categories';
 import type { Mission, MissionEvent } from '../domain/missions/missions';
@@ -19,7 +20,7 @@ export interface AchievementRow {
   unlockedAt: string;
 }
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export class ArvidDB extends Dexie {
   categories!: EntityTable<Category, 'id'>;
@@ -31,10 +32,12 @@ export class ArvidDB extends Dexie {
   missionEvents!: EntityTable<MissionEvent, 'id'>;
   achievements!: EntityTable<AchievementRow, 'id'>;
   settings!: EntityTable<SettingRow, 'key'>;
+  /** Descansos planificados (spec 12, DS). Desde la versión 2 del esquema. */
+  rests!: EntityTable<Rest, 'id'>;
 
   constructor(name = 'arvid') {
     super(name);
-    this.version(SCHEMA_VERSION).stores({
+    this.version(1).stores({
       categories: 'id, order',
       activities: 'id, order',
       activityVersions: 'id, activityId, [activityId+effectiveFrom]',
@@ -45,5 +48,7 @@ export class ArvidDB extends Dexie {
       achievements: 'id',
       settings: 'key',
     });
+    // Versión 2 (spec 12): tabla nueva y vacía; los datos de la versión 1 no cambian
+    this.version(2).stores({ rests: 'id, from, to' });
   }
 }

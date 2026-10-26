@@ -2,6 +2,7 @@ import { addDays, type LocalDate } from '../time/localDate';
 import { daysRemaining, type PeriodKind } from '../time/period';
 import { canLog, progressAt, statusAt, versionAt, yesterdayPeriodClosed } from './rules';
 import type { ActivityRecord } from './types';
+import { restingOn } from './rests';
 
 export interface TodayItem {
   activityId: string;
@@ -13,6 +14,8 @@ export interface TodayItem {
   done: boolean;
   daysRemaining: number;
   order: number;
+  /** Hoy es día de descanso para esta actividad (spec 12, DS-04): se puede registrar, pero no falta. */
+  resting: boolean;
 }
 
 export interface TodaySection {
@@ -54,6 +57,7 @@ export function buildTodayView(records: readonly ActivityRecord[], today: LocalD
       done: progress.done,
       daysRemaining: daysRemaining(progress.period, today),
       order: record.activity.order,
+      resting: restingOn(record.rests, today),
     });
   }
   const sections = SECTION_ORDER.map((kind) => ({
@@ -63,7 +67,8 @@ export function buildTodayView(records: readonly ActivityRecord[], today: LocalD
   const daily = items.filter((i) => i.kind === 'day');
   return {
     date: today,
-    pendingToday: daily.reduce((sum, i) => sum + (i.target - i.count), 0),
+    // Lo que descansa hoy no cuenta como pendiente (DS-04)
+    pendingToday: daily.filter((i) => !i.resting).reduce((sum, i) => sum + (i.target - i.count), 0),
     hasDaily: daily.length > 0,
     sections,
     isEmpty: items.length === 0,

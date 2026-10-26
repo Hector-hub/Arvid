@@ -39,11 +39,16 @@ export function useArvidMoments(view: TodayView | undefined, comeback: boolean, 
     let text = line(`lines.${moment}`, index, settings.profile?.gender, { alias });
     if (moment === 'greeting') {
       const hello = `${t(`arvid.hello.${helloFor(new Date().getHours())}`)}${alias ? `, ${alias}` : ''}.`;
-      const status = !view.hasDaily
-        ? t('arvid.status.none')
-        : view.pendingToday > 0
-          ? t('arvid.status.pending', { count: view.pendingToday })
-          : t('arvid.status.done');
+      // Día de descanso (spec 12, DS-10): todas las actividades de hoy descansan o ya están hechas
+      const items = view.sections.flatMap((sec) => sec.items);
+      const resting = items.some((i) => i.resting) && items.every((i) => i.resting || i.done);
+      const status = resting
+        ? t('arvid.status.rest')
+        : !view.hasDaily
+          ? t('arvid.status.none')
+          : view.pendingToday > 0
+            ? t('arvid.status.pending', { count: view.pendingToday })
+            : t('arvid.status.done');
       text = `${hello} ${status} ${text}`;
     }
     await saveSetting(ctx.db, 'arvidSeen', markSaid(settings.arvidSeen, moment, index, today));

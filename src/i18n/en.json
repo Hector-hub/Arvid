@@ -202,7 +202,9 @@
     "wildcardUsed": "Wildcard used",
     "reasonGrace": "Grace",
     "reasonPaused": "Paused",
-    "reasonTruncated": "Frequency change"
+    "reasonTruncated": "Frequency change",
+    "reasonRest": "Rest",
+    "rests": "Upcoming rest days"
   },
   "categoryForm": {
     "newTitle": "New category",
@@ -629,7 +631,8 @@
       "pending_one": "You have {count} activity left today.",
       "pending_other": "You have {count} activities left today.",
       "done": "You've already done everything for today.",
-      "none": "Nothing pending today."
+      "none": "Nothing pending today.",
+      "rest": "Today is your rest day: enjoy it, it counts too."
     },
     "lines": {
       "greeting": {
@@ -799,7 +802,8 @@
       "activities_other": "You have {count} activities to do today.",
       "noActivities": "No activities pending today.",
       "missionDue": "The mission “{name}” is due today.",
-      "missionsDue": "{count} missions are due today."
+      "missionsDue": "{count} missions are due today.",
+      "rest": "You're resting today. Enjoy it."
     },
     "night": {
       "left_one": "1 activity left for today.",
@@ -941,5 +945,41 @@
         }
       }
     }
+  },
+  "rests": {
+    "title": "Rest days",
+    "intro": "For trips, illness or a day off: what rests doesn't break your streaks or lower your attributes.",
+    "newTitle": "New rest",
+    "editTitle": "Edit rest",
+    "from": "From",
+    "to": "To",
+    "scope": "What rests?",
+    "allActivities": "All activities",
+    "someActivities": "Only some",
+    "note": "Note (optional)",
+    "notePlaceholder": "Trip, illness…",
+    "rule": "If you do it anyway that day, it counts in your favor. XP and missions don't change.",
+    "create": "Plan rest",
+    "saved": "Rest saved.",
+    "upcoming": "Upcoming and ongoing",
+    "none": "You have no rest days planned.",
+    "ongoing": "Ongoing",
+    "cancel": "Cancel rest",
+    "cancelConfirm": "Cancel this rest?",
+    "cancelOngoing": "It already started: past days stay as rest and it ends yesterday.",
+    "cancelYes": "Cancel rest",
+    "range": "{from} – {to}",
+    "today": "You're resting today",
+    "todayNote": "You're resting today · {note}",
+    "plan": "Plan a rest",
+    "chip": "Rest",
+    "errors": {
+      "from-past": "A rest has to start today or later.",
+      "to-before-from": "The end date can't be before the start.",
+      "no-activities": "Choose at least one activity.",
+      "note-too-long": "The note is too long.",
+      "invalid-date": "Check the dates."
+    },
+    "summary": "Rest day"
   }
 }

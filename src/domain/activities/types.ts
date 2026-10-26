@@ -61,4 +61,22 @@ export interface ActivityRecord {
   versions: ActivityVersion[];
   events: ActivityStatusEvent[];
   completions: Completion[];
+  /** Días de descanso que afectan a esta actividad (spec 12, DS), como rangos de fechas. */
+  rests?: DateRange[];
+}
+
+export interface DateRange {
+  from: LocalDate;
+  to: LocalDate;
+}
+
+/**
+ * Descanso planificado (spec 12, DS-01): de `from` a `to` (ambos incluidos), para todas las actividades o solo las de
+ * `activityIds`.
+ */
+export interface Rest extends DateRange {
+  id: string;
+  activityIds?: string[];
+  note?: string;
+  createdAt: Instant;
 }
