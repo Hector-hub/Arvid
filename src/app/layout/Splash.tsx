@@ -39,9 +39,12 @@ export function Splash({ children }: { children: ReactNode }) {
   return (
     <div className={`splash${phase === 'out' ? ' out' : ''}`} role="status" aria-label={NAME}>
       <img src="/icons/icon-192.png" alt="" width={112} height={112} className="splash-icon" />
+      {/* La palabra ocupa siempre su ancho completo (las letras aún sin escribir, invisibles) para quedar centrada
+          y no moverse; el cursor va fuera del flujo */}
       <p className="splash-name" aria-hidden="true">
-        {NAME.slice(0, letters)}
-        <span className="splash-caret">{letters < NAME.length ? '_' : ' '}</span>
+        <span>{NAME.slice(0, letters)}</span>
+        <span className="splash-pending">{NAME.slice(letters)}</span>
+        {letters < NAME.length && <span className="splash-caret">_</span>}
       </p>
     </div>
   );
