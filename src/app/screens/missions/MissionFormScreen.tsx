@@ -142,6 +142,19 @@ function MissionForm({ record, defaultCategoryId }: { record?: MissionRecord; de
             onChange={(e) => setDeadline(e.target.value)}
             style={{ maxWidth: 220 }}
           />
+          {/* En iPhone, el selector no deja vaciar una fecha ya elegida (D-128) */}
+          {deadline && (
+            <button
+              type="button"
+              className="btn btn-ghost clear-field"
+              onClick={() => {
+                setDeadline('');
+                setTime('');
+              }}
+            >
+              {t('common.clearDate')}
+            </button>
+          )}
           {errors.deadline ? (
             <p id="mission-deadline-error" className="field-error">
               {errorText(errors.deadline)}
@@ -167,6 +180,11 @@ function MissionForm({ record, defaultCategoryId }: { record?: MissionRecord; de
             onChange={(e) => setTime(e.target.value)}
             style={{ maxWidth: 160 }}
           />
+          {time && (
+            <button type="button" className="btn btn-ghost clear-field" onClick={() => setTime('')}>
+              {t('common.clearTime')}
+            </button>
+          )}
           {errors.time ? (
             <p className="field-error">{errorText(errors.time)}</p>
           ) : (

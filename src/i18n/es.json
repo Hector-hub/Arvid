@@ -16,7 +16,9 @@
     "retry": "Reintentar",
     "how": "Cómo",
     "andJoin": " y ",
-    "listJoin": ", "
+    "listJoin": ", ",
+    "clearDate": "Quitar fecha",
+    "clearTime": "Quitar hora"
   },
   "nav": {
     "main": "Principal",

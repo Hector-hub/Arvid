@@ -1259,3 +1259,11 @@ fieldset { border: 0; padding: 0; margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   .splash, .splash-icon, .app-fade-in { animation: none; transition: none; }
 }
+
+/* «Quitar fecha» / «Quitar hora» junto a un campo opcional (D-128) */
+.clear-field {
+  align-self: flex-start;
+  min-height: 36px;
+  padding-left: 0;
+  font-size: 0.875rem;
+}

@@ -138,6 +138,11 @@ function GoalForm({ goal, defaultCategoryId }: { goal?: Goal; defaultCategoryId:
       <div className="field">
         <label htmlFor="goal-target">{t('goals.targetDate')}</label>
         <input id="goal-target" type="date" min={today} value={targetDate} onChange={(e) => setTargetDate(e.target.value)} style={{ maxWidth: 220 }} />
+        {targetDate && (
+          <button type="button" className="btn btn-ghost clear-field" onClick={() => setTargetDate('')}>
+            {t('common.clearDate')}
+          </button>
+        )}
         <p className="small muted">{t('goals.targetHint')}</p>
       </div>
 
@@ -223,6 +228,16 @@ function GoalForm({ goal, defaultCategoryId }: { goal?: Goal; defaultCategoryId:
                         aria-label={`${label} · ${t('goals.time')}`}
                         onChange={(e) => update(i, { time: e.target.value })}
                       />
+                      {r.deadline && (
+                        <button
+                          type="button"
+                          className="btn btn-ghost clear-field"
+                          aria-label={`${label} · ${t('common.clearDate')}`}
+                          onClick={() => update(i, { deadline: '', time: '' })}
+                        >
+                          {t('common.clearDate')}
+                        </button>
+                      )}
                     </div>
                   </>
                 )}
