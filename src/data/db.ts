@@ -9,6 +9,7 @@ import type {
 import type { Category } from '../domain/categories';
 import type { Mission, MissionEvent } from '../domain/missions/missions';
 import type { Goal } from '../domain/goals/goals';
+import type { Memory } from '../domain/arvid/memory';
 
 export interface SettingRow {
   key: string;
@@ -21,7 +22,7 @@ export interface AchievementRow {
   unlockedAt: string;
 }
 
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 export class ArvidDB extends Dexie {
   categories!: EntityTable<Category, 'id'>;
@@ -37,6 +38,8 @@ export class ArvidDB extends Dexie {
   rests!: EntityTable<Rest, 'id'>;
   /** Objetivos con hitos (spec 12, OB). Desde la versión 3 del esquema. */
   goals!: EntityTable<Goal, 'id'>;
+  /** Memoria del compañero (spec 13). Desde la versión 4 del esquema. */
+  memories!: EntityTable<Memory, 'id'>;
 
   constructor(name = 'arvid') {
     super(name);
@@ -55,5 +58,7 @@ export class ArvidDB extends Dexie {
     this.version(2).stores({ rests: 'id, from, to' });
     // Versión 3 (spec 12): objetivos; las misiones ganan `time` y `goalId` (campos opcionales, sin índice)
     this.version(3).stores({ goals: 'id' });
+    // Versión 4 (spec 13): memoria del compañero
+    this.version(4).stores({ memories: 'id' });
   }
 }

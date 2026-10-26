@@ -486,7 +486,7 @@
     "needsConnection": "La música necesita conexión la primera vez.",
     "musicNote": "Desactivada por defecto. Una pista que ya ha sonado se puede escuchar sin conexión.",
     "arvidAi": "{companion} con IA",
-    "arvidAiHelp": "Para darte consejos, {companion} envía tu progreso y tus actividades a Mistral AI (Francia). Puedes desactivarlo cuando quieras.",
+    "arvidAiHelp": "Para darte consejos, {companion} envía tu progreso, tus actividades y sus notas sobre ti a Mistral AI (Francia). Puedes desactivarlo cuando quieras.",
     "companion": "Compañero",
     "games": "Juegos",
     "gamesHelp": "Muestra el botón «Jugar» en la escena de Hoy.",
@@ -1056,5 +1056,27 @@
       "activity": "Creada: actividad «{name}»."
     },
     "draftBanner": "{companion} rellenó lo que entendió: revisa y completa."
+  },
+  "memory": {
+    "noted": "¡Anotado!",
+    "notice": {
+      "remembered": "Lo recordaré: «{text}»",
+      "updated": "Lo he actualizado: «{text}»",
+      "forgotten": "Lo he olvidado: «{text}»",
+      "full": "Mi memoria está llena de cosas que me pediste recordar. Borra alguna para que pueda guardar «{text}»."
+    },
+    "menu": "Opciones",
+    "viewMemory": "Lo que {companion} sabe de ti",
+    "viewMemoryCount": "Lo que {companion} sabe de ti ({count})",
+    "clearAll": "Borrar memoria completa",
+    "clearAllConfirm": "¿Borrar todo lo que {companion} sabe de ti? La conversación no se borra.",
+    "clearAllYes": "Borrar memoria",
+    "title": "Lo que {companion} sabe de ti",
+    "intro": "{companion} guarda notas breves sobre ti para adaptarse: cómo te gusta que te hable, tus horarios, lo que te motiva. Se envían a Mistral AI con cada mensaje con IA. Como mucho {max}.",
+    "empty": "Aún no ha guardado nada. Puedes decirle «recuerda que…».",
+    "asked": "La pediste",
+    "delete": "Olvidar esta nota",
+    "deleted": "Nota olvidada.",
+    "undo": "Deshacer"
   }
 }

@@ -169,3 +169,14 @@ export function BackIcon() {
     </PixelIcon>
   );
 }
+
+/** Tres puntos verticales: menú de opciones (D-130). */
+export function MoreIcon() {
+  return (
+    <PixelIcon>
+      <rect x="5" y="1" width="2" height="2" />
+      <rect x="5" y="5" width="2" height="2" />
+      <rect x="5" y="9" width="2" height="2" />
+    </PixelIcon>
+  );
+}

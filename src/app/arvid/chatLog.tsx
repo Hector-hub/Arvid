@@ -10,8 +10,8 @@ export function ChatLogWatcher() {
   const { db } = useData();
   useEffect(() => {
     let queue = Promise.resolve();
-    return onChatLine(({ from, text }) => {
-      const entry: ChatEntry = { at: new Date().toISOString(), from, companion: getCompanion(), text };
+    return onChatLine(({ from, text, kind }) => {
+      const entry: ChatEntry = { at: new Date().toISOString(), from, companion: getCompanion(), text, ...(kind ? { kind } : {}) };
       queue = queue.then(() => appendChatLog(db, [entry])).catch(() => undefined);
     });
   }, [db]);

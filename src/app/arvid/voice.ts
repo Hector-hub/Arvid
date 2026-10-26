@@ -16,7 +16,7 @@ export function measure(text: string): number {
 export const noLigatures = (text: string) => text.replace(/f(?=[il])/g, 'f\u200C');
 
 // ---------- Conversación (D-098) ----------
-type ChatLine = { from: 'user' | 'companion'; text: string };
+type ChatLine = { from: 'user' | 'companion'; text: string; kind?: 'memory' };
 const chatListeners = new Set<(line: ChatLine) => void>();
 
 /** Avisa de cada línea de la conversación; quien escucha la guarda (ChatLogWatcher). */
@@ -26,8 +26,8 @@ export function onChatLine(listener: (line: ChatLine) => void): () => void {
 }
 
 /** Anota una línea en la conversación sin decirla en la escena (p. ej. desde la página del chat). */
-export function logChat(from: ChatLine['from'], text: string): void {
-  for (const l of chatListeners) l({ from, text });
+export function logChat(from: ChatLine['from'], text: string, kind?: ChatLine['kind']): void {
+  for (const l of chatListeners) l({ from, text, ...(kind ? { kind } : {}) });
 }
 
 /** ARVID dice `text` en la burbuja de la escena; con `log`, queda en la conversación (D-098). */

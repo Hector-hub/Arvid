@@ -306,6 +306,8 @@ export interface ChatEntry {
   /** Quién hablaba (spec 08): la conversación conserva su nombre aunque luego se cambie de compañero. */
   companion: Companion;
   text: string;
+  /** Aviso de memoria («Lo recordaré: …», spec 13, MC-03): se muestra aparte y no va al historial de la IA. */
+  kind?: 'memory';
 }
 
 export const CHAT_LOG_MAX = 200;

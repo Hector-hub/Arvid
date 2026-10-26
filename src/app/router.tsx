@@ -7,6 +7,7 @@ import { ChatScreen } from './screens/ChatScreen';
 import { GameScreen } from './screens/GameScreen';
 import { CityScreen } from './city/CityScreen';
 import { RestsScreen } from './rests/RestsScreen';
+import { MemoryScreen } from './screens/MemoryScreen';
 import { GoalsScreen } from './goals/GoalsScreen';
 import { GoalFormScreen } from './goals/GoalFormScreen';
 import { GoalDetailScreen } from './goals/GoalDetailScreen';
@@ -38,6 +39,7 @@ export const routes: RouteObject[] = [
       { path: 'actividades/:id/editar', element: <ActivityFormScreen /> },
       { path: 'perfil', element: <ProfileScreen /> },
       { path: 'chat', element: <ChatScreen /> },
+      { path: 'chat/memoria', element: <MemoryScreen /> },
       { path: 'juego', element: <GameScreen /> },
       { path: 'descansos', element: <RestsScreen /> },
       { path: 'objetivos', element: <GoalsScreen /> },

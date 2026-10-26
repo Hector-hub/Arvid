@@ -17,6 +17,7 @@ import { NotificationsWatcher } from '../notifications/NotificationsWatcher';
 import { CityWatcher } from '../city/CityWatcher';
 import { NeighborTalk } from '../city/NeighborTalk';
 import { GoalWatcher } from '../goals/GoalWatcher';
+import { MemoryWatcher } from '../arvid/memory';
 import { LevelUpWatcher } from './LevelUp';
 import { MusicProvider } from '../music/MusicProvider';
 
@@ -66,6 +67,7 @@ export function AppLayout() {
         <CityWatcher />
         <NeighborTalk />
         <GoalWatcher />
+        <MemoryWatcher />
         <ChatLogWatcher />
       </div>
       </MusicProvider>

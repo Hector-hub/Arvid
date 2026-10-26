@@ -486,7 +486,7 @@
     "needsConnection": "Music needs a connection the first time.",
     "musicNote": "Off by default. A track that has already played can be heard offline.",
     "arvidAi": "{companion} with AI",
-    "arvidAiHelp": "To give you advice, {companion} sends your progress and activities to Mistral AI (France). You can turn it off anytime.",
+    "arvidAiHelp": "To give you advice, {companion} sends your progress, activities and its notes about you to Mistral AI (France). You can turn it off anytime.",
     "companion": "Companion",
     "games": "Games",
     "gamesHelp": "Shows the “Play” button in the Today scene.",
@@ -1056,5 +1056,27 @@
       "activity": "Created: activity “{name}”."
     },
     "draftBanner": "{companion} filled in what it understood: review and complete it."
+  },
+  "memory": {
+    "noted": "Noted!",
+    "notice": {
+      "remembered": "I'll remember: “{text}”",
+      "updated": "I've updated it: “{text}”",
+      "forgotten": "I've forgotten: “{text}”",
+      "full": "My memory is full of things you asked me to remember. Delete one so I can save “{text}”."
+    },
+    "menu": "Options",
+    "viewMemory": "What {companion} knows about you",
+    "viewMemoryCount": "What {companion} knows about you ({count})",
+    "clearAll": "Delete all memory",
+    "clearAllConfirm": "Delete everything {companion} knows about you? The conversation stays.",
+    "clearAllYes": "Delete memory",
+    "title": "What {companion} knows about you",
+    "intro": "{companion} keeps short notes about you to adapt: how you like to be spoken to, your schedule, what motivates you. They're sent to Mistral AI with every AI message. At most {max}.",
+    "empty": "Nothing saved yet. You can say “remember that…”.",
+    "asked": "You asked",
+    "delete": "Forget this note",
+    "deleted": "Note forgotten.",
+    "undo": "Undo"
   }
 }

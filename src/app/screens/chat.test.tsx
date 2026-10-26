@@ -58,7 +58,9 @@ describe('conversación completa (D-098)', () => {
     const user = userEvent.setup();
     await appendChatLog(ctx.db, [{ at: new Date().toISOString(), from: 'user', companion: 'arvid', text: 'Hola' }]);
     page();
-    await user.click(await screen.findByRole('button', { name: 'Borrar conversación' }));
+    // Menú de tres puntos (D-130) → «Borrar conversación» → confirmación flotante
+    await user.click(await screen.findByRole('button', { name: 'Opciones' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Borrar conversación' }));
     await user.click(screen.getByRole('button', { name: 'Borrar' }));
     expect(await screen.findByText(/Aún no habéis hablado/)).toBeInTheDocument();
     expect((await loadSettings(ctx.db)).chatLog).toBeUndefined();

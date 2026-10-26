@@ -153,7 +153,7 @@ describe('función /api/arvid', () => {
         proposal: { action: 'create_mission', args: { title: 'Pagar la luz', categoryId: 'money', difficulty: 'easy', deadline: '2026-10-30', time: '18:00' } },
       });
       const sent = JSON.parse(vi.mocked(fetch).mock.calls[0]![1]!.body as string);
-      expect(sent.tools.map((t: { function: { name: string } }) => t.function.name)).toEqual(['create_mission', 'create_goal', 'create_rest', 'create_activity']);
+      expect(sent.tools.map((t: { function: { name: string } }) => t.function.name)).toEqual(['create_mission', 'create_goal', 'create_rest', 'create_activity', 'remember', 'update_memory', 'forget']);
       expect(sent.messages.some((m: { content: string }) => /call exactly ONE tool/.test(m.content))).toBe(true);
     });
 
@@ -182,6 +182,47 @@ describe('función /api/arvid', () => {
       const moment = mistral(200, 'Buenos días.');
       await handle(post(body({ moment: 'greeting', messages: [] })), { apiKey: 'k', fetch: moment });
       expect(JSON.parse(vi.mocked(moment).mock.calls[0]![1]!.body as string).tools).toBeUndefined();
+    });
+  });
+
+  describe('memoria (spec 13)', () => {
+    const ctx = { calendar: { today: '2026-10-26' }, categories: [] };
+    const calls = (...fns: { name: string; args: unknown }[]) =>
+      vi.fn(async () =>
+        new Response(JSON.stringify({ choices: [{ message: { content: '', tool_calls: fns.map((f) => ({ function: { name: f.name, arguments: JSON.stringify(f.args) } })) } }] })),
+      ) as unknown as typeof fetch & ReturnType<typeof vi.fn>;
+
+    it('MU-01: las notas van como mensaje de sistema antes del contexto, también en los momentos; no en los vecinos', async () => {
+      const fetch = mistral(200, 'Buenos días.');
+      await handle(post(body({ moment: 'greeting', messages: [], memory: ['Prefiere entrenar por la mañana'] })), { apiKey: 'k', fetch });
+      const sent = JSON.parse(vi.mocked(fetch).mock.calls[0]![1]!.body as string);
+      expect(sent.messages[1]).toEqual({ role: 'system', content: expect.stringMatching(/n1\. Prefiere entrenar por la mañana/) });
+      expect(sent.messages[2].content).toMatch(/User context/);
+      const neighbor = mistral(200, 'Hola.');
+      await handle(post(body({ moment: 'neighbor', neighbor: 'dex', messages: [], memory: ['x'] })), { apiKey: 'k', fetch: neighbor });
+      expect(JSON.stringify(JSON.parse(vi.mocked(neighbor).mock.calls[0]![1]!.body as string).messages)).not.toMatch(/What you know about the user/);
+    });
+
+    it('MC-04, MC-05: devuelve las operaciones de memoria válidas e ignora las inválidas', async () => {
+      const fetch = calls(
+        { name: 'remember', args: { text: 'Los lunes trabaja hasta tarde', source: 'user' } },
+        { name: 'forget', args: { id: 'n9' } },
+        { name: 'update_memory', args: { id: 'n1', text: 'x'.repeat(200) } },
+      );
+      const data = await (await handle(post(body({ messages: [{ role: 'user', content: 'recuerda que los lunes trabajo hasta tarde' }], context: ctx, memory: ['Le gusta leer'] })), { apiKey: 'k', fetch })).json();
+      expect(data.memoryOps).toEqual([{ op: 'remember', text: 'Los lunes trabaja hasta tarde', source: 'user' }]);
+    });
+
+    it('memoria y propuesta en el mismo mensaje', async () => {
+      const fetch = calls(
+        { name: 'remember', args: { text: 'Quiere ahorrar', source: 'companion' } },
+        { name: 'create_mission', args: { title: 'Abrir cuenta de ahorro', categoryId: 'money', difficulty: 'easy' } },
+      );
+      const data = await (
+        await handle(post(body({ messages: [{ role: 'user', content: 'quiero ahorrar' }], context: { ...ctx, categories: [{ id: 'money', name: 'Dinero' }] } })), { apiKey: 'k', fetch })
+      ).json();
+      expect(data.memoryOps).toHaveLength(1);
+      expect(data.proposal.action).toBe('create_mission');
     });
   });
 });

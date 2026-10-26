@@ -3,10 +3,11 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router';
 import { useT } from '../../i18n';
 import { chatTurn } from '../arvid/brain';
+import { rememberFromTurn } from '../arvid/memory';
 import { editPath, ProposalCard } from '../arvid/ProposalCard';
 import type { Proposal } from '../../domain/arvid/actions';
 import { useArvidContext } from '../arvid/useArvidContext';
-import { useSettings } from '../data';
+import { useData, useSettings } from '../data';
 import { logChat, speak } from '../arvid/voice';
 import { ChatIcon, ExpandIcon, SendIcon } from '../design/icons';
 import { markUserChat } from './engine';
@@ -21,6 +22,7 @@ export const CHAT_MAX = 280;
 export function ChatControl() {
   const t = useT();
   const settings = useSettings();
+  const ctx = useData();
   const context = useArvidContext();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -68,8 +70,9 @@ export function ChatControl() {
     try {
       // ARVID "piensa" mientras espera la respuesta (CH-03); los "…" no van a la conversación
       await speak(t('arvid.chat.thinking'), { log: false });
-      const turn = await chatTurn(message, { aiEnabled: settings?.arvidAi ?? false, context });
+      const turn = await chatTurn(message, { aiEnabled: settings?.arvidAi ?? false, context }, settings?.chatLog);
       await speak(turn.text);
+      await rememberFromTurn(ctx, turn);
       // Crear con el compañero (spec 12, AC-05): desde la escena, la tarjeta en una hoja; si no se entendió del
       // todo, el formulario con lo entendido (AC-06)
       setProposal(turn.proposal);

@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { createContext, useContext, type ReactNode } from 'react';
 import { loadMissions } from '../data/missions';
 import { loadGoals } from '../data/goals';
+import { loadMemories } from '../data/memory';
 import { loadAchievements, loadCategories, loadRecord, loadRecords, loadRests, loadSettings, type DataContext } from '../data/repository';
 
 const DataCtx = createContext<DataContext | null>(null);
@@ -58,4 +59,10 @@ export function useRests() {
 export function useGoals() {
   const { db } = useData();
   return useLiveQuery(() => loadGoals(db), [db]);
+}
+
+/** Memoria del compañero (spec 13). */
+export function useMemories() {
+  const { db } = useData();
+  return useLiveQuery(() => loadMemories(db), [db]);
 }

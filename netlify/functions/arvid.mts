@@ -6,6 +6,7 @@ import { getStore } from '@netlify/blobs';
 import { z } from 'zod';
 import { DAILY_CREDITS, verifyCode } from '../lib/accessCode.mts';
 import { ACTION_RULES, actionTools, checkProposal } from '../../src/domain/arvid/actions';
+import { checkMemoryOp, MEMORY_MAX, MEMORY_TEXT_MAX, memoryRules, memoryTools, MEMORY_TOOL_NAMES, type MemoryOp } from '../../src/domain/arvid/memory';
 import { isLocalDate, type LocalDate } from '../../src/domain/time/localDate';
 import {
   AI_MAX_BODY,
@@ -35,6 +36,7 @@ const RequestSchema = z.object({
   context: z.record(z.string(), z.unknown()),
   companion: z.enum(COMPANIONS).optional(),
   neighbor: z.enum(NEIGHBOR_IDS).optional(),
+  memory: z.array(z.string().max(MEMORY_TEXT_MAX)).max(MEMORY_MAX).optional(),
 });
 
 const json = (status: number, body: unknown) =>
@@ -151,7 +153,7 @@ async function callMistral(
         temperature: AI_TEMPERATURE,
         max_tokens: AI_MAX_TOKENS,
         messages,
-        ...(withTools ? { tools: actionTools(), tool_choice: 'auto' } : {}),
+        ...(withTools ? { tools: [...actionTools(), ...memoryTools()], tool_choice: 'auto' } : {}),
       }),
       signal: AbortSignal.timeout(timeoutMs),
     });
@@ -194,13 +196,24 @@ async function generate(req: AiRequest, deps: { apiKey?: string; fetch: typeof f
   const started = Date.now();
   const chat = req.moment === 'chat';
   const messages: MistralMessage[] = buildMessages(req);
-  if (chat) messages.splice(2, 0, { role: 'system', content: ACTION_RULES });
+  const memoryCount = req.memory?.length ?? 0;
+  // Tras la memoria y antes del contexto: reglas de las acciones (spec 12) y de la memoria (spec 13)
+  if (chat) messages.splice(2, 0, { role: 'system', content: `${ACTION_RULES}\n${memoryRules(memoryCount)}` });
 
   const first = await callMistral(messages, deps, MISTRAL_TIMEOUT_MS, chat);
   if ('error' in first) return first.error;
   let message = first.message;
   const text = () => (typeof message.content === 'string' ? sanitizeReply(message.content) : '');
-  const call = message.tool_calls?.[0]?.function;
+  // Operaciones de memoria (spec 13, MC-04): las válidas, en orden; las propuestas de crear, aparte (spec 12)
+  const calls = (message.tool_calls ?? []).map((c) => c.function).filter((f): f is { name: string; arguments?: unknown } => !!f?.name);
+  const memoryOps = chat
+    ? calls
+        .filter((c) => (MEMORY_TOOL_NAMES as string[]).includes(c.name))
+        .map((c) => checkMemoryOp(c.name, parseArgs(c.arguments), memoryCount))
+        .filter((op): op is MemoryOp => !!op)
+    : [];
+  const withMemory = (body: Record<string, unknown>) => json(200, memoryOps.length ? { ...body, memoryOps } : body);
+  const call = calls.find((c) => !(MEMORY_TOOL_NAMES as string[]).includes(c.name));
 
   if (chat && call?.name) {
     const ctx = actionContext(req.context);
@@ -215,7 +228,7 @@ async function generate(req: AiRequest, deps: { apiKey?: string; fetch: typeof f
         true,
       );
       if (!('error' in retry)) {
-        const again = retry.message.tool_calls?.[0]?.function;
+        const again = retry.message.tool_calls?.map((c) => c.function).find((f) => f?.name && !(MEMORY_TOOL_NAMES as string[]).includes(f.name));
         if (again?.name) {
           const second = checkProposal(again.name, parseArgs(again.arguments), ctx);
           if (second.ok || !check.partial) check = second;
@@ -223,9 +236,12 @@ async function generate(req: AiRequest, deps: { apiKey?: string; fetch: typeof f
         }
       }
     }
-    if (check.ok) return json(200, { reply: text(), proposal: check.proposal });
-    return json(200, { reply: text(), draft: check.partial ?? null });
+    if (check.ok) return withMemory({ reply: text(), proposal: check.proposal });
+    return withMemory({ reply: text(), draft: check.partial ?? null });
   }
+
+  // Solo memoria: la app pone el texto si la IA no escribió nada
+  if (memoryOps.length) return withMemory({ reply: text() });
 
   const reply = text();
   if (!reply) return json(502, { error: 'empty' });

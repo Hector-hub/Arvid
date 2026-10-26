@@ -13,8 +13,10 @@ import { editPath, ProposalCard } from '../arvid/ProposalCard';
 import type { Proposal } from '../../domain/arvid/actions';
 import { useArvidContext } from '../arvid/useArvidContext';
 import { logChat } from '../arvid/voice';
-import { useData, useSettings } from '../data';
-import { BackIcon, TrashIcon } from '../design/icons';
+import { useData, useMemories, useSettings } from '../data';
+import { BackIcon, MoreIcon } from '../design/icons';
+import { clearMemories } from '../../data/memory';
+import { rememberFromTurn } from '../arvid/memory';
 import { markUserChat } from '../scene/engine';
 import { CompanionPreview } from '../scene/Scene';
 import { CHAT_MAX } from '../scene/Chat';
@@ -40,14 +42,18 @@ const TEXTAREA_MAX_ROWS = 5;
 
 export function ChatScreen() {
   useLocale();
-  const { db } = useData();
+  const ctx = useData();
+  const { db } = ctx;
+  const memories = useMemories();
+  const [menu, setMenu] = useState(false);
   const settings = useSettings();
   const context = useArvidContext();
   const location = useLocation();
   const navigate = useNavigate();
   const [text, setText] = useState(() => (location.state as { draft?: string } | null)?.draft ?? '');
   const [busy, setBusy] = useState(false);
-  const [confirm, setConfirm] = useState(false);
+  // Qué se está confirmando en el diálogo flotante (D-130)
+  const [confirm, setConfirm] = useState<'chat' | 'memory'>();
   const [proposal, setProposal] = useState<Proposal>();
   const end = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLTextAreaElement>(null);
@@ -74,7 +80,7 @@ export function ChatScreen() {
   useEffect(() => {
     if (!confirm) return;
     cancel.current?.focus();
-    const escape = (e: globalThis.KeyboardEvent) => e.key === 'Escape' && setConfirm(false);
+    const escape = (e: globalThis.KeyboardEvent) => e.key === 'Escape' && setConfirm(undefined);
     document.addEventListener('keydown', escape);
     return () => document.removeEventListener('keydown', escape);
   }, [confirm]);
@@ -88,8 +94,10 @@ export function ChatScreen() {
     markUserChat();
     logChat('user', message);
     try {
-      const turn = await chatTurn(message, { aiEnabled: settings?.arvidAi ?? false, context });
+      const turn = await chatTurn(message, { aiEnabled: settings?.arvidAi ?? false, context }, log);
       logChat('companion', turn.text);
+      // Memoria del compañero (spec 13, MC-03): guarda y avisa en la conversación
+      await rememberFromTurn(ctx, turn);
       // Crear con el compañero (spec 12, AC-05, AC-06): tarjeta para confirmar, o el formulario con lo entendido
       setProposal(turn.proposal);
       if (turn.draft) void navigate(editPath(turn.draft.action), { state: { draft: turn.draft.args } });
@@ -131,16 +139,44 @@ export function ChatScreen() {
           <h1 className="chat-title">{name}</h1>
           <p className="small muted">{settings?.arvidAi ? t('chat.withAi') : t('chat.withoutAi')}</p>
         </div>
-        <button
-          type="button"
-          className="btn btn-ghost btn-icon"
-          aria-label={t('chat.clear')}
-          title={t('chat.clear')}
-          disabled={(log?.length ?? 0) === 0}
-          onClick={() => setConfirm(true)}
-        >
-          <TrashIcon />
-        </button>
+        <div className="chat-menu">
+          <button
+            type="button"
+            className="btn btn-ghost btn-icon"
+            aria-label={t('memory.menu')}
+            title={t('memory.menu')}
+            aria-haspopup="menu"
+            aria-expanded={menu}
+            onClick={() => setMenu((m) => !m)}
+          >
+            <MoreIcon />
+          </button>
+          {menu && (
+            <ChatMenu
+              onClose={() => setMenu(false)}
+              items={[
+                {
+                  label: memories?.length
+                    ? t('memory.viewMemoryCount', { count: memories.length })
+                    : t('memory.viewMemory'),
+                  onSelect: () => void navigate('/chat/memoria'),
+                },
+                {
+                  label: t('chat.clear'),
+                  onSelect: () => setConfirm('chat'),
+                  disabled: (log?.length ?? 0) === 0,
+                  danger: true,
+                },
+                {
+                  label: t('memory.clearAll'),
+                  onSelect: () => setConfirm('memory'),
+                  disabled: !memories?.length,
+                  danger: true,
+                },
+              ]}
+            />
+          )}
+        </div>
       </header>
 
       <section className="chat-log chat-scroll" aria-label={t('chat.title')} aria-live="polite">
@@ -148,14 +184,21 @@ export function ChatScreen() {
         {groups.map((g) => (
           <div key={g.day} className="stack" style={{ gap: 'var(--s2)' }}>
             <p className="chat-day small muted">{longDate(g.day)}</p>
-            {g.entries.map((entry, i) => (
-              <div key={`${entry.at}-${i}`} className={`chat-msg ${entry.from}`}>
-                <span className="chat-who small">
-                  {entry.from === 'user' ? t('chat.you') : COMPANION_NAME[entry.companion]} · {time(entry.at)}
-                </span>
-                <p>{entry.text}</p>
-              </div>
-            ))}
+            {g.entries.map((entry, i) =>
+              entry.kind === 'memory' ? (
+                // Aviso de memoria (MC-03): una línea aparte, no una burbuja
+                <p key={`${entry.at}-${i}`} className="chat-memory small">
+                  {entry.text}
+                </p>
+              ) : (
+                <div key={`${entry.at}-${i}`} className={`chat-msg ${entry.from}`}>
+                  <span className="chat-who small">
+                    {entry.from === 'user' ? t('chat.you') : COMPANION_NAME[entry.companion]} · {time(entry.at)}
+                  </span>
+                  <p>{entry.text}</p>
+                </div>
+              ),
+            )}
           </div>
         ))}
         {busy && (
@@ -193,7 +236,7 @@ export function ChatScreen() {
       </form>
 
       {confirm && (
-        <div className="sheet-backdrop chat-confirm" onClick={() => setConfirm(false)}>
+        <div className="sheet-backdrop chat-confirm" onClick={() => setConfirm(undefined)}>
           <div
             className="panel stack"
             role="alertdialog"
@@ -202,19 +245,68 @@ export function ChatScreen() {
             aria-describedby="chat-clear-text"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 id="chat-clear-title">{t('chat.clear')}</h2>
-            <p id="chat-clear-text">{t('chat.clearConfirm')}</p>
+            <h2 id="chat-clear-title">{confirm === 'chat' ? t('chat.clear') : t('memory.clearAll')}</h2>
+            <p id="chat-clear-text">{confirm === 'chat' ? t('chat.clearConfirm') : t('memory.clearAllConfirm')}</p>
             <div className="row">
-              <button ref={cancel} type="button" className="btn grow" onClick={() => setConfirm(false)}>
+              <button ref={cancel} type="button" className="btn grow" onClick={() => setConfirm(undefined)}>
                 {t('common.cancel')}
               </button>
-              <button type="button" className="btn btn-danger grow" onClick={() => void clearChatLog(db).then(() => setConfirm(false))}>
-                {t('chat.clearYes')}
+              <button
+                type="button"
+                className="btn btn-danger grow"
+                onClick={() =>
+                  void (confirm === 'chat' ? clearChatLog(db) : clearMemories(db)).then(() => setConfirm(undefined))
+                }
+              >
+                {confirm === 'chat' ? t('chat.clearYes') : t('memory.clearAllYes')}
               </button>
             </div>
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+/** Menú flotante de opciones (D-130): se cierra al elegir, con Esc o tocando fuera. */
+function ChatMenu({
+  items,
+  onClose,
+}: {
+  items: { label: string; onSelect: () => void; disabled?: boolean; danger?: boolean }[];
+  onClose: () => void;
+}) {
+  const first = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    first.current?.focus();
+    const escape = (e: globalThis.KeyboardEvent) => e.key === 'Escape' && onClose();
+    const outside = (e: PointerEvent) => !(e.target as Element).closest?.('.chat-menu') && onClose();
+    document.addEventListener('keydown', escape);
+    document.addEventListener('pointerdown', outside);
+    return () => {
+      document.removeEventListener('keydown', escape);
+      document.removeEventListener('pointerdown', outside);
+    };
+  }, [onClose]);
+  return (
+    <ul className="chat-menu-list panel" role="menu">
+      {items.map((item, i) => (
+        <li key={item.label} role="none">
+          <button
+            ref={i === 0 ? first : undefined}
+            type="button"
+            role="menuitem"
+            className={item.danger ? 'danger' : undefined}
+            disabled={item.disabled}
+            onClick={() => {
+              onClose();
+              item.onSelect();
+            }}
+          >
+            {item.label}
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
