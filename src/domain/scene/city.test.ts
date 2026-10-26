@@ -5,23 +5,26 @@ import { createScene, seededRng, stepScene, type SceneConfig, type SceneState } 
 
 describe('ciudad por nivel (CV-01, CV-02)', () => {
   it('nivel 1: solo lo imprescindible', () => {
-    expect(cityAt(1)).toEqual({ layers: 1, lamps: false, sky: false, props: false, cars: [], peds: [] });
+    expect(cityAt(1)).toEqual({ layers: 1, water: true, lamps: false, sky: false, props: false, cars: [], peds: [] });
   });
 
   it('nivel 4: farolas, drones, coches rojo y amarillo, y Dex, Omar y Lía', () => {
-    expect(cityAt(4)).toEqual({ layers: 2, lamps: true, sky: true, props: false, cars: [0, 1], peds: [3, 4, 5] });
+    expect(cityAt(4)).toEqual({ layers: 1, water: true, lamps: true, sky: true, props: false, cars: [0, 1], peds: [3, 4, 5] });
   });
 
   it('nivel 10: la ciudad completa (17 elementos), como antes', () => {
     expect(unlockedItems(10)).toHaveLength(CITY_ITEMS.length);
     expect(CITY_ITEMS).toHaveLength(17);
-    expect(cityAt(10)).toEqual({ layers: 3, lamps: true, sky: true, props: true, cars: [0, 1, 2], peds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] });
+    expect(cityAt(10)).toEqual({ layers: 3, water: false, lamps: true, sky: true, props: true, cars: [0, 1, 2], peds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] });
     expect(cityAt(25)).toEqual(cityAt(10));
+    // D-125: el río llega hasta el nivel 5
+    expect([5, 6].map((l) => cityAt(l).water)).toEqual([true, false]);
     expect(nextArrivalLevel(10)).toBeUndefined();
   });
 
   it('AN-03: varios niveles de golpe se anuncian juntos', () => {
     expect(arrivals(3, 5)).toEqual(['cars', 'lia', 'nova', 'pip']);
+    expect(arrivals(5, 6)).toEqual(['skyline', 'props', 'kenji']);
     expect(arrivals(5, 5)).toEqual([]);
     expect(nextArrivalLevel(5)).toBe(6);
   });

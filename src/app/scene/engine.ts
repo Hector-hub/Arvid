@@ -51,10 +51,15 @@ let city: City | undefined;
 let lampsGlowUntil = -1;
 /** Fotograma en que empezó a aparecer la última capa del fondo recién llegada (AN-02). */
 let layerSince = -Infinity;
+/** Fotograma en que el río empezó a desvanecerse (D-125). */
+let waterGoneSince = -Infinity;
 
 /** Lo que hay en la escena según el nivel (CV-01, CV-02). `fresh`: lo recién llegado, que brilla al aparecer. */
 export function setCity(level: number, fresh: readonly CityItem[] = []): void {
+  const hadWater = city?.water ?? false;
   city = cityAt(level);
+  // Al subir de nivel y dejar atrás el río, se desvanece en lugar de desaparecer de golpe
+  if (hadWater && !city.water && fresh.length > 0) waterGoneSince = scene.t;
   config.carModels = city.cars;
   config.pedTypes = city.peds;
   config.props = city.props ? PROPS : [];
@@ -79,6 +84,12 @@ export function setCity(level: number, fresh: readonly CityItem[] = []): void {
 /** Capas del fondo y opacidad de la última, que aparece poco a poco si acaba de llegar (AN-02). */
 export function layersState(): { count: number; fade: number } {
   return { count: city?.layers ?? 3, fade: Math.min(1, Math.max(0, (scene.t - layerSince) / GLOW_FRAMES)) };
+}
+
+/** Opacidad del río (D-125): 1 mientras la ciudad está lejos; al dejarlo atrás, baja hasta 0. */
+export function waterAlpha(): number {
+  if (!city || city.water) return city ? 1 : 0;
+  return Math.max(0, 1 - (scene.t - waterGoneSince) / GLOW_FRAMES);
 }
 
 /** Farolas en la escena y si brillan por recién llegadas. */

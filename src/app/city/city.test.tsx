@@ -84,7 +84,7 @@ describe('Tu ciudad (TC)', () => {
   it('muestra el avance, lo desbloqueado y lo que falta con su nivel', async () => {
     level.value = 3;
     renderRoutes(ctx, [{ path: '/perfil/ciudad', element: <CityScreen /> }], '/perfil/ciudad');
-    expect(await screen.findByText(/5 de 17 · Siguiente: nivel 4/)).toBeInTheDocument();
+    expect(await screen.findByText(/4 de 17 · Siguiente: nivel 4/)).toBeInTheDocument();
     expect(screen.getByText('Farolas')).toBeInTheDocument();
     expect(screen.getByText('Dex')).toBeInTheDocument();
     expect(screen.queryByText('Sombra')).toBeNull();

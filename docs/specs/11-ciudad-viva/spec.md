@@ -42,10 +42,10 @@ Principios:
 | Nivel | Llega |
 |---|---|
 | 2 | **Farolas** · **Dex**, músico callejero (guitarra) |
-| 3 | **Rascacielos** (capa 2 del fondo) · **Drones del cielo** · **Omar**, repartidor (mochila) |
+| 3 | **Drones del cielo** · **Omar**, repartidor (mochila) |
 | 4 | **Coches** (rojo y amarillo) · **Lía**, vuelve del trabajo (bolso) |
 | 5 | **Nova**, estudiante (pelo verde) · **Pip**, el niño que corre (gorra roja) |
-| 6 | **Cajas de la acera**, que ARVID inspecciona · **Kenji**, mecánico del turno de noche |
+| 6 | **Rascacielos** (capa 2 del fondo; el río se desvanece, D-125) · **Cajas de la acera**, que ARVID inspecciona · **Kenji**, mecánico del turno de noche |
 | 7 | **Edificios cercanos** (capa 3 del fondo: ventanas, la torre y el cartel) · **Roxy**, DJ (pelo rosa y gafas) |
 | 8 | **Mía**, la hermana de Pip · **Teo**, programador del barrio (silla de ruedas) |
 | 9 | **Coche de policía** |

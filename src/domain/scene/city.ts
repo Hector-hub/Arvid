@@ -25,10 +25,10 @@ export type CityItem = CityThing | NeighborId;
 /** Llegadas por nivel (CV-02, ajustable aquí, R11-2). */
 export const CITY_UNLOCKS: readonly { level: number; items: readonly CityItem[] }[] = [
   { level: 2, items: ['lamps', 'dex'] },
-  { level: 3, items: ['skyline', 'sky', 'omar'] },
+  { level: 3, items: ['sky', 'omar'] },
   { level: 4, items: ['cars', 'lia'] },
   { level: 5, items: ['nova', 'pip'] },
-  { level: 6, items: ['props', 'kenji'] },
+  { level: 6, items: ['skyline', 'props', 'kenji'] },
   { level: 7, items: ['buildings', 'roxy'] },
   { level: 8, items: ['mia', 'teo'] },
   { level: 9, items: ['police'] },
@@ -44,9 +44,14 @@ export const neighbor = (id: NeighborId) => NEIGHBORS.find((n) => n.id === id)!;
 export const neighborByPed = (ped: number) => NEIGHBORS.find((n) => n.ped === ped);
 
 /** Lo que hay en la escena con este nivel. */
+/** Último nivel con río (D-125): en el siguiente llegan los rascacielos y se cruza a la ciudad. */
+export const WATER_LAST_LEVEL = 5;
+
 export interface City {
   /** Capas del fondo dibujadas (1–3). */
   layers: number;
+  /** Río entre la ciudad y la calle (D-125). */
+  water: boolean;
   lamps: boolean;
   sky: boolean;
   props: boolean;
@@ -64,6 +69,7 @@ export function cityAt(level: number): City {
   const has = new Set(unlockedItems(level));
   return {
     layers: 1 + (has.has('skyline') ? 1 : 0) + (has.has('buildings') ? 1 : 0),
+    water: level <= WATER_LAST_LEVEL,
     lamps: has.has('lamps'),
     sky: has.has('sky'),
     props: has.has('props'),

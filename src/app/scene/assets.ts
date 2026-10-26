@@ -18,6 +18,8 @@ export interface SceneImages {
   props: HTMLImageElement[];
   /** Atlas de drones del cielo (ESC-13). */
   sky: HTMLImageElement;
+  /** Río con reflejos de la ciudad lejana (D-125): 24 fotogramas de 360×15 apilados. */
+  water?: HTMLImageElement;
 }
 
 export interface HeroSheets {
@@ -52,7 +54,9 @@ export function loadSceneImages(): Promise<SceneImages> {
     loadImage('extras.png'),
     Promise.all(PROP_FILES.map(loadImage)),
     loadImage('sky.png'),
-  ]).then(([bg, cars, extras, props, sky]) => ({ bg, cars, extras, props, sky }));
+    // El río (D-125) es opcional: si no carga, la escena sigue sin él
+    loadImage('water.png').catch(() => undefined),
+  ]).then(([bg, cars, extras, props, sky, water]) => ({ bg, cars, extras, props, sky, water }));
   sceneImages.catch(() => (sceneImages = undefined));
   return sceneImages;
 }

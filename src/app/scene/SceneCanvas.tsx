@@ -19,6 +19,7 @@ import {
   isTalking,
   lampsState,
   layersState,
+  waterAlpha,
   currentNeighborSpeech,
   darisState,
   resetClock,
@@ -130,6 +131,7 @@ export function SceneCanvas({
         speech: currentSpeech(),
         lamps: lampsState(),
         layers: layersState(),
+        water: waterAlpha(),
         neighbor: currentNeighborSpeech(),
       });
 

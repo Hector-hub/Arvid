@@ -70,6 +70,18 @@ function tiled(c: Ctx, img: HTMLImageElement, offset: number, factor: number) {
   for (let x = -mod(offset * factor, img.width); x < SCENE_W; x += img.width) c.drawImage(img, Math.round(x), LAYOUT.bgY);
 }
 
+/** Río (D-125): banda entre el horizonte y la carretera, con el parallax del horizonte y sus 24 fotogramas a 12 fps. */
+const WATER = { y: 117, w: 360, h: 15, frames: 24, ticks: 5 } as const;
+
+function drawWater(c: Ctx, img: CanvasImageSource, offset: number, t: number, alpha: number) {
+  const f = Math.floor(t / WATER.ticks) % WATER.frames;
+  c.globalAlpha = alpha;
+  for (let x = -mod(offset * (PARALLAX[0] ?? 0), WATER.w); x < SCENE_W; x += WATER.w) {
+    c.drawImage(img, 0, f * WATER.h, WATER.w, WATER.h, Math.round(x), WATER.y, WATER.w, WATER.h);
+  }
+  c.globalAlpha = 1;
+}
+
 /** Protagonista en su fotograma: caminando o, con movimiento reducido, en reposo. */
 export function drawHero(c: Ctx, cast: CastSpec, sheets: HeroSheets, t: number, reduced: boolean, x: number, feet: number) {
   const useIdle = reduced && sheets.idle && cast.idle;
@@ -140,6 +152,8 @@ export interface SceneExtras {
   neighbor?: { speech: Speech; x: number; y: number };
   /** Capas del fondo según el nivel (spec 11) y opacidad de la última si acaba de llegar; sin esto, las tres. */
   layers?: { count: number; fade: number };
+  /** Opacidad del río (D-125); sin esto, sin río. */
+  water?: number;
   /** Farolas según el nivel (spec 11, CV-02) y brillo de recién llegadas (AN-02); sin esto, encendidas. */
   lamps?: { on: boolean; glow: boolean };
 }
@@ -163,6 +177,9 @@ export function drawScene(
       tiled(c, img, off, PARALLAX[i] ?? 0);
       c.globalAlpha = 1;
     }
+    // El río (D-125), delante del horizonte lejano, hasta el nivel 5; en el 6 se desvanece mientras los rascacielos
+    // aparecen encima (fundido cruzado)
+    if (i === 0 && imgs.water && (extras.water ?? 0) > 0) drawWater(c, imgs.water, off, reduced ? 0 : s.t, extras.water!);
     drawSky(c, s, imgs.sky, i);
   });
 
