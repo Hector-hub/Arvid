@@ -10,6 +10,7 @@ import { ArvidDB } from './data/db';
 import { createContext, ensureSeed } from './data/repository';
 import { DataProvider } from './app/data';
 import { createAppRouter } from './app/router';
+import { Splash } from './app/layout/Splash';
 
 const db = new ArvidDB();
 const ctx = createContext(db);
@@ -18,9 +19,11 @@ const router = createAppRouter();
 void ensureSeed(ctx).then(() => {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
-      <DataProvider value={ctx}>
-        <RouterProvider router={router} />
-      </DataProvider>
+      <Splash>
+        <DataProvider value={ctx}>
+          <RouterProvider router={router} />
+        </DataProvider>
+      </Splash>
     </StrictMode>,
   );
 });

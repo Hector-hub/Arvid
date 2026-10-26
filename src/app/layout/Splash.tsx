@@ -1,0 +1,48 @@
+// Pantalla de carga al abrir la app (D-116): el icono aparece, «ARVID» se escribe letra a letra debajo y después la
+// app entra con un fundido. Solo al arrancar; con movimiento reducido, sin animaciones y más breve. Las pruebas
+// automáticas (navigator.webdriver) la saltan.
+import { useEffect, useState, type ReactNode } from 'react';
+
+const NAME = 'ARVID';
+const TYPE_START_MS = 450;
+const LETTER_MS = 110;
+const HOLD_MS = 650;
+const FADE_MS = 400;
+const REDUCED_MS = 700;
+
+const skip = () => typeof navigator !== 'undefined' && navigator.webdriver === true;
+const reduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+export function Splash({ children }: { children: ReactNode }) {
+  const [phase, setPhase] = useState<'splash' | 'out' | 'app'>(() => (skip() ? 'app' : 'splash'));
+  const [letters, setLetters] = useState(() => (reduced() ? NAME.length : 0));
+
+  useEffect(() => {
+    if (phase !== 'splash') return;
+    const timers: number[] = [];
+    const after = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms));
+    if (reduced()) {
+      after(REDUCED_MS, () => setPhase('app'));
+    } else {
+      // Se espera a la fuente pixel para que las letras no cambien de forma al escribirse
+      void (document.fonts?.load('500 32px "Pixelify Sans"') ?? Promise.resolve()).catch(() => undefined).then(() => {
+        for (let i = 1; i <= NAME.length; i++) after(TYPE_START_MS + i * LETTER_MS, () => setLetters(i));
+        const done = TYPE_START_MS + NAME.length * LETTER_MS + HOLD_MS;
+        after(done, () => setPhase('out'));
+        after(done + FADE_MS, () => setPhase('app'));
+      });
+    }
+    return () => timers.forEach(clearTimeout);
+  }, [phase]);
+
+  if (phase === 'app') return <div className={skip() ? undefined : 'app-fade-in'}>{children}</div>;
+  return (
+    <div className={`splash${phase === 'out' ? ' out' : ''}`} role="status" aria-label={NAME}>
+      <img src="/icons/icon-192.png" alt="" width={112} height={112} className="splash-icon" />
+      <p className="splash-name" aria-hidden="true">
+        {NAME.slice(0, letters)}
+        <span className="splash-caret">{letters < NAME.length ? '_' : ' '}</span>
+      </p>
+    </div>
+  );
+}
