@@ -16,3 +16,6 @@ tsconfig.tsbuildinfo
 .env.*
 .vapid.json
 bench-results.json
+
+# Material de publicación (vídeos para redes): no va al repo
+publishing/
