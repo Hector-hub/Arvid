@@ -8,6 +8,7 @@ import { useAnalysis } from '../analysis';
 import { speak } from '../arvid/voice';
 import { useData, useSettings } from '../data';
 import { isTalking, setCity } from '../scene/engine';
+import { playSfx } from '../sound/sfx';
 import { itemPhrase, listPhrase } from './labels';
 
 /**
@@ -62,6 +63,7 @@ export function CityWatcher() {
     }
     const items = arrivals(announced, level);
     setCity(level, items);
+    if (items.length) playSfx('arrival');
     void saveSetting(db, 'cityAnnounced', level).then(() => {
       if (items.length && talks) announce(t('city.arrived', { list: listPhrase(items.map(itemPhrase)) }));
     });

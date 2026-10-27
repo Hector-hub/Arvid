@@ -257,6 +257,8 @@ export interface Settings {
   avatar: Avatar;
   /** Música opcional, desactivada por defecto (spec 05, MUS-01). */
   music: MusicSettings;
+  /** Efectos de sonido (spec 16, PS-02). */
+  sound: SoundSettings;
   /** Idioma elegido; sin él se usa el del navegador (spec 06, I18N-03). */
   locale?: Locale;
   /** Alias y género (spec 06 §4); sin él se muestra la presentación de ARVID (PR-01). */
@@ -328,9 +330,21 @@ export interface MusicSettings {
   enabled: boolean;
   /** 0–1 */
   volume: number;
+  /** Pista actual, para seguir por ella al volver a abrir la app (spec 16, DT-01). */
+  track?: string;
 }
 
 export const DEFAULT_MUSIC: MusicSettings = { enabled: false, volume: 0.4 };
+
+export interface SoundSettings {
+  effects: boolean;
+  /** 0–1 */
+  volume: number;
+  timbre: 'soft' | 'chip';
+}
+
+/** Encendidos al 50 % con timbre Suave (S16-02). */
+export const DEFAULT_SOUND: SoundSettings = { effects: true, volume: 0.5, timbre: 'soft' };
 
 export const DEFAULT_SETTINGS: Settings = {
   reducedMotion: 'system',
@@ -338,6 +352,7 @@ export const DEFAULT_SETTINGS: Settings = {
   radarWindow: 30,
   avatar: DEFAULT_AVATAR,
   music: DEFAULT_MUSIC,
+  sound: DEFAULT_SOUND,
   arvidColor: DEFAULT_ARVID_COLOR,
   companion: DEFAULT_COMPANION,
   darisColor: DEFAULT_DARIS_COLOR,
@@ -348,10 +363,21 @@ export const DEFAULT_SETTINGS: Settings = {
 
 function normalizeMusic(value: unknown): MusicSettings {
   if (typeof value !== 'object' || value === null) return DEFAULT_MUSIC;
-  const { enabled, volume } = value as Record<string, unknown>;
+  const { enabled, volume, track } = value as Record<string, unknown>;
   return {
     enabled: enabled === true,
     volume: typeof volume === 'number' && volume >= 0 && volume <= 1 ? volume : DEFAULT_MUSIC.volume,
+    ...(typeof track === 'string' ? { track } : {}),
+  };
+}
+
+function normalizeSound(value: unknown): SoundSettings {
+  if (typeof value !== 'object' || value === null) return DEFAULT_SOUND;
+  const { effects, volume, timbre } = value as Record<string, unknown>;
+  return {
+    effects: effects !== false,
+    volume: typeof volume === 'number' && volume >= 0 && volume <= 1 ? volume : DEFAULT_SOUND.volume,
+    timbre: timbre === 'chip' ? 'chip' : 'soft',
   };
 }
 
@@ -363,6 +389,7 @@ export async function loadSettings(db: ArvidDB): Promise<Settings> {
     ...raw,
     avatar: normalizeAvatar(raw.avatar),
     music: normalizeMusic(raw.music),
+    sound: normalizeSound(raw.sound),
     locale: isLocale(raw.locale) ? raw.locale : undefined,
     profile: normalizeProfile(raw.profile),
     arvidColor: (ARVID_COLORS as readonly string[]).includes(raw.arvidColor) ? raw.arvidColor : DEFAULT_ARVID_COLOR,

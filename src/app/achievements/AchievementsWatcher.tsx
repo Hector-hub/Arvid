@@ -15,6 +15,7 @@ import { celebrate, isTalking } from '../scene/engine';
 import { joinList } from '../text';
 import { Badge } from './Badge';
 import { achievementName, useAchievementStatuses } from './useAchievements';
+import { playSfx } from '../sound/sfx';
 
 /** El aviso se cierra solo a los 5 s (CE-01). */
 export const TOAST_MS = 5_000;
@@ -75,6 +76,7 @@ function AchievementToast({ ids, settings, onDone }: { ids: AchievementId[]; set
     if (announced.current) return;
     announced.current = true;
     celebrate('big');
+    playSfx('achievement');
     if (!settings.arvidTalks) return;
     const alias = settings.profile?.alias ?? '';
     const fixed = line(

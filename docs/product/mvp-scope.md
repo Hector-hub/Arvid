@@ -97,11 +97,12 @@ Complejidad: S (días) · M (1–2 semanas) · L (más de 2 semanas), para una p
 - Push con el resumen diario y badge en el icono (spec 10, 1.1.0).
 - Descansos planificados (spec 12, 1.3.0).
 - Objetivos con hitos (spec 12, 1.4.0).
+- Insights: atributos por área, Disciplina, consejo diario con IA y detalle por actividad (D-138).
+- Efectos de sonido y panel de sonido con reproductor (spec 16, 1.7.0).
 
 **Pendiente:**
-- Insights: tendencias por actividad y resumen semanal.
-- Retos temporales.
-- Efectos de sonido (la música opcional se adelantó al MVP, D-050).
+- Retos con amigos: en la 2.0, con la cuenta ligera (specs 14 y 15, D-139).
+- Resumen semanal (opcional, D-138).
 
 **Fuera de la lista original, ya hecho:**
 - Juegos dentro de ARVID (spec 09).

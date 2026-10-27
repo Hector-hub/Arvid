@@ -1,44 +1,34 @@
 import { describe, expect, it } from 'vitest';
-import { seededRng } from '../scene/scene';
-import { emptyBag, nextTrack, type Bag } from './playlist';
+import { stepTrack, trackPosition } from './playlist';
 
-const TRACKS = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+const T = ['a', 'b', 'c', 'd'].map((id) => ({ id }));
 
-describe('lista de música (MUS-02)', () => {
-  it('cada ronda suena todas las pistas una vez y nunca repite la última al cambiar de ronda', () => {
-    const rng = seededRng(11);
-    let bag: Bag<string> = emptyBag();
-    let previous: string | undefined;
-    for (let round = 0; round < 1000; round++) {
-      const played: string[] = [];
-      for (let i = 0; i < TRACKS.length; i++) {
-        const next = nextTrack(bag, TRACKS, rng);
-        bag = next.bag;
-        expect(next.track).not.toBe(previous);
-        previous = next.track;
-        played.push(next.track!);
-      }
-      expect(new Set(played).size).toBe(TRACKS.length);
-    }
+describe('stepTrack (spec 16, PS-01)', () => {
+  it('sin pista actual empieza por la primera', () => {
+    expect(stepTrack(T, T, undefined, 0)?.id).toBe('a');
+    expect(stepTrack(T, T, undefined, 1)?.id).toBe('a');
   });
 
-  it('solo elige entre las disponibles (sin conexión, las guardadas en caché; MUS-07)', () => {
-    const rng = seededRng(12);
-    let bag: Bag<string> = emptyBag();
-    for (let i = 0; i < 20; i++) {
-      const next = nextTrack(bag, ['c', 'f'], rng);
-      bag = next.bag;
-      expect(['c', 'f']).toContain(next.track);
-    }
+  it('siguiente y anterior en orden y en bucle', () => {
+    expect(stepTrack(T, T, 'b', 1)?.id).toBe('c');
+    expect(stepTrack(T, T, 'd', 1)?.id).toBe('a');
+    expect(stepTrack(T, T, 'a', -1)?.id).toBe('d');
+    expect(stepTrack(T, T, 'c', 0)?.id).toBe('c');
   });
 
-  it('sin pistas disponibles no devuelve ninguna', () => {
-    expect(nextTrack(emptyBag<string>(), [], seededRng(1)).track).toBeUndefined();
+  it('salta las que no están disponibles (sin conexión, MUS-07)', () => {
+    const cached = [T[0]!, T[3]!];
+    expect(stepTrack(T, cached, 'a', 1)?.id).toBe('d');
+    expect(stepTrack(T, cached, 'b', 0)?.id).toBe('d');
+    expect(stepTrack(T, [], 'a', 1)).toBeUndefined();
   });
 
-  it('con una sola pista, la repite', () => {
-    const rng = seededRng(13);
-    const first = nextTrack(emptyBag<string>(), ['a'], rng);
-    expect(nextTrack(first.bag, ['a'], rng).track).toBe('a');
+  it('una pista guardada que ya no existe se trata como sin pista', () => {
+    expect(stepTrack(T, T, 'retirada', 0)?.id).toBe('a');
+  });
+
+  it('posición para «Pista 2 de 4»', () => {
+    expect(trackPosition(T, 'b')).toBe(2);
+    expect(trackPosition(T, undefined)).toBe(0);
   });
 });

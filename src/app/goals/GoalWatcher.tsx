@@ -9,6 +9,7 @@ import { speak } from '../arvid/voice';
 import { useToday } from '../clock';
 import { useData, useGoals, useMissions, useSettings } from '../data';
 import { celebrate, cheer } from '../scene/engine';
+import { playSfx } from '../sound/sfx';
 
 export function GoalWatcher() {
   const { db } = useData();
@@ -27,6 +28,7 @@ export function GoalWatcher() {
       void markGoalCelebrated(db, goal.id);
       if (compareDates(status.completedOn!, addDays(today, -1)) < 0) continue;
       celebrate('big');
+      playSfx('mission');
       cheer();
       if (talks) void speak(t('goals.celebrate', { title: goal.title }));
     }

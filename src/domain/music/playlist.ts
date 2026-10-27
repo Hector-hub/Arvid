@@ -1,37 +1,29 @@
-// Orden de la música (spec 05, MUS-02): se barajan todas las pistas, suenan todas una vez y se vuelve a barajar
-// sin empezar por la última que sonó. Puro: el azar llega como `rng`.
-
-export interface Bag<T> {
-  /** Pistas que faltan por sonar en esta ronda. */
-  remaining: T[];
-  last?: T;
-}
-
-export function emptyBag<T>(): Bag<T> {
-  return { remaining: [] };
-}
-
-function shuffle<T>(items: T[], rng: () => number): T[] {
-  const a = [...items];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [a[i], a[j]] = [a[j]!, a[i]!];
-  }
-  return a;
-}
+// Orden de la música (spec 16, PS-01; sustituye al barajado de MUS-02): las pistas suenan en orden y en bucle, con
+// anterior y siguiente. Sin conexión solo cuentan las disponibles (MUS-07). Puro.
 
 /**
- * Siguiente pista entre `available` (p. ej. solo las guardadas en caché si no hay conexión, MUS-07).
- * Devuelve `undefined` si no hay ninguna disponible.
+ * La pista a `step` posiciones de `currentId` (1 = siguiente, −1 = anterior, 0 = la misma), saltando las que no están
+ * en `available`. Sin pista actual, `step` 0 o 1 da la primera disponible. `undefined` si no hay ninguna.
  */
-export function nextTrack<T>(bag: Bag<T>, available: T[], rng: () => number): { track?: T; bag: Bag<T> } {
-  if (available.length === 0) return { bag };
-  let remaining = bag.remaining.filter((t) => available.includes(t));
-  if (remaining.length === 0) {
-    remaining = shuffle(available, rng);
-    // No repetir la que acaba de sonar al empezar una ronda nueva
-    if (remaining.length > 1 && remaining[0] === bag.last) remaining.push(remaining.shift()!);
+export function stepTrack<T extends { id: string }>(tracks: readonly T[], available: readonly T[], currentId: string | undefined, step: -1 | 0 | 1): T | undefined {
+  if (available.length === 0) return undefined;
+  const ok = new Set(available.map((t) => t.id));
+  const n = tracks.length;
+  let i = tracks.findIndex((t) => t.id === currentId);
+  if (i < 0) {
+    i = step === -1 ? 0 : n - 1;
+    if (step === 0) step = 1;
   }
-  const [track, ...rest] = remaining;
-  return { track, bag: { remaining: rest, last: track } };
+  if (step === 0 && ok.has(tracks[i]!.id)) return tracks[i];
+  const dir = step === -1 ? -1 : 1;
+  for (let k = 1; k <= n; k++) {
+    const t = tracks[(((i + dir * k) % n) + n) % n]!;
+    if (ok.has(t.id)) return t;
+  }
+  return undefined;
+}
+
+/** Posición (1…n) de la pista en la lista, para «Pista 2 de 5». */
+export function trackPosition<T extends { id: string }>(tracks: readonly T[], id: string | undefined): number {
+  return tracks.findIndex((t) => t.id === id) + 1;
 }

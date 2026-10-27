@@ -180,3 +180,49 @@ export function MoreIcon() {
     </PixelIcon>
   );
 }
+
+/** Reproductor de música (spec 16, PS-01): reproducir, pausa (dos barras paralelas), anterior y siguiente. */
+export function PlayIcon({ size = 16 }: { size?: number }) {
+  return (
+    <PixelIcon size={size}>
+      <rect x="3" y="1" width="2" height="10" />
+      <rect x="5" y="2" width="1" height="8" />
+      <rect x="6" y="3" width="1" height="6" />
+      <rect x="7" y="4" width="1" height="4" />
+      <rect x="8" y="5" width="1" height="2" />
+    </PixelIcon>
+  );
+}
+
+export function PauseIcon({ size = 16 }: { size?: number }) {
+  return (
+    <PixelIcon size={size}>
+      <rect x="3" y="2" width="2" height="8" />
+      <rect x="7" y="2" width="2" height="8" />
+    </PixelIcon>
+  );
+}
+
+export function PrevTrackIcon({ size = 16 }: { size?: number }) {
+  return (
+    <PixelIcon size={size}>
+      <rect x="2" y="2" width="2" height="8" />
+      <rect x="5" y="5" width="1" height="2" />
+      <rect x="6" y="4" width="1" height="4" />
+      <rect x="7" y="3" width="1" height="6" />
+      <rect x="8" y="2" width="2" height="8" />
+    </PixelIcon>
+  );
+}
+
+export function NextTrackIcon({ size = 16 }: { size?: number }) {
+  return (
+    <PixelIcon size={size}>
+      <rect x="2" y="2" width="2" height="8" />
+      <rect x="4" y="3" width="1" height="6" />
+      <rect x="5" y="4" width="1" height="4" />
+      <rect x="6" y="5" width="1" height="2" />
+      <rect x="8" y="2" width="2" height="8" />
+    </PixelIcon>
+  );
+}

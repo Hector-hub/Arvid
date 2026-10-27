@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { changeStatus, logCompletion, undoCompletion } from '../../data/repository';
+import { playSfx } from '../sound/sfx';
 import { canLog, detailDays, progressAt, statusAt, versionAt, type DayCell } from '../../domain/activities/rules';
 import type { ActivityRecord } from '../../domain/activities/types';
 import type { EvaluatedPeriod } from '../../domain/activities/periods';
@@ -58,11 +59,15 @@ function Detail({ record }: { record: ActivityRecord }) {
 
   async function add(day: DayCell) {
     const result = await logCompletion(ctx, id, day.date);
+    if (result.ok) {
+      playSfx('log');
+      playSfx('xp', { delayMs: 130 });
+    }
     setMessage(result.ok ? undefined : logDenialText(result.reason));
   }
 
   async function remove(day: DayCell) {
-    await undoCompletion(ctx, id, day.date);
+    if (await undoCompletion(ctx, id, day.date)) playSfx('undo');
     setMessage(undefined);
   }
 

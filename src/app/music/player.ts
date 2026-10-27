@@ -1,10 +1,14 @@
-// Reproductor de música de fondo (spec 05, MUS). Lista aleatoria en bucle (MUS-02), fundidos (MUS-03), pausa con la
-// app oculta (MUS-05) y, sin conexión, solo las pistas ya guardadas en caché (MUS-07).
-// El volumen va por Web Audio (GainNode) porque en iOS `audio.volume` es de solo lectura.
-import { emptyBag, nextTrack, type Bag } from '../../domain/music/playlist';
+// Reproductor de música de fondo (spec 05, MUS; spec 16, PS-01). Lista en orden y en bucle con anterior, siguiente y
+// salto dentro de la pista; fundidos (MUS-03), pausa con la app oculta (MUS-05) y, sin conexión, solo las pistas ya
+// guardadas en caché (MUS-07). El volumen va por Web Audio (GainNode) porque en iOS `audio.volume` es de solo lectura;
+// el contexto es el mismo que el de los efectos (spec 16).
+import { stepTrack } from '../../domain/music/playlist';
+import { getAudioContext } from '../sound/audio';
 import { MUSIC_CACHE, type Track } from './tracks';
 
 const FADE_S = 1.2;
+/** «Anterior» vuelve al inicio de la pista si ya lleva más que esto (PS-01). */
+const RESTART_AFTER_S = 3;
 
 export interface PlayerState {
   playing: boolean;
@@ -13,29 +17,32 @@ export interface PlayerState {
   startedAt?: number;
   /** Sin conexión y sin ninguna pista en caché. */
   needsConnection: boolean;
+  /** Segundos transcurridos y duración de la pista actual (barra de progreso, PS-01). */
+  time: number;
+  duration: number;
 }
-
-type AudioContextCtor = typeof AudioContext;
 
 export class MusicPlayer {
   private audio = new Audio();
   private ctx?: AudioContext;
   private gain?: GainNode;
-  private bag: Bag<Track> = emptyBag();
   private enabled = false;
   private failures = 0;
   private fadingOut = false;
-  private state: PlayerState = { playing: false, needsConnection: false };
+  private state: PlayerState = { playing: false, needsConnection: false, time: 0, duration: 0 };
 
   constructor(
     private readonly tracks: Track[],
     private level: number,
     private readonly onChange: (state: PlayerState) => void,
-    private readonly rng: () => number = Math.random,
+    /** Pista por la que seguir (la guardada) y aviso al cambiar de pista, para guardarla (DT-01). */
+    private current: string | undefined = undefined,
+    private readonly onTrack: (id: string) => void = () => undefined,
   ) {
     this.audio.preload = 'auto';
     this.audio.addEventListener('ended', this.onEnded);
     this.audio.addEventListener('timeupdate', this.onTime);
+    this.audio.addEventListener('loadedmetadata', this.onMeta);
     this.audio.addEventListener('error', this.onError);
     document.addEventListener('visibilitychange', this.onVisibility);
   }
@@ -53,7 +60,7 @@ export class MusicPlayer {
     if (this.state.track && this.audio.src && !this.audio.ended) {
       await this.resume();
       this.emit({ playing: true });
-    } else await this.playNext();
+    } else await this.play(0);
   }
 
   stop(): void {
@@ -66,12 +73,25 @@ export class MusicPlayer {
   }
 
   skip(): void {
-    if (!this.enabled) {
-      void this.start();
+    this.change(1);
+  }
+
+  /** Anterior: al inicio de la pista si ya lleva un rato; si no, la pista anterior (PS-01). */
+  previous(): void {
+    if (this.state.track && this.audio.currentTime > RESTART_AFTER_S) {
+      this.seek(0);
       return;
     }
-    this.fadeTo(0, 0.3);
-    setTimeout(() => void this.playNext(), 300);
+    this.change(-1);
+  }
+
+  /** Salta a un segundo de la pista actual (barra de progreso). */
+  seek(seconds: number): void {
+    if (!this.state.track || !Number.isFinite(this.audio.duration)) return;
+    this.fadingOut = false;
+    this.audio.currentTime = Math.max(0, Math.min(seconds, this.audio.duration - 0.5));
+    if (this.enabled) this.fadeTo(this.level, 0.1);
+    this.emit({ time: this.audio.currentTime });
   }
 
   setVolume(volume: number): void {
@@ -84,19 +104,32 @@ export class MusicPlayer {
     this.audio.pause();
     this.audio.removeEventListener('ended', this.onEnded);
     this.audio.removeEventListener('timeupdate', this.onTime);
+    this.audio.removeEventListener('loadedmetadata', this.onMeta);
     this.audio.removeEventListener('error', this.onError);
     document.removeEventListener('visibilitychange', this.onVisibility);
-    void this.ctx?.close().catch(() => undefined);
+    this.gain?.disconnect();
+  }
+
+  /** Cambia de pista: sonando, con un fundido corto; en pausa, la deja preparada sin sonar. */
+  private change(step: -1 | 1) {
+    if (!this.enabled) {
+      // Apagada: empieza a sonar directamente en la pista pedida
+      this.setup();
+      this.enabled = true;
+      this.failures = 0;
+      void this.ctx?.resume().catch(() => undefined);
+      void this.play(step);
+      return;
+    }
+    this.fadeTo(0, 0.3);
+    setTimeout(() => void this.play(step), 300);
   }
 
   private setup() {
     if (this.ctx) return;
-    const Ctor = (window.AudioContext ?? (window as unknown as { webkitAudioContext?: AudioContextCtor }).webkitAudioContext) as
-      | AudioContextCtor
-      | undefined;
-    if (!Ctor) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
     try {
-      const ctx = new Ctor();
       const gain = ctx.createGain();
       gain.gain.value = 0;
       ctx.createMediaElementSource(this.audio).connect(gain).connect(ctx.destination);
@@ -138,20 +171,21 @@ export class MusicPlayer {
     return cached.filter((t): t is Track => !!t);
   }
 
-  private async playNext() {
-    const available = await this.available();
-    const next = nextTrack(this.bag, available, this.rng);
-    this.bag = next.bag;
-    if (!next.track) {
+  /** Suena la pista a `step` de la actual (0 = la actual, o la primera si no hay). */
+  private async play(step: -1 | 0 | 1) {
+    const track = stepTrack(this.tracks, await this.available(), this.current, step);
+    if (!track) {
       this.enabled = false;
       this.emit({ playing: false, needsConnection: true });
       return;
     }
+    this.current = track.id;
+    this.onTrack(track.id);
     this.fadingOut = false;
-    this.audio.src = next.track.src;
-    this.emit({ track: next.track, startedAt: Date.now(), playing: true, needsConnection: false });
+    this.audio.src = track.src;
+    this.emit({ track, startedAt: Date.now(), playing: true, needsConnection: false, time: 0, duration: 0 });
     await this.resume();
-    this.warmCache(next.track);
+    this.warmCache(track);
   }
 
   /**
@@ -169,12 +203,17 @@ export class MusicPlayer {
   }
 
   private onEnded = () => {
-    if (this.enabled) void this.playNext();
+    if (this.enabled) void this.play(1);
   };
 
-  /** Fundido de salida al acercarse el final (MUS-03). */
+  private onMeta = () => {
+    if (Number.isFinite(this.audio.duration)) this.emit({ duration: this.audio.duration });
+  };
+
+  /** Progreso (cada segundo entero, para no redibujar de más) y fundido de salida al acercarse el final (MUS-03). */
   private onTime = () => {
     const { duration, currentTime } = this.audio;
+    if (Math.floor(currentTime) !== Math.floor(this.state.time)) this.emit({ time: currentTime });
     if (!this.enabled || this.fadingOut || !duration || duration - currentTime >= FADE_S) return;
     this.fadingOut = true;
     this.fadeTo(0, Math.max(0.1, duration - currentTime));
@@ -187,7 +226,7 @@ export class MusicPlayer {
       this.stop();
       return;
     }
-    setTimeout(() => void this.playNext(), 500);
+    setTimeout(() => void this.play(1), 500);
   };
 
   private onVisibility = () => {

@@ -9,6 +9,7 @@ import { useAnalysis } from '../analysis';
 import { useData, useSettings } from '../data';
 import { CompanionPreview } from '../scene/Scene';
 import { celebrate } from '../scene/engine';
+import { playSfx } from '../sound/sfx';
 
 /**
  * Celebra cada nivel una sola vez (PRG-06). Si no hay nivel celebrado guardado (primer uso o datos previos), se fija
@@ -68,6 +69,7 @@ function LevelUpModal({
     if (celebrated.current === level) return;
     celebrated.current = level;
     celebrate('big');
+    playSfx('level');
   }, [level]);
   return (
     <div className="sheet-backdrop" style={{ alignItems: 'center' }} onClick={onClose}>

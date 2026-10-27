@@ -56,6 +56,18 @@ describe('exportar (BAK-01)', () => {
     expect(parseBackup(JSON.stringify(b)).ok).toBe(true);
   });
 
+  it('DT-02 (spec 16): los ajustes de sonido viajan en el backup; sin ellos, los valores por defecto', async () => {
+    await saveSetting(db, 'sound', { effects: false, volume: 0.2, timbre: 'chip' });
+    await saveSetting(db, 'music', { enabled: true, volume: 0.3, track: 'glass-tower-horizon' });
+    const b = await exported();
+    expect(b.data.settings.find((s) => s.key === 'sound')?.value).toEqual({ effects: false, volume: 0.2, timbre: 'chip' });
+    expect(b.data.settings.find((s) => s.key === 'music')?.value).toMatchObject({ track: 'glass-tower-horizon' });
+
+    const old = { ...b, data: { ...b.data, settings: b.data.settings.filter((s) => s.key !== 'sound') } };
+    await replaceAllData(ctx, old);
+    expect((await loadSettings(db)).sound).toEqual({ effects: true, volume: 0.5, timbre: 'soft' });
+  });
+
   it('nombre del archivo con la fecha local', () => {
     expect(backupFileName(new Date('2026-10-14T23:30:00'))).toBe('arvid-backup-2026-10-14.json');
   });

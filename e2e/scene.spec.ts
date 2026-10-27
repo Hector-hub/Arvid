@@ -93,7 +93,7 @@ test.describe('escena neón (spec 05)', () => {
 
     await page.goto('/ajustes');
     // El carrusel se maneja con las flechas (los radios son para teclado y lectores de pantalla)
-    await page.getByRole('button', { name: 'Anterior' }).click();
+    await page.getByRole('button', { name: 'Anterior', exact: true }).click();
     await expect(page.getByRole('radio', { name: /^Drifter,/ })).toBeChecked();
     await page.getByRole('radio', { name: 'Ocaso' }).check();
     await expect(page.locator('.carousel-name')).toHaveText('Drifter');

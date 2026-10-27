@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { saveSetting, setCategoryActive, type Settings } from '../../data/repository';
+import { DEFAULT_SOUND, saveSetting, setCategoryActive, type Settings, type SoundSettings } from '../../data/repository';
+import { COMPANION_NAME } from '../../domain/arvid/companion';
+import { trackPosition } from '../../domain/music/playlist';
 import { ALIAS_MAX, castOrder, validateAlias, type Gender } from '../../domain/arvid/arvid';
 import type { Avatar } from '../../domain/avatar/catalog';
 import type { Category } from '../../domain/categories';
@@ -9,6 +11,10 @@ import { currentPersistState, isIOS, requestPersistentStorage, type PersistState
 import { useCategories, useData, useSettings } from '../data';
 import { BackLink, CategoryIcon, Panel } from '../design/components';
 import { useMusic } from '../music/MusicProvider';
+import { TRACKS } from '../music/tracks';
+import { resumeAudio } from '../sound/audio';
+import { previewSfx } from '../sound/sfx';
+import { NextTrackIcon, PauseIcon, PlayIcon, PrevTrackIcon } from '../design/icons';
 import { NotificationsPanel } from '../notifications/NotificationsPanel';
 import { AiCodeField, AliasField, CharacterCarousel, CompanionColorPicker, CompanionPicker, GenderPicker, LanguagePicker } from '../profile/pickers';
 import { categoryName, errorText } from '../text';
@@ -242,19 +248,69 @@ function ProfilePanel({ settings }: { settings: Settings }) {
   );
 }
 
-/** Ajustes → Sonido (spec 05, MUS-06). */
+/** Ajustes → Sonido (spec 05, MUS-06; spec 16): reproductor de música centrado y efectos de sonido. */
 function SoundPanel() {
   const music = useMusic();
+  const { db } = useData();
+  const settings = useSettings();
+  const sound = settings?.sound ?? DEFAULT_SOUND;
+  const saveSound = (patch: Partial<SoundSettings>) => void saveSetting(db, 'sound', { ...sound, ...patch });
+  // La pista que se ve: la que suena o, si no, la guardada (o la primera)
+  const track = music.track ?? TRACKS.find((tr) => tr.id === settings?.music.track) ?? TRACKS[0]!;
+  const position = trackPosition(TRACKS, track.id);
+  const canSeek = music.playing && music.duration > 0;
   return (
     <Panel className="stack">
       <h2>{t('settings.sound')}</h2>
-      <label className="choice">
-        <input type="checkbox" checked={music.playing} onChange={music.toggle} data-music-control="" />
-        <span className="grow">{t('settings.music')}</span>
-        <span className={`chip ${music.playing ? 'chip-done' : 'chip-muted'}`}>{music.playing ? t('settings.playing') : t('settings.off')}</span>
-      </label>
+
+      <div className="player" aria-label={t('settings.music')}>
+        <p className="player-track" aria-live="polite">
+          {track.name}
+        </p>
+        <p className="small muted">
+          {music.playing ? t('settings.trackOf', { n: position, total: TRACKS.length }) : t('settings.musicOff')}
+        </p>
+        <div className="player-seek">
+          <span className="player-time">{clock(music.playing ? music.time : 0)}</span>
+          <input
+            type="range"
+            min={0}
+            max={Math.max(1, Math.floor(music.duration))}
+            step={1}
+            value={canSeek ? Math.floor(music.time) : 0}
+            disabled={!canSeek}
+            aria-label={t('settings.progress')}
+            onChange={(e) => music.seek(Number(e.target.value))}
+            data-music-control=""
+          />
+          <span className="player-time">{clock(music.playing ? music.duration : 0)}</span>
+        </div>
+        <div className="player-controls">
+          <button type="button" className="btn btn-icon player-btn" aria-label={t('settings.prevTrack')} onClick={music.previous} data-music-control="">
+            <PrevTrackIcon />
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary btn-icon player-btn player-main"
+            aria-label={music.playing ? t('settings.pause') : t('settings.play')}
+            aria-pressed={music.playing}
+            onClick={music.toggle}
+            data-music-control=""
+          >
+            {music.playing ? <PauseIcon size={20} /> : <PlayIcon size={20} />}
+          </button>
+          <button type="button" className="btn btn-icon player-btn" aria-label={t('settings.nextTrack')} onClick={music.next} data-music-control="">
+            <NextTrackIcon />
+          </button>
+        </div>
+      </div>
+      {music.needsConnection && (
+        <p role="status" className="small field-error">
+          {t('settings.needsConnection')}
+        </p>
+      )}
       <label className="field">
-        <span className="small muted">{t('settings.volume')}</span>
+        <span className="small muted">{t('settings.musicVolume')}</span>
         <input
           type="range"
           min={0}
@@ -265,24 +321,48 @@ function SoundPanel() {
           data-music-control=""
         />
       </label>
-      {music.track && (
-        <div className="row">
-          <p className="grow small" aria-live="polite">
-            {t('settings.nowPlaying', { state: music.playing ? t('settings.playing') : t('settings.paused'), track: music.track.name })}
-          </p>
-          <button type="button" className="btn" onClick={music.next} data-music-control="">
-            {t('common.next')}
+      <p className="small muted">{t('settings.musicNote')}</p>
+
+      <label className="choice">
+        <input type="checkbox" checked={sound.effects} onChange={(e) => saveSound({ effects: e.target.checked })} />
+        <span className="grow">{t('settings.effects')}</span>
+      </label>
+      <label className="field">
+        <span className="small muted">{t('settings.effectsVolume')}</span>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.05}
+          value={sound.volume}
+          disabled={!sound.effects}
+          onChange={(e) => saveSound({ volume: Number(e.target.value) })}
+        />
+      </label>
+      <fieldset className="stack" style={{ gap: 'var(--s2)' }} disabled={!sound.effects}>
+        <legend className="small muted">{t('settings.timbre')}</legend>
+        <div className="choice-group">
+          {(['soft', 'chip'] as const).map((id) => (
+            <label key={id} className="choice">
+              <input type="radio" name="timbre" checked={sound.timbre === id} onChange={() => saveSound({ timbre: id })} />
+              <span>{t(id === 'soft' ? 'settings.timbreSoft' : 'settings.timbreChip')}</span>
+            </label>
+          ))}
+          <button type="button" className="btn" onClick={() => void resumeAudio().then(() => previewSfx({ ...sound, enabled: true }))}>
+            {t('settings.listen')}
           </button>
         </div>
-      )}
-      {music.needsConnection && (
-        <p role="status" className="small field-error">
-          {t('settings.needsConnection')}
-        </p>
-      )}
-      <p className="small muted">{t('settings.musicNote')}</p>
+        <p className="small muted">{t('settings.timbreHelp')}</p>
+      </fieldset>
+      <p className="small muted">{t('settings.effectsNote', { companion: settings ? COMPANION_NAME[settings.companion] : '' })}</p>
     </Panel>
   );
+}
+
+/** 83 s → «1:23». */
+function clock(seconds: number): string {
+  const s = Math.max(0, Math.floor(seconds));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
 function CategoryToggle({ category }: { category: Category }) {

@@ -100,11 +100,30 @@ describe('escena en Hoy', () => {
 });
 
 describe('sonido y créditos', () => {
-  it('MUS-06: Ajustes → Sonido muestra la música apagada y el volumen guardado', async () => {
-    await saveSetting(ctx.db, 'music', { enabled: false, volume: 0.7 } satisfies Settings['music']);
+  it('MUS-06, PS-01: Ajustes → Sonido muestra el reproductor apagado en la pista guardada y el volumen guardado', async () => {
+    await saveSetting(ctx.db, 'music', { enabled: false, volume: 0.7, track: 'rain-on-the-expressway' } satisfies Settings['music']);
     renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
-    expect(await screen.findByRole('checkbox', { name: /Música de fondo/ })).not.toBeChecked();
-    expect(screen.getByRole('slider', { name: 'Volumen' })).toHaveValue('0.7');
+    expect(await screen.findByRole('button', { name: 'Reproducir' })).toHaveAttribute('aria-pressed', 'false');
+    expect(await screen.findByText('Rain on the Expressway')).toBeInTheDocument();
+    expect(screen.getByText('Música apagada')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Pista anterior' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Pista siguiente' })).toBeInTheDocument();
+    // Sin sonar no se puede saltar dentro de la pista
+    expect(screen.getByRole('slider', { name: 'Progreso de la pista' })).toBeDisabled();
+    expect(screen.getByRole('slider', { name: 'Volumen de la música' })).toHaveValue('0.7');
+  });
+
+  it('PS-02 (spec 16): efectos encendidos y timbre Suave por defecto; se guardan al cambiarlos', async () => {
+    const user = userEvent.setup();
+    renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
+    const effects = await screen.findByRole('checkbox', { name: 'Efectos de sonido' });
+    expect(effects).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Suave' })).toBeChecked();
+    await user.click(screen.getByRole('radio', { name: 'Chiptune' }));
+    await waitFor(async () => expect((await loadSettings(ctx.db)).sound.timbre).toBe('chip'));
+    await user.click(effects);
+    await waitFor(async () => expect((await loadSettings(ctx.db)).sound.effects).toBe(false));
+    expect(screen.getByRole('slider', { name: 'Volumen de los efectos' })).toBeDisabled();
   });
 
   it('LIC-02: los créditos citan autor y licencia de cada recurso', async () => {

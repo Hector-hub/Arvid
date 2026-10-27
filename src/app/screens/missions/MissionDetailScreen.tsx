@@ -19,11 +19,15 @@ import { categoryName, dayMonth, difficultyLabel, missionDueText } from '../../t
 import { GoalLabel } from './MissionRow';
 import { MISSION_STATE_CHIP } from './MissionRow';
 import { celebrate } from '../../scene/engine';
+import { playSfx } from '../../sound/sfx';
 import { t } from '../../../i18n';
 
 /** Partículas solo si la acción salió bien (PAR-01). */
 const celebrateIf = (ok: boolean) => {
-  if (ok) celebrate('small');
+  if (ok) {
+    celebrate('small');
+    playSfx('mission');
+  }
   return ok;
 };
 

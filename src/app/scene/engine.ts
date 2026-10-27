@@ -4,6 +4,7 @@
 // Este módulo es ligero (solo dominio): lo importan las pantallas para lanzar partículas o hacer hablar a ARVID
 // sin cargar el dibujo.
 import { createSpeech, pageText, stepSpeech, tapSpeech, type Speech } from '../../domain/arvid/speech';
+import { playSfx } from '../sound/sfx';
 import type { Companion } from '../../domain/arvid/companion';
 import { isHome, startEntrance } from '../../domain/scene/arvid';
 import { DARIS_ENTRY_FRAMES } from './daris';
@@ -229,12 +230,21 @@ function stepVoice(dt: number, reduced: boolean) {
     queued = undefined;
   }
   if (!speech) return;
+  talkSound(speech);
   stepSpeech(speech, dt, reduced);
   if (speech.done) {
     speech = undefined;
     if (!queued) scene.arvid.wantsHome = false;
   }
   publishSpeech();
+}
+
+/** El sonido de la voz (spec 16, EF-01) al empezar a escribirse cada página de una burbuja. */
+const talked = new WeakMap<Speech, number>();
+function talkSound(sp: Speech) {
+  if (sp.done || sp.shown > 0 || talked.get(sp) === sp.page) return;
+  talked.set(sp, sp.page);
+  playSfx('talk', { chars: pageText(sp).length });
 }
 
 // ---------- Vecinos que hablan (spec 11, VC) ----------
@@ -292,6 +302,7 @@ function stepNeighbors(dt: number, reduced: boolean) {
     neighborTalk = undefined;
     return;
   }
+  talkSound(neighborTalk.speech);
   stepSpeech(neighborTalk.speech, dt, reduced);
   if (neighborTalk.speech.done) neighborTalk = undefined;
 }

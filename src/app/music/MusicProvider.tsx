@@ -12,6 +12,8 @@ export interface Music extends PlayerState {
   volume: number;
   toggle: () => void;
   next: () => void;
+  previous: () => void;
+  seek: (seconds: number) => void;
   setVolume: (volume: number) => void;
   /** Calla la música mientras suena otra cosa (un juego, spec 09) sin tocar la preferencia guardada; devuelve cómo reanudarla. */
   hush: () => () => void;
@@ -27,10 +29,21 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const { db } = useData();
   const music = useSettings()?.music ?? DEFAULT_MUSIC;
   const player = useRef<MusicPlayer | undefined>(undefined);
-  const [state, setState] = useState<PlayerState>({ playing: false, needsConnection: false });
+  const [state, setState] = useState<PlayerState>({ playing: false, needsConnection: false, time: 0, duration: 0 });
   const volume = music.volume;
+  // Lo último guardado, para no reescribir el ajuste entero con valores viejos al cambiar de pista
+  const latest = useRef(music);
+  useEffect(() => {
+    latest.current = music;
+  });
 
-  const get = useCallback(() => (player.current ??= new MusicPlayer(TRACKS, volume, setState)), [volume]);
+  const get = useCallback(
+    () =>
+      (player.current ??= new MusicPlayer(TRACKS, volume, setState, latest.current.track, (track) => {
+        if (latest.current.track !== track) void saveSetting(db, 'music', { ...latest.current, track });
+      })),
+    [volume, db],
+  );
 
   // Si quedó activada, empieza con la primera interacción de la sesión (los navegadores no permiten autoarranque).
   // Solo sirven los eventos que dan permiso para sonar: en iPhone, al levantar el dedo, no al apoyarlo.
@@ -68,13 +81,22 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         const on = !music.enabled;
         if (on) void p.start();
         else p.stop();
-        void saveSetting(db, 'music', { enabled: on, volume });
+        void saveSetting(db, 'music', { ...latest.current, enabled: on });
       },
-      next: () => get().skip(),
+      // Cambiar de pista con la música apagada la enciende (PS-01)
+      next() {
+        if (!music.enabled) void saveSetting(db, 'music', { ...latest.current, enabled: true });
+        get().skip();
+      },
+      previous() {
+        if (!music.enabled) void saveSetting(db, 'music', { ...latest.current, enabled: true });
+        get().previous();
+      },
+      seek: (seconds) => player.current?.seek(seconds),
       hush,
       setVolume(v) {
         player.current?.setVolume(v);
-        void saveSetting(db, 'music', { enabled: music.enabled, volume: v });
+        void saveSetting(db, 'music', { ...latest.current, volume: v });
       },
     }),
     [state, music.enabled, volume, get, db, hush],

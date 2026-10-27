@@ -8,6 +8,7 @@ import { BackLink } from '../design/components';
 import { CollapseIcon, ExpandIcon } from '../design/icons';
 import { GAMES } from '../games';
 import { useMusic } from '../music/MusicProvider';
+import { suppressSfx } from '../sound/sfx';
 import { useSettings } from '../data';
 
 const subscribe = (on: () => void) => {
@@ -34,6 +35,8 @@ export function GameScreen() {
 
   // La música de ARVID calla mientras se juega (el juego trae la suya) y vuelve al salir (JG-07)
   useEffect(() => hush(), [hush]);
+  // Los juegos tienen su propio sonido: los efectos de ARVID se callan (spec 16, EF-03)
+  useEffect(() => suppressSfx(), []);
 
   useEffect(() => {
     if (!full) return;

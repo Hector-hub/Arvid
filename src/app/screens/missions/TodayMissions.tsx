@@ -12,6 +12,7 @@ import { useData, useMissions } from '../../data';
 import { xpDeltaText } from '../../text';
 import { MissionSummary } from './MissionRow';
 import { t } from '../../../i18n';
+import { playSfx } from '../../sound/sfx';
 
 const TAP_COOLDOWN_MS = 400;
 
@@ -89,12 +90,13 @@ function MissionTodayRow({ item, category, today }: { item: MissionItem; categor
       const wasExpired = analysis.state === 'expired';
       if (!(await completeMission(ctx, record.mission.id, today))) return t('missions.completeFailed');
       celebrate('small');
+      playSfx('mission');
       return t(wasExpired ? 'missions.recovered' : 'missions.accomplished', { xp: xpDeltaText(valueCents(item)) });
     });
 
   const undo = () =>
     run(async () =>
-      (await uncompleteMission(ctx, record.mission.id))
+      (await uncompleteMission(ctx, record.mission.id).then((ok) => (ok && playSfx('undo'), ok)))
         ? t('missions.unmarked', { xp: xpDeltaText(-valueCents(item)) })
         : t('today.undoFailed'),
     );

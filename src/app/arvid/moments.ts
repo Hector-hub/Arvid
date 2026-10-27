@@ -12,6 +12,7 @@ import { momentLine } from './brain';
 import { line, lineCount } from './lines';
 import { useArvidContext } from './useArvidContext';
 import { speak } from './voice';
+import { playSfx } from '../sound/sfx';
 
 /** "Primera actividad": lo marca el formulario al crearla y se dice al volver a Hoy. */
 let firstActivityPending = false;
@@ -91,6 +92,7 @@ export function useArvidMoments(view: TodayView | undefined, comeback: boolean, 
     if (pending === 0 && prev !== undefined && prev > 0 && hasDaily) {
       // DARIS celebra el día completo con su salto de corazones (spec 08, DE-02), hable o no
       cheer();
+      playSfx('day');
       void decide(['dayComplete']);
     }
   }, [pending, hasDaily]);

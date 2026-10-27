@@ -20,6 +20,7 @@ import { NeighborTalk } from '../city/NeighborTalk';
 import { GoalWatcher } from '../goals/GoalWatcher';
 import { MemoryWatcher } from '../arvid/memory';
 import { LevelUpWatcher } from './LevelUp';
+import { SoundWatcher } from '../sound/SoundWatcher';
 import { MusicProvider } from '../music/MusicProvider';
 
 const TABS: { to: string; label: TKey; icon: SpriteName }[] = [
@@ -68,6 +69,7 @@ export function AppLayout() {
             </NavLink>
           ))}
         </nav>
+        <SoundWatcher />
         <LevelUpWatcher />
         <AchievementsWatcher />
         <DisciplineTipWatcher />

@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { logCompletion, saveSetting, undoCompletion } from '../../data/repository';
+import { playSfx } from '../sound/sfx';
 import { logDeltaCents } from '../../domain/activities/periods';
 import { shouldRemindBackup } from '../../domain/backupReminder';
 import { canLog, latestUndoableDate } from '../../domain/activities/rules';
@@ -178,6 +179,8 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
       const result = await logCompletion(ctx, item.activityId, today);
       if (!result.ok) return logDenialText(result.reason);
       celebrate('small');
+      playSfx('log');
+      playSfx('xp', { delayMs: 130 });
       if (navigator.vibrate) navigator.vibrate(15);
       return t('today.logged', { progress: progressText(item.count + 1, item.target), xp: xpDeltaText(delta) });
     });
@@ -186,7 +189,9 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
     run(async () => {
       if (!undoDate || !record) return '';
       const delta = logDeltaCents(record, undoDate, -1);
-      return (await undoCompletion(ctx, item.activityId, undoDate))
+      const undone = await undoCompletion(ctx, item.activityId, undoDate);
+      if (undone) playSfx('undo');
+      return undone
         ? t('today.undone', { xp: xpDeltaText(delta) })
         : t('today.undoFailed');
     });
@@ -299,7 +304,12 @@ function ForgottenSheet({
                   className="btn btn-primary btn-icon"
                   aria-label={t('today.logYesterdayLabel', { name: item.name })}
                   onClick={() =>
-                    void logCompletion(ctx, item.activityId, yesterday).then((r) => r.ok && celebrate('small'))
+                    void logCompletion(ctx, item.activityId, yesterday).then((r) => {
+                      if (!r.ok) return;
+                      celebrate('small');
+                      playSfx('log');
+                      playSfx('xp', { delayMs: 130 });
+                    })
                   }
                 >
                   <Sprite name="plus" />
