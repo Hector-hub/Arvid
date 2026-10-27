@@ -268,7 +268,10 @@ export function neighborSay(type: number, pages: string[][]): boolean {
 export function currentNeighborSpeech(): { speech: Speech; x: number; y: number } | undefined {
   if (!neighborTalk) return undefined;
   const { ped, speech: sp } = neighborTalk;
-  return { speech: sp, x: ped.wx - scene.offset + ped.size / 2, y: LAYOUT.backFeet - ped.size * 0.75 };
+  // La cola apunta al cuerpo, no al centro del fotograma (en espejo, si va hacia la izquierda)
+  const center = (PEDESTRIANS[ped.type]?.center ?? EXTRAS_FRAME / 2) / EXTRAS_FRAME;
+  const x = ped.wx - scene.offset + ped.size * (ped.dir < 0 ? 1 - center : center);
+  return { speech: sp, x, y: LAYOUT.backFeet - ped.size * 0.75 };
 }
 
 function stepNeighbors(dt: number, reduced: boolean) {

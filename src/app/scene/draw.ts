@@ -357,7 +357,8 @@ function drawBubble(c: Ctx, sp: Speech, ax: number, ay: number, kind: keyof type
   // Sin llegar a la esquina superior derecha, donde está la bocina (MU-01)
   const x = Math.round(Math.max(4, Math.min(SCENE_W - BUBBLE_RIGHT_GAP - w, ax - 24)));
   const y = Math.round(Math.max(4, ay - 22 - h));
-  const tx = Math.round(Math.min(x + w - 6 * U, Math.max(x + 3 * U, ax - 4)));
+  // La punta (la última fila, de U píxeles) queda centrada en `ax`
+  const tx = Math.round(Math.min(x + w - 6 * U, Math.max(x + 3 * U, ax - U / 2)));
   // Sombra
   c.fillStyle = col.shade;
   c.fillRect(x + U, y + h, w - U, U);
