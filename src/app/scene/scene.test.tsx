@@ -147,7 +147,7 @@ describe('sonido y créditos', () => {
     expect(await screen.findByText(/Warped City/)).toBeInTheDocument();
     expect(screen.getAllByText(/CraftPix\.net · Licencia gratuita de CraftPix/)).toHaveLength(2);
     // Todas las pistas, una por línea, y el juego (D-162)
-    for (const track of ['Midnight Sector Drive', 'Glass Tower Horizon', 'Black Chrome Horizon', 'Chrome Horizon Drive', 'Rain on the Expressway'])
+    for (const track of ['Midnight Sector Drive', 'Glass Tower Horizon', 'Black Chrome Horizon', 'Chrome Horizon Drive', 'Rain on the Expressway', 'Afterglow Avenue'])
       expect(screen.getByText(track)).toBeInTheDocument();
     expect(screen.getByText('CombinaDos')).toBeInTheDocument();
     expect(screen.getByText('hecrey · Propio')).toBeInTheDocument();
