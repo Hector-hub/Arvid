@@ -20,3 +20,10 @@
 | M14-04 | Borrar los datos de la app (o usar otro dispositivo del mismo llavero): «Ya tengo cuenta» con Face ID o huella → todo recuperado | ☐ | ☐ |
 | M14-05 | Entrar en el otro sistema (iPhone ↔ Android) con la clave de recuperación → todo recuperado y ofrece passkey | ☐ | ☐ |
 | M14-06 | Generar otra clave, salir de este dispositivo y borrar la cuenta | ☐ | ☐ |
+
+## Resultados de la fase 14a (prototipo en `/lab/passkey`)
+| Fecha | Dispositivo | Modo | WebAuthn | Crear | Entrar | PRF | Secreto estable |
+|---|---|---|---|---|---|---|---|
+| 2026-10-28 | iPhone, iOS 18.1.1 (Safari) | Navegador (no instalada) | Sí | Sí | Sí | Sí, ya al crear | Sí |
+| — | iPhone | App instalada | Pendiente | | | | |
+| — | Android | Navegador e instalada | Pendiente | | | | |
