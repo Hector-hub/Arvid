@@ -23,8 +23,8 @@ function contrast(a: string, b: string): number {
 
 describe('contraste de los pares de tokens (UI-03, design-system §2)', () => {
   const c = palette();
-  it('la paleta es Sweetie 16 completa', () => {
-    expect(Object.keys(c)).toHaveLength(16);
+  it('la paleta es Sweetie 16 más índigo y lavanda (D-154)', () => {
+    expect(Object.keys(c)).toHaveLength(18);
   });
 
   // [texto, fondo, mínimo]
@@ -43,8 +43,13 @@ describe('contraste de los pares de tokens (UI-03, design-system §2)', () => {
     ['white', 'navy', 4.5],
     ['fog', 'navy', 4.5],
     ['gold', 'navy', 4.5],
+    // Tonos de noche neón (D-154): texto secundario y botón dorado con texto oscuro
+    ['lavender', 'panel', 4.5],
+    ['lavender', 'ink', 4.5],
+    ['ink', 'gold', 4.5],
     // Elementos gráficos (bordes, iconos de categoría) ≥ 3:1.
     ['slate', 'ink', 3],
+    ['indigo', 'ink', 1.5],
     ['fog', 'panel', 3],
     ['orange', 'panel', 3],
     ['sky', 'panel', 3],

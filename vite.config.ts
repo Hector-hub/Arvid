@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import pkg from './package.json' with { type: 'json' };
 
-const INK = '#1a1c2c';
+const INK = '#0b0d1a';
 
 // Misma CSP que netlify.toml: los E2E se ejecutan contra el build con esta política (security-privacy §2).
 const CSP =

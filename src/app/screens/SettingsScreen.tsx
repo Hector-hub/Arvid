@@ -341,13 +341,15 @@ function SoundPanel() {
       </label>
       <fieldset className="stack" style={{ gap: 'var(--s2)' }} disabled={!sound.effects}>
         <legend className="small muted">{t('settings.timbre')}</legend>
-        <div className="choice-group">
-          {(['soft', 'chip'] as const).map((id) => (
-            <label key={id} className="choice">
-              <input type="radio" name="timbre" checked={sound.timbre === id} onChange={() => saveSound({ timbre: id })} />
-              <span>{t(id === 'soft' ? 'settings.timbreSoft' : 'settings.timbreChip')}</span>
-            </label>
-          ))}
+        <div className="row" style={{ flexWrap: 'wrap' }}>
+          <div className="segmented">
+            {(['soft', 'chip'] as const).map((id) => (
+              <label key={id}>
+                <input type="radio" name="timbre" checked={sound.timbre === id} onChange={() => saveSound({ timbre: id })} />
+                <span>{t(id === 'soft' ? 'settings.timbreSoft' : 'settings.timbreChip')}</span>
+              </label>
+            ))}
+          </div>
           <button type="button" className="btn" onClick={() => void resumeAudio().then(() => previewSfx({ ...sound, enabled: true }))}>
             {t('settings.listen')}
           </button>

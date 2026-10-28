@@ -5,7 +5,7 @@ test('PWA-01: el manifest es válido', async ({ request }) => {
   const res = await request.get('/manifest.webmanifest');
   expect(res.ok()).toBe(true);
   const manifest = await res.json();
-  expect(manifest).toMatchObject({ name: 'ARVID', display: 'standalone', theme_color: '#1a1c2c', start_url: '/hoy' });
+  expect(manifest).toMatchObject({ name: 'ARVID', display: 'standalone', theme_color: '#0b0d1a', start_url: '/hoy' });
   expect(manifest.icons.map((i: { sizes: string }) => i.sizes)).toEqual(expect.arrayContaining(['192x192', '512x512']));
   for (const icon of manifest.icons as { src: string }[]) expect((await request.get(icon.src)).ok()).toBe(true);
 });

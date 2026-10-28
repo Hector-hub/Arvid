@@ -1,7 +1,8 @@
 /* Sistema de diseño ARVID (design-system.md). Solo los 16 colores de Sweetie 16 (la escena neón dibuja con los suyos). */
 :root {
   /* Paleta base */
-  --c-ink: #1a1c2c;
+  /* Tonos de noche neón (D-154): fondo casi negro azulado, paneles marino violeta, bordes índigo */
+  --c-ink: #0b0d1a;
   --c-plum: #5d275d;
   --c-red: #b13e53;
   --c-orange: #ef7d57;
@@ -9,23 +10,25 @@
   --c-lime: #a7f070;
   --c-green: #38b764;
   --c-teal: #257179;
-  --c-navy: #29366f;
+  --c-navy: #1f2547;
   --c-blue: #3b5dc9;
   --c-sky: #41a6f6;
   --c-cyan: #73eff7;
   --c-white: #f4f4f4;
   --c-fog: #94b0c2;
   --c-slate: #566c86;
-  --c-panel: #333c57;
+  --c-panel: #161a33;
+  --c-indigo: #3a4280;
+  --c-lavender: #9aa3d6;
 
   /* Tokens semánticos (§2) */
   --bg: var(--c-ink);
   --surface: var(--c-panel);
   --surface-sunken: var(--c-navy);
-  --border: var(--c-slate);
+  --border: var(--c-indigo);
   --border-strong: var(--c-fog);
   --text: var(--c-white);
-  --text-muted: var(--c-fog);
+  --text-muted: var(--c-lavender);
   --xp: var(--c-cyan);
   --level: var(--c-gold);
   --success: var(--c-lime);
@@ -221,6 +224,11 @@ select {
   color: var(--c-slate);
 }
 .btn-primary { --btn-fill: var(--primary-fill); }
+/* Acción principal en dorado con texto oscuro (D-154); los botones de solo icono (como «+») siguen en azul */
+.btn-primary:not(.btn-icon),
+.btn.player-main { --btn-fill: var(--c-gold); color: var(--c-ink); }
+.btn-primary:not(.btn-icon):focus-visible,
+.btn.player-main:focus-visible { --btn-edge: var(--c-white); }
 .btn-danger { --btn-fill: var(--danger-fill); }
 .btn-ghost {
   --btn-fill: transparent;
@@ -1329,3 +1337,30 @@ fieldset { border: 0; padding: 0; margin: 0; }
 .player-controls { display: flex; gap: var(--s3); align-items: center; justify-content: center; }
 .btn.player-btn { width: 36px; height: 36px; min-width: 0; min-height: 0; padding: 0; display: grid; place-items: center; }
 .btn.player-btn.player-main { width: 46px; height: 46px; }
+
+/* Selector segmentado (spec 16, timbre): un marco con las opciones juntas; la elegida, hundida y en dorado */
+.segmented { display: inline-flex; border: 2px solid var(--border); }
+.segmented label { position: relative; }
+.segmented input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.segmented span { display: block; padding: var(--s2) var(--s3); font-family: var(--font-pixel); color: var(--text-muted); }
+.segmented input:checked + span { background: var(--surface-sunken); color: var(--level); }
+.segmented input:focus-visible + span { outline: 2px solid var(--level); outline-offset: -4px; }
+.segmented input:disabled + span { opacity: 0.5; cursor: not-allowed; }
+
+/* Casillas visibles (D-154, variante B): las opciones de tipo checkbox llevan una casilla pixel y no recuadro */
+.choice:has(input[type="checkbox"]) { border-color: transparent; padding-left: 0; }
+.choice:has(input[type="checkbox"]):has(input:checked) { border-color: transparent; background: transparent; }
+.choice:has(input[type="checkbox"])::before {
+  content: '';
+  flex: none;
+  width: 24px;
+  height: 24px;
+  box-sizing: border-box;
+  border: 3px solid var(--text-muted);
+  background: var(--surface-sunken) no-repeat center / 16px 13px;
+}
+.choice:has(input[type="checkbox"]:checked)::before {
+  border-color: var(--level);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' shape-rendering='crispEdges'%3E%3Cpath fill='%23ffcd75' d='M7 1h2v1H7zM6 2h2v1H6zM5 3h2v1H5zM1 4h2v1H1zM4 4h2v1H4zM2 5h3v1H2zM3 6h1v1H3z'/%3E%3C/svg%3E");
+}
+.choice:has(input[type="checkbox"]:disabled)::before { opacity: 0.5; }
