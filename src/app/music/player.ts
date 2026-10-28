@@ -10,6 +10,8 @@ import { getAudioContext } from '../sound/audio';
 import { MUSIC_CACHE, type Track } from './tracks';
 
 const FADE_S = 1.2;
+/** Canal entre copias de la app abiertas a la vez (D-165). */
+const MUSIC_CHANNEL = 'arvid-music';
 /** «Anterior» vuelve al inicio de la pista si ya lleva más que esto (PS-01). */
 const RESTART_AFTER_S = 3;
 
@@ -51,6 +53,27 @@ export class MusicPlayer {
     this.audio.addEventListener('error', this.onError);
     document.addEventListener('visibilitychange', this.onVisibility);
     window.addEventListener('pagehide', this.onPageHide);
+    // Solo suena un ARVID a la vez (D-165): si otra copia de la app empieza a sonar, esta se calla
+    if (typeof BroadcastChannel !== 'undefined') {
+      this.channel = new BroadcastChannel(MUSIC_CHANNEL);
+      // Solo cuenta un aviso posterior a cuando esta empezó a sonar (los avisos llegan con retraso)
+      this.channel.onmessage = (e: MessageEvent<{ playing?: string; at?: number }>) => {
+        const { playing, at = 0 } = e.data ?? {};
+        if (playing && playing !== this.id && this.enabled && at > this.playingSince) this.silence();
+      };
+    }
+  }
+
+  private readonly id = Math.random().toString(36).slice(2);
+  private channel?: BroadcastChannel;
+  private playingSince = 0;
+
+  /** Otra copia empezó a sonar: se para sin tocar la preferencia guardada. */
+  private silence() {
+    this.enabled = false;
+    clearInterval(this.ramp);
+    this.audio.pause();
+    this.emit({ playing: false });
   }
 
   isEnabled(): boolean {
@@ -115,6 +138,7 @@ export class MusicPlayer {
     this.audio.removeEventListener('error', this.onError);
     document.removeEventListener('visibilitychange', this.onVisibility);
     window.removeEventListener('pagehide', this.onPageHide);
+    this.channel?.close();
     this.gain?.disconnect();
   }
 
@@ -182,6 +206,9 @@ export class MusicPlayer {
   private async resume() {
     try {
       await this.audio.play();
+      // Hora absoluta con precisión de microsegundos: comparable entre copias de la app y sin empates
+      this.playingSince = performance.timeOrigin + performance.now();
+      this.channel?.postMessage({ playing: this.id, at: this.playingSince });
       this.failures = 0;
       this.fadeTo(this.level);
     } catch {

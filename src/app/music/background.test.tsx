@@ -44,6 +44,18 @@ describe('música en segundo plano (D-163)', () => {
     p.destroy();
   });
 
+  it('solo suena un ARVID a la vez: si otra copia empieza, esta se calla (D-165)', async () => {
+    const a = new MusicPlayer(TRACKS, 0.5, () => undefined, undefined, () => undefined, true);
+    const b = new MusicPlayer(TRACKS, 0.5, () => undefined, undefined, () => undefined, true);
+    await a.start();
+    pause.mockClear();
+    await b.start();
+    await vi.waitFor(() => expect(a.isEnabled()).toBe(false));
+    expect(b.isEnabled()).toBe(true);
+    a.destroy();
+    b.destroy();
+  });
+
   it('en primer plano se pausa al ocultar la app (MUS-05)', async () => {
     const p = new MusicPlayer(TRACKS, 0.5, () => undefined, undefined, () => undefined, false);
     await p.start();
