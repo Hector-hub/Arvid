@@ -1632,11 +1632,12 @@ input[type='range']:disabled { opacity: 0.45; }
   .scene-sticky .scene { width: auto; margin-inline: calc(-1 * var(--s4)); }
 }
 .scene-overlay .scene-date { text-shadow: 0 1px 0 #000, 0 0 8px rgb(95 225 245 / 0.25); }
-/* Los botones de la escena se desvanecen; aparecen unos segundos al tocarla (o con el teclado) */
+/* Los botones de la escena y la fecha de Hoy se desvanecen; aparecen unos segundos al tocarla (o con el teclado) */
 .scene-top-right,
 .scene-corner { transition: opacity 400ms ease; }
 .scene:not(.controls-shown):not(:focus-within) .scene-top-right,
-.scene:not(.controls-shown):not(:focus-within) .scene-corner {
+.scene:not(.controls-shown):not(:focus-within) .scene-corner,
+.scene:not(.controls-shown):not(:focus-within) .scene-overlay:has(.scene-date) {
   opacity: 0;
   pointer-events: none;
 }

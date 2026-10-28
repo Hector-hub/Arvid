@@ -334,17 +334,22 @@ const LINE_H = 18;
 const BUBBLE_RIGHT_GAP = 50;
 const PAD = 7;
 
-/** Burbuja anclada a ARVID, con cola hacia él y ▼ si hay más páginas (BP-01 a BP-03). */
-/** Colores de la burbuja pixel (D-137): la del compañero, como en el chat; la de un vecino, con borde dorado. */
+/**
+ * Colores de la burbuja de cristal (D-156, estilo Cristal neón de D-155): relleno oscuro translúcido, borde de luz de
+ * 1 píxel y texto claro; la de un vecino, con el borde dorado.
+ */
 const BUBBLE = {
-  companion: { fill: '#f4f4f4', line: '#8f9ad6', shade: '#4b55a8' },
-  neighbor: { fill: '#f4f4f4', line: '#ffcd75', shade: '#a8662f' },
+  companion: { fill: 'rgba(10, 12, 30, 0.72)', line: 'rgba(255, 255, 255, 0.32)', hi: 'rgba(255, 255, 255, 0.08)', text: '#eef1ff', more: '#a3abda' },
+  neighbor: { fill: 'rgba(10, 12, 30, 0.72)', line: 'rgba(245, 198, 107, 0.62)', hi: 'rgba(245, 198, 107, 0.1)', text: '#ffeccb', more: '#f5c66b' },
 } as const;
 const U = 2;
+/** Esquinas recortadas de 2 píxeles, como los paneles de la app. */
+const N = 2;
 
 /**
- * Burbuja pixel anclada a quien habla, con el mismo estilo que las del chat (D-137): relleno claro, contorno de 1 píxel
- * con las esquinas en escalón, sombra debajo y a la derecha, y cola en escalera; ▼ si hay más páginas (BP-01 a BP-03).
+ * Burbuja de cristal anclada a quien habla (D-156): relleno translúcido que deja ver la escena, borde de luz de 1 píxel
+ * con las esquinas recortadas, un brillo arriba y cola en escalera abierta hacia quien habla; ▼ si hay más páginas
+ * (BP-01 a BP-03).
  */
 function drawBubble(c: Ctx, sp: Speech, ax: number, ay: number, kind: keyof typeof BUBBLE = 'companion') {
   const lines = sp.pages[sp.page] ?? [];
@@ -359,34 +364,39 @@ function drawBubble(c: Ctx, sp: Speech, ax: number, ay: number, kind: keyof type
   const y = Math.round(Math.max(4, ay - 22 - h));
   // La punta (la última fila, de U píxeles) queda centrada en `ax`
   const tx = Math.round(Math.min(x + w - 6 * U, Math.max(x + 3 * U, ax - U / 2)));
-  // Sombra
-  c.fillStyle = col.shade;
-  c.fillRect(x + U, y + h, w - U, U);
-  c.fillRect(x + w, y + U, U, h);
-  // Contorno sin las esquinas (escalón) y relleno
-  c.fillStyle = col.line;
-  c.fillRect(x + U, y, w - 2 * U, U);
-  c.fillRect(x + U, y + h - U, w - 2 * U, U);
-  c.fillRect(x, y + U, U, h - 2 * U);
-  c.fillRect(x + w - U, y + U, U, h - 2 * U);
+  const tailW = 4 * U;
+  // Relleno sin las esquinas (rectángulos que no se solapan, para que la transparencia sea uniforme)
   c.fillStyle = col.fill;
-  c.fillRect(x + U, y + U, w - 2 * U, h - 2 * U);
-  // Cola en escalera hacia quien habla: filas de 4, 3, 2 y 1 píxeles con su contorno
+  c.fillRect(x + N, y, w - 2 * N, h);
+  c.fillRect(x, y + N, N, h - 2 * N);
+  c.fillRect(x + w - N, y + N, N, h - 2 * N);
+  // Cola en escalera: filas de 4, 3, 2 y 1 píxeles bajo el borde inferior
+  for (let i = 0; i < 4; i++) c.fillRect(tx, y + h + i * U, (4 - i) * U, U);
+  // Borde de luz de 1 píxel, abierto donde nace la cola
+  c.fillStyle = col.line;
+  c.fillRect(x + N, y, w - 2 * N, 1);
+  c.fillRect(x + N, y + h - 1, tx - x - N, 1);
+  c.fillRect(tx + tailW, y + h - 1, x + w - N - tx - tailW, 1);
+  c.fillRect(x, y + N, 1, h - 2 * N);
+  c.fillRect(x + w - 1, y + N, 1, h - 2 * N);
+  c.fillRect(x + 1, y + 1, 1, 1);
+  c.fillRect(x + w - 2, y + 1, 1, 1);
+  c.fillRect(x + 1, y + h - 2, 1, 1);
+  c.fillRect(x + w - 2, y + h - 2, 1, 1);
   for (let i = 0; i < 4; i++) {
-    const row = y + h - U + i * U;
-    const width = (4 - i) * U;
-    c.fillStyle = col.fill;
-    c.fillRect(tx, row, width, U);
-    c.fillStyle = col.line;
-    c.fillRect(tx - U, row, U, U);
-    c.fillRect(tx + width, row, U, U);
+    const row = y + h + i * U;
+    c.fillRect(tx, row, 1, U);
+    c.fillRect(tx + (4 - i) * U - 1, row, 1, U);
   }
-  c.fillRect(tx - U, y + h - U + 4 * U, 2 * U, U);
-  c.fillStyle = '#1a1c2c';
+  c.fillRect(tx, y + h + 4 * U - 1, U, 1);
+  // Brillo de cristal arriba
+  c.fillStyle = col.hi;
+  c.fillRect(x + N, y + 1, w - 2 * N, 1);
+  c.fillStyle = col.text;
   c.textBaseline = 'top';
   visibleLines(sp).forEach((line, i) => c.fillText(line, x + PAD + 2, y + PAD + i * LINE_H));
   if (hasMore(sp)) {
-    c.fillStyle = col.shade;
+    c.fillStyle = col.more;
     const mx = x + w - 10;
     const my = y + h - 9;
     c.fillRect(mx - 2, my, 5, 1);
