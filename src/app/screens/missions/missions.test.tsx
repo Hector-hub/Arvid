@@ -62,7 +62,7 @@ describe('Hoy → Misiones (MHOY)', () => {
     expect(within(section).getByText('Vencida', { selector: '.chip' })).toBeInTheDocument();
     expect(within(section).getByText('vence hoy')).toBeInTheDocument();
     expect(within(section).getByRole('link', { name: 'Ver todas (7)' })).toBeInTheDocument();
-    expect(screen.getByText('2 misiones para hoy')).toBeInTheDocument();
+    expect(screen.getByText(/2 misiones pendientes/)).toBeInTheDocument();
   });
 
   it('MHOY-03: completar muestra la XP; recuperar una vencida; deshacer', async () => {

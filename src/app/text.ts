@@ -81,10 +81,6 @@ export function fullDate(date: Date): string {
   return new Intl.DateTimeFormat(getLocale(), { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
 }
 
-export function pendingTodayText(pending: number): string {
-  return pending === 0 ? t('format.dayComplete') : t('format.pendingToday', { count: pending });
-}
-
 export function logDenialText(reason: LogDenial): string {
   return t(`logDenial.${reason}`);
 }
@@ -132,8 +128,15 @@ export function missionDueText(deadline: LocalDate | undefined, today: LocalDate
   return t('format.dueOn', { date: days > 1 && days <= 6 ? shortDay(deadline) : dayMonth(deadline) });
 }
 
-export function missionsDueText(n: number): string {
-  return t('format.missionsDue', { count: n });
+/** Resumen de Hoy (D-160): «1 actividad y 2 misiones pendientes», «2 actividades pendientes», «1 misión pendiente». */
+export function todaySummaryText(activities: number, missions: number): string {
+  const parts = [
+    activities > 0 ? t('format.activitiesCount', { count: activities }) : undefined,
+    missions > 0 ? t('format.missionsCount', { count: missions }) : undefined,
+  ].filter((p): p is string => !!p);
+  if (parts.length === 0) return t('format.dayComplete');
+  const items = parts.length === 2 ? t('format.andItems', { a: parts[0]!, b: parts[1]! }) : parts[0]!;
+  return t('format.pendingItems', { count: activities + missions, items });
 }
 
 /** Nombre de una categoría: las predefinidas sin renombrar se traducen (I18N-04). */

@@ -239,3 +239,18 @@ export const PIXEL_ICON_RECTS: Partial<Record<SpriteName, readonly (readonly [nu
   'nav-character': [[4, 1, 4, 1], [3, 2, 6, 3], [4, 5, 4, 1], [2, 7, 8, 1], [1, 8, 10, 3]],
   'cat-body': [[2, 2, 3, 1], [7, 2, 3, 1], [1, 3, 10, 3], [2, 6, 8, 1], [3, 7, 6, 1], [4, 8, 4, 1], [5, 9, 2, 1]],
 };
+
+/** Marca de completar (✓) en una cuadrícula de 16 px, del mismo tamaño que «+» y «−» en las tarjetas (D-160). */
+export function CheckIcon() {
+  return (
+    <svg width={16} height={16} viewBox="0 0 16 16" fill="currentColor" shapeRendering="crispEdges" aria-hidden="true">
+      <rect x="2" y="8" width="2" height="2" />
+      <rect x="4" y="10" width="2" height="2" />
+      <rect x="6" y="12" width="2" height="2" />
+      <rect x="8" y="10" width="2" height="2" />
+      <rect x="10" y="8" width="2" height="2" />
+      <rect x="12" y="6" width="2" height="2" />
+      <rect x="14" y="4" width="2" height="2" />
+    </svg>
+  );
+}

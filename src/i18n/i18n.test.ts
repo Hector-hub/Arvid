@@ -22,8 +22,8 @@ describe('idiomas (I18N-05)', () => {
 
 describe('traducción (I18N-02)', () => {
   it('interpola variables y elige el plural según el idioma', () => {
-    expect(t('format.pendingToday', { count: 1 })).toBe('Te queda 1 para hoy');
-    expect(t('format.pendingToday', { count: 3 })).toBe('Te quedan 3 para hoy');
+    expect(t('format.activitiesCount', { count: 1 })).toBe('1 actividad');
+    expect(t('format.activitiesCount', { count: 3 })).toBe('3 actividades');
     setLocale('en');
     expect(t('backup.activities', { count: 1 })).toBe('1 activity');
     expect(t('backup.activities', { count: 2 })).toBe('2 activities');

@@ -44,14 +44,14 @@ test.describe('registro diario', () => {
   test('crear, registrar, completar y deshacer (ACT-01, LOG-01, LOG-04, HOY-03)', async ({ page }) => {
     await createActivity(page, { name: 'Caminar', category: 'Cuerpo' });
     await expect(page.getByRole('heading', { name: 'Miércoles, 14 oct' })).toBeVisible();
-    await expect(page.getByText('Te queda 1 para hoy')).toBeVisible();
+    await expect(page.getByText('1 actividad pendiente')).toBeVisible();
 
     await row(page, 'Caminar').getByRole('button', { name: 'Registrar Caminar' }).click();
     await expect(page.getByText('Día completo', { exact: true })).toBeVisible();
     await expect(row(page, 'Caminar').getByText('Hecho')).toBeVisible();
 
     await row(page, 'Caminar').getByRole('button', { name: 'Deshacer Caminar' }).click();
-    await expect(page.getByText('Te queda 1 para hoy')).toBeVisible();
+    await expect(page.getByText('1 actividad pendiente')).toBeVisible();
   });
 
   test('LOG-06: un doble toque crea un solo registro', async ({ page }) => {
@@ -156,7 +156,7 @@ test.describe('fechas', () => {
 
     await page.clock.runFor(3 * 60_000);
     await expect(page.getByRole('heading', { name: 'Domingo, 18 oct' })).toBeVisible();
-    await expect(page.getByText('Te queda 1 para hoy')).toBeVisible();
+    await expect(page.getByText('1 actividad pendiente')).toBeVisible();
   });
 });
 

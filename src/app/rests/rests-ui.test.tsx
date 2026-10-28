@@ -54,7 +54,7 @@ describe('Hoy en un día de descanso (DS-04)', () => {
     renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
     expect(await screen.findByText('Hoy descansas · Viaje')).toBeInTheDocument();
     expect(screen.getByText('Descanso')).toBeInTheDocument();
-    expect(screen.queryByText(/Te queda 1/)).toBeNull();
+    expect(screen.queryByText(/1 actividad pendiente/)).toBeNull();
     expect(screen.getByText('Día de descanso')).toBeInTheDocument();
   });
 });

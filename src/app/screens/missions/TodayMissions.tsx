@@ -10,7 +10,9 @@ import { celebrate, floatXp } from '../../scene/engine';
 import { useToday } from '../../clock';
 import { useData, useMissions } from '../../data';
 import { xpDeltaText } from '../../text';
-import { MissionSummary } from './MissionRow';
+import { MISSION_STATE_CHIP, MissionSummary } from './MissionRow';
+import { Sprite } from '../../design/components';
+import { CheckIcon } from '../../design/icons';
 import { t } from '../../../i18n';
 import { playSfx } from '../../sound/sfx';
 
@@ -66,12 +68,15 @@ function MissionTodayRow({ item, category, today }: { item: MissionItem; categor
   const ctx = useData();
   const inFlight = useRef(false);
   const [busy, setBusy] = useState(false);
-  const [feedback, setFeedback] = useState<string>();
+  // `text` se anuncia a los lectores de pantalla; `shown`, si además se ve (algo que no se pudo hacer). La XP sale
+  // flotando sobre el protagonista, en la escena (D-158)
+  const [feedback, setFeedback] = useState<{ text: string; shown?: boolean }>();
   const { record, analysis } = item;
   const open = analysis.state === 'pending' || analysis.state === 'expired';
   const title = record.mission.title;
+  const chip = MISSION_STATE_CHIP[analysis.state];
 
-  async function run(action: () => Promise<string>) {
+  async function run(action: () => Promise<{ text: string; shown?: boolean }>) {
     if (inFlight.current) return;
     inFlight.current = true;
     setBusy(true);
@@ -88,45 +93,59 @@ function MissionTodayRow({ item, category, today }: { item: MissionItem; categor
   const complete = () =>
     run(async () => {
       const wasExpired = analysis.state === 'expired';
-      if (!(await completeMission(ctx, record.mission.id, today))) return t('missions.completeFailed');
+      if (!(await completeMission(ctx, record.mission.id, today))) return { text: t('missions.completeFailed'), shown: true };
       celebrate('small');
       playSfx('mission');
       floatXp(xpDeltaText(valueCents(item)));
-      return t(wasExpired ? 'missions.recovered' : 'missions.accomplished', { xp: xpDeltaText(valueCents(item)) });
+      return { text: t(wasExpired ? 'missions.recovered' : 'missions.accomplished', { xp: xpDeltaText(valueCents(item)) }) };
     });
 
   const undo = () =>
-    run(async () =>
-      (await uncompleteMission(ctx, record.mission.id).then((ok) => (ok && playSfx('undo'), ok)))
-        ? t('missions.unmarked', { xp: xpDeltaText(-valueCents(item)) })
-        : t('today.undoFailed'),
-    );
+    run(async () => {
+      if (!(await uncompleteMission(ctx, record.mission.id))) return { text: t('today.undoFailed'), shown: true };
+      playSfx('undo');
+      floatXp(xpDeltaText(-valueCents(item)));
+      return { text: t('missions.unmarked', { xp: xpDeltaText(-valueCents(item)) }) };
+    });
 
+  // Misma estructura que la tarjeta de actividad (D-160): contenido, etiqueta de estado en su columna y botón cuadrado
   return (
-    <li className="panel row" style={{ padding: 'var(--s3)' }}>
-      <MissionSummary record={record} analysis={analysis} category={category} today={today} />
-      <p aria-live="polite" className="small pixel" style={{ color: 'var(--success)', maxWidth: 120 }}>
-        {feedback}
+    <li className={`panel row activity-row${open ? '' : ' done'}`} style={{ padding: 'var(--s3)' }}>
+      <MissionSummary
+        record={record}
+        analysis={analysis}
+        category={category}
+        today={today}
+        chipAside
+        note={feedback?.shown ? feedback.text : undefined}
+      />
+      <p aria-live="polite" className="sr-only">
+        {feedback?.text}
       </p>
+      <span className={`chip ${chip?.className ?? 'chip-done'} done-chip${chip ? ' shown' : ''}`} aria-hidden={!chip}>
+        {chip?.label()}
+      </span>
       {open ? (
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn btn-primary btn-icon"
           disabled={busy}
           aria-label={t('missions.completeLabel', { title })}
+          title={t('missions.complete')}
           onClick={() => void complete()}
         >
-          {t('missions.complete')}
+          <CheckIcon />
         </button>
       ) : (
         <button
           type="button"
-          className="btn"
+          className="btn btn-primary btn-icon"
           disabled={busy}
           aria-label={t('missions.undoLabel', { title })}
+          title={t('missions.undo')}
           onClick={() => void undo()}
         >
-          {t('missions.undo')}
+          <Sprite name="minus" scale={1} />
         </button>
       )}
     </li>

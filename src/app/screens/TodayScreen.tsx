@@ -28,8 +28,7 @@ import {
   logDenialText,
   sectionTitle,
   longDate,
-  missionsDueText,
-  pendingTodayText,
+  todaySummaryText,
   progressText,
   streakText,
   xpDeltaText,
@@ -63,12 +62,16 @@ export function TodayScreen() {
   if (!view || !missions) return null;
   // Día de descanso con cosas sin hacer: no es «día completo» (spec 12, DS-04)
   const restingLeft = view.sections.some((sec) => sec.items.some((i) => i.kind === 'day' && i.resting && !i.done));
-  const summary = [
-    view.hasDaily ? (view.pendingToday === 0 && restingLeft ? t('rests.summary') : pendingTodayText(view.pendingToday)) : undefined,
-    missions.dueCount > 0 ? missionsDueText(missions.dueCount) : undefined,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  // «x actividades y x misiones pendientes» (D-160); día de descanso o día completo cuando no queda nada
+  const activitiesLeft = view.hasDaily ? view.pendingToday : 0;
+  const summary =
+    view.hasDaily && view.pendingToday === 0 && restingLeft
+      ? [t('rests.summary'), missions.dueCount > 0 ? todaySummaryText(0, missions.dueCount) : undefined].filter(Boolean).join(' · ')
+      : activitiesLeft > 0 || missions.dueCount > 0
+        ? todaySummaryText(activitiesLeft, missions.dueCount)
+        : view.hasDaily
+          ? t('format.dayComplete')
+          : '';
   const allDone = view.pendingToday === 0 && missions.dueCount === 0 && !restingLeft;
 
   return (

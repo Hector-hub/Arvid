@@ -52,7 +52,7 @@ describe('Hoy', () => {
     await logCompletion(ctx, caminar, today());
     renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
 
-    expect(await screen.findByText('Te quedan 3 para hoy')).toBeInTheDocument();
+    expect(await screen.findByText('3 actividades pendientes')).toBeInTheDocument();
     const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
     expect(headings).toEqual(['Hoy', 'Esta semana']);
 
@@ -69,7 +69,7 @@ describe('Hoy', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Registrar Agua' }));
     expect(await screen.findByText('+1 · 1 de 3 · +3,33 XP')).toBeInTheDocument();
     await waitFor(() => expect(screen.getByText('1 de 3')).toBeInTheDocument());
-    expect(screen.getByText('Te quedan 2 para hoy')).toBeInTheDocument();
+    expect(screen.getByText('2 actividades pendientes')).toBeInTheDocument();
   });
 });
 

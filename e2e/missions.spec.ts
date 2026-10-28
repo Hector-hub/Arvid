@@ -46,7 +46,7 @@ test('MIS-02 · D-032 · MUI-03/05: vence, se reprograma y se recupera', async (
   await setDay(page, '2026-10-17T10:00:00+02:00');
 
   await page.goto('/hoy');
-  await expect(page.getByText('1 misión para hoy')).toBeVisible();
+  await expect(page.getByText(/1 misión pendiente/)).toBeVisible();
   await expect(missionRow(page, 'Entregar informe').getByText('Vencida', { exact: true })).toBeVisible();
 
   await missionRow(page, 'Entregar informe').getByRole('link', { name: 'Entregar informe' }).click();

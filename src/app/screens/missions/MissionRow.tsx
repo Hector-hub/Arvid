@@ -34,11 +34,17 @@ export function MissionSummary({
   analysis,
   category,
   today,
+  chipAside = false,
+  note,
 }: {
   record: MissionRecord;
   analysis: MissionAnalysis;
   category?: Category;
   today: LocalDate;
+  /** La etiqueta de estado la pone quien llama, en su propia columna (Hoy, D-160). */
+  chipAside?: boolean;
+  /** Aviso bajo el título (p. ej. una acción que no se pudo hacer). */
+  note?: string;
 }) {
   const chip = MISSION_STATE_CHIP[analysis.state];
   const open = analysis.state === 'pending' || analysis.state === 'expired';
@@ -46,14 +52,11 @@ export function MissionSummary({
     <>
       <CategoryIcon category={category} />
       <div className="grow stack" style={{ gap: 'var(--s1)' }}>
-        <Link
-          to={`/actividades/misiones/${record.mission.id}`}
-          style={{ color: 'var(--text)', textDecoration: 'none' }}
-        >
+        <Link to={`/actividades/misiones/${record.mission.id}`} className="activity-name">
           {record.mission.title}
         </Link>
         <div className="row" style={{ gap: 'var(--s2)' }}>
-          {chip && <span className={`chip ${chip.className}`}>{chip.label()}</span>}
+          {chip && !chipAside && <span className={`chip ${chip.className}`}>{chip.label()}</span>}
           {open && analysis.state !== 'expired' && (
             <span className="small muted">
               {missionDueText(analysis.deadline, today)}
@@ -62,6 +65,11 @@ export function MissionSummary({
           )}
         </div>
         <GoalLabel record={record} />
+        {note && (
+          <p className="small" style={{ color: 'var(--warning)' }}>
+            {note}
+          </p>
+        )}
       </div>
     </>
   );
