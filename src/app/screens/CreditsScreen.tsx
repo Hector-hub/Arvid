@@ -65,9 +65,12 @@ export function CreditsScreen() {
           </ul>
         </Panel>
       ))}
-      {/* Temporal (spec 14, fase 14a): la app instalada no tiene barra de direcciones para abrir el prototipo */}
+      {/* Temporales (spec 14, fase 14a; D-163): la app instalada no tiene barra de direcciones para abrir los prototipos */}
       <Link to="/lab/passkey" className="btn btn-ghost" style={{ alignSelf: 'center' }}>
         Prueba de passkeys (temporal)
+      </Link>
+      <Link to="/lab/audio" className="btn btn-ghost" style={{ alignSelf: 'center' }}>
+        Prueba de música en segundo plano (temporal)
       </Link>
     </div>
   );
