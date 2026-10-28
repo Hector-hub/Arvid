@@ -17,5 +17,13 @@ export const TRACKS: Track[] = [
   { id: 'afterglow-avenue', name: 'Afterglow Avenue', src: '/music/afterglow-avenue.m4a' },
 ];
 
+/**
+ * Portada de la pista para la pantalla de bloqueo y la notificación (Media Session, D-167): JPEG cuadrados en
+ * `public/music/covers/` (96, 192 y 512 px), con el mismo id que la pista.
+ */
+export function trackArtwork(track: Pick<Track, 'id'>): MediaImage[] {
+  return [96, 192, 512].map((size) => ({ src: `/music/covers/${track.id}-${size}.jpg`, sizes: `${size}x${size}`, type: 'image/jpeg' }));
+}
+
 /** Caché del service worker para la música (vite.config.ts, MUS-07). */
 export const MUSIC_CACHE = 'arvid-music';

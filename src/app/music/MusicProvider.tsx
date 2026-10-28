@@ -4,7 +4,7 @@ import { useT } from '../../i18n';
 import { useData, useSettings } from '../data';
 import { SpeakerOffIcon, SpeakerOnIcon } from '../design/icons';
 import { MusicPlayer, type PlayerState } from './player';
-import { TRACKS } from './tracks';
+import { trackArtwork, TRACKS } from './tracks';
 
 export interface Music extends PlayerState {
   /** Preferencia guardada (MUS-01: desactivada por defecto). */
@@ -162,10 +162,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       title: state.track.name,
       artist: 'ARVID',
       album: 'ARVID',
-      artwork: [
-        { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-        { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-      ],
+      // La portada de la pista (D-167)
+      artwork: trackArtwork(state.track),
     });
   }, [state.track]);
   useEffect(() => {
