@@ -33,6 +33,7 @@ import {
   streakText,
   xpDeltaText,
 } from '../text';
+import { FlipList, useHeldOrder } from '../design/FlipList';
 
 /** Tras registrar, el botón ignora toques durante este tiempo: un doble toque no duplica (LOG-06). */
 const TAP_COOLDOWN_MS = 400;
@@ -115,16 +116,7 @@ export function TodayScreen() {
         view.sections.map((section) => (
           <section key={section.kind} className="stack" aria-labelledby={`sec-${section.kind}`}>
             <h2 id={`sec-${section.kind}`}>{sectionTitle(section.kind)}</h2>
-            <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-              {section.items.map((item) => (
-                <TodayRow
-                  key={item.activityId}
-                  item={item}
-                  record={byId.get(item.activityId)}
-                  category={categoryById.get(item.categoryId)}
-                />
-              ))}
-            </ul>
+            <TodaySectionList items={section.items} byId={byId} categoryById={categoryById} />
           </section>
         ))
       )}
@@ -213,7 +205,7 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
     .join(' · ');
 
   return (
-    <li className={`panel row activity-row${item.done ? ' done' : ''}`} style={{ padding: 'var(--s3)' }}>
+    <li className={`panel row activity-row${item.done ? ' done' : ''}`} style={{ padding: 'var(--s3)' }} data-flip-key={item.activityId}>
       <span key={feedback?.key} className={feedback ? 'hop' : undefined}>
         <CategoryIcon category={category} />
       </span>
@@ -267,6 +259,29 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
         twoSlots && <span className="btn-slot" aria-hidden="true" />
       )}
     </li>
+  );
+}
+
+/**
+ * Las tarjetas de una sección (D-162): al completar una, se queda en su sitio mientras se ve su animación y luego baja
+ * deslizándose entre las demás.
+ */
+function TodaySectionList({
+  items,
+  byId,
+  categoryById,
+}: {
+  items: TodayItem[];
+  byId: Map<string, ActivityRecord>;
+  categoryById: Map<string, Category>;
+}) {
+  const shown = useHeldOrder(items, (i) => i.activityId, (i) => i.done);
+  return (
+    <FlipList className="stack" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+      {shown.map((item) => (
+        <TodayRow key={item.activityId} item={item} record={byId.get(item.activityId)} category={categoryById.get(item.categoryId)} />
+      ))}
+    </FlipList>
   );
 }
 

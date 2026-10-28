@@ -146,6 +146,10 @@ describe('sonido y créditos', () => {
     renderRoutes(ctx, [{ path: '/ajustes/creditos', element: <CreditsScreen /> }], '/ajustes/creditos');
     expect(await screen.findByText(/Warped City/)).toBeInTheDocument();
     expect(screen.getAllByText(/CraftPix\.net · Licencia gratuita de CraftPix/)).toHaveLength(2);
-    expect(screen.getByText(/Midnight Sector Drive/)).toBeInTheDocument();
+    // Todas las pistas, una por línea, y el juego (D-162)
+    for (const track of ['Midnight Sector Drive', 'Glass Tower Horizon', 'Black Chrome Horizon', 'Chrome Horizon Drive', 'Rain on the Expressway'])
+      expect(screen.getByText(track)).toBeInTheDocument();
+    expect(screen.getByText('CombinaDos')).toBeInTheDocument();
+    expect(screen.getByText('hecrey · Propio')).toBeInTheDocument();
   });
 });

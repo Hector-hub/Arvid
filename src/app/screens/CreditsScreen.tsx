@@ -1,5 +1,7 @@
 import { t, type TKey } from '../../i18n';
 import { BackLink, Panel } from '../design/components';
+import { GAMES } from '../games';
+import { TRACKS } from '../music/tracks';
 
 type Credit = { what: string; who: string; license: string };
 
@@ -17,8 +19,13 @@ function credits(): { group: TKey; items: Credit[] }[] {
       ],
     },
     {
+      // Todas las pistas de la app, de la misma lista que el reproductor
       group: 'credits.music',
-      items: [{ what: t('credits.tracks'), who: t('credits.tracksBy'), license: t('credits.own_f') }],
+      items: TRACKS.map((track) => ({ what: track.name, who: t('credits.tracksBy'), license: t('credits.own_f') })),
+    },
+    {
+      group: 'credits.games',
+      items: GAMES.map((game) => ({ what: game.name, who: 'hecrey', license: t('credits.ownOne') })),
     },
     {
       group: 'credits.interface',

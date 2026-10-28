@@ -13,6 +13,7 @@ import { xpDeltaText } from '../../text';
 import { MISSION_STATE_CHIP, MissionSummary } from './MissionRow';
 import { Sprite } from '../../design/components';
 import { CheckIcon } from '../../design/icons';
+import { FlipList, useHeldOrder } from '../../design/FlipList';
 import { t } from '../../../i18n';
 import { playSfx } from '../../sound/sfx';
 
@@ -41,12 +42,14 @@ export function TodayMissionsSection({
   categoryById: Map<string, Category>;
 }) {
   const today = useToday();
+  // Al completar una misión, se ve su animación en su sitio y luego baja deslizándose (D-162)
+  const shown = useHeldOrder([...view.items, ...view.completedToday], (i) => i.record.mission.id, (i) => !isOpen(i));
   if (view.items.length === 0 && view.completedToday.length === 0) return null;
   return (
     <section className="stack" aria-labelledby="sec-missions">
       <h2 id="sec-missions">{t('missions.title')}</h2>
-      <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-        {[...view.items, ...view.completedToday].map((item) => (
+      <FlipList className="stack" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+        {shown.map((item) => (
           <MissionTodayRow
             key={item.record.mission.id}
             item={item}
@@ -54,7 +57,7 @@ export function TodayMissionsSection({
             today={today}
           />
         ))}
-      </ul>
+      </FlipList>
       {view.openCount > view.items.length && (
         <Link to="/actividades/misiones" className="btn btn-ghost">
           {t('missions.seeAll', { count: view.openCount })}
@@ -110,7 +113,7 @@ function MissionTodayRow({ item, category, today }: { item: MissionItem; categor
 
   // Misma estructura que la tarjeta de actividad (D-160): contenido, etiqueta de estado en su columna y botón cuadrado
   return (
-    <li className={`panel row activity-row${open ? '' : ' done'}`} style={{ padding: 'var(--s3)' }}>
+    <li className={`panel row activity-row${open ? '' : ' done'}`} style={{ padding: 'var(--s3)' }} data-flip-key={record.mission.id}>
       <MissionSummary
         record={record}
         analysis={analysis}
@@ -151,6 +154,8 @@ function MissionTodayRow({ item, category, today }: { item: MissionItem; categor
     </li>
   );
 }
+
+const isOpen = (item: MissionItem) => item.analysis.state === 'pending' || item.analysis.state === 'expired';
 
 function valueCents(item: MissionItem): number {
   return DIFFICULTY_POINTS[item.record.mission.difficulty] * 100;
