@@ -6,7 +6,7 @@ import { DIFFICULTY_POINTS } from '../../../domain/config';
 import { selectTodayMissions, type MissionItem, type TodayMissions } from '../../../domain/missions/today';
 import type { LocalDate } from '../../../domain/time/localDate';
 import { useAnalysis } from '../../analysis';
-import { celebrate } from '../../scene/engine';
+import { celebrate, floatXp } from '../../scene/engine';
 import { useToday } from '../../clock';
 import { useData, useMissions } from '../../data';
 import { xpDeltaText } from '../../text';
@@ -91,6 +91,7 @@ function MissionTodayRow({ item, category, today }: { item: MissionItem; categor
       if (!(await completeMission(ctx, record.mission.id, today))) return t('missions.completeFailed');
       celebrate('small');
       playSfx('mission');
+      floatXp(xpDeltaText(valueCents(item)));
       return t(wasExpired ? 'missions.recovered' : 'missions.accomplished', { xp: xpDeltaText(valueCents(item)) });
     });
 

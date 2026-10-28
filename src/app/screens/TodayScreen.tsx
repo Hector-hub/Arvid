@@ -18,7 +18,7 @@ import { useArvidMoments } from '../arvid/moments';
 import { Scene } from '../scene/Scene';
 import { IntroSheet } from './Onboarding';
 import { compareDates } from '../../domain/time/localDate';
-import { celebrate } from '../scene/engine';
+import { celebrate, floatXp } from '../scene/engine';
 import { TodayMissionsSection, useTodayMissions } from './missions/TodayMissions';
 import { useCategories, useData, useRecords, useRests, useSettings } from '../data';
 import { CategoryIcon, Panel, Segments, Sprite, XpBar, categoryColor } from '../design/components';
@@ -80,7 +80,7 @@ export function TodayScreen() {
       </header>
       {summary && (
         // Junto al nivel, como antes de fijar la cabecera
-        <p className="small" style={{ color: allDone ? 'var(--success)' : 'var(--text-muted)', marginTop: 'calc(-1 * var(--s5))' }}>
+        <p className="small" style={{ color: allDone ? 'var(--success)' : 'var(--text-muted)', marginTop: 'calc(-1 * var(--s2))' }}>
           {summary}
         </p>
       )}
@@ -153,19 +153,21 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
   const [busy, setBusy] = useState(false);
   // Ref además del estado: dos toques en el mismo frame ven el mismo `busy` (LOG-06).
   const inFlight = useRef(false);
-  const [feedback, setFeedback] = useState<{ key: number; text: string }>();
+  // `text`: lo que se anuncia (lectores de pantalla); `shown`: si además se ve (un registro que no se pudo hacer).
+  // La XP ganada sale flotando sobre la cabeza del protagonista, en la escena (D-158)
+  const [feedback, setFeedback] = useState<{ key: number; text: string; shown?: boolean }>();
 
   const undoDate = record ? latestUndoableDate(record, today) : undefined;
   const streak = useAnalysis()?.byActivity.get(item.activityId)?.streak.current ?? 0;
   const loggable = record ? canLog(record, today, today).ok : false;
 
-  async function run(action: () => Promise<string>) {
+  async function run(action: () => Promise<{ text: string; shown?: boolean }>) {
     if (inFlight.current) return;
     inFlight.current = true;
     setBusy(true);
     const cooldown = new Promise((r) => setTimeout(r, TAP_COOLDOWN_MS));
     try {
-      setFeedback({ key: Date.now(), text: await action() });
+      setFeedback({ key: Date.now(), ...(await action()) });
       await cooldown;
     } finally {
       inFlight.current = false;
@@ -177,25 +179,28 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
     run(async () => {
       const delta = record ? logDeltaCents(record, today, 1) : 0;
       const result = await logCompletion(ctx, item.activityId, today);
-      if (!result.ok) return logDenialText(result.reason);
+      if (!result.ok) return { text: logDenialText(result.reason), shown: true };
       celebrate('small');
       playSfx('log');
       playSfx('xp', { delayMs: 130 });
       if (navigator.vibrate) navigator.vibrate(15);
-      return t('today.logged', { progress: progressText(item.count + 1, item.target), xp: xpDeltaText(delta) });
+      floatXp(xpDeltaText(delta));
+      return { text: t('today.logged', { progress: progressText(item.count + 1, item.target), xp: xpDeltaText(delta) }) };
     });
 
   const undo = () =>
     run(async () => {
-      if (!undoDate || !record) return '';
+      if (!undoDate || !record) return { text: '' };
       const delta = logDeltaCents(record, undoDate, -1);
       const undone = await undoCompletion(ctx, item.activityId, undoDate);
-      if (undone) playSfx('undo');
-      return undone
-        ? t('today.undone', { xp: xpDeltaText(delta) })
-        : t('today.undoFailed');
+      if (!undone) return { text: t('today.undoFailed'), shown: true };
+      playSfx('undo');
+      floatXp(xpDeltaText(delta));
+      return { text: t('today.undone', { xp: xpDeltaText(delta) }) };
     });
 
+  // Con varias veces por periodo caben «−» y «+» a la vez: se reserva siempre su sitio para que la barra no se mueva
+  const twoSlots = item.target > 1;
   const meta = [
     progressText(item.count, item.target),
     item.kind !== 'day' ? daysLeftText(item.daysRemaining) : undefined,
@@ -210,36 +215,42 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
         <CategoryIcon category={category} />
       </span>
       <div className="grow stack" style={{ gap: 'var(--s1)' }}>
-        <Link to={`/actividades/${item.activityId}`} className="activity-name">
-          {item.name}
-        </Link>
-        <div className="row" style={{ gap: 'var(--s2)' }}>
-          <Segments count={item.count} target={item.target} color={categoryColor(category)} />
-          {item.done && <span className="chip chip-done">{t('common.completed')}</span>}
+        {/* La etiqueta va junto al nombre (más alto que ella): al completar, la tarjeta no crece ni la barra se mueve */}
+        <div className="row activity-head">
+          <Link to={`/actividades/${item.activityId}`} className="activity-name grow">
+            {item.name}
+          </Link>
           {item.resting && !item.done && <span className="chip chip-muted">{t('rests.chip')}</span>}
         </div>
+        <Segments count={item.count} target={item.target} color={categoryColor(category)} />
         <p className="small muted">{meta}</p>
-        {/* +XP flotando junto al botón (D-155) */}
-        <p aria-live="polite" className="row-feedback small pixel">
-          {feedback && (
-            <span key={feedback.key} className="toast-pop">
-              {feedback.text}
-            </span>
-          )}
+        <p aria-live="polite" className="sr-only">
+          {feedback?.text}
         </p>
+        {feedback?.shown && (
+          <p key={feedback.key} className="small" style={{ color: 'var(--warning)' }} aria-hidden="true">
+            {feedback.text}
+          </p>
+        )}
       </div>
-      {undoDate && (
+      {/* «Hecho» entre la barra y el botón (como la maqueta); entra deslizándose para que la barra no salte */}
+      <span className={`chip chip-done done-chip${item.done ? ' shown' : ''}`} aria-hidden={!item.done}>
+        {t('today.doneChip')}
+      </span>
+      {undoDate ? (
         <button
           type="button"
-          className="btn btn-icon"
+          className="btn btn-primary btn-icon"
           aria-label={t('today.undoLabel', { name: item.name })}
           disabled={busy}
           onClick={() => void undo()}
         >
           <Sprite name="minus" scale={1} />
         </button>
+      ) : (
+        twoSlots && <span className="btn-slot" aria-hidden="true" />
       )}
-      {!item.done && (
+      {!item.done ? (
         <button
           type="button"
           className="btn btn-primary btn-icon"
@@ -249,6 +260,8 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
         >
           <Sprite name="plus" scale={1} />
         </button>
+      ) : (
+        twoSlots && <span className="btn-slot" aria-hidden="true" />
       )}
     </li>
   );

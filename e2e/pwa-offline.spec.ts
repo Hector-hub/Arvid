@@ -49,7 +49,7 @@ test('NFR-03: el uso diario no hace peticiones a otros orígenes', async ({ page
   await completeOnboarding(page);
   await createActivity(page, { name: 'Leer' });
   await row(page, 'Leer').getByRole('button', { name: 'Registrar Leer' }).click();
-  await expect(row(page, 'Leer').getByText('Completada')).toBeVisible();
+  await expect(row(page, 'Leer').getByText('Hecho')).toBeVisible();
   await page.goto('/ajustes');
   await page.goto('/perfil');
   expect(external).toEqual([]);

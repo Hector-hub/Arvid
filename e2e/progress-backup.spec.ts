@@ -13,7 +13,7 @@ test('PRG-06/07: celebra el nivel 2 una sola vez', async ({ page }) => {
 
   for (const name of ['A1', 'A2', 'A3', 'A4']) {
     await row(page, name).getByRole('button', { name: `Registrar ${name}` }).click();
-    await expect(row(page, name).getByText('Completada')).toBeVisible();
+    await expect(row(page, name).getByText('Hecho')).toBeVisible();
   }
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await row(page, 'A5').getByRole('button', { name: 'Registrar A5' }).click();
@@ -43,7 +43,7 @@ test('STR-02/03/04: racha en Hoy y en el detalle, con comodín usado', async ({ 
     if (day !== 8) {
       await page.goto('/hoy');
       await row(page, 'Caminar').getByRole('button', { name: 'Registrar Caminar' }).click();
-      await expect(row(page, 'Caminar').getByText('Completada')).toBeVisible();
+      await expect(row(page, 'Caminar').getByText('Hecho')).toBeVisible();
     }
     await page.clock.setSystemTime(new Date(`2026-10-${String(day + 1).padStart(2, '0')}T10:00:00+02:00`));
   }
@@ -67,7 +67,7 @@ test('BAK · NFR2-03: exportar, borrar todo e importar recupera los mismos datos
   await createActivity(page, { name: 'Leer', difficulty: 'Difícil' });
   await row(page, 'Leer').getByRole('button', { name: 'Registrar Leer' }).click();
   // Esperar a que el registro se haya guardado antes de navegar.
-  await expect(row(page, 'Leer').getByText('Completada')).toBeVisible();
+  await expect(row(page, 'Leer').getByText('Hecho')).toBeVisible();
 
   await page.goto('/ajustes');
   const downloadPromise = page.waitForEvent('download');
@@ -95,7 +95,7 @@ test('BAK · NFR2-03: exportar, borrar todo e importar recupera los mismos datos
   await expect(page.getByText('Datos importados.')).toBeVisible();
 
   await page.goto('/hoy');
-  await expect(row(page, 'Leer').getByText('Completada')).toBeVisible();
+  await expect(row(page, 'Leer').getByText('Hecho')).toBeVisible();
   await page.goto('/perfil');
   await expect(page.getByText('20 / 100 XP')).toBeVisible();
   await expect(page.getByRole('dialog')).toHaveCount(0);

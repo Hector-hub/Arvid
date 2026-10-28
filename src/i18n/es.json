@@ -134,6 +134,7 @@
     "xpBar": "Experiencia del nivel"
   },
   "today": {
+    "doneChip": "Hecho",
     "installBanner": "Instala ARVID en tu pantalla de inicio para proteger tus datos.",
     "emptyTitle": "Crea tu primera actividad",
     "emptyText": "Algo que quieras hacer cada día, semana o mes. Empieza por una pequeña.",

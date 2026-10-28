@@ -58,7 +58,7 @@ describe('Hoy', () => {
 
     const daily = within(screen.getByRole('region', { name: 'Hoy' })).getAllByRole('listitem');
     expect(daily.map((li) => within(li).getAllByRole('link')[0]!.textContent)).toEqual(['Agua', 'Caminar']);
-    expect(within(daily[1]!).getByText('Completada')).toBeInTheDocument();
+    expect(within(daily[1]!).getByText('Hecho')).toBeInTheDocument();
     expect(within(daily[1]!).queryByRole('button', { name: 'Registrar Caminar' })).toBeNull();
     expect(within(daily[1]!).getByRole('button', { name: 'Deshacer Caminar' })).toBeInTheDocument();
   });

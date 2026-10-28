@@ -21,6 +21,7 @@ import {
   layersState,
   waterAlpha,
   currentNeighborSpeech,
+  currentXpFloats,
   darisState,
   resetClock,
   scene,
@@ -133,6 +134,7 @@ export function SceneCanvas({
         layers: layersState(),
         water: waterAlpha(),
         neighbor: currentNeighborSpeech(),
+        xp: currentXpFloats(),
       });
 
     let raf = 0;

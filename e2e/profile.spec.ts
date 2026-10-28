@@ -14,7 +14,7 @@ test('PJ-01/02 · DA-01: radar, ventana recordada y detalle de atributo', async 
     await page.clock.setSystemTime(new Date(`2026-10-0${day}T10:00:00+02:00`));
     await page.goto('/hoy');
     await row(page, 'Caminar').getByRole('button', { name: 'Registrar Caminar' }).click();
-    await expect(row(page, 'Caminar').getByText('Completada')).toBeVisible();
+    await expect(row(page, 'Caminar').getByText('Hecho')).toBeVisible();
   }
   await page.clock.setSystemTime(new Date('2026-10-12T10:00:00+02:00'));
   await page.goto('/perfil');
@@ -54,7 +54,7 @@ test('CAT-04/05: categoría propia en el formulario y el radar; renombrar una pr
   await createActivity(page, { name: 'Guitarra', category: 'Música' });
   await createActivity(page, { name: 'Correr', category: 'Salud' });
   await row(page, 'Guitarra').getByRole('button', { name: 'Registrar Guitarra' }).click();
-  await expect(row(page, 'Guitarra').getByText('Completada')).toBeVisible();
+  await expect(row(page, 'Guitarra').getByText('Hecho')).toBeVisible();
   await page.goto('/perfil');
   const radar = page.getByRole('img', { name: /Radar de atributos/ });
   await expect(radar).toHaveAttribute('aria-label', /Salud sin datos/);

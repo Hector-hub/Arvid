@@ -48,7 +48,7 @@ test.describe('registro diario', () => {
 
     await row(page, 'Caminar').getByRole('button', { name: 'Registrar Caminar' }).click();
     await expect(page.getByText('Día completo', { exact: true })).toBeVisible();
-    await expect(row(page, 'Caminar').getByText('Completada')).toBeVisible();
+    await expect(row(page, 'Caminar').getByText('Hecho')).toBeVisible();
 
     await row(page, 'Caminar').getByRole('button', { name: 'Deshacer Caminar' }).click();
     await expect(page.getByText('Te queda 1 para hoy')).toBeVisible();
@@ -68,7 +68,7 @@ test.describe('registro diario', () => {
     await register.click();
     await expect(row(page, 'Leer').getByText('1 de 2', { exact: true })).toBeVisible();
     await register.click();
-    await expect(row(page, 'Leer').getByText('Completada')).toBeVisible();
+    await expect(row(page, 'Leer').getByText('Hecho')).toBeVisible();
     await expect(register).toHaveCount(0);
   });
 

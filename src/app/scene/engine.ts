@@ -309,6 +309,36 @@ function stepNeighbors(dt: number, reduced: boolean) {
 
 // ---------- Tiempo ----------
 /** Avanza la simulación hasta `now` (ms). Varios lienzos en el mismo fotograma no la aceleran. */
+// ---------- XP sobre la cabeza del protagonista (D-158) ----------
+
+/** Cuánto dura en pantalla, en fotogramas de 60 Hz (1,4 s). */
+export const XP_FLOAT_FRAMES = 84;
+
+export interface XpFloat {
+  text: string;
+  /** Fotogramas desde que apareció. */
+  age: number;
+  /** XP perdida al deshacer: en gris, sin brillo. */
+  minus: boolean;
+}
+
+let xpFloats: XpFloat[] = [];
+
+/** La XP ganada (o perdida) sube desde la cabeza del protagonista, rebota y se desvanece; como mucho tres a la vez. */
+export function floatXp(text: string): void {
+  xpFloats = [...xpFloats.slice(-2), { text, age: 0, minus: text.startsWith('−') }];
+}
+
+export function currentXpFloats(): readonly XpFloat[] {
+  return xpFloats;
+}
+
+function stepXpFloats(dt: number) {
+  if (xpFloats.length === 0) return;
+  for (const f of xpFloats) f.age += dt;
+  xpFloats = xpFloats.filter((f) => f.age < XP_FLOAT_FRAMES);
+}
+
 export function advance(now: number, reduced: boolean): void {
   const dt = lastTime === undefined ? 1 : Math.min(3, (now - lastTime) / (1000 / 60));
   lastTime = now;
@@ -316,6 +346,7 @@ export function advance(now: number, reduced: boolean): void {
   parkArvid();
   stepVoice(dt, reduced);
   stepNeighbors(dt, reduced);
+  stepXpFloats(dt);
   notifyReady();
 }
 
@@ -330,6 +361,7 @@ export function advanceFrames(dt: number, reduced: boolean): void {
   parkArvid();
   stepVoice(dt, reduced);
   stepNeighbors(dt, reduced);
+  stepXpFloats(dt);
   notifyReady();
 }
 

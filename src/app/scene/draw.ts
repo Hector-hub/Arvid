@@ -156,6 +156,8 @@ export interface SceneExtras {
   water?: number;
   /** Farolas según el nivel (spec 11, CV-02) y brillo de recién llegadas (AN-02); sin esto, encendidas. */
   lamps?: { on: boolean; glow: boolean };
+  /** XP ganada o perdida que flota sobre el protagonista (D-158). */
+  xp?: readonly { text: string; age: number; minus: boolean }[];
 }
 
 export function drawScene(
@@ -289,9 +291,47 @@ export function drawScene(
   }
   c.globalAlpha = 1;
 
+  for (const f of extras.xp ?? []) drawXpFloat(c, f);
+
   if (extras.speech) drawBubble(c, extras.speech, anchor.x, anchor.y);
   // Vecino (spec 11): borde ámbar para distinguirlo del compañero
   else if (extras.neighbor) drawBubble(c, extras.neighbor.speech, extras.neighbor.x, extras.neighbor.y, 'neighbor');
+}
+
+// ---------- XP sobre el protagonista (D-158) ----------
+const XP_FONT = '16px "Pixelify Sans"';
+const XP_LIFE = 84;
+
+/** Rebote corto al aparecer (sube un poco más y vuelve), como el resorte de los botones. */
+function easeOutBack(k: number): number {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2);
+}
+
+/** «+10 XP» que sale de la cabeza del protagonista, sube con un rebote y se desvanece. */
+function drawXpFloat(c: Ctx, f: { text: string; age: number; minus: boolean }) {
+  const head = LAYOUT.heroFeet - LAYOUT.heroHeight;
+  const rise = 12 * easeOutBack(Math.min(1, f.age / 20)) + 10 * (f.age / XP_LIFE);
+  const alpha = f.age < 6 ? f.age / 6 : f.age > 60 ? Math.max(0, (XP_LIFE - f.age) / (XP_LIFE - 60)) : 1;
+  const y = Math.round(head - 4 - rise);
+  c.save();
+  c.globalAlpha = alpha;
+  c.font = XP_FONT;
+  c.textAlign = 'center';
+  c.textBaseline = 'bottom';
+  // Contorno oscuro para leerse sobre cualquier fondo y un brillo tenue (estilo Cristal neón)
+  c.lineWidth = 3;
+  c.lineJoin = 'round';
+  c.strokeStyle = 'rgba(7, 9, 20, 0.85)';
+  c.strokeText(f.text, LAYOUT.heroX, y);
+  if (!f.minus) {
+    c.shadowColor = 'rgba(95, 225, 245, 0.6)';
+    c.shadowBlur = 6;
+  }
+  c.fillStyle = f.minus ? '#a3abda' : '#5fe1f5';
+  c.fillText(f.text, LAYOUT.heroX, y);
+  c.restore();
 }
 
 // ---------- Cono de escaneo ----------
