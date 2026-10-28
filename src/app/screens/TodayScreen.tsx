@@ -80,7 +80,7 @@ export function TodayScreen() {
       </header>
       {summary && (
         // Junto al nivel, como antes de fijar la cabecera
-        <p className="pixel" style={{ color: allDone ? 'var(--success)' : 'var(--text-muted)', marginTop: 'calc(-1 * var(--s5))' }}>
+        <p className="small" style={{ color: allDone ? 'var(--success)' : 'var(--text-muted)', marginTop: 'calc(-1 * var(--s5))' }}>
           {summary}
         </p>
       )}
@@ -205,12 +205,12 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
     .join(' · ');
 
   return (
-    <li className="panel row" style={{ padding: 'var(--s3)' }}>
+    <li className={`panel row activity-row${item.done ? ' done' : ''}`} style={{ padding: 'var(--s3)' }}>
       <span key={feedback?.key} className={feedback ? 'hop' : undefined}>
         <CategoryIcon category={category} />
       </span>
       <div className="grow stack" style={{ gap: 'var(--s1)' }}>
-        <Link to={`/actividades/${item.activityId}`} style={{ color: 'var(--text)', textDecoration: 'none' }}>
+        <Link to={`/actividades/${item.activityId}`} className="activity-name">
           {item.name}
         </Link>
         <div className="row" style={{ gap: 'var(--s2)' }}>
@@ -219,7 +219,8 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
           {item.resting && !item.done && <span className="chip chip-muted">{t('rests.chip')}</span>}
         </div>
         <p className="small muted">{meta}</p>
-        <p aria-live="polite" className="small pixel" style={{ color: 'var(--success)', minHeight: '1.2em' }}>
+        {/* +XP flotando junto al botón (D-155) */}
+        <p aria-live="polite" className="row-feedback small pixel">
           {feedback && (
             <span key={feedback.key} className="toast-pop">
               {feedback.text}
@@ -235,7 +236,7 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
           disabled={busy}
           onClick={() => void undo()}
         >
-          <Sprite name="minus" />
+          <Sprite name="minus" scale={1} />
         </button>
       )}
       {!item.done && (
@@ -246,7 +247,7 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
           disabled={busy || !loggable}
           onClick={() => void log()}
         >
-          <Sprite name="plus" />
+          <Sprite name="plus" scale={1} />
         </button>
       )}
     </li>
@@ -312,7 +313,7 @@ function ForgottenSheet({
                     })
                   }
                 >
-                  <Sprite name="plus" />
+                  <Sprite name="plus" scale={1} />
                 </button>
               </li>
             ))}

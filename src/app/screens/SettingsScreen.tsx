@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router';
 import { DEFAULT_SOUND, saveSetting, setCategoryActive, type Settings, type SoundSettings } from '../../data/repository';
 import { COMPANION_NAME } from '../../domain/arvid/companion';
@@ -278,6 +278,7 @@ function SoundPanel() {
             max={Math.max(1, Math.floor(music.duration))}
             step={1}
             value={canSeek ? Math.floor(music.time) : 0}
+            style={fill(canSeek ? music.time / Math.max(1, music.duration) : 0)}
             disabled={!canSeek}
             aria-label={t('settings.progress')}
             onChange={(e) => music.seek(Number(e.target.value))}
@@ -317,6 +318,7 @@ function SoundPanel() {
           max={1}
           step={0.05}
           value={music.volume}
+          style={fill(music.volume)}
           onChange={(e) => music.setVolume(Number(e.target.value))}
           data-music-control=""
         />
@@ -335,6 +337,7 @@ function SoundPanel() {
           max={1}
           step={0.05}
           value={sound.volume}
+          style={fill(sound.volume)}
           disabled={!sound.effects}
           onChange={(e) => saveSound({ volume: Number(e.target.value) })}
         />
@@ -360,6 +363,9 @@ function SoundPanel() {
     </Panel>
   );
 }
+
+/** Hasta dónde se pinta la pista del deslizador (0–1), para el estilo Cristal neón (D-155). */
+const fill = (ratio: number) => ({ '--v': `${Math.round(Math.max(0, Math.min(1, ratio)) * 100)}%` }) as CSSProperties;
 
 /** 83 s → «1:23». */
 function clock(seconds: number): string {

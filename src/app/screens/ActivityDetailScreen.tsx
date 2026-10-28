@@ -127,7 +127,7 @@ function Detail({ record }: { record: ActivityRecord }) {
                       aria-label={t('activityDetail.removeLog', { day: shortDay(day.date) })}
                       onClick={() => void remove(day)}
                     >
-                      <Sprite name="minus" />
+                      <Sprite name="minus" scale={1} />
                     </button>
                   )}
                   {day.editable && loggable && (
@@ -137,7 +137,7 @@ function Detail({ record }: { record: ActivityRecord }) {
                       aria-label={t('activityDetail.logOn', { day: shortDay(day.date) })}
                       onClick={() => void add(day)}
                     >
-                      <Sprite name="plus" />
+                      <Sprite name="plus" scale={1} />
                     </button>
                   )}
                 </li>

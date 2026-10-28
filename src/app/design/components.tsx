@@ -12,7 +12,7 @@ export function Sprite({
   label,
 }: {
   name: SpriteName;
-  scale?: 2 | 3 | 4 | 6;
+  scale?: 1 | 2 | 3 | 4 | 6;
   color?: string;
   label?: string;
 }) {
