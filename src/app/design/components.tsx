@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import type { Category } from '../../domain/categories';
 import { SPRITE_COUNT, SPRITE_TILE, SPRITES, type SpriteName } from './sprites.generated';
 import { t } from '../../i18n';
+import { PIXEL_ICON_RECTS } from './icons';
 
 /** Sprite del 1-Bit Pack recoloreado con `color` (design-system §6). `scale` entero: 2 = 32 px. */
 export function Sprite({
@@ -16,6 +17,27 @@ export function Sprite({
   color?: string;
   label?: string;
 }) {
+  // Los iconos redibujados en el estilo Cristal neón (D-157) se pintan en su cuadrícula de 12 px, a escala entera
+  const rects = PIXEL_ICON_RECTS[name];
+  if (rects) {
+    const px = scale === 1 ? 12 : 12 * scale;
+    return (
+      <svg
+        className="pixel-icon"
+        width={px}
+        height={px}
+        viewBox="0 0 12 12"
+        fill="currentColor"
+        shapeRendering="crispEdges"
+        style={{ color }}
+        {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
+      >
+        {rects.map(([x, y, w, h]) => (
+          <rect key={`${x}-${y}`} x={x} y={y} width={w} height={h} />
+        ))}
+      </svg>
+    );
+  }
   const size = 16 * scale;
   const ratio = size / SPRITE_TILE;
   const style: CSSProperties = {

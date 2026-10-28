@@ -1,5 +1,6 @@
 // Iconos pixel dibujados con rectángulos (12×12), en `currentColor` (spec 06, MU-01 y CH-01).
 import type { ReactNode } from 'react';
+import type { SpriteName } from './sprites.generated';
 
 function PixelIcon({ children, size = 24 }: { children: ReactNode; size?: number }) {
   return (
@@ -226,3 +227,15 @@ export function NextTrackIcon({ size = 16 }: { size?: number }) {
     </PixelIcon>
   );
 }
+
+/**
+ * Iconos pixel del estilo Cristal neón (D-157), en una cuadrícula de 12×12 como la maqueta: sustituyen a los del atlas
+ * de sprites con el mismo nombre (ver `Sprite`). Cada rectángulo es [x, y, ancho, alto].
+ */
+export const PIXEL_ICON_RECTS: Partial<Record<SpriteName, readonly (readonly [number, number, number, number])[]>> = {
+  'nav-today': [[5, 0, 2, 2], [5, 10, 2, 2], [0, 5, 2, 2], [10, 5, 2, 2], [1, 1, 2, 2], [9, 1, 2, 2], [1, 9, 2, 2], [9, 9, 2, 2], [4, 3, 4, 1], [3, 4, 6, 4], [4, 8, 4, 1]],
+  'nav-activities': [[1, 2, 2, 2], [4, 2, 7, 2], [1, 5, 2, 2], [4, 5, 7, 2], [1, 8, 2, 2], [4, 8, 7, 2]],
+  'nav-goals': [[2, 1, 1, 10], [3, 1, 7, 5], [1, 10, 3, 1]],
+  'nav-character': [[4, 1, 4, 1], [3, 2, 6, 3], [4, 5, 4, 1], [2, 7, 8, 1], [1, 8, 10, 3]],
+  'cat-body': [[2, 2, 3, 1], [7, 2, 3, 1], [1, 3, 10, 3], [2, 6, 8, 1], [3, 7, 6, 1], [4, 8, 4, 1], [5, 9, 2, 1]],
+};

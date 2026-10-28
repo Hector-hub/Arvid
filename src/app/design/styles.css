@@ -1418,6 +1418,8 @@ h1 { text-shadow: none; }
 }
 .sheet-backdrop { background: rgb(7 9 20 / 0.7); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
 .banner { border: 0; background: rgb(245 198 107 / 0.08); box-shadow: inset 0 0 0 1px rgb(245 198 107 / 0.4); clip-path: var(--notch-4); }
+/* El texto del aviso no se estrecha hasta partir palabras: si no cabe, los botones bajan a otra línea */
+.banner > .grow { flex: 1 1 12rem; }
 
 /* ---------- Botones planos de cristal (sin bisel) ---------- */
 .btn {
@@ -1612,8 +1614,11 @@ input[type='range']:disabled { opacity: 0.45; }
 }
 .nav a { font-size: 0.6875rem; gap: 4px; transition: color 200ms; }
 .nav a .sprite { transform: scale(0.75); margin: -4px 0; }
+.nav a .pixel-icon { margin: 4px 0 0; }
 .nav a.active { color: var(--neon-cyan); text-shadow: 0 0 8px rgb(95 225 245 / 0.3); }
-.nav a.active .sprite { filter: drop-shadow(0 0 4px rgb(95 225 245 / 0.4)); }
+.nav a.active .sprite,
+.nav a.active .pixel-icon { filter: drop-shadow(0 0 4px rgb(95 225 245 / 0.4)); }
+.pixel-icon { display: inline-block; flex: none; }
 @media (min-width: 768px) {
   .nav { box-shadow: inset -1px 0 0 var(--border); border-right: 0; }
   .nav a { font-size: 0.9375rem; }
