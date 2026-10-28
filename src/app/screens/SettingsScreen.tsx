@@ -388,22 +388,18 @@ function CategoryToggle({ category }: { category: Category }) {
 
   return (
     <li className="stack" style={{ gap: 'var(--s1)' }}>
-      <label className="choice">
-        <input type="checkbox" checked={category.active} onChange={(e) => void toggle(e.target.checked)} />
-        <CategoryIcon category={category} />
-        <span className="grow">{name}</span>
-        <span className={`chip ${category.active ? 'chip-done' : 'chip-muted'}`}>
-          {category.active ? t('settings.categoryActive') : t('settings.categoryInactive')}
-        </span>
-      </label>
-      <Link
-        to={`/ajustes/categorias/${category.id}`}
-        className="small"
-        style={{ alignSelf: 'flex-end' }}
-        aria-label={t('settings.editCategory', { name })}
-      >
-        {t('common.edit')}
-      </Link>
+      {/* Una sola línea (D-155): la casilla ya dice si está activa; «Editar» a la derecha */}
+      <div className="row category-row">
+        <label className="choice grow">
+          <input type="checkbox" checked={category.active} onChange={(e) => void toggle(e.target.checked)} />
+          <CategoryIcon category={category} />
+          <span className="grow">{name}</span>
+          <span className="sr-only">{category.active ? t('settings.categoryActive') : t('settings.categoryInactive')}</span>
+        </label>
+        <Link to={`/ajustes/categorias/${category.id}`} className="btn btn-ghost" aria-label={t('settings.editCategory', { name })}>
+          {t('common.edit')}
+        </Link>
+      </div>
       {error && (
         <p role="alert" className="field-error">
           {error}

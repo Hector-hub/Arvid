@@ -1498,6 +1498,8 @@ h1 { text-shadow: none; }
 
 /* ---------- Hoy: tarjeta de actividad como en la maqueta ---------- */
 .activity-row { position: relative; gap: var(--s3); }
+.category-row { gap: var(--s2); }
+.category-row .choice { min-width: 0; }
 .activity-row.done { box-shadow: inset 0 0 0 1px rgb(167 240 112 / 0.32), inset 0 1px 0 rgb(255 255 255 / 0.08); }
 .activity-name { color: var(--text); text-decoration: none; font-weight: 600; }
 .activity-row .small.muted { font-size: 0.78rem; }
@@ -1606,11 +1608,22 @@ input[type='range']:disabled { opacity: 0.45; }
 
 /* ---------- Barra de pestañas: cristal pegado abajo, solo una línea arriba ---------- */
 .nav {
-  background: rgb(14 17 38 / 0.6);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
+  background: rgb(12 15 34 / 0.92);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
   border-top: 0;
   box-shadow: inset 0 1px 0 var(--border);
+}
+/* Lo que pasa por debajo se funde antes de llegar a las pestañas */
+.nav::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 18px;
+  pointer-events: none;
+  background: linear-gradient(0deg, rgb(12 15 34 / 0.92), rgb(12 15 34 / 0));
 }
 .nav a { font-size: 0.6875rem; gap: 4px; transition: color 200ms; }
 .nav a .sprite { transform: scale(0.75); margin: -4px 0; }
@@ -1621,6 +1634,7 @@ input[type='range']:disabled { opacity: 0.45; }
 .pixel-icon { display: inline-block; flex: none; }
 @media (min-width: 768px) {
   .nav { box-shadow: inset -1px 0 0 var(--border); border-right: 0; }
+  .nav::before { display: none; }
   .nav a { font-size: 0.9375rem; }
   .nav a .sprite { transform: none; margin: 0; }
 }
@@ -1631,8 +1645,22 @@ input[type='range']:disabled { opacity: 0.45; }
   -webkit-mask-image: linear-gradient(180deg, #000 62%, transparent 100%);
   mask-image: linear-gradient(180deg, #000 62%, transparent 100%);
 }
-/* La cabecera fija tapa lo que pasa por debajo al hacer scroll, sin un corte visible con el fondo */
-.scene-sticky { background: linear-gradient(180deg, var(--bg) 0%, rgb(7 9 20 / 0.94) 82%, rgb(7 9 20 / 0) 100%); }
+/* La cabecera fija desenfoca lo que pasa por debajo al hacer scroll (los textos no se mezclan) y se funde hacia abajo */
+.scene-sticky {
+  background: rgb(7 9 20 / 0.95);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+}
+.scene-sticky::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 18px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(7 9 20 / 0.95), rgb(7 9 20 / 0));
+}
 @media (max-width: 767px) {
   .scene-sticky .scene { width: auto; margin-inline: calc(-1 * var(--s4)); }
 }
