@@ -36,6 +36,14 @@ describe('música en segundo plano (D-163)', () => {
     p.destroy();
   });
 
+  it('al cerrar la app se para, aunque esté en segundo plano (D-164)', async () => {
+    const p = new MusicPlayer(TRACKS, 0.5, () => undefined, undefined, () => undefined, true);
+    await p.start();
+    window.dispatchEvent(new Event('pagehide'));
+    expect(pause).toHaveBeenCalled();
+    p.destroy();
+  });
+
   it('en primer plano se pausa al ocultar la app (MUS-05)', async () => {
     const p = new MusicPlayer(TRACKS, 0.5, () => undefined, undefined, () => undefined, false);
     await p.start();

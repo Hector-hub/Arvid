@@ -50,6 +50,7 @@ export class MusicPlayer {
     this.audio.addEventListener('loadedmetadata', this.onMeta);
     this.audio.addEventListener('error', this.onError);
     document.addEventListener('visibilitychange', this.onVisibility);
+    window.addEventListener('pagehide', this.onPageHide);
   }
 
   isEnabled(): boolean {
@@ -113,6 +114,7 @@ export class MusicPlayer {
     this.audio.removeEventListener('loadedmetadata', this.onMeta);
     this.audio.removeEventListener('error', this.onError);
     document.removeEventListener('visibilitychange', this.onVisibility);
+    window.removeEventListener('pagehide', this.onPageHide);
     this.gain?.disconnect();
   }
 
@@ -260,6 +262,15 @@ export class MusicPlayer {
       return;
     }
     setTimeout(() => void this.play(1), 500);
+  };
+
+  /**
+   * Al cerrar la app (no al pasarla a segundo plano) la música se para: si no, iOS la mantiene sonando aunque se cierre
+   * desde el selector de apps (D-164). La preferencia guardada no cambia: al volver a abrirla, suena con el primer toque.
+   */
+  private onPageHide = () => {
+    clearInterval(this.ramp);
+    this.audio.pause();
   };
 
   private onVisibility = () => {
