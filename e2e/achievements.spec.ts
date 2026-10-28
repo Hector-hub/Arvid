@@ -21,7 +21,7 @@ test.describe('logros (spec 07)', () => {
     await expect(page.getByRole('button', { name: 'Semana sólida, pendiente, 1 de 7' })).toBeVisible();
   });
 
-  test('BT-03: con el teclado, el botón enfocado tiene el contorno dorado', async ({ page, browserName }) => {
+  test('BT-03: con el teclado, el botón enfocado tiene el contorno dorado (y se ve aunque los botones de la escena estén ocultos)', async ({ page, browserName }) => {
     test.skip(browserName === 'webkit', 'Safari no lleva el foco a los botones con Tab por defecto');
     await completeOnboarding(page);
     const button = page.getByRole('button', { name: 'Música' });
@@ -29,6 +29,6 @@ test.describe('logros (spec 07)', () => {
     await page.keyboard.press('Shift+Tab');
     await page.keyboard.press('Tab');
     await expect(button).toBeFocused();
-    expect(await button.evaluate((b) => getComputedStyle(b).getPropertyValue('--btn-edge').trim())).toBe('#ffcd75');
+    expect(await button.evaluate((b) => getComputedStyle(b).getPropertyValue('--btn-edge').trim())).toBe('#f5c66b');
   });
 });

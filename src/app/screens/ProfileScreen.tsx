@@ -31,6 +31,10 @@ export function ProfileScreen() {
 
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
+      {/* La escena arriba del todo, como en Hoy (D-155) */}
+      <div className="scene-sticky">
+        <Scene overlay={<h2>{t('level.long', { level: p.level, title: levelTitle(p.level) })}</h2>} />
+      </div>
       <header className="row">
         <h1 className="grow">
           {settings.profile ? `${settings.profile.alias} · ${t(`avatar.styles.${settings.avatar.cast}`)}` : t('profile.noAlias')}
@@ -41,9 +45,6 @@ export function ProfileScreen() {
       </header>
 
       <Panel className="stack">
-        <Scene
-          overlay={<h2>{t('level.long', { level: p.level, title: levelTitle(p.level) })}</h2>}
-        />
         <XpBar xp={p.xp} start={p.levelStartXp} next={p.nextLevelXp} />
         <p className="row small">
           <span className="grow pixel" style={{ color: 'var(--xp)' }}>

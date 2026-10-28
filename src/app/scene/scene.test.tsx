@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -124,6 +124,22 @@ describe('sonido y créditos', () => {
     await user.click(effects);
     await waitFor(async () => expect((await loadSettings(ctx.db)).sound.effects).toBe(false));
     expect(screen.getByRole('slider', { name: 'Volumen de los efectos' })).toBeDisabled();
+  });
+
+  it('D-155: los botones de la escena se ocultan y aparecen unos segundos al tocarla', async () => {
+    renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
+    await screen.findByRole('button', { name: 'Música' });
+    const scene = document.querySelector('.scene')!;
+    expect(scene).not.toHaveClass('controls-shown');
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      fireEvent.pointerDown(scene);
+      expect(scene).toHaveClass('controls-shown');
+      await act(() => vi.advanceTimersByTimeAsync(4100));
+      expect(scene).not.toHaveClass('controls-shown');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('LIC-02: los créditos citan autor y licencia de cada recurso', async () => {

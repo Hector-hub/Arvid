@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { completeOnboarding, skipDialogue } from './helpers';
+import { completeOnboarding, skipDialogue, revealSceneControls } from './helpers';
 
 /** Lo que ARVID está diciendo, en la región accesible de la escena (BP-04). */
 const arvidSays = (page: Page) => page.getByRole('status').filter({ hasText: /^ARVID dice:/ });
@@ -13,6 +13,7 @@ test.describe('ARVID (spec 06)', () => {
 
   test('CH: el chat se despliega desde el botón, pasa a "Enviar"; sin permiso, ARVID pide activar la IA', async ({ page }) => {
     await completeOnboarding(page);
+    await revealSceneControls(page);
     await page.getByRole('button', { name: 'Hablar con ARVID' }).click();
     const input = page.getByRole('textbox', { name: 'Mensaje para ARVID' });
     await expect(input).toBeFocused();
@@ -34,6 +35,7 @@ test.describe('ARVID (spec 06)', () => {
     });
     await completeOnboarding(page, { ai: true });
     await expect(arvidSays(page)).toHaveText(/Hola desde la IA, Prueba\./, { timeout: 10_000 });
+    await revealSceneControls(page);
     await page.getByRole('button', { name: 'Hablar con ARVID' }).click();
     await page.getByRole('textbox', { name: 'Mensaje para ARVID' }).fill('¿Qué hago hoy?');
     await page.getByRole('button', { name: 'Enviar' }).click();
@@ -86,7 +88,8 @@ test.describe('ARVID (spec 06)', () => {
 
 test('D-098: desde la escena, expandir abre la conversación con lo escrito; enviar desde allí la guarda', async ({ page }) => {
   await completeOnboarding(page);
-  await page.getByRole('button', { name: 'Hablar con ARVID' }).click();
+  await revealSceneControls(page);
+    await page.getByRole('button', { name: 'Hablar con ARVID' }).click();
   await page.getByLabel('Mensaje para ARVID').fill('¿Qué tal?');
   await page.getByRole('button', { name: 'Ver toda la conversación' }).click();
   await expect(page).toHaveURL(/\/chat$/);

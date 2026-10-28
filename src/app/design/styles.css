@@ -1364,3 +1364,192 @@ fieldset { border: 0; padding: 0; margin: 0; }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' shape-rendering='crispEdges'%3E%3Cpath fill='%23ffcd75' d='M7 1h2v1H7zM6 2h2v1H6zM5 3h2v1H5zM1 4h2v1H1zM4 4h2v1H4zM2 5h3v1H2zM3 6h1v1H3z'/%3E%3C/svg%3E");
 }
 .choice:has(input[type="checkbox"]:disabled)::before { opacity: 0.5; }
+
+/* =====================================================================================================================
+   Estilo «Cristal neón» (D-155): paneles translúcidos con desenfoque sobre un fondo con brillos tenues, bordes de luz
+   de 1 px, barras de un solo color que se aclara, botón principal dorado y rebote elástico al pulsar. Se apoya en los
+   tokens de arriba y sobrescribe lo necesario de cada componente. Las propuestas B y C están en docs/design/drafts.
+   ===================================================================================================================== */
+:root {
+  --c-ink: #070914;
+  --bg: #070914;
+  --surface: rgb(28 34 70 / 0.55);
+  --surface-sunken: rgb(10 12 32 / 0.55);
+  --border: rgb(170 185 255 / 0.16);
+  --border-strong: rgb(170 185 255 / 0.34);
+  --text: #eef1ff;
+  --text-muted: #a3abda;
+  --level: #f5c66b;
+  --focus: #f5c66b;
+  --glass-blur: blur(14px) saturate(140%);
+  --bar: linear-gradient(90deg, #3fb6cc, #a8f3fb);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --glow-cyan: 0 0 8px rgb(95 225 245 / 0.25);
+  --glow-gold: 0 0 8px rgb(245 198 107 / 0.25);
+  --notch-4: polygon(0 4px, 4px 4px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px, 100% calc(100% - 4px),
+    calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px));
+  --notch-2: polygon(0 2px, 2px 2px, 2px 0, calc(100% - 2px) 0, calc(100% - 2px) 2px, 100% 2px, 100% calc(100% - 2px),
+    calc(100% - 2px) calc(100% - 2px), calc(100% - 2px) 100%, 2px 100%, 2px calc(100% - 2px), 0 calc(100% - 2px));
+}
+body {
+  background:
+    radial-gradient(90% 40% at 0% 0%, rgb(255 95 168 / 0.12), transparent 70%),
+    radial-gradient(80% 36% at 100% 62%, rgb(95 225 245 / 0.08), transparent 70%),
+    radial-gradient(70% 30% at 20% 100%, rgb(120 90 255 / 0.08), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
+}
+
+/* Paneles de cristal con esquinas pixel */
+.panel,
+.sheet {
+  background: var(--surface);
+  border: 0;
+  box-shadow: inset 0 0 0 1px var(--border), inset 0 1px 0 rgb(255 255 255 / 0.07);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  clip-path: var(--notch-4);
+}
+.sheet-backdrop { background: rgb(7 9 20 / 0.7); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.banner { border: 0; background: rgb(245 198 107 / 0.08); box-shadow: inset 0 0 0 1px rgb(245 198 107 / 0.4); clip-path: var(--notch-4); }
+
+/* Botones: cristal con borde de luz; el principal, dorado; el «+», cian; rebote al pulsar */
+.btn {
+  --btn-fill: rgb(28 34 70 / 0.6);
+  --btn-edge: rgb(170 185 255 / 0.3);
+  --btn-hi: rgb(255 255 255 / 0.08);
+  --btn-lo: rgb(0 0 0 / 0.25);
+  color: var(--text);
+  transition: filter var(--dur-fast), transform 350ms var(--spring);
+}
+.btn:active:not(:disabled) { --btn-depth: 4px; transform: scale(0.94); transition-duration: 80ms; }
+.btn-primary { --btn-fill: rgb(95 225 245 / 0.14); --btn-edge: rgb(95 225 245 / 0.5); color: #8ff0fb; }
+.btn-primary:not(.btn-icon),
+.btn.player-main {
+  --btn-fill: linear-gradient(180deg, #ffe2a3, #f5b84b);
+  --btn-edge: rgb(150 100 20 / 0.45);
+  --btn-hi: rgb(255 255 255 / 0.45);
+  --btn-lo: rgb(150 100 20 / 0.35);
+  color: #1d1404;
+}
+.btn-danger { --btn-fill: rgb(255 95 168 / 0.16); --btn-edge: rgb(255 95 168 / 0.45); color: #ff9cc6; }
+.btn-ghost { --btn-fill: transparent; --btn-edge: transparent; --btn-hi: transparent; --btn-lo: transparent; color: #8ff0fb; }
+.btn:disabled { --btn-fill: rgb(255 255 255 / 0.04); --btn-edge: rgb(170 185 255 / 0.14); color: rgb(163 171 218 / 0.55); }
+
+/* Etiquetas */
+.chip { clip-path: var(--notch-2); padding: 0 var(--s2); }
+.chip-done { background: rgb(167 240 112 / 0.12); color: #b9f58e; box-shadow: inset 0 0 0 1px rgb(167 240 112 / 0.45); }
+.chip-warn { background: rgb(255 95 168 / 0.12); color: #ff9cc6; box-shadow: inset 0 0 0 1px rgb(255 95 168 / 0.45); }
+.chip-muted { background: rgb(255 255 255 / 0.06); color: var(--text-muted); box-shadow: inset 0 0 0 1px var(--border-strong); }
+
+/* Barras: un solo color que se aclara */
+.xpbar { background: rgb(255 255 255 / 0.08); border: 0; }
+.xpbar span { background: var(--bar); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35), 0 0 6px rgb(95 225 245 / 0.25); }
+.segments { background: rgb(255 255 255 / 0.06); }
+.segments span.on {
+  background: linear-gradient(90deg, var(--seg-color, var(--success)), color-mix(in srgb, var(--seg-color, var(--success)) 45%, white));
+}
+.badge-progress { background: rgb(255 255 255 / 0.08); }
+.badge-progress i { background: var(--bar); }
+
+/* Campos */
+.field input[type='text'],
+.field input[type='number'],
+.field select,
+.time-input {
+  background: rgb(255 255 255 / 0.05);
+  border: 1px solid var(--border-strong);
+}
+.field input:focus,
+.field select:focus { border-color: #5fe1f5; outline: 0; box-shadow: inset 0 0 10px rgb(95 225 245 / 0.1); }
+
+/* Opciones: una sola (recuadro dorado suave) y casillas (cian) */
+.choice { border-width: 1px; background: rgb(255 255 255 / 0.03); clip-path: var(--notch-2); }
+.choice:has(input:checked) { border-color: rgb(245 198 107 / 0.55); background: rgb(245 198 107 / 0.1); }
+.choice:has(input[type='checkbox']) { background: transparent; clip-path: none; }
+.choice:has(input[type='checkbox'])::before {
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--border-strong);
+  background-color: rgb(255 255 255 / 0.05);
+  transition: background-color 250ms, transform 400ms var(--spring);
+}
+.choice:has(input[type='checkbox']:checked)::before {
+  border-color: #5fe1f5;
+  background-color: #5fe1f5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 8' shape-rendering='crispEdges'%3E%3Cpath fill='%2304121a' d='M7 1h2v1H7zM6 2h2v1H6zM5 3h2v1H5zM1 4h2v1H1zM4 4h2v1H4zM2 5h3v1H2zM3 6h1v1H3z'/%3E%3C/svg%3E");
+  box-shadow: 0 0 8px rgb(95 225 245 / 0.3);
+  transform: scale(1.06);
+}
+
+/* Selectores */
+.tabs,
+.segmented {
+  border: 0;
+  padding: 3px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  clip-path: var(--notch-4);
+}
+.tabs a.active,
+.tabs button.active,
+.segmented input:checked + span {
+  background: rgb(245 198 107 / 0.14);
+  color: var(--level);
+  box-shadow: inset 0 0 0 1px rgb(245 198 107 / 0.4);
+}
+
+/* Barra de pestañas: cristal pegado abajo, sin bordes laterales ni inferior, solo una línea arriba */
+.nav {
+  background: rgb(14 17 38 / 0.6);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-top: 0;
+  box-shadow: inset 0 1px 0 var(--border);
+}
+.nav a.active { color: #5fe1f5; text-shadow: 0 0 8px rgb(95 225 245 / 0.3); }
+@media (min-width: 768px) {
+  .nav { box-shadow: inset -1px 0 0 var(--border); border-right: 0; }
+}
+
+/* Escena: sin marco, de lado a lado arriba y fundida hacia el fondo */
+.scene { background: transparent; border: 0; box-shadow: none; }
+.scene-canvas {
+  -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 70%, transparent 100%);
+}
+/* La cabecera fija deja ver el brillo del fondo: cristal oscuro en lugar de un color plano */
+.scene-sticky { background: rgb(7 9 20 / 0.82); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+@media (max-width: 767px) {
+  .scene-sticky .scene { width: auto; margin-inline: calc(-1 * var(--s4)); }
+}
+/* Los botones de la escena se desvanecen; aparecen unos segundos al tocarla (o con el teclado) */
+.scene-top-right,
+.scene-corner { transition: opacity 400ms ease; }
+.scene:not(.controls-shown):not(:focus-within) .scene-top-right,
+.scene:not(.controls-shown):not(:focus-within) .scene-corner {
+  opacity: 0;
+  pointer-events: none;
+}
+.scene-icon,
+.scene-corner .btn { --btn-fill: rgb(10 12 30 / 0.55); --btn-edge: rgb(255 255 255 / 0.25); }
+
+/* Aviso de logro: cristal oscuro con borde dorado tenue y entrada con rebote */
+.achievement-toast { animation: toast-in 500ms var(--spring); }
+.achievement-toast-body {
+  background: rgb(14 17 38 / 0.72);
+  border: 0;
+  box-shadow: inset 0 0 0 1px rgb(245 198 107 / 0.5), 0 0 12px rgb(245 198 107 / 0.15);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  clip-path: var(--notch-4);
+}
+
+/* Otras piezas de cristal */
+.companion-card,
+.carousel-card {
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}

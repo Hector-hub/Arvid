@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useEffectEvent, useLayoutEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { Suspense, lazy, useEffect, useEffectEvent, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { DEFAULT_ARVID_COLOR, type ArvidColor } from '../../domain/arvid/arvid';
 import { DEFAULT_COMPANION, DEFAULT_DARIS_COLOR, type Companion, type DarisColor } from '../../domain/arvid/companion';
 import { DEFAULT_AVATAR, type Avatar } from '../../domain/avatar/catalog';
@@ -95,6 +95,9 @@ function GameButton() {
   );
 }
 
+/** Cuánto siguen a la vista los botones de la escena tras tocarla. */
+const CONTROLS_VISIBLE_MS = 4000;
+
 export function Scene({ overlay, controls = true, intro }: { overlay?: ReactNode; controls?: boolean; intro?: string }) {
   const settings = useSettings();
   const avatar = settings?.avatar ?? DEFAULT_AVATAR;
@@ -105,8 +108,17 @@ export function Scene({ overlay, controls = true, intro }: { overlay?: ReactNode
   useLayoutEffect(() => {
     if (playing) claimIntro();
   }, [playing]);
+  // Escena limpia (D-155): los botones (música, juego y chat) se desvanecen y aparecen unos segundos al tocarla
+  const [revealed, setRevealed] = useState(false);
+  const hideTimer = useRef<number>(undefined);
+  const reveal = () => {
+    setRevealed(true);
+    window.clearTimeout(hideTimer.current);
+    hideTimer.current = window.setTimeout(() => setRevealed(false), CONTROLS_VISIBLE_MS);
+  };
+  useEffect(() => () => window.clearTimeout(hideTimer.current), []);
   return (
-    <div className="scene">
+    <div className={revealed ? 'scene controls-shown' : 'scene'} onPointerDown={reveal}>
       <Suspense fallback={null}>
         <SceneCanvas avatar={avatar} arvidColor={arvidColor} companion={settings?.companion} darisColor={settings?.darisColor} />
       </Suspense>

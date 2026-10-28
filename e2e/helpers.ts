@@ -80,3 +80,8 @@ export async function createActivity(page: Page, a: NewActivity) {
 export function row(page: Page, name: string) {
   return page.getByRole('listitem').filter({ has: page.getByRole('link', { name, exact: true }) });
 }
+
+/** Los botones de la escena están ocultos hasta tocarla (D-155): un toque en el cielo los muestra. */
+export async function revealSceneControls(page: Page) {
+  await page.locator('.scene').first().click({ position: { x: 20, y: 20 } });
+}
