@@ -124,9 +124,18 @@ export function SceneCanvas({
     if (!canvas || !images || !sheets) return;
     const c = canvas.getContext('2d');
     if (!c) return;
+    // El lienzo a la resolución de la pantalla (D-161): el pixel art se dibuja igual (cada píxel, k×k) pero el fondo
+    // avanza de 1 en 1 píxel de pantalla y el desplazamiento se ve suave
+    const k = sceneScale(canvas);
+    if (canvas.width !== SCENE_W * k) {
+      canvas.width = SCENE_W * k;
+      canvas.height = SCENE_H * k;
+    }
+    c.setTransform(k, 0, 0, k, 0, 0);
     c.imageSmoothingEnabled = false;
     const draw = () =>
       drawScene(c, scene, images, { cast, sheets }, reduced, {
+        snap: k,
         arvid,
         daris: companion === 'daris' ? { atlas: daris, ...darisState() } : undefined,
         speech: currentSpeech(),
@@ -219,6 +228,12 @@ const PREVIEW_W = 100;
 const PREVIEW_H = 72;
 
 /** Vista previa del protagonista caminando en el sitio (carrusel, onboarding y Ajustes). */
+/** Píxeles de pantalla por píxel de la escena (de 1 a 3): el ancho en pantalla por la densidad, entre el ancho lógico. */
+function sceneScale(canvas: HTMLCanvasElement): number {
+  const css = canvas.getBoundingClientRect().width || SCENE_W;
+  return Math.max(1, Math.min(3, Math.round((css * (window.devicePixelRatio || 1)) / SCENE_W)));
+}
+
 export function AvatarCanvas({ avatar, scale = 2 }: { avatar: Avatar; scale?: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const reduced = useReducedMotion();

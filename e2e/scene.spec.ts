@@ -6,7 +6,9 @@ const SCENE = 'Tu protagonista camina por un puente de la ciudad de noche, con A
 /** Huella de la parte baja de la escena (piernas del personaje, acera y barandilla; ARVID y su burbuja van más arriba). */
 function snapshot(page: Page) {
   return page.getByRole('img', { name: SCENE }).evaluate((c: HTMLCanvasElement) => {
-    const d = c.getContext('2d')!.getImageData(0, 135, c.width, c.height - 135).data;
+    // El lienzo va a la resolución de la pantalla (D-161): las coordenadas de la escena (384 de ancho) se escalan
+    const k = c.width / 384;
+    const d = c.getContext('2d')!.getImageData(0, 135 * k, c.width, c.height - 135 * k).data;
     let h = 0;
     for (let i = 0; i < d.length; i += 7) h = (h * 31 + d[i]!) | 0;
     return h;
@@ -16,10 +18,11 @@ function snapshot(page: Page) {
 /** El lienzo tiene algo dibujado en la zona del protagonista. */
 function heroDrawn(page: Page) {
   return page.getByRole('img', { name: SCENE }).evaluate((c: HTMLCanvasElement) => {
-    const d = c.getContext('2d')!.getImageData(140, 120, 40, 50).data;
+    const k = c.width / 384;
+    const d = c.getContext('2d')!.getImageData(140 * k, 120 * k, 40 * k, 50 * k).data;
     let opaque = 0;
     for (let i = 3; i < d.length; i += 4) if (d[i]! > 0) opaque++;
-    return opaque > 100;
+    return opaque > 100 * k * k;
   });
 }
 

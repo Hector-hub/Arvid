@@ -66,18 +66,24 @@ function sprite(
 }
 
 /** Capa de fondo repetida en horizontal con su factor de parallax (ESC-02). */
-function tiled(c: Ctx, img: HTMLImageElement, offset: number, factor: number) {
-  for (let x = -mod(offset * factor, img.width); x < SCENE_W; x += img.width) c.drawImage(img, Math.round(x), LAYOUT.bgY);
+/**
+ * Coloca en la rejilla de píxeles de pantalla (D-161): con el lienzo a `snap` píxeles de pantalla por píxel de la
+ * escena, el fondo avanza de 1 en 1 píxel de pantalla en vez de saltar `snap` de golpe, y el pixel art sigue nítido.
+ */
+const snapTo = (x: number, snap: number) => Math.round(x * snap) / snap;
+
+function tiled(c: Ctx, img: HTMLImageElement, offset: number, factor: number, snap: number) {
+  for (let x = -mod(offset * factor, img.width); x < SCENE_W; x += img.width) c.drawImage(img, snapTo(x, snap), LAYOUT.bgY);
 }
 
 /** Río (D-125): banda entre el horizonte y la carretera, con el parallax del horizonte y sus 24 fotogramas a 12 fps. */
 const WATER = { y: 117, w: 360, h: 15, frames: 24, ticks: 5 } as const;
 
-function drawWater(c: Ctx, img: CanvasImageSource, offset: number, t: number, alpha: number) {
+function drawWater(c: Ctx, img: CanvasImageSource, offset: number, t: number, alpha: number, snap: number) {
   const f = Math.floor(t / WATER.ticks) % WATER.frames;
   c.globalAlpha = alpha;
   for (let x = -mod(offset * (PARALLAX[0] ?? 0), WATER.w); x < SCENE_W; x += WATER.w) {
-    c.drawImage(img, 0, f * WATER.h, WATER.w, WATER.h, Math.round(x), WATER.y, WATER.w, WATER.h);
+    c.drawImage(img, 0, f * WATER.h, WATER.w, WATER.h, snapTo(x, snap), WATER.y, WATER.w, WATER.h);
   }
   c.globalAlpha = 1;
 }
@@ -95,14 +101,14 @@ export function drawHero(c: Ctx, cast: CastSpec, sheets: HeroSheets, t: number, 
 }
 
 /** Drones del cielo a la distancia `depth`; los sprites miran a la derecha. */
-function drawSky(c: Ctx, s: SceneState, img: HTMLImageElement, depth: number) {
+function drawSky(c: Ctx, s: SceneState, img: HTMLImageElement, depth: number, snap: number) {
   for (const d of s.sky) {
     if (d.depth !== depth) continue;
     const row = skySprite(d.model, d.depth);
     if (!row) continue;
     const f = Math.floor((s.t + d.t0) / 8) % row.frames;
     const bob = Math.round(Math.sin((s.t + d.t0) / 30));
-    sprite(c, img, f * row.w, row.y, row.w, row.h, Math.round(d.x - row.w / 2), Math.round(d.y - row.h / 2) + bob, row.w, row.h, d.dir < 0);
+    sprite(c, img, f * row.w, row.y, row.w, row.h, snapTo(d.x - row.w / 2, snap), Math.round(d.y - row.h / 2) + bob, row.w, row.h, d.dir < 0);
   }
 }
 
@@ -156,6 +162,8 @@ export interface SceneExtras {
   water?: number;
   /** Farolas según el nivel (spec 11, CV-02) y brillo de recién llegadas (AN-02); sin esto, encendidas. */
   lamps?: { on: boolean; glow: boolean };
+  /** Píxeles de pantalla por píxel de la escena, para que el fondo se mueva suave (D-161); sin esto, 1. */
+  snap?: number;
   /** XP ganada o perdida que flota sobre el protagonista (D-158). */
   xp?: readonly { text: string; age: number; minus: boolean }[];
 }
@@ -169,6 +177,7 @@ export function drawScene(
   extras: SceneExtras = {},
 ) {
   const off = s.offset;
+  const snap = extras.snap ?? 1;
   const { road, walk, rail, lampTop } = LAYOUT;
   c.clearRect(0, 0, SCENE_W, SCENE_H);
   // Fondo: tras cada capa, los drones de esa distancia, así que pasan por detrás y por delante de edificios (ESC-13)
@@ -176,13 +185,13 @@ export function drawScene(
   imgs.bg.forEach((img, i) => {
     if (i < layers) {
       if (i === layers - 1 && i > 0) c.globalAlpha = extras.layers?.fade ?? 1;
-      tiled(c, img, off, PARALLAX[i] ?? 0);
+      tiled(c, img, off, PARALLAX[i] ?? 0, snap);
       c.globalAlpha = 1;
     }
     // El río (D-125), delante del horizonte lejano, hasta el nivel 5; en el 6 se desvanece mientras los rascacielos
     // aparecen encima (fundido cruzado)
-    if (i === 0 && imgs.water && (extras.water ?? 0) > 0) drawWater(c, imgs.water, off, reduced ? 0 : s.t, extras.water!);
-    drawSky(c, s, imgs.sky, i);
+    if (i === 0 && imgs.water && (extras.water ?? 0) > 0) drawWater(c, imgs.water, off, reduced ? 0 : s.t, extras.water!, snap);
+    drawSky(c, s, imgs.sky, i, snap);
   });
 
   // Carretera
