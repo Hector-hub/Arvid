@@ -332,9 +332,12 @@ export interface MusicSettings {
   volume: number;
   /** Pista actual, para seguir por ella al volver a abrir la app (spec 16, DT-01). */
   track?: string;
+  /** Seguir sonando al salir de la app (D-163). */
+  background: boolean;
 }
 
-export const DEFAULT_MUSIC: MusicSettings = { enabled: false, volume: 0.4 };
+/** Apagada (MUS-01); al encenderla, sigue sonando al salir de la app (D-163, encendido por defecto). */
+export const DEFAULT_MUSIC: MusicSettings = { enabled: false, volume: 0.4, background: true };
 
 export interface SoundSettings {
   effects: boolean;
@@ -363,11 +366,12 @@ export const DEFAULT_SETTINGS: Settings = {
 
 function normalizeMusic(value: unknown): MusicSettings {
   if (typeof value !== 'object' || value === null) return DEFAULT_MUSIC;
-  const { enabled, volume, track } = value as Record<string, unknown>;
+  const { enabled, volume, track, background } = value as Record<string, unknown>;
   return {
     enabled: enabled === true,
     volume: typeof volume === 'number' && volume >= 0 && volume <= 1 ? volume : DEFAULT_MUSIC.volume,
     ...(typeof track === 'string' ? { track } : {}),
+    background: background !== false,
   };
 }
 

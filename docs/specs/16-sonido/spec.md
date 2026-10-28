@@ -114,3 +114,20 @@ En **Ajustes → Sonido**, con el estilo de la página de prueba:
 | S16-03 | El toque solo en acciones, no al navegar |
 | S16-04 | Reproductor de música centrado en el panel: anterior, reproducir/pausa y siguiente, barra de progreso y nombre de la pista |
 | S16-05 | Los ajustes de sonido viajan en el backup |
+
+## 11. Ampliación 1.8.0: música en segundo plano (D-163)
+Modifica MUS-05 de la spec 05, por la que la música se pausaba al salir de la app. Prototipo probado en el iPhone con la app instalada (2026-10-28): por Web Audio la pista avanza en silencio con la pantalla bloqueada; directa, sigue sonando y los controles de bloqueo responden.
+
+- **MB-01. Interruptor** «Seguir sonando al salir de la app» en Ajustes → Sonido, **encendido por defecto**. Ajuste `music.background`, que viaja en el backup.
+- **MB-02. Cómo suena:**
+  - con el interruptor encendido, la música suena directa, sin Web Audio, y no se pausa al ocultar la app;
+  - apagado, como antes: por Web Audio y en pausa al salir (MUS-05).
+  - Cambiarlo con la música sonando la pasa al otro modo sin perder la pista.
+- **MB-03. Controles en la pantalla de bloqueo y en la notificación** (Media Session):
+  - carátula de ARVID y nombre de la pista;
+  - reproducir/pausa, anterior, siguiente y saltar en la pista;
+  - pausar desde ahí equivale a pausar en la app.
+- **MB-04. iPhone:** con el interruptor encendido, el volumen de la música lo llevan los botones del teléfono y no hay fundidos. El control de volumen de la app se desactiva y una nota lo explica. En Android y en el ordenador, el volumen y los fundidos siguen funcionando.
+- **MB-05.** Los efectos de sonido solo suenan con la app abierta (EF-03).
+
+Pruebas: `src/app/music/background.test.tsx`, que comprueba que en segundo plano no se pausa al ocultar la app y en primer plano sí, que el interruptor viene encendido y se guarda, y que los controles de bloqueo se registran. Manual: M16-05, con la pantalla bloqueada sigue sonando y los controles funcionan en iPhone y Android.

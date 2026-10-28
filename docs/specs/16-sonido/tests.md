@@ -15,3 +15,4 @@
 | M16-02 | Cambiar el timbre y el volumen; «Escuchar» | ☐ | ☐ |
 | M16-03 | Con el interruptor de silencio (iPhone) o el volumen de multimedia a cero (Android) no suena nada | ☐ | ☐ |
 | M16-04 | Reproductor: anterior, siguiente, pausa y arrastrar la barra; al volver a abrir la app sigue por la misma pista | ☐ | ☐ |
+| M16-05 | (1.8.0) Con «Seguir sonando al salir de la app» encendido, bloquear la pantalla: sigue sonando; controles de bloqueo (pausa, anterior, siguiente) | ☐ | ☐ |

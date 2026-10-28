@@ -22,7 +22,6 @@ import { AttributeDetailScreen, DisciplineDetailScreen } from './screens/profile
 import { SettingsScreen } from './screens/SettingsScreen';
 import { TodayScreen } from './screens/TodayScreen';
 import { PasskeyLab } from './lab/PasskeyLab';
-import { AudioLab } from './lab/AudioLab';
 
 /** Rutas (PWA-05). */
 export const routes: RouteObject[] = [
@@ -60,8 +59,6 @@ export const routes: RouteObject[] = [
       { path: 'ajustes/categorias/:id', element: <CategoryFormScreen /> },
       // Prototipo oculto de passkeys (spec 14, fase 14a): sin enlaces desde la app
       { path: 'lab/passkey', element: <PasskeyLab /> },
-      // Prototipo oculto de música en segundo plano (D-163)
-      { path: 'lab/audio', element: <AudioLab /> },
       { path: '*', element: <Navigate to="/hoy" replace /> },
     ],
   },

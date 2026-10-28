@@ -15,6 +15,9 @@ export interface Music extends PlayerState {
   previous: () => void;
   seek: (seconds: number) => void;
   setVolume: (volume: number) => void;
+  /** Seguir sonando al salir de la app (D-163). */
+  background: boolean;
+  setBackground: (on: boolean) => void;
   /** Calla la música mientras suena otra cosa (un juego, spec 09) sin tocar la preferencia guardada; devuelve cómo reanudarla. */
   hush: () => () => void;
 }
@@ -37,13 +40,21 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     latest.current = music;
   });
 
-  const get = useCallback(
-    () =>
-      (player.current ??= new MusicPlayer(TRACKS, volume, setState, latest.current.track, (track) => {
-        if (latest.current.track !== track) void saveSetting(db, 'music', { ...latest.current, track });
-      })),
+  const create = useCallback(
+    (background: boolean) =>
+      new MusicPlayer(
+        TRACKS,
+        volume,
+        setState,
+        latest.current.track,
+        (track) => {
+          if (latest.current.track !== track) void saveSetting(db, 'music', { ...latest.current, track });
+        },
+        background,
+      ),
     [volume, db],
   );
+  const get = useCallback(() => (player.current ??= create(latest.current.background)), [create]);
 
   // Si quedó activada, empieza con la primera interacción de la sesión (los navegadores no permiten autoarranque).
   // Solo sirven los eventos que dan permiso para sonar: en iPhone, al levantar el dedo, no al apoyarlo.
@@ -98,9 +109,76 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         player.current?.setVolume(v);
         void saveSetting(db, 'music', { ...latest.current, volume: v });
       },
+      background: music.background,
+      // Cambia la forma de sonar (D-163): un reproductor nuevo en el otro modo, que sigue por la misma pista. Se llama
+      // desde el interruptor (un gesto), así que si estaba sonando puede volver a sonar en el acto
+      setBackground(on) {
+        const p = player.current;
+        const wasPlaying = p?.isEnabled() ?? false;
+        p?.destroy();
+        player.current = create(on);
+        if (wasPlaying) void player.current.start();
+        void saveSetting(db, 'music', { ...latest.current, background: on });
+      },
     }),
-    [state, music.enabled, volume, get, db, hush],
+    [state, music.enabled, music.background, volume, get, create, db, hush],
   );
+
+  // Controles de la pantalla de bloqueo y de la notificación (Media Session, D-163)
+  const actions = useRef(value);
+  useEffect(() => {
+    actions.current = value;
+  });
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+    const session = navigator.mediaSession;
+    const handlers: [MediaSessionAction, MediaSessionActionHandler][] = [
+      ['play', () => !actions.current.playing && actions.current.toggle()],
+      ['pause', () => actions.current.playing && actions.current.toggle()],
+      ['previoustrack', () => actions.current.previous()],
+      ['nexttrack', () => actions.current.next()],
+      ['seekto', (d) => d.seekTime !== undefined && actions.current.seek(d.seekTime)],
+    ];
+    for (const [action, handler] of handlers) {
+      try {
+        session.setActionHandler(action, handler);
+      } catch {
+        // Acción no admitida en este navegador
+      }
+    }
+    return () => {
+      for (const [action] of handlers) {
+        try {
+          session.setActionHandler(action, null);
+        } catch {
+          // Acción no admitida en este navegador
+        }
+      }
+    };
+  }, []);
+  useEffect(() => {
+    if (!('mediaSession' in navigator) || !state.track || typeof MediaMetadata === 'undefined') return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: state.track.name,
+      artist: 'ARVID',
+      album: 'ARVID',
+      artwork: [
+        { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+      ],
+    });
+  }, [state.track]);
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+    navigator.mediaSession.playbackState = state.playing ? 'playing' : state.track ? 'paused' : 'none';
+    if (state.duration > 0 && navigator.mediaSession.setPositionState) {
+      try {
+        navigator.mediaSession.setPositionState({ duration: state.duration, position: Math.min(state.time, state.duration), playbackRate: 1 });
+      } catch {
+        // Posición fuera de rango mientras cambia de pista
+      }
+    }
+  }, [state.playing, state.track, state.time, state.duration]);
 
   return <MusicCtx.Provider value={value}>{children}</MusicCtx.Provider>;
 }

@@ -1,7 +1,10 @@
 // Reproductor de música de fondo (spec 05, MUS; spec 16, PS-01). Lista en orden y en bucle con anterior, siguiente y
-// salto dentro de la pista; fundidos (MUS-03), pausa con la app oculta (MUS-05) y, sin conexión, solo las pistas ya
-// guardadas en caché (MUS-07). El volumen va por Web Audio (GainNode) porque en iOS `audio.volume` es de solo lectura;
-// el contexto es el mismo que el de los efectos (spec 16).
+// salto dentro de la pista; fundidos (MUS-03) y, sin conexión, solo las pistas ya guardadas en caché (MUS-07).
+// Dos formas de sonar (D-163):
+// - En primer plano (MUS-05): el volumen va por Web Audio (GainNode), porque en iOS `audio.volume` es de solo lectura,
+//   y se pausa con la app oculta. El contexto es el mismo que el de los efectos (spec 16).
+// - En segundo plano: directa, sin Web Audio (iOS lo corta al bloquear la pantalla), y sigue sonando con la app oculta.
+//   Volumen y fundidos van sobre `audio.volume`: en iOS se ignoran y el volumen lo llevan los botones del teléfono.
 import { stepTrack } from '../../domain/music/playlist';
 import { getAudioContext } from '../sound/audio';
 import { MUSIC_CACHE, type Track } from './tracks';
@@ -38,6 +41,8 @@ export class MusicPlayer {
     /** Pista por la que seguir (la guardada) y aviso al cambiar de pista, para guardarla (DT-01). */
     private current: string | undefined = undefined,
     private readonly onTrack: (id: string) => void = () => undefined,
+    /** Seguir sonando con la app oculta (D-163). */
+    readonly background = false,
   ) {
     this.audio.preload = 'auto';
     this.audio.addEventListener('ended', this.onEnded);
@@ -101,6 +106,7 @@ export class MusicPlayer {
 
   destroy(): void {
     this.enabled = false;
+    clearInterval(this.ramp);
     this.audio.pause();
     this.audio.removeEventListener('ended', this.onEnded);
     this.audio.removeEventListener('timeupdate', this.onTime);
@@ -126,7 +132,8 @@ export class MusicPlayer {
   }
 
   private setup() {
-    if (this.ctx) return;
+    // En segundo plano no se usa Web Audio: el elemento suena directo (D-163)
+    if (this.ctx || this.background) return;
     const ctx = getAudioContext();
     if (!ctx) return;
     try {
@@ -142,7 +149,7 @@ export class MusicPlayer {
 
   private fadeTo(value: number, seconds = FADE_S) {
     if (!this.ctx || !this.gain) {
-      this.audio.volume = value;
+      this.rampVolume(value, seconds);
       return;
     }
     const now = this.ctx.currentTime;
@@ -150,6 +157,24 @@ export class MusicPlayer {
     g.cancelScheduledValues(now);
     g.setValueAtTime(g.value, now);
     g.linearRampToValueAtTime(value, now + seconds);
+  }
+
+  /** Fundido sobre `audio.volume` (sin Web Audio); en iOS es de solo lectura y no hace nada. */
+  private ramp?: ReturnType<typeof setInterval>;
+  private rampVolume(target: number, seconds: number) {
+    clearInterval(this.ramp);
+    const from = this.audio.volume;
+    const steps = Math.max(1, Math.round(seconds * 20));
+    let i = 0;
+    this.ramp = setInterval(() => {
+      i++;
+      try {
+        this.audio.volume = Math.max(0, Math.min(1, from + ((target - from) * i) / steps));
+      } catch {
+        // Solo lectura (iOS)
+      }
+      if (i >= steps) clearInterval(this.ramp);
+    }, 50);
   }
 
   private async resume() {
@@ -183,6 +208,14 @@ export class MusicPlayer {
     this.onTrack(track.id);
     this.fadingOut = false;
     this.audio.src = track.src;
+    if (!this.gain) {
+      clearInterval(this.ramp);
+      try {
+        this.audio.volume = 0;
+      } catch {
+        // Solo lectura (iOS)
+      }
+    }
     this.emit({ track, startedAt: Date.now(), playing: true, needsConnection: false, time: 0, duration: 0 });
     await this.resume();
     this.warmCache(track);
@@ -230,7 +263,8 @@ export class MusicPlayer {
   };
 
   private onVisibility = () => {
-    if (!this.enabled) return;
+    // En segundo plano sigue sonando: no se pausa al ocultar la app (D-163)
+    if (!this.enabled || this.background) return;
     if (document.hidden) this.audio.pause();
     else {
       void this.ctx?.resume().catch(() => undefined);

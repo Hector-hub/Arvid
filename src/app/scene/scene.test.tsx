@@ -51,7 +51,7 @@ describe('ajustes guardados (§5)', () => {
   it('sin protagonista ni música guardados (backup de la 0.4.0) se usan los valores por defecto', async () => {
     const s = await loadSettings(ctx.db);
     expect(s.avatar).toEqual({ cast: 'ella', variant: 'original' });
-    expect(s.music).toEqual({ enabled: false, volume: 0.4 });
+    expect(s.music).toEqual({ enabled: false, volume: 0.4, background: true });
   });
 
   it('valores desconocidos (asset retirado o backup manipulado) se normalizan', async () => {
@@ -61,7 +61,7 @@ describe('ajustes guardados (§5)', () => {
     ]);
     const s = await loadSettings(ctx.db);
     expect(s.avatar).toEqual({ cast: 'ella', variant: 'original' });
-    expect(s.music).toEqual({ enabled: false, volume: 0.4 });
+    expect(s.music).toEqual({ enabled: false, volume: 0.4, background: true });
   });
 });
 
@@ -80,7 +80,7 @@ describe('escena en Hoy', () => {
   });
 
   it('MUS-09: si la música quedó activada, la bocina lo muestra al volver a abrir la app', async () => {
-    await saveSetting(ctx.db, 'music', { enabled: true, volume: 0.4 } satisfies Settings['music']);
+    await saveSetting(ctx.db, 'music', { enabled: true, volume: 0.4, background: true } satisfies Settings['music']);
     renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
     expect(await screen.findByRole('button', { name: 'Música' })).toHaveAttribute('aria-pressed', 'true');
   });
@@ -101,7 +101,7 @@ describe('escena en Hoy', () => {
 
 describe('sonido y créditos', () => {
   it('MUS-06, PS-01: Ajustes → Sonido muestra el reproductor apagado en la pista guardada y el volumen guardado', async () => {
-    await saveSetting(ctx.db, 'music', { enabled: false, volume: 0.7, track: 'rain-on-the-expressway' } satisfies Settings['music']);
+    await saveSetting(ctx.db, 'music', { enabled: false, volume: 0.7, track: 'rain-on-the-expressway', background: true } satisfies Settings['music']);
     renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
     expect(await screen.findByRole('button', { name: 'Reproducir' })).toHaveAttribute('aria-pressed', 'false');
     expect(await screen.findByText('Rain on the Expressway')).toBeInTheDocument();

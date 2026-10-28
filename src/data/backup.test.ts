@@ -58,7 +58,7 @@ describe('exportar (BAK-01)', () => {
 
   it('DT-02 (spec 16): los ajustes de sonido viajan en el backup; sin ellos, los valores por defecto', async () => {
     await saveSetting(db, 'sound', { effects: false, volume: 0.2, timbre: 'chip' });
-    await saveSetting(db, 'music', { enabled: true, volume: 0.3, track: 'glass-tower-horizon' });
+    await saveSetting(db, 'music', { enabled: true, volume: 0.3, track: 'glass-tower-horizon', background: true });
     const b = await exported();
     expect(b.data.settings.find((s) => s.key === 'sound')?.value).toEqual({ effects: false, volume: 0.2, timbre: 'chip' });
     expect(b.data.settings.find((s) => s.key === 'music')?.value).toMatchObject({ track: 'glass-tower-horizon' });

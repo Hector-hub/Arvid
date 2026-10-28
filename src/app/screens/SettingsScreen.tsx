@@ -259,6 +259,7 @@ function SoundPanel() {
   const track = music.track ?? TRACKS.find((tr) => tr.id === settings?.music.track) ?? TRACKS[0]!;
   const position = trackPosition(TRACKS, track.id);
   const canSeek = music.playing && music.duration > 0;
+  const iosBackground = music.background && isIOS();
   return (
     <Panel className="stack">
       <h2>{t('settings.sound')}</h2>
@@ -319,10 +320,17 @@ function SoundPanel() {
           step={0.05}
           value={music.volume}
           style={fill(music.volume)}
+          // En iPhone, sonando en segundo plano, el volumen lo llevan los botones del teléfono (D-163)
+          disabled={iosBackground}
           onChange={(e) => music.setVolume(Number(e.target.value))}
           data-music-control=""
         />
       </label>
+      <label className="choice">
+        <input type="checkbox" checked={music.background} onChange={(e) => music.setBackground(e.target.checked)} data-music-control="" />
+        <span className="grow">{t('settings.musicBackground')}</span>
+      </label>
+      <p className="small muted">{iosBackground ? t('settings.musicBackgroundIos') : t('settings.musicBackgroundHelp')}</p>
       <p className="small muted">{t('settings.musicNote')}</p>
 
       <label className="choice">
