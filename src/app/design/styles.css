@@ -1745,3 +1745,41 @@ input[type='range']:disabled { opacity: 0.45; }
   color: var(--neon-cyan);
   box-shadow: inset 0 0 0 1px var(--btn-edge), 0 0 10px rgb(95 225 245 / 0.15);
 }
+
+/* ---------- Reproductor con la portada de la pista (D-168): de fondo difuminada y oscurecida bajo el cristal, una
+   miniatura encima y un brillo neón del color de la portada en los bordes ---------- */
+.player.has-cover { position: relative; isolation: isolate; overflow: hidden; background: var(--bg); box-shadow: none; }
+.player-bg {
+  position: absolute;
+  inset: -28px;
+  z-index: -2;
+  background: center / cover no-repeat;
+  filter: blur(16px) saturate(1.3) brightness(0.62);
+  animation: player-fade 600ms ease;
+}
+.player.has-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(7 9 20 / 0.2), rgb(7 9 20 / 0.62));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--glow) 75%, transparent),
+    inset 0 0 18px color-mix(in srgb, var(--glow) 45%, transparent),
+    inset 0 0 42px color-mix(in srgb, var(--glow) 18%, transparent);
+  transition: box-shadow 600ms ease;
+}
+.player-cover {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  clip-path: var(--notch-4);
+  outline: 1px solid color-mix(in srgb, var(--glow) 70%, white 10%);
+  outline-offset: -1px;
+  animation: player-fade 600ms ease;
+}
+.player.has-cover .player-track { text-shadow: 0 1px 0 #000, 0 0 10px rgb(245 198 107 / 0.3); }
+.player.has-cover .small.muted,
+.player.has-cover .player-time { color: #d4daf5; text-shadow: 0 1px 0 #000; }
+@keyframes player-fade { from { opacity: 0; } }

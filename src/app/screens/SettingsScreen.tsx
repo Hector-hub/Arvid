@@ -11,7 +11,7 @@ import { currentPersistState, isIOS, requestPersistentStorage, type PersistState
 import { useCategories, useData, useSettings } from '../data';
 import { BackLink, CategoryIcon, Panel } from '../design/components';
 import { useMusic } from '../music/MusicProvider';
-import { TRACKS } from '../music/tracks';
+import { trackCover, TRACKS } from '../music/tracks';
 import { resumeAudio } from '../sound/audio';
 import { previewSfx } from '../sound/sfx';
 import { NextTrackIcon, PauseIcon, PlayIcon, PrevTrackIcon } from '../design/icons';
@@ -264,7 +264,10 @@ function SoundPanel() {
     <Panel className="stack">
       <h2>{t('settings.sound')}</h2>
 
-      <div className="player" aria-label={t('settings.music')}>
+      {/* La portada de la pista de fondo, difuminada, con su miniatura y un brillo de su color en los bordes (D-168) */}
+      <div className="player has-cover" aria-label={t('settings.music')} style={{ '--glow': track.glow } as CSSProperties}>
+        <div key={`bg-${track.id}`} className="player-bg" style={{ backgroundImage: `url(${trackCover(track, 192)})` }} aria-hidden="true" />
+        <img key={`cover-${track.id}`} className="player-cover" src={trackCover(track, 512)} alt="" width={120} height={120} />
         <p className="player-track" aria-live="polite">
           {track.name}
         </p>
