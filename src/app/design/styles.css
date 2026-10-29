@@ -1884,13 +1884,15 @@ html, body { overscroll-behavior-y: contain; }
     -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 6vw), transparent 100%);
     mask-image: linear-gradient(180deg, #000 calc(100% - 6vw), transparent 100%);
   }
+  /* Las franjas negras de la presentación cubren también la zona del notch: la presentación ocupa toda la escena */
   .scene-sticky .scene-overlay { top: calc(env(safe-area-inset-top) + var(--s1)); }
   .scene-sticky .scene-corner { top: calc(env(safe-area-inset-top) + 6px); }
-  .scene-sticky .scene-intro { top: env(safe-area-inset-top); }
+  /* …y su texto queda centrado en la parte visible, debajo de la hora */
+  .scene-sticky .scene-intro { padding-top: env(safe-area-inset-top); }
   /* Con el aviso de nueva versión encima, la escena empieza debajo de él */
   .main > .banner + * .scene-sticky { padding-top: var(--main-top); }
   .main > .banner + * .scene-sticky .scene { padding-top: 0; }
   .main > .banner + * .scene-sticky .scene-overlay { top: var(--s1); }
   .main > .banner + * .scene-sticky .scene-corner { top: 6px; }
-  .main > .banner + * .scene-sticky .scene-intro { top: 0; }
+  .main > .banner + * .scene-sticky .scene-intro { padding-top: 0; }
 }
