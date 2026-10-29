@@ -1201,7 +1201,8 @@
       "limit": "Too many accounts from this connection today.",
       "passkey": "The passkey couldn't be verified.",
       "cancelled": "Cancelled.",
-      "failed": "Something went wrong. Try again."
+      "failed": "Something went wrong. Try again.",
+      "no-local-passkey": "This phone can't store passkeys (check it has a screen lock and a Google account). You can use the recovery key instead: it works the same."
     },
     "saveTitle": "Save your progress",
     "notNow": "Not now",

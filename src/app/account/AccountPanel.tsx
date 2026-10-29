@@ -74,11 +74,11 @@ function SignedOut({ alias, onKey, onSignIn }: { alias: string; onKey: (key: str
   const online = typeof navigator === 'undefined' || navigator.onLine !== false;
   const passkeys = passkeysAvailable();
 
-  async function create() {
+  async function create(withPasskey: boolean) {
     setBusy(true);
     setError(undefined);
     try {
-      onKey((await createAccount(ctx, alias, passkeys)).recoveryKey);
+      onKey((await createAccount(ctx, alias, withPasskey)).recoveryKey);
     } catch (e) {
       setError(errorText(e));
     } finally {
@@ -90,9 +90,15 @@ function SignedOut({ alias, onKey, onSignIn }: { alias: string; onKey: (key: str
     <>
       <p className="small muted">{t('account.intro')}</p>
       {!passkeys && <p className="small muted">{t('account.noPasskeys')}</p>}
-      <button type="button" className="btn btn-primary" disabled={busy || !online} onClick={() => void create()}>
+      <button type="button" className="btn btn-primary" disabled={busy || !online} onClick={() => void create(passkeys)}>
         {passkeys ? t('account.create') : t('account.createRecovery')}
       </button>
+      {/* Con passkeys, también la clave sola: hay teléfonos que no pueden guardarlas (D-193) */}
+      {passkeys && (
+        <button type="button" className="btn" disabled={busy || !online} onClick={() => void create(false)}>
+          {t('account.createRecovery')}
+        </button>
+      )}
       <button type="button" className="btn" disabled={busy || !online} onClick={onSignIn}>
         {t('account.haveAccount')}
       </button>

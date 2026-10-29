@@ -1201,7 +1201,8 @@
       "limit": "Demasiadas cuentas desde esta conexión hoy.",
       "passkey": "No se pudo verificar la passkey.",
       "cancelled": "Cancelado.",
-      "failed": "Algo falló. Inténtalo de nuevo."
+      "failed": "Algo falló. Inténtalo de nuevo.",
+      "no-local-passkey": "Este teléfono no puede guardar passkeys (revisa que tenga bloqueo de pantalla y una cuenta de Google). Puedes usar la clave de recuperación: funciona igual."
     },
     "saveTitle": "Guarda tu progreso",
     "notNow": "Ahora no",
