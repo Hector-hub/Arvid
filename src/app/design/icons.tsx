@@ -229,7 +229,7 @@ export function NextTrackIcon({ size = 16 }: { size?: number }) {
 }
 
 /**
- * Iconos pixel del estilo Cristal neón (D-157), en una cuadrícula de 12×12 como la maqueta: sustituyen a los del atlas
+ * Iconos pixel del estilo Cristal neón (D-157, D-175), en una cuadrícula de 12×12 como la maqueta: sustituyen a los del atlas
  * de sprites con el mismo nombre (ver `Sprite`). Cada rectángulo es [x, y, ancho, alto].
  */
 export const PIXEL_ICON_RECTS: Partial<Record<SpriteName, readonly (readonly [number, number, number, number])[]>> = {
@@ -238,6 +238,13 @@ export const PIXEL_ICON_RECTS: Partial<Record<SpriteName, readonly (readonly [nu
   'nav-goals': [[2, 1, 1, 10], [3, 1, 7, 5], [1, 10, 3, 1]],
   'nav-character': [[4, 1, 4, 1], [3, 2, 6, 3], [4, 5, 4, 1], [2, 7, 8, 1], [1, 8, 10, 3]],
   'cat-body': [[2, 2, 3, 1], [7, 2, 3, 1], [1, 3, 10, 3], [2, 6, 8, 1], [3, 7, 6, 1], [4, 8, 4, 1], [5, 9, 2, 1]],
+  'cat-relationships': [[2, 1, 2, 1], [8, 1, 2, 1], [1, 2, 4, 2], [7, 2, 4, 2], [2, 4, 2, 1], [8, 4, 2, 1], [1, 6, 4, 1], [7, 6, 4, 1], [0, 7, 12, 3]],
+  'cat-music': [[4, 1, 8, 2], [4, 3, 1, 4], [11, 3, 1, 4], [2, 7, 3, 1], [9, 7, 3, 1], [1, 8, 4, 2], [8, 8, 4, 2], [2, 10, 2, 1], [9, 10, 2, 1]],
+  'cat-potion': [[4, 0, 4, 1], [5, 1, 2, 2], [4, 3, 4, 1], [3, 4, 6, 1], [2, 5, 2, 1], [8, 5, 2, 1], [1, 6, 10, 1], [0, 7, 12, 3], [1, 10, 10, 1], [2, 11, 8, 1]],
+  'cat-gem': [[2, 2, 8, 1], [1, 3, 2, 1], [4, 3, 4, 1], [9, 3, 2, 1], [0, 4, 12, 1], [1, 5, 10, 1], [2, 6, 8, 1], [3, 7, 6, 1], [4, 8, 4, 1], [5, 9, 2, 1]],
+  'trophy': [[1, 0, 10, 1], [0, 1, 2, 1], [3, 1, 6, 3], [10, 1, 2, 1], [0, 2, 1, 1], [11, 2, 1, 1], [0, 3, 2, 1], [10, 3, 2, 1], [2, 4, 8, 1], [3, 5, 6, 1], [4, 6, 4, 1], [5, 7, 2, 2], [3, 9, 6, 1], [2, 10, 8, 1]],
+  'arrow-up': [[5, 1, 2, 1], [4, 2, 4, 1], [3, 3, 6, 1], [2, 4, 8, 1], [1, 5, 3, 1], [5, 5, 2, 6], [8, 5, 3, 1], [1, 6, 2, 1], [9, 6, 2, 1]],
+  'arrow-down': [[5, 1, 2, 6], [1, 5, 2, 1], [9, 5, 2, 1], [1, 6, 3, 1], [8, 6, 3, 1], [2, 7, 8, 1], [3, 8, 6, 1], [4, 9, 4, 1], [5, 10, 2, 1]],
 };
 
 /** Marca de completar (✓) en una cuadrícula de 16 px, del mismo tamaño que «+» y «−» en las tarjetas (D-160). */

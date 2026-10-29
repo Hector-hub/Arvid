@@ -11,8 +11,9 @@ export function UpdateBanner() {
 
   if (!needRefresh) return null;
   return (
-    <div className="banner" role="status" style={{ marginBottom: 'var(--s4)' }}>
-      <Sprite name="info" color="var(--level)" />
+    // En una sola línea también en móvil: cristal cian, texto corto y botón compacto (D-176)
+    <div className="banner update-banner" role="status" style={{ marginBottom: 'var(--s4)' }}>
+      <Sprite name="arrow-up" color="var(--c-cyan)" />
       <p className="grow">{t('update.available')}</p>
       <button type="button" className="btn btn-primary" onClick={() => void updateServiceWorker(true)}>
         {t('update.update')}

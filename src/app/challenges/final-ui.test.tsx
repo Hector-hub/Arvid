@@ -100,7 +100,7 @@ describe('pendientes de la 15b', () => {
     renderRoutes(ctx, [{ path: '/perfil/amigos', element: <FriendsScreen /> }], '/perfil/amigos');
     expect(await screen.findByText(/1 reto juntos/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Eva/ }));
-    await user.click(screen.getByRole('button', { name: 'Leer' }));
+    await user.click(await screen.findByRole('button', { name: 'Leer' }));
     expect(await screen.findByRole('button', { name: 'Invitación enviada: Leer' })).toBeDisabled();
     expect(calls.at(-1)).toContain('POST /api/social/challenges/invite');
     expect(calls.at(-1)).toContain('"friendId":"eva-0000-cuenta"');
