@@ -51,12 +51,15 @@ describe('crear passkey (D-192)', () => {
     const fail = () => Object.assign(new Error('no'), { name: 'NotSupportedError' });
     startRegistration.mockRejectedValueOnce(fail()).mockRejectedValueOnce(fail()).mockRejectedValueOnce(Object.assign(new Error('cerrada'), { name: 'NotAllowedError' }));
     await expect(addPasskey(ctx, await account())).rejects.toMatchObject({ code: 'no-local-passkey' });
+    // Lo recuerda en este teléfono: desde ahora la clave de recuperación va primero (D-194)
+    expect(localStorage.getItem('arvid-passkey-remote')).toBe('1');
   });
 
   it('cancelar el diálogo del sistema no se reintenta', async () => {
     const { addPasskey } = await import('./account');
     startRegistration.mockRejectedValueOnce(Object.assign(new Error('cancel'), { name: 'NotAllowedError' }));
-    await expect(addPasskey(ctx, await account())).rejects.toThrow('cancel');
+    // No se reintenta y no se sabe si fue cancelar o que solo había otro dispositivo: la app lo pregunta
+    await expect(addPasskey(ctx, await account())).rejects.toMatchObject({ code: 'passkey-cancelled' });
     expect(startRegistration).toHaveBeenCalledTimes(1);
   });
 });

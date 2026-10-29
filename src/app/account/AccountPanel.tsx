@@ -23,6 +23,7 @@ import {
   uploadBackup,
   useCloud,
   keepCloudCopy,
+  rememberRemoteOnly,
   type DeviceAccount,
   type NeedsRecoveryKey,
 } from './account';
@@ -90,6 +91,32 @@ export function CreateButtons({
   );
 }
 
+/**
+ * Tras cerrar la ventana de crear la passkey (D-194): si el teléfono solo ofrecía otro dispositivo o una llave USB, se
+ * crea con la clave de recuperación y se recuerda para este teléfono.
+ */
+export function RemoteOnlyPrompt({ onYes, onNo, disabled }: { onYes: () => void; onNo: () => void; disabled: boolean }) {
+  return (
+    <div className="banner stack" role="status" style={{ alignItems: 'stretch' }}>
+      <p className="small">{t('account.remoteQuestion')}</p>
+      <button
+        type="button"
+        className="btn btn-primary"
+        disabled={disabled}
+        onClick={() => {
+          rememberRemoteOnly();
+          onYes();
+        }}
+      >
+        {t('account.remoteYes')}
+      </button>
+      <button type="button" className="btn" disabled={disabled} onClick={onNo}>
+        {t('account.remoteNo')}
+      </button>
+    </div>
+  );
+}
+
 export function AccountPanel() {
   const settings = useSettings();
   // Las hojas viven aquí y no dentro de cada estado: al crear la cuenta o entrar, el panel cambia de «sin cuenta» a
@@ -118,14 +145,17 @@ function SignedOut({ alias, onKey, onSignIn }: { alias: string; onKey: (key: str
   const [error, setError] = useState<string>();
   const online = typeof navigator === 'undefined' || navigator.onLine !== false;
   const support = usePasskeySupport();
+  const [askRemote, setAskRemote] = useState(false);
 
   async function create(withPasskey: boolean) {
     setBusy(true);
     setError(undefined);
+    setAskRemote(false);
     try {
       onKey((await createAccount(ctx, alias, withPasskey)).recoveryKey);
     } catch (e) {
-      setError(errorText(e));
+      if (e instanceof AccountError && e.code === 'passkey-cancelled') setAskRemote(true);
+      else setError(errorText(e));
     } finally {
       setBusy(false);
     }
@@ -134,7 +164,11 @@ function SignedOut({ alias, onKey, onSignIn }: { alias: string; onKey: (key: str
   return (
     <>
       <p className="small muted">{t('account.intro')}</p>
-      <CreateButtons support={support} disabled={busy || !online} onCreate={(withPasskey) => void create(withPasskey)} />
+      {askRemote ? (
+        <RemoteOnlyPrompt disabled={busy} onYes={() => void create(false)} onNo={() => setAskRemote(false)} />
+      ) : (
+        <CreateButtons support={support} disabled={busy || !online} onCreate={(withPasskey) => void create(withPasskey)} />
+      )}
       <button type="button" className="btn" disabled={busy || !online} onClick={onSignIn}>
         {t('account.haveAccount')}
       </button>

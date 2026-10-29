@@ -1202,7 +1202,8 @@
       "passkey": "The passkey couldn't be verified.",
       "cancelled": "Cancelled.",
       "failed": "Something went wrong. Try again.",
-      "no-local-passkey": "This phone can't store passkeys (check it has a screen lock and a Google account). You can use the recovery key instead: it works the same."
+      "no-local-passkey": "This phone can't store passkeys (check it has a screen lock and a Google account). You can use the recovery key instead: it works the same.",
+      "passkey-cancelled": "The passkey window was closed."
     },
     "saveTitle": "Save your progress",
     "notNow": "Not now",
@@ -1223,7 +1224,10 @@
       }
     },
     "remoteOnly": "This phone can't store passkeys on its own (only with another device or a USB key). We recommend the recovery key.",
-    "createRemote": "Create with a passkey on another device"
+    "createRemote": "Create with a passkey on another device",
+    "remoteQuestion": "Did it only offer «another device» or a USB key? Then this phone can't store passkeys: use the recovery key, it works the same.",
+    "remoteYes": "Yes, use the recovery key",
+    "remoteNo": "No, try again"
   },
   "friends": {
     "title": "Friends",

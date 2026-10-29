@@ -154,19 +154,53 @@ export const passkeysAvailable = () => browserSupportsWebAuthn();
 export type PasskeySupport = 'local' | 'remote' | 'none';
 let support: PasskeySupport | undefined;
 const supportListeners = new Set<() => void>();
+const REMOTE_KEY = 'arvid-passkey-remote';
+
+const setSupport = (value: PasskeySupport) => {
+  support = value;
+  supportListeners.forEach((l) => l());
+};
+
+/** Lo aprendido al intentarlo (D-194): este teléfono solo ofreció otro dispositivo o una llave USB. */
+export function rememberRemoteOnly() {
+  try {
+    localStorage.setItem(REMOTE_KEY, '1');
+  } catch {
+    // Sin almacenamiento: se vuelve a preguntar la próxima vez
+  }
+  setSupport('remote');
+}
+
+const learnedRemote = () => {
+  try {
+    return localStorage.getItem(REMOTE_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Pregunta al navegador si puede guardar passkeys en el propio teléfono: con `getClientCapabilities` (Chrome reciente,
+ * la respuesta más precisa) o, si no lo tiene, si hay autenticador propio. Algunos Android dicen que sí aunque luego
+ * solo ofrezcan otro dispositivo: por eso manda lo aprendido al intentarlo.
+ */
+async function askSupport(): Promise<PasskeySupport> {
+  if (!passkeysAvailable()) return 'none';
+  if (learnedRemote()) return 'remote';
+  const P = PublicKeyCredential as unknown as { getClientCapabilities?: () => Promise<Record<string, boolean | undefined>> };
+  if (typeof P.getClientCapabilities === 'function') {
+    const caps = await P.getClientCapabilities().catch(() => ({}) as Record<string, boolean | undefined>);
+    if (caps.passkeyPlatformAuthenticator === false) return 'remote';
+    if (caps.passkeyPlatformAuthenticator === true) return 'local';
+  }
+  return (await platformAuthenticatorIsAvailable().catch(() => false)) ? 'local' : 'remote';
+}
 
 export function usePasskeySupport(): PasskeySupport | undefined {
   return useSyncExternalStore(
     (fn) => {
       supportListeners.add(fn);
-      if (support === undefined) {
-        const done = (value: PasskeySupport) => {
-          support = value;
-          supportListeners.forEach((l) => l());
-        };
-        if (!passkeysAvailable()) done('none');
-        else platformAuthenticatorIsAvailable().then((ok) => done(ok ? 'local' : 'remote'), () => done('remote'));
-      }
+      if (support === undefined) void askSupport().then(setSupport, () => setSupport('remote'));
       return () => supportListeners.delete(fn);
     },
     () => support,
@@ -194,9 +228,13 @@ async function registerPasskey(options: PublicKeyCredentialCreationOptionsJSON) 
       const cancelled = name === 'NotAllowedError' || name === 'AbortError' || (e as { code?: string })?.code === 'ERROR_CEREMONY_ABORTED';
       // Si el teléfono no pudo guardarla y en el último intento solo ofrecía otro dispositivo o una llave USB, cerrar
       // esa ventana no es «cancelar»: el teléfono no admite passkeys (se explica y se ofrece la clave, D-193)
-      if (cancelled && i === attempts.length - 1) throw new AccountError('no-local-passkey');
-      // Cancelar o cerrar el diálogo del sistema no se reintenta
-      if (cancelled) throw e;
+      if (cancelled && i === attempts.length - 1) {
+        rememberRemoteOnly();
+        throw new AccountError('no-local-passkey');
+      }
+      // Cerrar la ventana del sistema no se reintenta. Puede ser que cancelaras o que el teléfono solo ofreciera otro
+      // dispositivo o una llave USB (no se distingue): la app lo pregunta
+      if (cancelled) throw new AccountError('passkey-cancelled');
       last = e;
     }
   }

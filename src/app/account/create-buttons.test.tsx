@@ -1,7 +1,7 @@
 // D-194: los botones de crear la cuenta según dónde puede guardar passkeys el teléfono.
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { CreateButtons } from './AccountPanel';
+import { CreateButtons, RemoteOnlyPrompt } from './AccountPanel';
 
 const setup = (support: 'local' | 'remote' | 'none') => {
   const onCreate = vi.fn();
@@ -30,5 +30,15 @@ describe('crear la cuenta según el teléfono (D-194)', () => {
     setup('none');
     expect(screen.getByRole('button', { name: 'Crear con clave de recuperación' })).toHaveClass('btn-primary');
     expect(screen.queryByRole('button', { name: /passkey|Face ID/ })).toBeNull();
+  });
+
+  it('tras cerrar la ventana: «Sí, usar la clave de recuperación» lo recuerda para este teléfono y la crea', () => {
+    localStorage.removeItem('arvid-passkey-remote');
+    const onYes = vi.fn();
+    render(<RemoteOnlyPrompt disabled={false} onYes={onYes} onNo={vi.fn()} />);
+    expect(screen.getByText(/Te ofreció solo «otro dispositivo»/)).toBeInTheDocument();
+    screen.getByRole('button', { name: 'Sí, usar la clave de recuperación' }).click();
+    expect(onYes).toHaveBeenCalled();
+    expect(localStorage.getItem('arvid-passkey-remote')).toBe('1');
   });
 });

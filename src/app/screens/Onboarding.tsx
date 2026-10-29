@@ -18,9 +18,9 @@ import { categoryName, errorText } from '../text';
 import { useCompanionSync } from '../companion';
 import { InstallGuide } from './InstallGuide';
 import { enablePush, pushSupport } from '../notifications/push';
-import { accountsEnabled, createAccount, usePasskeySupport } from '../account/account';
+import { AccountError, accountsEnabled, createAccount, usePasskeySupport } from '../account/account';
 import { takePendingLink } from '../friends/friends';
-import { CreateButtons, RecoveryKeySheet, SignInSheet, errorText as accountErrorText } from '../account/AccountPanel';
+import { CreateButtons, RecoveryKeySheet, RemoteOnlyPrompt, SignInSheet, errorText as accountErrorText } from '../account/AccountPanel';
 
 type Step = 'language' | 'companion' | 'welcome' | 'alias' | 'gender' | 'character' | 'arvidColor' | 'ai' | 'account' | 'notifications' | 'categories' | 'install' | 'done';
 
@@ -48,14 +48,17 @@ function AccountStep({ next }: { next: () => void }) {
   const alias = settings?.profile?.alias ?? 'ARVID';
   const support = usePasskeySupport();
   const skip = () => void saveSetting(ctx.db, 'accountOffered', true).then(next);
+  const [askRemote, setAskRemote] = useState(false);
   async function create(withPasskey: boolean) {
     setBusy(true);
     setError(undefined);
+    setAskRemote(false);
     try {
       setKey((await createAccount(ctx, alias, withPasskey)).recoveryKey);
       await saveSetting(ctx.db, 'accountOffered', true);
     } catch (e) {
-      setError(accountErrorText(e));
+      if (e instanceof AccountError && e.code === 'passkey-cancelled') setAskRemote(true);
+      else setError(accountErrorText(e));
     } finally {
       setBusy(false);
     }
@@ -76,7 +79,11 @@ function AccountStep({ next }: { next: () => void }) {
           </li>
         ))}
       </ul>
-      <CreateButtons support={support} disabled={busy} block onCreate={(withPasskey) => void create(withPasskey)} />
+      {askRemote ? (
+        <RemoteOnlyPrompt disabled={busy} onYes={() => void create(false)} onNo={() => setAskRemote(false)} />
+      ) : (
+        <CreateButtons support={support} disabled={busy} block onCreate={(withPasskey) => void create(withPasskey)} />
+      )}
       <button type="button" className="btn btn-ghost btn-block" disabled={busy} onClick={skip}>
         {t('account.notNow')}
       </button>

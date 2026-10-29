@@ -1202,7 +1202,8 @@
       "passkey": "No se pudo verificar la passkey.",
       "cancelled": "Cancelado.",
       "failed": "Algo falló. Inténtalo de nuevo.",
-      "no-local-passkey": "Este teléfono no puede guardar passkeys (revisa que tenga bloqueo de pantalla y una cuenta de Google). Puedes usar la clave de recuperación: funciona igual."
+      "no-local-passkey": "Este teléfono no puede guardar passkeys (revisa que tenga bloqueo de pantalla y una cuenta de Google). Puedes usar la clave de recuperación: funciona igual.",
+      "passkey-cancelled": "Se cerró la ventana de la passkey."
     },
     "saveTitle": "Guarda tu progreso",
     "notNow": "Ahora no",
@@ -1223,7 +1224,10 @@
       }
     },
     "remoteOnly": "Este teléfono no puede guardar passkeys por sí mismo (solo con otro dispositivo o una llave USB). Te recomendamos la clave de recuperación.",
-    "createRemote": "Crear con passkey de otro dispositivo"
+    "createRemote": "Crear con passkey de otro dispositivo",
+    "remoteQuestion": "¿Te ofreció solo «otro dispositivo» o una llave USB? Entonces este teléfono no puede guardar passkeys: usa la clave de recuperación, funciona igual.",
+    "remoteYes": "Sí, usar la clave de recuperación",
+    "remoteNo": "No, volver a intentarlo"
   },
   "friends": {
     "title": "Amigos",
