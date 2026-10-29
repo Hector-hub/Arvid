@@ -34,8 +34,11 @@ const RECOVERY_FAILS = 5;
 const RECOVERY_LOCK_MS = 15 * 60_000;
 const UPLOADS_PER_HOUR = 60;
 
-const json = (status: number, body: unknown) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+const json = (status: number, body: unknown) => {
+  // En los registros de Netlify, qué paso falló y por qué (solo la ruta y el código; nunca datos, D-192)
+  if (status >= 400 && status !== 404) console.warn(`account ${status} ${(body as { error?: string }).error ?? ''}`);
+  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+};
 
 /** Lo que hace la librería de passkeys; las pruebas lo sustituyen por una versión simulada (NFR14-05). */
 export interface WebAuthn {
@@ -179,7 +182,9 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
       });
       if (!v.verified || !v.registrationInfo) return json(401, { error: 'passkey' });
       info = v.registrationInfo.credential;
-    } catch {
+    } catch (e) {
+      // El motivo de la librería (origen, reto, formato…), sin datos de la cuenta
+      console.warn(`account passkey: ${(e as Error).message}`);
       return json(401, { error: 'passkey' });
     }
     const account = await createAccount(c.accountId, c.alias ?? 'ARVID', recovery.data);
@@ -231,7 +236,9 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
       });
       if (!v.verified) return json(401, { error: 'passkey' });
       await stores.credentials.set(response.id, { ...cred, counter: v.authenticationInfo.newCounter });
-    } catch {
+    } catch (e) {
+      // El motivo de la librería (origen, reto, formato…), sin datos de la cuenta
+      console.warn(`account passkey: ${(e as Error).message}`);
       return json(401, { error: 'passkey' });
     }
     return json(200, {
@@ -333,7 +340,9 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
         credentials: [...account.credentials, info.id],
         wrapped: { ...account.wrapped, prf: prf.data ? { ...account.wrapped.prf, [info.id]: prf.data } : account.wrapped.prf },
       });
-    } catch {
+    } catch (e) {
+      // El motivo de la librería (origen, reto, formato…), sin datos de la cuenta
+      console.warn(`account passkey: ${(e as Error).message}`);
       return json(401, { error: 'passkey' });
     }
     return json(200, { ok: true });

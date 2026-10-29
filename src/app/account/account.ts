@@ -146,6 +146,21 @@ function prfOutput(results: unknown): Uint8Array<ArrayBuffer> | undefined {
 
 export const passkeysAvailable = () => browserSupportsWebAuthn();
 
+/**
+ * Crea la passkey pidiendo el PRF (S14-03). Algunos Android rechazan el PRF al crearla: entonces se reintenta sin él
+ * (D-192). La passkey sirve igual para entrar; los datos se descifran con la clave de recuperación.
+ */
+async function registerPasskey(options: PublicKeyCredentialCreationOptionsJSON) {
+  try {
+    return await startRegistration({ optionsJSON: withPrf(options) });
+  } catch (e) {
+    const name = (e as { name?: string; cause?: { name?: string } })?.cause?.name ?? (e as { name?: string })?.name;
+    // Cancelar o cerrar el diálogo del sistema no se reintenta
+    if (name === 'NotAllowedError' || name === 'AbortError' || (e as { code?: string })?.code === 'ERROR_CEREMONY_ABORTED') throw e;
+    return startRegistration({ optionsJSON: options });
+  }
+}
+
 // ---------- Crear la cuenta (CU-02, CU-04) ----------
 
 export interface Created {
@@ -162,7 +177,7 @@ export async function createAccount(ctx: DataContext, alias: string, withPasskey
   let result: { accountId: string; session: string };
   if (withPasskey) {
     const { challengeId, options } = await api<{ challengeId: string; options: PublicKeyCredentialCreationOptionsJSON }>('POST', 'register/options', { alias });
-    const response = await startRegistration({ optionsJSON: withPrf(options) });
+    const response = await registerPasskey(options);
     const prf = prfOutput(response.clientExtensionResults);
     const prfWrapped = prf ? await wrapDataKey(dataKey, await derivePrfWrap(prf)) : undefined;
     result = await api('POST', 'register/verify', { challengeId, response, recovery: { auth, wrapped }, prfWrapped });
@@ -298,7 +313,7 @@ export async function rotateRecoveryKey(account: DeviceAccount): Promise<string>
 
 export async function addPasskey(ctx: DataContext, account: DeviceAccount) {
   const { challengeId, options } = await api<{ challengeId: string; options: PublicKeyCredentialCreationOptionsJSON }>('POST', 'passkey/options', {}, account.session);
-  const response = await startRegistration({ optionsJSON: withPrf(options) });
+  const response = await registerPasskey(options);
   const prf = prfOutput(response.clientExtensionResults);
   const prfWrapped = prf ? await wrapDataKey(account.dataKey, await derivePrfWrap(prf)) : undefined;
   await api('POST', 'passkey/verify', { challengeId, response, prfWrapped }, account.session);

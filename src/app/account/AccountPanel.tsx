@@ -31,7 +31,10 @@ export function errorText(e: unknown): string {
   const code = e instanceof AccountError ? e.code : 'failed';
   const key = `account.errors.${code}` as TKey;
   const text = t(key);
-  return text === key ? t('account.errors.failed') : text;
+  if (text !== key) return text;
+  // Error desconocido: el motivo concreto entre paréntesis, para poder diagnosticarlo (D-192)
+  const detail = e instanceof AccountError ? `${e.code}${e.status ? ` ${e.status}` : ''}` : ((e as { name?: string; code?: string })?.code ?? (e as { name?: string })?.name ?? '');
+  return detail ? `${t('account.errors.failed')} (${detail})` : t('account.errors.failed');
 }
 
 function ago(at: string): string {
