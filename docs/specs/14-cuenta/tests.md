@@ -26,4 +26,4 @@
 |---|---|---|---|---|---|---|---|
 | 2026-10-28 | iPhone, iOS 18.1.1 (Safari) | Navegador (no instalada) | Sí | Sí | Sí | Sí, ya al crear | Sí |
 | 2026-10-28 | iPhone, iOS 18.1.1 | App instalada | Sí | Sí | Sí, también con la passkey creada en Safari (llavero de iCloud) | Sí | Sí: el secreto de la passkey de Safari es el mismo en la app (6195e0…) |
-| — | Android | Navegador e instalada | Pendiente | | | | |
+| 2026-10-28 | Android | Según el responsable | Sí | Sí | Sí | Sí | Sí |
