@@ -95,10 +95,12 @@ export function CreateButtons({
  * Tras cerrar la ventana de crear la passkey (D-194): si el teléfono solo ofrecía otro dispositivo o una llave USB, se
  * crea con la clave de recuperación y se recuerda para este teléfono.
  */
-export function RemoteOnlyPrompt({ onYes, onNo, disabled }: { onYes: () => void; onNo: () => void; disabled: boolean }) {
+export function RemoteOnlyPrompt({ onYes, onNo, disabled, reason }: { onYes: () => void; onNo: () => void; disabled: boolean; reason?: string }) {
   return (
     <div className="banner stack" role="status" style={{ alignItems: 'stretch' }}>
       <p className="small">{t('account.remoteQuestion')}</p>
+      {/* El motivo que dio el teléfono, para poder diagnosticarlo */}
+      {reason && <p className="small muted">({reason})</p>}
       <button
         type="button"
         className="btn btn-primary"
@@ -145,7 +147,7 @@ function SignedOut({ alias, onKey, onSignIn }: { alias: string; onKey: (key: str
   const [error, setError] = useState<string>();
   const online = typeof navigator === 'undefined' || navigator.onLine !== false;
   const support = usePasskeySupport();
-  const [askRemote, setAskRemote] = useState(false);
+  const [askRemote, setAskRemote] = useState<string | false>(false);
 
   async function create(withPasskey: boolean) {
     setBusy(true);
@@ -154,7 +156,7 @@ function SignedOut({ alias, onKey, onSignIn }: { alias: string; onKey: (key: str
     try {
       onKey((await createAccount(ctx, alias, withPasskey)).recoveryKey);
     } catch (e) {
-      if (e instanceof AccountError && e.code === 'passkey-cancelled') setAskRemote(true);
+      if (e instanceof AccountError && e.code === 'passkey-cancelled') setAskRemote(String(e.detail?.reason ?? ''));
       else setError(errorText(e));
     } finally {
       setBusy(false);
@@ -164,8 +166,8 @@ function SignedOut({ alias, onKey, onSignIn }: { alias: string; onKey: (key: str
   return (
     <>
       <p className="small muted">{t('account.intro')}</p>
-      {askRemote ? (
-        <RemoteOnlyPrompt disabled={busy} onYes={() => void create(false)} onNo={() => setAskRemote(false)} />
+      {askRemote !== false ? (
+        <RemoteOnlyPrompt disabled={busy} reason={askRemote} onYes={() => void create(false)} onNo={() => setAskRemote(false)} />
       ) : (
         <CreateButtons support={support} disabled={busy || !online} onCreate={(withPasskey) => void create(withPasskey)} />
       )}

@@ -14,6 +14,8 @@ const CSP =
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
+    // Cuándo se compiló: con el mismo número de versión, distingue una compilación de otra en Ajustes
+    __APP_BUILD__: JSON.stringify(new Date().toISOString()),
   },
   plugins: [
     react(),

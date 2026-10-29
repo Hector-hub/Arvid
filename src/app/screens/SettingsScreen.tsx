@@ -271,6 +271,7 @@ function VersionLine() {
     <>
       <p className="small muted" onClick={tap}>
         {t('settings.version', { version: __APP_VERSION__ })}
+        {typeof __APP_BUILD__ === 'string' && ` · ${new Date(__APP_BUILD__).toLocaleString(getLocale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}`}
       </p>
       {notice && (
         <p className="small" role="status">

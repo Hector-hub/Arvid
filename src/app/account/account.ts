@@ -220,25 +220,20 @@ async function registerPasskey(options: PublicKeyCredentialCreationOptionsJSON) 
   };
   const attempts = [withPrf(options), options, anywhere];
   let last: unknown;
-  for (const [i, optionsJSON] of attempts.entries()) {
+  for (const optionsJSON of attempts) {
     try {
       return await startRegistration({ optionsJSON });
     } catch (e) {
-      const name = (e as { cause?: { name?: string } })?.cause?.name ?? (e as { name?: string })?.name;
-      const cancelled = name === 'NotAllowedError' || name === 'AbortError' || (e as { code?: string })?.code === 'ERROR_CEREMONY_ABORTED';
-      // Si el teléfono no pudo guardarla y en el último intento solo ofrecía otro dispositivo o una llave USB, cerrar
-      // esa ventana no es «cancelar»: el teléfono no admite passkeys (se explica y se ofrece la clave, D-193)
-      if (cancelled && i === attempts.length - 1) {
-        rememberRemoteOnly();
-        throw new AccountError('no-local-passkey');
-      }
-      // Cerrar la ventana del sistema no se reintenta. Puede ser que cancelaras o que el teléfono solo ofreciera otro
-      // dispositivo o una llave USB (no se distingue): la app lo pregunta
-      if (cancelled) throw new AccountError('passkey-cancelled');
       last = e;
+      const name = (e as { cause?: { name?: string } })?.cause?.name ?? (e as { name?: string })?.name;
+      // Cerrar la ventana del sistema no se reintenta
+      if (name === 'NotAllowedError' || name === 'AbortError' || (e as { code?: string })?.code === 'ERROR_CEREMONY_ABORTED') break;
     }
   }
-  throw last;
+  // Sin passkey, sea cual sea el motivo (cancelar, el teléfono solo ofrecía otro dispositivo o una llave USB, o un
+  // error del propio teléfono): la app pregunta y ofrece la clave de recuperación (D-194). El motivo, para diagnosticar
+  const detail = (last as { cause?: { name?: string }; name?: string })?.cause?.name ?? (last as { name?: string })?.name;
+  throw new AccountError('passkey-cancelled', undefined, { reason: detail });
 }
 
 // ---------- Crear la cuenta (CU-02, CU-04) ----------

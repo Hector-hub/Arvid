@@ -48,7 +48,7 @@ function AccountStep({ next }: { next: () => void }) {
   const alias = settings?.profile?.alias ?? 'ARVID';
   const support = usePasskeySupport();
   const skip = () => void saveSetting(ctx.db, 'accountOffered', true).then(next);
-  const [askRemote, setAskRemote] = useState(false);
+  const [askRemote, setAskRemote] = useState<string | false>(false);
   async function create(withPasskey: boolean) {
     setBusy(true);
     setError(undefined);
@@ -57,7 +57,7 @@ function AccountStep({ next }: { next: () => void }) {
       setKey((await createAccount(ctx, alias, withPasskey)).recoveryKey);
       await saveSetting(ctx.db, 'accountOffered', true);
     } catch (e) {
-      if (e instanceof AccountError && e.code === 'passkey-cancelled') setAskRemote(true);
+      if (e instanceof AccountError && e.code === 'passkey-cancelled') setAskRemote(String(e.detail?.reason ?? ''));
       else setError(accountErrorText(e));
     } finally {
       setBusy(false);
@@ -79,8 +79,8 @@ function AccountStep({ next }: { next: () => void }) {
           </li>
         ))}
       </ul>
-      {askRemote ? (
-        <RemoteOnlyPrompt disabled={busy} onYes={() => void create(false)} onNo={() => setAskRemote(false)} />
+      {askRemote !== false ? (
+        <RemoteOnlyPrompt disabled={busy} reason={askRemote} onYes={() => void create(false)} onNo={() => setAskRemote(false)} />
       ) : (
         <CreateButtons support={support} disabled={busy} block onCreate={(withPasskey) => void create(withPasskey)} />
       )}

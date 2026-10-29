@@ -102,7 +102,7 @@ describe('Ajustes', () => {
   it('SET-01: estado del almacenamiento y versión', async () => {
     renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
     expect(await screen.findByText('Protegido')).toBeInTheDocument();
-    expect(screen.getByText(/^ARVID \d+\.\d+\.\d+$/)).toBeInTheDocument();
+    expect(screen.getByText(/^ARVID \d+\.\d+\.\d+( · .+)?$/)).toBeInTheDocument();
   });
 
   it('CAT-02: explica por qué no se puede desactivar una categoría en uso', async () => {

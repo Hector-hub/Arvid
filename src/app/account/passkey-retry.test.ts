@@ -46,13 +46,11 @@ describe('crear passkey (D-192)', () => {
     expect(last.authenticatorSelection).toEqual({ residentKey: 'required', authenticatorAttachment: undefined });
   });
 
-  it('si en el último intento se cierra la ventana (solo ofrecía otro dispositivo), se explica que el teléfono no admite passkeys', async () => {
+  it('si los tres intentos fallan con un error del teléfono, se pregunta igual (con el motivo)', async () => {
     const { addPasskey } = await import('./account');
     const fail = () => Object.assign(new Error('no'), { name: 'NotSupportedError' });
-    startRegistration.mockRejectedValueOnce(fail()).mockRejectedValueOnce(fail()).mockRejectedValueOnce(Object.assign(new Error('cerrada'), { name: 'NotAllowedError' }));
-    await expect(addPasskey(ctx, await account())).rejects.toMatchObject({ code: 'no-local-passkey' });
-    // Lo recuerda en este teléfono: desde ahora la clave de recuperación va primero (D-194)
-    expect(localStorage.getItem('arvid-passkey-remote')).toBe('1');
+    startRegistration.mockRejectedValueOnce(fail()).mockRejectedValueOnce(fail()).mockRejectedValueOnce(fail());
+    await expect(addPasskey(ctx, await account())).rejects.toMatchObject({ code: 'passkey-cancelled', detail: { reason: 'NotSupportedError' } });
   });
 
   it('cancelar el diálogo del sistema no se reintenta', async () => {
