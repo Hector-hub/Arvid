@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router';
 import { saveSetting } from '../../data/repository';
 import { trend, type Score, type WindowDays } from '../../domain/attributes/attributes';
 import { MIN_RADAR_AXES } from '../../domain/attributes/radar';
+import { accountsEnabled } from '../account/account';
 import { AchievementsSection } from '../achievements/AchievementsSection';
 import { CITY_ITEMS } from '../../domain/scene/city';
 import { useAnalysis } from '../analysis';
@@ -60,6 +61,12 @@ export function ProfileScreen() {
         <Link to="/perfil/ciudad" className="btn">
           {t('city.title')} · {t('city.progress', { done: CITY_ITEMS.filter((u) => u.level <= p.level).length, total: CITY_ITEMS.length })}
         </Link>
+        {/* Amigos (spec 15, AM-01): con la cuenta, oculta hasta la 2.0 */}
+        {accountsEnabled() && (
+          <Link to="/perfil/amigos" className="btn">
+            {t('friends.link')}
+          </Link>
+        )}
       </Panel>
 
       <div className="tabs" role="group" aria-label={t('profile.windowLabel')}>

@@ -26,7 +26,7 @@ import {
 } from './account';
 
 /** Mensaje para un error de la cuenta o de la passkey (cancelar el diálogo del sistema no es un error grave). */
-function errorText(e: unknown): string {
+export function errorText(e: unknown): string {
   if (e instanceof DOMException && (e.name === 'NotAllowedError' || e.name === 'AbortError')) return t('account.errors.cancelled');
   const code = e instanceof AccountError ? e.code : 'failed';
   const key = `account.errors.${code}` as TKey;
@@ -195,7 +195,7 @@ function SignedIn({ account, onKey }: { account: DeviceAccount; onKey: (key: str
 }
 
 /** Hoja flotante sobre todo (portal), como las de la app. */
-function Sheet({ label, children, onClose }: { label: string; children: ReactNode; onClose?: () => void }) {
+export function Sheet({ label, children, onClose }: { label: string; children: ReactNode; onClose?: () => void }) {
   useEffect(() => {
     if (!onClose) return;
     const escape = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -212,7 +212,7 @@ function Sheet({ label, children, onClose }: { label: string; children: ReactNod
   );
 }
 
-function Confirm({ title, text, yes, danger, onYes, onCancel }: { title: string; text: string; yes: string; danger?: boolean; onYes: () => void; onCancel: () => void }) {
+export function Confirm({ title, text, yes, danger, onYes, onCancel }: { title: string; text: string; yes: string; danger?: boolean; onYes: () => void; onCancel: () => void }) {
   const cancel = useRef<HTMLButtonElement>(null);
   useEffect(() => cancel.current?.focus(), []);
   return (

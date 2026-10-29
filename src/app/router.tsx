@@ -21,6 +21,8 @@ import { CreditsScreen } from './screens/CreditsScreen';
 import { AttributeDetailScreen, DisciplineDetailScreen } from './screens/profile/AttributeDetailScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { TodayScreen } from './screens/TodayScreen';
+import { FriendLinkScreen } from './friends/FriendLinkScreen';
+import { FriendsScreen } from './friends/FriendsScreen';
 
 /** Rutas (PWA-05). */
 export const routes: RouteObject[] = [
@@ -49,6 +51,8 @@ export const routes: RouteObject[] = [
       { path: 'perfil/atributo/:categoryId', element: <AttributeDetailScreen /> },
       { path: 'perfil/disciplina', element: <DisciplineDetailScreen /> },
       { path: 'perfil/ciudad', element: <CityScreen /> },
+      { path: 'perfil/amigos', element: <FriendsScreen /> },
+      { path: 'a/:id', element: <FriendLinkScreen /> },
       // La pantalla se llamaba Personaje hasta la 0.5.0 (PF-01)
       { path: 'personaje/*', element: <LegacyProfileRedirect /> },
       { path: 'ajustes', element: <SettingsScreen /> },

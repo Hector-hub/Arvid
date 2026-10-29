@@ -233,7 +233,7 @@ Se configuran en **Ajustes → Notificaciones**, en un grupo nuevo «Amigos y re
 ## 8. Plan de entrega
 | Fase | Qué |
 |---|---|
-| **15a** | Amigos: enlaces, solicitudes, lista, bloquear y la ruta en iPhone (EN-03) |
+| **15a** ✅ (1.8.8) | Amigos: enlaces, solicitudes, lista, bloquear y la ruta en iPhone (EN-03) |
 | **15b** | Retos: crear, invitar, aceptar, actividad, marcar y sincronizar, marcador y abandonar |
 | **15c** | Final, retos cumplidos en el Perfil, avisos y celebración del compañero |
 | **2.0.0** | Con la spec 14, se enciende `VITE_ACCOUNTS` |
@@ -250,3 +250,9 @@ Se configuran en **Ajustes → Notificaciones**, en un grupo nuevo «Amigos y re
 | S15-07 | Avances de otros: como mucho un aviso al día por reto; el recordatorio va dentro del resumen de la tarde |
 | S15-08 | En iPhone los enlaces se abren en Safari: «Tengo un enlace» en la app y detección del portapapeles |
 | S15-09 | La actividad del reto se archiva sola al terminar o abandonar; no se puede editar salvo recordatorios y área |
+
+### Notas de implementación (15a)
+
+- Las pruebas del servidor viven en `src/app/friends/social-server.test.ts` (no en `netlify/functions/`), junto a las de la cuenta.
+- Detección del portapapeles (EN-03): en vez de leerlo solo al volver a la app (iOS pide permiso cada vez), «Tengo un enlace» tiene un botón **Pegar** que lo lee con un toque del usuario y abre la invitación.
+- «Retos juntos» se muestra a 0 hasta la 15b; «Invitar a un reto» llega con la 15b.
