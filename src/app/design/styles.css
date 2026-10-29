@@ -1864,3 +1864,24 @@ html, body { overscroll-behavior-y: contain; }
 .pull-refresh:not(.pulling):not(.ready) { transition: transform 200ms ease, opacity 200ms ease; }
 @keyframes pull-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .pull-refresh.refreshing .pull-refresh-icon { animation: none; } }
+
+/* La escena llega hasta arriba en el móvil, detrás de la hora y la batería (D-187): la franja de la zona segura se
+   rellena con el color del cielo y la fecha y los botones bajan lo justo para no solaparse con la barra de estado */
+@media (max-width: 767px) {
+  .scene-sticky { padding-top: 0; }
+  .scene-sticky .scene {
+    aspect-ratio: auto;
+    padding-top: env(safe-area-inset-top);
+    background: #00003c;
+  }
+  .scene-sticky .scene-canvas { height: auto; aspect-ratio: 2 / 1; }
+  .scene-sticky .scene-overlay { top: calc(env(safe-area-inset-top) + var(--s1)); }
+  .scene-sticky .scene-corner { top: calc(env(safe-area-inset-top) + 6px); }
+  .scene-sticky .scene-intro { top: env(safe-area-inset-top); }
+  /* Con el aviso de nueva versión encima, la escena empieza debajo de él */
+  .main > .banner + * .scene-sticky { padding-top: var(--main-top); }
+  .main > .banner + * .scene-sticky .scene { padding-top: 0; }
+  .main > .banner + * .scene-sticky .scene-overlay { top: var(--s1); }
+  .main > .banner + * .scene-sticky .scene-corner { top: 6px; }
+  .main > .banner + * .scene-sticky .scene-intro { top: 0; }
+}
