@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router';
-import { changeStatus, logCompletion, undoCompletion } from '../../data/repository';
+import { Link, useNavigate, useParams } from 'react-router';
+import { Confirm, errorText } from '../account/AccountPanel';
+import { deleteChallenge } from '../challenges/challenges';
+import { changeStatus, deleteActivity, logCompletion, undoCompletion } from '../../data/repository';
 import { playSfx } from '../sound/sfx';
 import { canLog, detailDays, progressAt, statusAt, versionAt, type DayCell } from '../../domain/activities/rules';
 import type { ActivityRecord } from '../../domain/activities/types';
@@ -11,7 +13,7 @@ import { useAnalysis } from '../analysis';
 import { useToday } from '../clock';
 import { restCovers, upcomingRests } from '../../domain/activities/rests';
 import { restRange } from '../rests/RestsScreen';
-import { useCategories, useData, useRecord, useRests } from '../data';
+import { useCategories, useData, useRecord, useRests, useSettings } from '../data';
 import { BackLink, CategoryIcon, Panel, Segments, Sprite, categoryColor } from '../design/components';
 import {
   categoryName,
@@ -171,7 +173,10 @@ function Detail({ record }: { record: ActivityRecord }) {
             {t('activityDetail.resume')}
           </button>
         )}
-        {status !== 'archived' ? (
+        {/* Actividad de un reto: no se archiva, se elimina con el reto (D-189) */}
+        {record.activity.challengeId ? (
+          <DeleteChallengeActivity challengeId={record.activity.challengeId} activityId={id} />
+        ) : status !== 'archived' ? (
           <button type="button" className="btn btn-danger" onClick={() => void changeStatus(ctx, id, 'archived')}>
             {t('activityDetail.archive')}
           </button>
@@ -182,6 +187,46 @@ function Detail({ record }: { record: ActivityRecord }) {
         )}
       </div>
     </div>
+  );
+}
+
+/** «Eliminar» en la actividad de un reto: sale del reto si seguía en él y borra la actividad con su historial. */
+function DeleteChallengeActivity({ challengeId, activityId }: { challengeId: string; activityId: string }) {
+  const ctx = useData();
+  const account = useSettings()?.account;
+  const navigate = useNavigate();
+  const [confirm, setConfirm] = useState(false);
+  const [error, setError] = useState<string>();
+  return (
+    <>
+      <button type="button" className="btn btn-danger" onClick={() => setConfirm(true)}>
+        {t('challenges.delete')}
+      </button>
+      {error && (
+        <p role="alert" className="field-error">
+          {error}
+        </p>
+      )}
+      {confirm && (
+        <Confirm
+          title={t('challenges.deleteTitle')}
+          text={t('challenges.deleteText')}
+          yes={t('challenges.delete')}
+          danger
+          onCancel={() => setConfirm(false)}
+          onYes={async () => {
+            setConfirm(false);
+            try {
+              if (account) await deleteChallenge(ctx, account, challengeId);
+              else await deleteActivity(ctx, activityId);
+              navigate('/actividades', { replace: true });
+            } catch (e) {
+              setError(errorText(e));
+            }
+          }}
+        />
+      )}
+    </>
   );
 }
 

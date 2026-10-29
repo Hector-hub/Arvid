@@ -186,6 +186,23 @@ export async function changeStatus(ctx: DataContext, id: string, type: Exclude<A
   });
 }
 
+/**
+ * Borra una actividad con todo su historial (spec 15, D-189). Solo se usa con las actividades de reto, al eliminar el
+ * reto: las demás actividades se archivan, nunca se borran.
+ */
+export async function deleteActivity(ctx: DataContext, id: string): Promise<void> {
+  const { db } = ctx;
+  await db.transaction('rw', [db.activities, db.activityVersions, db.activityStatusEvents, db.completions, db.rests], async () => {
+    await db.activities.delete(id);
+    await db.activityVersions.where('activityId').equals(id).delete();
+    await db.activityStatusEvents.where('activityId').equals(id).delete();
+    await db.completions.where('activityId').equals(id).delete();
+    for (const rest of await db.rests.toArray()) {
+      if (rest.activityIds?.includes(id)) await db.rests.update(rest.id, { activityIds: rest.activityIds.filter((a) => a !== id) });
+    }
+  });
+}
+
 /** ACT-08: intercambia el orden con la actividad vecina del mismo grupo de estado. */
 export async function moveActivity(ctx: DataContext, id: string, direction: -1 | 1): Promise<void> {
   const { db } = ctx;

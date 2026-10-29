@@ -1355,7 +1355,10 @@
     "invitationsTitle": "Invitaciones",
     "inviteFormHint": "Les llega al momento. Pueden aceptar hasta el día de inicio.",
     "createInvite_one": "Crear reto e invitar ({count})",
-    "createInvite_other": "Crear reto e invitar ({count})"
+    "createInvite_other": "Crear reto e invitar ({count})",
+    "delete": "Eliminar reto",
+    "deleteTitle": "¿Eliminar el reto?",
+    "deleteText": "Se quitará de tu lista y se borrará su actividad con su historial."
   },
   "refresh": {
     "pull": "Desliza para actualizar",

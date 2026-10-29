@@ -2,12 +2,13 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { loadRecords, logCompletion, saveSetting, undoCompletion, type DataContext } from '../../data/repository';
+import { createActivity, loadRecords, logCompletion, saveSetting, undoCompletion, type DataContext } from '../../data/repository';
 import { newDataKey } from '../../domain/account/crypto';
 import type { ChallengeView } from '../../domain/challenges/challenges';
 import { toLocalDate, type LocalDate } from '../../domain/time/localDate';
 import { renderRoutes, setupData } from '../test-utils';
 import { TodayScreen } from '../screens/TodayScreen';
+import { ActivityDetailScreen } from '../screens/ActivityDetailScreen';
 import { ChallengeFormScreen, ChallengeScreen } from './ChallengeScreens';
 import { syncMarks } from './challenges';
 
@@ -39,6 +40,7 @@ const routes = [
   { path: '/retos/nuevo', element: <ChallengeFormScreen /> },
   { path: '/retos/:id', element: <ChallengeScreen /> },
   { path: '/hoy', element: <TodayScreen /> },
+  { path: '/objetivos', element: <p>Objetivos</p> },
 ];
 
 describe('retos (spec 15, 15b)', () => {
@@ -173,5 +175,35 @@ describe('retos (spec 15, 15b)', () => {
     expect(await ctx.db.challenges.get(CID)).toBeUndefined();
     const record = (await loadRecords(ctx.db)).find((r) => r.activity.challengeId === CID)!;
     expect(record.events.some((e) => e.type === 'archived')).toBe(true);
+  });
+
+  it('D-189: un reto ya abandonado o terminado se elimina: sale de la lista y su actividad se borra', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal('fetch', vi.fn(() => reply(404, { error: 'unavailable' })));
+    const categoryId = (await ctx.db.categories.toArray())[0]!.id;
+    const activityId = await createActivity(ctx, { name: 'Leer', challengeId: CID, config: { period: 'day', target: 1, difficulty: 'easy', categoryId } });
+    await ctx.db.challenges.put({ id: CID, activityId, left: true, view: view({}, [{ id: ME, alias: 'Luis', level: 1, joinedAt: '1', done: [], left: today }] as never), fetchedAt: new Date().toISOString() });
+    renderRoutes(ctx, routes, `/retos/${CID}`);
+    expect(screen.queryByRole('button', { name: 'Abandonar' })).toBeNull();
+    await user.click(await screen.findByRole('button', { name: 'Eliminar reto' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Eliminar reto' }));
+    await waitFor(async () => expect(await ctx.db.challenges.get(CID)).toBeUndefined());
+    expect(await ctx.db.activities.get(activityId)).toBeUndefined();
+    expect(await ctx.db.completions.where('activityId').equals(activityId).count()).toBe(0);
+  });
+
+  it('D-189: la actividad de un reto ya abandonado (sin copia del reto) se elimina desde su pantalla', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal('fetch', vi.fn(() => reply(404, { error: 'unavailable' })));
+    const categoryId = (await ctx.db.categories.toArray())[0]!.id;
+    const activityId = await createActivity(ctx, { name: 'Leer', challengeId: CID, config: { period: 'day', target: 1, difficulty: 'easy', categoryId } });
+    await logCompletion(ctx, activityId, today);
+    renderRoutes(ctx, [{ path: '/actividades/:id', element: <ActivityDetailScreen /> }, { path: '/actividades', element: <p>Actividades</p> }], `/actividades/${activityId}`);
+    expect(screen.queryByRole('button', { name: 'Archivar' })).toBeNull();
+    await user.click(await screen.findByRole('button', { name: 'Eliminar reto' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Eliminar reto' }));
+    expect(await screen.findByText('Actividades')).toBeInTheDocument();
+    expect(await ctx.db.activities.get(activityId)).toBeUndefined();
+    expect(await ctx.db.completions.where('activityId').equals(activityId).count()).toBe(0);
   });
 });

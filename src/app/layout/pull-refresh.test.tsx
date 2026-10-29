@@ -55,3 +55,20 @@ describe('deslizar para actualizar', () => {
     expect(screen.queryByRole('status')).toBeNull();
   });
 });
+
+describe('deslizar para actualizar: dónde no se activa', () => {
+  it('dentro de algo desplazado (p. ej. los mensajes del chat) no actualiza', async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    renderRoutes(ctx, [{ path: '/hoy', element: <><PullToRefresh /><div data-testid="lista" style={{ overflow: 'auto' }}><p>mensajes</p></div></> }], '/hoy');
+    await new Promise((r) => setTimeout(r, 100));
+    const list = screen.getByTestId('lista');
+    list.scrollTop = 120;
+    Object.defineProperty(list, 'scrollTop', { value: 120 });
+    const e = new Event('touchstart', { bubbles: true });
+    Object.defineProperty(e, 'touches', { value: [{ clientY: 100 }] });
+    act(() => void list.dispatchEvent(e));
+    touch('touchmove', 300);
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+});

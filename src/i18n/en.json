@@ -1355,7 +1355,10 @@
     "invitationsTitle": "Invitations",
     "inviteFormHint": "They get it right away and can accept until the start day.",
     "createInvite_one": "Create and invite ({count})",
-    "createInvite_other": "Create and invite ({count})"
+    "createInvite_other": "Create and invite ({count})",
+    "delete": "Delete challenge",
+    "deleteTitle": "Delete the challenge?",
+    "deleteText": "It'll be removed from your list and its activity deleted with its history."
   },
   "refresh": {
     "pull": "Pull to refresh",

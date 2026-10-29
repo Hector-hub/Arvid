@@ -1,6 +1,6 @@
 // Retos en la app (spec 15, §3.2 a §3.6): crear, unirse, abandonar, cancelar y sincronizar. La copia local vive en la
 // tabla `challenges`; al servidor solo van las fechas cumplidas de la actividad del reto (SY-02, NFR15-01).
-import { changeStatus, createActivity, loadRecord, loadSettings, saveSetting, type DataContext } from '../../data/repository';
+import { changeStatus, createActivity, deleteActivity, loadRecord, loadSettings, saveSetting, type DataContext } from '../../data/repository';
 import {
   MARK_GRACE_DAYS,
   endDate,
@@ -86,6 +86,20 @@ export async function leaveChallenge(ctx: DataContext, account: DeviceAccount, i
   await syncMarks(ctx, account).catch(() => undefined);
   await social(account, 'POST', 'challenges/leave', { id, today: todayOf(ctx) });
   await archiveActivity(ctx, id);
+  await ctx.db.challenges.delete(id);
+}
+
+/**
+ * Eliminar el reto (D-189): sales de él (como abandonar; si eras el último, el servidor lo borra) y su actividad se
+ * borra con su historial, en cualquier estado del reto. Si el servidor ya no lo conoce, se borra igualmente aquí.
+ */
+export async function deleteChallenge(ctx: DataContext, account: DeviceAccount, id: string) {
+  await social(account, 'POST', 'challenges/leave', { id, today: todayOf(ctx) }).catch((e: { status?: number }) => {
+    if (e?.status !== 404 && e?.status !== 403) throw e;
+  });
+  // La actividad del reto (y, si quedó alguna más de ese reto de antes, también: p. ej. de un reto ya abandonado)
+  const activities = (await ctx.db.activities.toArray()).filter((a) => a.challengeId === id).map((a) => a.id);
+  for (const activityId of activities) await deleteActivity(ctx, activityId);
   await ctx.db.challenges.delete(id);
 }
 

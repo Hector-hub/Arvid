@@ -30,7 +30,7 @@ import { useCategories, useChallenges, useData, useSettings } from '../data';
 import { BackLink, CategoryIcon, Panel } from '../design/components';
 import { loadFriends, type FriendCard } from '../friends/friends';
 import { categoryName, dayMonth, difficultyLabel, intText } from '../text';
-import { cancelChallenge, createChallenge, declineInvite, inviteFriend, joinChallenge, leaveChallenge, refreshChallenge, type ChallengeInput, type ChallengeInvite } from './challenges';
+import { cancelChallenge, createChallenge, declineInvite, deleteChallenge, inviteFriend, joinChallenge, leaveChallenge, refreshChallenge, type ChallengeInput, type ChallengeInvite } from './challenges';
 
 const DIFFICULTIES: ChallengeDifficulty[] = ['easy', 'medium', 'hard'];
 
@@ -407,7 +407,7 @@ export function ChallengeScreen() {
   const navigate = useNavigate();
   const local = useChallenges()?.find((l) => l.id === id);
   const [error, setError] = useState<string>();
-  const [confirm, setConfirm] = useState<'leave' | 'cancel'>();
+  const [confirm, setConfirm] = useState<'leave' | 'cancel' | 'delete'>();
   const account = settings?.account;
 
   useEffect(() => {
@@ -424,6 +424,7 @@ export function ChallengeScreen() {
   const started = today >= c.start;
   const ended = endDate(c) < today;
   const result = resultText(view, me, today);
+  const active = !local.left && !c.cancelled && !ended;
   const canInvite = !c.cancelled && !local.left && today <= c.start && view.participants.length < MAX_PARTICIPANTS;
 
   const act = async (fn: (a: DeviceAccount) => Promise<unknown>) => {
@@ -458,29 +459,29 @@ export function ChallengeScreen() {
           {error}
         </p>
       )}
-      {!local.left && !c.cancelled && !ended && (
-        <div className="row">
-          {c.owner === me && !started && (
-            <button type="button" className="btn grow" onClick={() => setConfirm('cancel')}>
-              {t('challenges.cancel')}
-            </button>
-          )}
-          <button type="button" className="btn btn-danger grow" onClick={() => setConfirm('leave')}>
-            {t('challenges.leave')}
+      {/* En curso: abandonar (o cancelar, el creador antes de empezar). Ya abandonado, terminado o cancelado:
+          eliminar, que lo quita de la lista y borra su actividad (D-189) */}
+      <div className="row">
+        {active && c.owner === me && !started && (
+          <button type="button" className="btn grow" onClick={() => setConfirm('cancel')}>
+            {t('challenges.cancel')}
           </button>
-        </div>
-      )}
+        )}
+        <button type="button" className="btn btn-danger grow" onClick={() => setConfirm(active ? 'leave' : 'delete')}>
+          {active ? t('challenges.leave') : t('challenges.delete')}
+        </button>
+      </div>
       {confirm && (
         <Confirm
-          title={t(confirm === 'leave' ? 'challenges.leaveTitle' : 'challenges.cancelTitle')}
-          text={t(confirm === 'leave' ? 'challenges.leaveText' : 'challenges.cancelText')}
-          yes={t(confirm === 'leave' ? 'challenges.leave' : 'challenges.cancel')}
+          title={t(`challenges.${confirm}Title`)}
+          text={t(`challenges.${confirm}Text`)}
+          yes={t(confirm === 'leave' ? 'challenges.leave' : confirm === 'delete' ? 'challenges.delete' : 'challenges.cancel')}
           danger
           onCancel={() => setConfirm(undefined)}
           onYes={() => {
             const kind = confirm;
             setConfirm(undefined);
-            void act((a) => (kind === 'leave' ? leaveChallenge : cancelChallenge)(ctx, a, c.id)).then(() => navigate('/objetivos'));
+            void act((a) => (kind === 'leave' ? leaveChallenge : kind === 'delete' ? deleteChallenge : cancelChallenge)(ctx, a, c.id)).then(() => navigate('/objetivos'));
           }}
         />
       )}

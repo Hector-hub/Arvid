@@ -49,7 +49,11 @@ export function PullToRefresh() {
       const busy = latest.current.phase === 'refreshing';
       // Solo desde arriba del todo y fuera de hojas o campos de texto
       const target = e.target as HTMLElement | null;
-      if (busy || window.scrollY > 0 || target?.closest('.sheet, input, textarea, .chat')) return;
+      // En el chat, deslizar hacia abajo es para ver mensajes anteriores: ahí no hay actualizar
+      if (busy || window.scrollY > 0 || location.pathname.startsWith('/chat') || target?.closest('.sheet, input, textarea, .chat')) return;
+      // Dentro de algo con su propio desplazamiento (p. ej. los mensajes del chat) que no esté arriba del todo, el
+      // gesto es para desplazarlo, no para actualizar
+      for (let el = target; el && el !== document.body; el = el.parentElement) if (el.scrollTop > 0) return;
       start.current = e.touches[0]!.clientY;
     };
     const onMove = (e: TouchEvent) => {
