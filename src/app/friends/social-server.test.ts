@@ -2,6 +2,7 @@
 // Servidor de amigos (spec 15, §3.1) con almacenes en memoria.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { handle, MAX_FRIENDS, type SocialStores } from '../../../netlify/functions/social.mts';
+import { sendChallengePushes } from '../../../netlify/lib/socialPush.mts';
 import { signSession, type Account, type ListKV } from '../../../netlify/lib/account.mts';
 
 const SECRET = 'secreto-de-prueba';
@@ -19,6 +20,7 @@ function memory<T>(): ListKV<T> & { map: Map<string, T> } {
 
 let stores: SocialStores;
 let now: number;
+let pushes: { to: string; type: string; alias?: string; name?: string; done?: number; success?: boolean; winners?: string[] }[];
 
 const ANA = 'ana-0000-cuenta';
 const LUIS = 'luis-000-cuenta';
@@ -31,6 +33,7 @@ function account(id: string, alias: string, level = 3): Account {
 beforeEach(async () => {
   stores = { accounts: memory(), social: memory(), limits: memory(), challenges: memory() };
   now = Date.UTC(2026, 9, 28, 12);
+  pushes = [];
   for (const [id, alias] of [[ANA, 'Ana'], [LUIS, 'Luis'], [EVA, 'Eva']] as const) await stores.accounts.set(id, account(id, alias));
 });
 
@@ -50,7 +53,7 @@ async function call(as: string | undefined, method: string, route: string, body?
       headers: { 'Content-Type': 'application/json', ...(as ? { Authorization: `Bearer ${signSession(as, SECRET, now)}` } : {}) },
       body: body === undefined ? undefined : JSON.stringify(body),
     }),
-    { stores, now: () => now, secret: SECRET },
+    { stores, now: () => now, secret: SECRET, notify: async (to, push) => void pushes.push({ to, ...push }) },
   );
   return { status: res.status, body: (await res.json()) as Reply };
 }
@@ -214,5 +217,70 @@ describe('retos (spec 15, RT, IN, SY, MK)', () => {
     await ch(LUIS, 'POST', 'join', { id: later, today: TODAY });
     expect((await ch(LUIS, 'POST', 'cancel', { id: later, today: TODAY })).status).toBe(403);
     expect((await ch(ANA, 'POST', 'cancel', { id: later, today: TODAY })).body.challenge.cancelled).toBe(true);
+  });
+});
+
+describe('avisos (spec 15, AV)', () => {
+  const TODAY = '2026-10-28';
+  const challengeOf = async (as: string, extra: object = {}) =>
+    ((await call(as, 'POST', 'challenges/create', { name: 'Leer', difficulty: 'easy', days: 7, start: TODAY, mode: 'coop', today: TODAY, ...extra })).body as unknown as { challenge: { id: string } }).challenge.id;
+
+  it('AV-01: solicitud y aceptación avisan al momento; rechazar no avisa', async () => {
+    await call(LUIS, 'POST', 'request', { id: ANA });
+    expect(pushes).toEqual([{ to: ANA, type: 'friend-request', alias: 'Luis', url: '/perfil/amigos' }]);
+    await call(ANA, 'POST', 'respond', { id: LUIS, accept: true });
+    expect(pushes.at(-1)).toMatchObject({ to: LUIS, type: 'friend-accepted', alias: 'Ana' });
+    await call(EVA, 'POST', 'request', { id: ANA });
+    const n = pushes.length;
+    await call(ANA, 'POST', 'respond', { id: EVA, accept: false });
+    expect(pushes).toHaveLength(n);
+  });
+
+  it('IN-01: invitar a un amigo a un reto le avisa; a quien no es amigo, no', async () => {
+    await call(LUIS, 'POST', 'accept', { id: ANA });
+    const id = await challengeOf(ANA);
+    expect((await call(ANA, 'POST', 'challenges/invite', { id, friendId: LUIS, today: TODAY })).status).toBe(200);
+    expect(pushes.at(-1)).toMatchObject({ to: LUIS, type: 'challenge-invite', alias: 'Ana', name: 'Leer', url: `/r/${id}` });
+    expect((await call(ANA, 'POST', 'challenges/invite', { id, friendId: EVA, today: TODAY })).status).toBe(404);
+  });
+
+  it('AM-04: la lista cuenta los retos hechos juntos', async () => {
+    await call(LUIS, 'POST', 'accept', { id: ANA });
+    const id = await challengeOf(ANA);
+    await call(LUIS, 'POST', 'challenges/join', { id, today: TODAY });
+    expect((await friendsOf(ANA)).friends).toMatchObject([{ alias: 'Luis', together: 1 }]);
+  });
+
+  it('AV-05: el dispositivo se asocia a la cuenta con sus interruptores', async () => {
+    const deviceId = '2f0e8a1c-3b4d-4e5f-8a6b-7c8d9e0f1a2b';
+    await call(ANA, 'POST', 'device', { deviceId, prefs: { progress: false } });
+    expect((await stores.social.get(ANA))!.devices).toEqual([{ id: deviceId, prefs: { invites: true, progress: false, final: true } }]);
+    await call(ANA, 'POST', 'device', { deviceId, remove: true });
+    expect((await stores.social.get(ANA))!.devices).toEqual([]);
+  });
+
+  it('AV-03/AV-04: un aviso de avances al día y el resultado al terminar el margen', async () => {
+    const id = await challengeOf(ANA);
+    await call(LUIS, 'POST', 'challenges/join', { id, today: TODAY });
+    await call(EVA, 'POST', 'challenges/join', { id, today: TODAY });
+    await call(ANA, 'POST', 'challenges/mark', { id, date: TODAY });
+    await call(EVA, 'POST', 'challenges/mark', { id, date: TODAY });
+    pushes = [];
+    const cron = () =>
+      sendChallengePushes({ challenges: stores.challenges, accounts: stores.accounts, notify: async (to, push) => void pushes.push({ to, ...push }), zoneOf: async () => 'UTC', now });
+    await cron();
+    expect(pushes).toEqual([{ to: LUIS, type: 'challenge-progress', url: `/retos/${id}`, name: 'Leer', done: 2, total: 3 }]);
+    await cron();
+    expect(pushes).toHaveLength(1);
+    now = Date.UTC(2026, 10, 7, 12); // 7 de noviembre: el resultado, a todos
+    pushes = [];
+    await cron();
+    expect(pushes.map((p) => [p.to, p.type, p.success])).toEqual([
+      [ANA, 'challenge-end', false],
+      [LUIS, 'challenge-end', false],
+      [EVA, 'challenge-end', false],
+    ]);
+    await cron();
+    expect(pushes).toHaveLength(3);
   });
 });

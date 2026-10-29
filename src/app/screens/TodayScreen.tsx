@@ -22,6 +22,7 @@ import { celebrate, floatXp } from '../scene/engine';
 import { TodayMissionsSection, useTodayMissions } from './missions/TodayMissions';
 import { useCategories, useChallenges, useData, useRecords, useRests, useSettings } from '../data';
 import { challengeDay } from '../../domain/challenges/challenges';
+import { ChallengeCelebration } from '../challenges/ChallengeCelebration';
 import { CategoryIcon, Panel, Segments, Sprite, XpBar, categoryColor } from '../design/components';
 import {
   daysLeftText,
@@ -79,6 +80,7 @@ export function TodayScreen() {
 
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
+      <ChallengeCelebration paused={showIntro} />
       {/* Escena, fecha y nivel quedan fijos arriba al hacer scroll (UB-05); la fecha va en la escena (UB-06) */}
       <header className="scene-sticky stack" style={{ gap: 'var(--s2)' }}>
         <Scene overlay={<h1 className="scene-date">{longDate(today)}</h1>} intro={longDate(today)} />

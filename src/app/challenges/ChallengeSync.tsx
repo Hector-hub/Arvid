@@ -5,14 +5,25 @@ import { useEffect, useRef } from 'react';
 import { accountsEnabled } from '../account/account';
 import { useData, useSettings } from '../data';
 import { refreshChallenges, syncMarks } from './challenges';
+import { linkDevice } from '../friends/friends';
 
 export const REFRESH_MS = 5 * 60_000;
 const MARK_DELAY_MS = 2_000;
 
 export function ChallengeSync() {
   const ctx = useData();
-  const account = useSettings()?.account;
+  const settings = useSettings();
+  const account = settings?.account;
+  const notifications = settings?.notifications;
   const busy = useRef(false);
+
+  // AV-05: con los avisos activados, el dispositivo queda asociado a la cuenta (y con sus interruptores)
+  const prefs = JSON.stringify(notifications?.social ?? null);
+  useEffect(() => {
+    if (!account || !accountsEnabled() || !notifications?.deviceId) return;
+    linkDevice(account, notifications.deviceId, notifications.social, !notifications.enabled).catch(() => undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account, notifications?.deviceId, notifications?.enabled, prefs]);
 
   useEffect(() => {
     if (!account || !accountsEnabled()) return;

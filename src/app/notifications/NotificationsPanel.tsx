@@ -1,7 +1,8 @@
 // Ajustes → Notificaciones (spec 10, NT-01, NT-03, NT-04, RS-03, BG-03).
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { saveSetting, type NotificationSettings } from '../../data/repository';
+import { DEFAULT_SOCIAL_NOTIFICATIONS, saveSetting, type NotificationSettings } from '../../data/repository';
+import { accountsEnabled } from '../account/account';
 import { t } from '../../i18n';
 import { useData, useSettings } from '../data';
 import { Panel } from '../design/components';
@@ -9,7 +10,10 @@ import { currentNotifications, disablePush, enablePush, pushSupport } from './pu
 
 export function NotificationsPanel() {
   const { db } = useData();
-  const settings = currentNotifications(useSettings()?.notifications);
+  const all = useSettings();
+  const settings = currentNotifications(all?.notifications);
+  const account = all?.account;
+  const social = { ...DEFAULT_SOCIAL_NOTIFICATIONS, ...settings.social };
   const support = pushSupport();
   const [status, setStatus] = useState<'denied' | 'error' | undefined>();
   const [busy, setBusy] = useState(false);
@@ -68,6 +72,18 @@ export function NotificationsPanel() {
                 <span className="grow">{t('settings.notifications.badge')}</span>
               </label>
               <p className="small muted">{t('settings.notifications.remindersHint')}</p>
+              {/* Amigos y retos (spec 15, §3.8): con la cuenta, oculto hasta la 2.0 */}
+              {accountsEnabled() && account && (
+                <fieldset className="field">
+                  <legend>{t('settings.notifications.social.title')}</legend>
+                  {(['invites', 'reminder', 'progress', 'final'] as const).map((k) => (
+                    <label key={k} className="choice">
+                      <input type="checkbox" checked={social[k]} onChange={(e) => save({ social: { ...social, [k]: e.target.checked } })} />
+                      <span className="grow">{t(`settings.notifications.social.${k}`)}</span>
+                    </label>
+                  ))}
+                </fieldset>
+              )}
             </>
           )}
         </>

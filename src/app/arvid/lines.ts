@@ -2,7 +2,7 @@
 import type { Gender, Moment } from '../../domain/arvid/arvid';
 import { keysOf, getLocale, tDynamic, type Vars } from '../../i18n';
 
-type Group = `lines.${Moment | 'achievement'}` | `onboarding.${string}`;
+type Group = `lines.${Moment | 'achievement' | 'challengeWon' | 'challengeLost'}` | `onboarding.${string}`;
 
 /** Número de frases de un grupo (`arvid.lines.greeting.0`, `.1`…; las que tienen género cuentan una vez). */
 export function lineCount(group: Group): number {

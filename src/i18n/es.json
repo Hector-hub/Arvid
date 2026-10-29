@@ -526,7 +526,14 @@
       "denied": "No hay permiso para notificaciones. Puedes darlo en los ajustes del sistema para esta app.",
       "error": "No se pudieron activar. Revisa la conexión e inténtalo de nuevo.",
       "unsupported": "Este navegador no admite notificaciones de ARVID.",
-      "install": "En iPhone, las notificaciones solo funcionan con ARVID instalada en la pantalla de inicio (iOS 16.4 o posterior)."
+      "install": "En iPhone, las notificaciones solo funcionan con ARVID instalada en la pantalla de inicio (iOS 16.4 o posterior).",
+      "social": {
+        "title": "Amigos y retos",
+        "invites": "Invitaciones y amistad",
+        "reminder": "El reto de hoy en el resumen de la tarde",
+        "progress": "Avances de los demás (como mucho uno al día por reto)",
+        "final": "Resultado al terminar un reto"
+      }
     },
     "accountsOn": "Cuenta (beta) activada en este dispositivo. Está arriba, en Ajustes.",
     "accountsOff": "Cuenta (beta) desactivada en este dispositivo."
@@ -711,6 +718,16 @@
         "0": "¡Logro nuevo: {name}! Eso es constancia de verdad.",
         "1": "¡{name}! Te lo has ganado, {alias}.",
         "2": "Desbloqueaste {name}. Lo guardo en tu perfil."
+      },
+      "challengeWon": {
+        "0": "¡«{name}» terminó! {result} Hacerlo con amigos se nota.",
+        "1": "{result} Reto «{name}» superado, {alias}.",
+        "2": "¡Lo de «{name}» salió genial! {result}"
+      },
+      "challengeLost": {
+        "0": "«{name}» terminó. {result} Lo importante es que lo intentaste con ellos.",
+        "1": "{result} Cada día de «{name}» cuenta igual para ti.",
+        "2": "Se acabó «{name}». {result} ¿Otro reto?"
       }
     },
     "chat": {
@@ -860,9 +877,22 @@
       "missionsDue_one": "Y 1 misión vence hoy.",
       "missionsDue_other": "Y {count} misiones vencen hoy.",
       "streak": "Tu racha de {name} se rompe hoy si no la registras.",
-      "streaks": "Tus rachas de {names} se rompen hoy si no las registras."
+      "streaks": "Tus rachas de {names} se rompen hoy si no las registras.",
+      "challenge": "Y el reto: {names}."
     },
-    "mission": "Es hora de «{name}»."
+    "mission": "Es hora de «{name}».",
+    "social": {
+      "friend-request": "{alias} quiere ser tu amigo.",
+      "friend-accepted": "{alias} y tú ya sois amigos.",
+      "challenge-invite": "{alias} te invita al reto «{name}».",
+      "challenge-progress": "{done} de {total} ya cumplieron hoy en «{name}».",
+      "challenge-overtaken": "{alias} te adelantó en «{name}».",
+      "coopWon": "¡Lo lograsteis! Reto «{name}» cumplido.",
+      "coopLost": "«{name}» terminó: esta vez no, llegasteis al {percent} %.",
+      "won": "«{name}» terminó: ganó {alias}.",
+      "tie": "«{name}» terminó: empate entre {names}.",
+      "place": "Quedaste en el puesto {place}."
+    }
   },
   "city": {
     "welcome": "Tu ciudad ahora crece contigo: con cada nivel llegan luces, tráfico y vecinos. Míralo en «Tu ciudad», en tu perfil.",
@@ -1030,7 +1060,8 @@
       "note-too-long": "La nota es demasiado larga.",
       "invalid-date": "Revisa las fechas."
     },
-    "summary": "Día de descanso"
+    "summary": "Día de descanso",
+    "challengeClash": "Coincide con el reto {names}: en los retos los días de descanso cuentan como no cumplidos."
   },
   "goals": {
     "title": "Objetivos",
@@ -1212,7 +1243,10 @@
     "nowFriends": "Ahora sois amigos: tú y {alias}",
     "loading": "Cargando…",
     "openInApp": "¿Tienes ARVID instalada? Copia el enlace, abre ARVID y pégalo en Perfil → Amigos → Tengo un enlace.",
-    "copyLink": "Copiar enlace"
+    "copyLink": "Copiar enlace",
+    "inviteTo": "Invitar a un reto:",
+    "invited": "Invitación enviada: {name}",
+    "noOpenChallenges": "No tienes retos que admitan gente."
   },
   "challenges": {
     "title": "Retos",
@@ -1278,6 +1312,17 @@
       "full": "Este reto está completo.",
       "unavailable": "Este enlace no está disponible."
     },
-    "locked": "Es la actividad de un reto: el nombre, la frecuencia y la dificultad vienen del reto. Puedes cambiar el área y los recordatorios."
+    "locked": "Es la actividad de un reto: el nombre, la frecuencia y la dificultad vienen del reto. Puedes cambiar el área y los recordatorios.",
+    "resultPending": "Terminado · resultado el {date}",
+    "coopWon": "¡Lo lograsteis!",
+    "coopLost": "Esta vez no: llegasteis al {percent} %",
+    "won": "Ganó {alias}",
+    "tie": "Empate entre {names}",
+    "noWinner": "Nadie cumplió ningún día",
+    "yourPlace": "Quedaste en el puesto {place}.",
+    "fulfilledTitle_one": "Retos cumplidos · {count}",
+    "fulfilledTitle_other": "Retos cumplidos · {count}",
+    "fulfilled": "cumplido",
+    "yourDays": "tus días: {days} de {total}"
   }
 }

@@ -3,6 +3,7 @@ import { saveSetting } from '../../data/repository';
 import { trend, type Score, type WindowDays } from '../../domain/attributes/attributes';
 import { MIN_RADAR_AXES } from '../../domain/attributes/radar';
 import { accountsEnabled } from '../account/account';
+import { FinishedChallenges } from '../challenges/ChallengeScreens';
 import { AchievementsSection } from '../achievements/AchievementsSection';
 import { CITY_ITEMS } from '../../domain/scene/city';
 import { useAnalysis } from '../analysis';
@@ -141,6 +142,8 @@ export function ProfileScreen() {
 
       {/* Al llegar desde el aviso de un logro se vuelve a montar para abrir su hoja (CE-01) */}
       <AchievementsSection key={location.key} />
+      {/* Retos cumplidos (spec 15, FN-04) */}
+      <FinishedChallenges />
     </div>
   );
 }

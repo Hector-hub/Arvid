@@ -9,7 +9,10 @@ import {
   MIN_DAYS,
   QUICK_DAYS,
   challengeDay,
+  challengeResult,
+  countedDays,
   endDate,
+  fulfilled,
   groupGoal,
   ranking,
   type ChallengeDifficulty,
@@ -41,6 +44,71 @@ export function challengeStatusText(view: ChallengeView, today: string): string 
   if (day === 0) return t('challenges.startsOn', { date: dm(c.start) });
   if (day > c.days) return t('challenges.finished');
   return t('challenges.dayOf', { day, days: c.days });
+}
+
+/** El resultado en una frase (FN-01 a FN-03), o `undefined` mientras dura. */
+export function resultText(view: ChallengeView, me: string, today: string): string | undefined {
+  const r = challengeResult(view, me, today);
+  if (r.state === 'running') return undefined;
+  if (r.state === 'pending') return t('challenges.resultPending', { date: dm(r.resultOn) });
+  if (r.state === 'coop') return r.success ? t('challenges.coopWon') : t('challenges.coopLost', { percent: r.percent });
+  const head =
+    r.winners.length === 0
+      ? t('challenges.noWinner')
+      : r.winners.length > 1
+        ? t('challenges.tie', { names: r.winners.map((w) => w.alias).join(', ') })
+        : t('challenges.won', { alias: r.winners[0]!.alias });
+  return r.place ? `${head} ${t('challenges.yourPlace', { place: r.place })}` : head;
+}
+
+// ---------- Retos cumplidos en el Perfil (FN-04) ----------
+
+export function FinishedChallenges() {
+  const settings = useSettings();
+  const challenges = useChallenges();
+  const today = useToday();
+  const me = settings?.account?.id;
+  if (!me || !challenges || !accountsEnabled()) return null;
+  const finished = challenges
+    .filter((l) => {
+      const r = challengeResult(l.view, me, today);
+      return r.state === 'coop' || r.state === 'versus';
+    })
+    .sort((a, b) => endDate(b.view.challenge).localeCompare(endDate(a.view.challenge)));
+  if (finished.length === 0) return null;
+  const count = finished.filter((l) => fulfilled(l.view, me, today)).length;
+  return (
+    <Panel className="stack">
+      <h2>{t('challenges.fulfilledTitle', { count })}</h2>
+      <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+        {finished.map((l) => {
+          const c = l.view.challenge;
+          const mine = l.view.participants.find((p) => p.id === me);
+          const days = mine ? countedDays(c, mine).length : 0;
+          const ok = fulfilled(l.view, me, today);
+          return (
+            <li key={c.id}>
+              <Link to={`/retos/${c.id}`} className="row" style={{ color: 'var(--text)', textDecoration: 'none' }}>
+                <span aria-hidden="true" style={{ color: ok ? 'var(--c-cyan)' : 'var(--text-muted, inherit)', width: '1.2em' }}>
+                  {ok ? '✓' : '·'}
+                </span>
+                <span className="grow stack" style={{ gap: 0 }}>
+                  <span>
+                    {c.name}
+                    <span className="sr-only">{ok ? ` · ${t('challenges.fulfilled')}` : ''}</span>
+                  </span>
+                  <span className="small muted">
+                    {t('challenges.range', { from: dm(c.start), to: dm(endDate(c)) })} · {t(`challenges.mode.${c.mode}`)} · {resultText(l.view, me, today)} ·{' '}
+                    {t('challenges.yourDays', { days, total: c.days })}
+                  </span>
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </Panel>
+  );
 }
 
 // ---------- Sección «Retos» en Objetivos ----------
@@ -347,6 +415,7 @@ export function ChallengeScreen() {
   const me = account?.id ?? '';
   const started = today >= c.start;
   const ended = endDate(c) < today;
+  const result = resultText(view, me, today);
   const canInvite = !c.cancelled && !local.left && today <= c.start && view.participants.length < MAX_PARTICIPANTS;
 
   const act = async (fn: (a: DeviceAccount) => Promise<unknown>) => {
@@ -369,6 +438,11 @@ export function ChallengeScreen() {
         </p>
         <p className="small muted">{t('challenges.updated', { time: new Date(local.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) })}</p>
       </header>
+      {result && (
+        <Panel className="stack">
+          <h2>{result}</h2>
+        </Panel>
+      )}
       {canInvite && (
         <Panel className="stack">
           <p className="small">{t('challenges.inviteHint', { date: dm(c.start) })}</p>

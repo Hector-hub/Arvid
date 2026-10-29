@@ -1,4 +1,5 @@
 // Amigos en la app (spec 15, §3.1 y EN): llamadas a /api/social con la sesión de la cuenta y los enlaces.
+import { DEFAULT_SOCIAL_NOTIFICATIONS, type SocialNotifications } from '../../data/repository';
 import { AccountError, type DeviceAccount } from '../account/account';
 
 export interface FriendCard {
@@ -41,6 +42,9 @@ export const requestFriend = (a: DeviceAccount, id: string) => social<{ friend: 
 export const respondRequest = (a: DeviceAccount, id: string, accept: boolean) => social(a, 'POST', 'respond', { id, accept });
 export const removeFriend = (a: DeviceAccount, id: string) => social(a, 'POST', 'remove', { id });
 export const blockFriend = (a: DeviceAccount, id: string) => social(a, 'POST', 'block', { id });
+/** AV-05: este dispositivo recibe los avisos de la cuenta, con los interruptores de Ajustes → Notificaciones. */
+export const linkDevice = (a: DeviceAccount, deviceId: string, prefs: SocialNotifications | undefined, remove = false) =>
+  social(a, 'POST', 'device', remove ? { deviceId, remove } : { deviceId, prefs: { ...DEFAULT_SOCIAL_NOTIFICATIONS, ...prefs } });
 export const unblockFriend = (a: DeviceAccount, id: string) => social(a, 'POST', 'unblock', { id });
 
 /** Enlace de amistad (AM-01). */

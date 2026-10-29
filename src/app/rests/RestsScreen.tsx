@@ -7,7 +7,8 @@ import type { Rest } from '../../domain/activities/types';
 import { asLocalDate, compareDates, isLocalDate, type LocalDate } from '../../domain/time/localDate';
 import { t, useLocale } from '../../i18n';
 import { useToday } from '../clock';
-import { useData, useRecords, useRests } from '../data';
+import { useChallenges, useData, useRecords, useRests } from '../data';
+import { endDate } from '../../domain/challenges/challenges';
 import { BackLink, Panel } from '../design/components';
 import { dayMonth, longDate } from '../text';
 import { DraftBanner, useDraft } from '../arvid/draft';
@@ -104,6 +105,11 @@ function RestForm({ rest, onDone }: { rest?: Rest; onDone: () => void }) {
   const [error, setError] = useState<RestError | 'invalid-date'>();
   const [saved, setSaved] = useState(false);
   const active = (records ?? []).filter((r) => statusAt(r.events, today) === 'active');
+  const challenges = useChallenges() ?? [];
+  const clashing = challenges
+    .filter((l) => l.activityId && !l.left && !l.view.challenge.cancelled && (!some || chosen.has(l.activityId)))
+    .filter((l) => from <= endDate(l.view.challenge) && to >= l.view.challenge.start)
+    .map((l) => l.view.challenge.name);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -173,6 +179,12 @@ function RestForm({ rest, onDone }: { rest?: Rest; onDone: () => void }) {
           <input id="rest-note" type="text" maxLength={REST_NOTE_MAX} value={note} placeholder={t('rests.notePlaceholder')} onChange={(e) => setNote(e.target.value)} />
         </div>
         <p className="small muted">{t('rests.rule')}</p>
+        {/* RT-12: los descansos no cuentan en los retos (S15-05) */}
+        {clashing.length > 0 && (
+          <p className="small" role="note" style={{ color: 'var(--warning)' }}>
+            {t('rests.challengeClash', { names: clashing.join(', ') })}
+          </p>
+        )}
         {error && (
           <p role="alert" className="field-error">
             {t(`rests.errors.${error}`)}

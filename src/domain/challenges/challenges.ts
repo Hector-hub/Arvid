@@ -96,3 +96,43 @@ export function ranking(view: ChallengeView): { participant: Participant; days: 
 
 /** Reto en curso o por empezar para esa persona (RT-05). */
 export const isActive = (c: Challenge, today: string, left?: string) => !c.cancelled && !left && endDate(c) >= today;
+
+// ---------- El final (FN, D-146, D-148) ----------
+
+export type ChallengeResult =
+  | { state: 'running' }
+  /** Terminado, dentro del margen de SY-04: marcador provisional (FN-01). */
+  | { state: 'pending'; resultOn: string }
+  | { state: 'coop'; success: boolean; percent: number }
+  | { state: 'versus'; winners: Participant[]; place: number | undefined; days: number };
+
+/** Día en que se calcula el resultado: el siguiente al último día del margen (FN-01). */
+export const resultDate = (c: Pick<Challenge, 'start' | 'days'>) => addDays(endDate(c) as LocalDate, MARK_GRACE_DAYS + 1);
+
+/** El resultado del reto para `me` (FN-02, FN-03). */
+export function challengeResult(view: ChallengeView, me: string, today: string): ChallengeResult {
+  const c = view.challenge;
+  if (endDate(c) >= today || c.cancelled) return { state: 'running' };
+  if (today < resultDate(c)) return { state: 'pending', resultOn: resultDate(c) };
+  if (c.mode === 'coop') {
+    const g = groupGoal(view);
+    return { state: 'coop', success: g.done >= g.goal && g.total > 0, percent: Math.round(g.ratio * 100) };
+  }
+  const rows = ranking(view);
+  const best = rows[0]?.days ?? 0;
+  const mine = rows.find((r) => r.participant.id === me);
+  return { state: 'versus', winners: best > 0 ? rows.filter((r) => r.days === best).map((r) => r.participant) : [], place: mine?.place, days: mine?.days ?? 0 };
+}
+
+/**
+ * Cuenta como reto cumplido en el Perfil (FN-04): en el cooperativo, si el grupo lo logró y no abandonaste; en el
+ * competitivo, si cumpliste al menos el 80 % de los días, ganes o no (S15-06).
+ */
+export function fulfilled(view: ChallengeView, me: string, today: string): boolean {
+  const result = challengeResult(view, me, today);
+  const p = view.participants.find((x) => x.id === me);
+  if (!p) return false;
+  if (result.state === 'coop') return result.success && !p.left;
+  if (result.state === 'versus') return result.days >= Math.ceil(view.challenge.days * GOAL_RATIO);
+  return false;
+}

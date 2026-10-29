@@ -1,10 +1,10 @@
 // Amigos (spec 15, §3.1, fase 15a). Rutas bajo /api/social/, todas con la sesión de la spec 14:
 //   GET friends (AM-04, AM-07) · GET profile/<id> (AM-02, IN-05)
 //   POST accept (enlace de amistad: mutua al instante, D-147) · request (tras un reto, AM-03) · respond (AM-07)
-//   POST remove (AM-05) · block · unblock (AM-06)
+//   POST remove (AM-05) · block · unblock (AM-06) · device (AV-05)
 // Retos (§3.2 a §3.6, fase 15b), bajo /api/social/challenges/:
 //   POST create (RT) · GET mine · GET <id> (IN-02, MK) · POST join (IN-03, IN-04) · mark · unmark (SY) · leave (MK-04)
-//   · cancel (RT-04)
+//   · cancel (RT-04) · invite (IN-01, directa a un amigo)
 // Cada participante escribe solo su documento `c:<reto>:p:<cuenta>` (S15-01); el servidor solo guarda las fechas
 // cumplidas (NFR15-01).
 // Cada cuenta tiene un documento `friends:<cuenta>`; el servidor escribe en las dos al hacer o deshacer una amistad.
@@ -24,6 +24,7 @@ import {
 } from '../../src/domain/challenges/challenges.ts';
 import { addDays, type LocalDate } from '../../src/domain/time/localDate.ts';
 import { verifySession, type Account, type KV, type ListKV } from '../lib/account.mts';
+import { webNotifier, type Notify, type SocialDevice } from '../lib/socialPush.mts';
 
 export const MAX_FRIENDS = 100; // AM-08
 export const REQUEST_DAYS = 30; // AM-07
@@ -35,6 +36,8 @@ export interface Social {
   friends: { id: string; since: string }[];
   blocked: string[];
   requests: { from: string; at: string }[];
+  /** Dispositivos con avisos de esta cuenta y qué tipos quieren (AV-05). */
+  devices?: SocialDevice[];
 }
 
 export interface SocialStores {
@@ -49,7 +52,11 @@ export interface Deps {
   stores?: SocialStores;
   now?: () => number;
   secret?: string;
+  notify?: Notify;
 }
+
+const MAX_DEVICES = 10;
+const INVITES_PER_DAY = 50; // NFR15-03
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
@@ -113,6 +120,9 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
 
   const fresh = (s: Social): Social => ({ ...s, requests: s.requests.filter((r) => now - Date.parse(r.at) < REQUEST_DAYS * 86_400_000) });
   const load = async (id: string): Promise<Social> => fresh((await stores.social.get(id)) ?? { friends: [], blocked: [], requests: [] });
+  const notify: Notify = deps.notify ?? webNotifier(async (id) => (await load(id)).devices ?? []);
+  /** Un aviso que falla no estropea la acción. */
+  const tell: Notify = (id, push) => notify(id, push).catch(() => undefined);
   const save = (id: string, s: Social) => stores.social.set(id, s);
   const isFriend = (s: Social, id: string) => s.friends.some((f) => f.id === id);
   /** Un bloqueo en cualquier sentido oculta a la otra persona (IN-05). */
@@ -201,6 +211,7 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
       if (!(await within(`acc:${me}:challenges`, CREATED_PER_DAY, 86_400_000))) return json(429, { error: 'limit' });
       const c: Challenge = { id: crypto.randomUUID(), owner: me, ...data, createdAt: new Date(now).toISOString() };
       await cs.set(`c:${c.id}`, c);
+      await cs.set('index:active', [...(((await cs.get('index:active')) as string[] | null) ?? []), c.id]);
       await addParticipant(c);
       return json(200, await view(c));
     }
@@ -260,6 +271,18 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
       return json(200, await view(c));
     }
 
+    // IN-01: invitar directamente a un amigo, sin enlace (le llega como aviso)
+    if (sub === 'invite' && req.method === 'POST') {
+      const today = clientToday(body.today);
+      if (!today || !isId(body.friendId)) return json(400, { error: 'invalid' });
+      if (c.cancelled || p.left || today > c.start) return json(409, { error: 'started' });
+      const mine = await load(me);
+      if (!isFriend(mine, body.friendId)) return json(404, { error: 'unavailable' });
+      if (!(await within(`acc:${me}:invites`, INVITES_PER_DAY, 86_400_000))) return json(429, { error: 'limit' });
+      await tell(body.friendId, { type: 'challenge-invite', alias: account.alias, name: c.name, url: `/r/${c.id}` });
+      return json(200, { ok: true });
+    }
+
     if (sub === 'cancel' && req.method === 'POST') {
       const today = clientToday(body.today);
       if (c.owner !== me || !today) return json(403, { error: 'not-owner' });
@@ -278,8 +301,11 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
     const friends = await cards(mine.friends.map((f) => f.id));
     const since = new Map(mine.friends.map((f) => [f.id, f.since]));
     const requests = await cards(mine.requests.map((r) => r.from));
+    const myChallenges = new Set((((await stores.challenges.get(`u:${me}`)) as string[] | null) ?? []));
+    const together = async (id: string) => (((await stores.challenges.get(`u:${id}`)) as string[] | null) ?? []).filter((c) => myChallenges.has(c)).length;
+    const counts = await Promise.all(friends.map((f) => together(f.id)));
     return json(200, {
-      friends: friends.map((f) => ({ ...f, since: since.get(f.id), together: 0 })),
+      friends: friends.map((f, i) => ({ ...f, since: since.get(f.id), together: counts[i] })),
       requests,
       blocked: await cards(mine.blocked),
     });
@@ -297,7 +323,9 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
     const o = await other(body.id);
     if (!o) return json(404, { error: 'unavailable' });
     if (!isFriend(o.mine, o.acc.id) && (o.mine.friends.length >= MAX_FRIENDS || o.theirs.friends.length >= MAX_FRIENDS)) return json(409, { error: 'full' });
+    const wasFriend = isFriend(o.mine, o.acc.id);
     await befriend(o.acc.id, o.mine, o.theirs);
+    if (!wasFriend) await tell(o.acc.id, { type: 'friend-accepted', alias: account.alias, url: '/perfil/amigos' });
     return json(200, { ok: true });
   }
 
@@ -316,6 +344,7 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
     await stores.limits.set(`acc:${me}:requests`, { count: window.count + 1, until: window.until });
     o.theirs.requests = [...o.theirs.requests.filter((r) => r.from !== me), { from: me, at: new Date(now).toISOString() }];
     await save(o.acc.id, o.theirs);
+    await tell(o.acc.id, { type: 'friend-request', alias: account.alias, url: '/perfil/amigos' });
     return json(200, { ok: true, friend: false });
   }
 
@@ -328,6 +357,7 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
       if (!o) return json(404, { error: 'unavailable' });
       if (o.mine.friends.length >= MAX_FRIENDS || o.theirs.friends.length >= MAX_FRIENDS) return json(409, { error: 'full' });
       await befriend(o.acc.id, o.mine, o.theirs);
+      await tell(o.acc.id, { type: 'friend-accepted', alias: account.alias, url: '/perfil/amigos' });
     } else {
       // Rechazar no avisa a la otra persona (AM-02)
       await save(me, { ...mine, requests: mine.requests.filter((r) => r.from !== body.id) });
@@ -347,6 +377,20 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
       theirs.requests = theirs.requests.filter((r) => r.from !== me);
     }
     await Promise.all([save(me, mine), save(id, theirs)]);
+    return json(200, { ok: true });
+  }
+
+  // AV-05: este dispositivo recibe los avisos de la cuenta; `prefs` son los interruptores de Ajustes → Notificaciones
+  if (route === 'device' && req.method === 'POST') {
+    if (typeof body.deviceId !== 'string' || !/^[0-9a-f-]{36}$/.test(body.deviceId)) return json(400, { error: 'invalid' });
+    const mine = await load(me);
+    const others = (mine.devices ?? []).filter((d) => d.id !== body.deviceId);
+    const p = (body.prefs ?? {}) as Record<string, unknown>;
+    const devices =
+      body.remove === true
+        ? others
+        : [...others, { id: body.deviceId, prefs: { invites: p.invites !== false, progress: p.progress !== false, final: p.final !== false } }].slice(-MAX_DEVICES);
+    await save(me, { ...mine, devices });
     return json(200, { ok: true });
   }
 

@@ -235,7 +235,7 @@ Se configuran en **Ajustes → Notificaciones**, en un grupo nuevo «Amigos y re
 |---|---|
 | **15a** ✅ (1.8.8) | Amigos: enlaces, solicitudes, lista, bloquear y la ruta en iPhone (EN-03) |
 | **15b** ✅ (1.8.9) | Retos: crear, invitar, aceptar, actividad, marcar y sincronizar, marcador y abandonar |
-| **15c** | Final, retos cumplidos en el Perfil, avisos y celebración del compañero |
+| **15c** ✅ (1.9.0) | Final, retos cumplidos en el Perfil, avisos y celebración del compañero |
 | **2.0.0** | Con la spec 14, se enciende `VITE_ACCOUNTS` |
 
 ## 9. Decisiones de esta spec (aprobadas)
@@ -263,3 +263,11 @@ Se configuran en **Ajustes → Notificaciones**, en un grupo nuevo «Amigos y re
 - **Área al aceptar:** el servidor no guarda el área; cada participante la elige al crear o aceptar (RT-02).
 - **Actividad de un reto que empieza más tarde:** se crea al unirse; los registros antes del inicio no cuentan en el reto.
 - **Pendiente para la 15c:** «Invitar a un reto» directo desde un amigo (va con los avisos, IN-01), «retos juntos» en la lista de amigos, el aviso al planificar un descanso que coincide con un reto (RT-12) y el resultado final (FN).
+
+### Notas de implementación (15c)
+
+- **El resultado (FN-01) lo calcula cada dispositivo** con el marcador descargado (`challengeResult`), igual que el servidor para el aviso final; no se guarda aparte en `c:<reto>` porque sale siempre igual de los mismos datos.
+- **Avisos (AV):** el dispositivo se asocia a la cuenta (`POST /api/social/device`) con sus interruptores. Los de amistad e invitación salen al momento; los de avances y final, desde el cron de día cada 10 minutos (`netlify/lib/socialPush.mts`). «Hoy» para cada persona es la fecha en la zona horaria de su dispositivo con avisos.
+- **AV-02** no lo manda el servidor: el service worker añade «Y el reto: …» al resumen de la tarde con los datos del dispositivo.
+- **AV-03 cooperativo:** avisa a quien aún no ha cumplido hoy cuando ya cumplió al menos la mitad del grupo.
+- **FN-05:** el compañero celebra cada reto una vez por dispositivo (`challengesCelebrated`), con frase fija o con IA (momento `challengeEnd`).

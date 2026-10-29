@@ -245,6 +245,8 @@ export interface Settings {
   account?: import('../app/account/account').DeviceAccount;
   /** Ya se le ofreció crear la cuenta (onboarding o tarjeta en Hoy, CU-01). Solo del dispositivo. */
   accountOffered?: boolean;
+  /** Retos cuyo resultado ya celebró el compañero (spec 15, FN-05). Del dispositivo. */
+  challengesCelebrated?: string[];
   lastBackupAt?: string;
   reducedMotion: 'system' | 'on' | 'off';
   vibration: boolean;
@@ -308,7 +310,18 @@ export interface NotificationSettings {
   badge: boolean;
   /** Identificador aleatorio del dispositivo en el servidor (PV-01). */
   deviceId: string;
+  /** Amigos y retos (spec 15, AV): interruptores por tipo; sin el campo, todos encendidos. */
+  social?: SocialNotifications;
 }
+
+export interface SocialNotifications {
+  invites: boolean;
+  reminder: boolean;
+  progress: boolean;
+  final: boolean;
+}
+
+export const DEFAULT_SOCIAL_NOTIFICATIONS: SocialNotifications = { invites: true, reminder: true, progress: true, final: true };
 
 export const DEFAULT_NOTIFICATIONS: Omit<NotificationSettings, 'deviceId'> = { enabled: false, morning: '07:00', night: '22:00', badge: true };
 

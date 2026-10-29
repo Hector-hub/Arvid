@@ -526,7 +526,14 @@
       "denied": "Notifications aren't allowed. You can allow them in the system settings for this app.",
       "error": "Couldn't turn them on. Check your connection and try again.",
       "unsupported": "This browser doesn't support ARVID notifications.",
-      "install": "On iPhone, notifications only work with ARVID installed on the home screen (iOS 16.4 or later)."
+      "install": "On iPhone, notifications only work with ARVID installed on the home screen (iOS 16.4 or later).",
+      "social": {
+        "title": "Friends and challenges",
+        "invites": "Invitations and friendship",
+        "reminder": "Today's challenge in the evening summary",
+        "progress": "Others' progress (at most one a day per challenge)",
+        "final": "Result when a challenge ends"
+      }
     },
     "accountsOn": "Account (beta) turned on for this device. It's at the top of Settings.",
     "accountsOff": "Account (beta) turned off for this device."
@@ -711,6 +718,16 @@
         "0": "New achievement: {name}! That's real consistency.",
         "1": "{name}! You earned it, {alias}.",
         "2": "You unlocked {name}. I'll keep it on your profile."
+      },
+      "challengeWon": {
+        "0": "«{name}» is over! {result} Doing it with friends shows.",
+        "1": "{result} Challenge «{name}» beaten, {alias}.",
+        "2": "«{name}» went great! {result}"
+      },
+      "challengeLost": {
+        "0": "«{name}» is over. {result} What matters is you tried it together.",
+        "1": "{result} Every day of «{name}» still counts for you.",
+        "2": "«{name}» has ended. {result} Another challenge?"
       }
     },
     "chat": {
@@ -860,9 +877,22 @@
       "missionsDue_one": "And 1 mission is due today.",
       "missionsDue_other": "And {count} missions are due today.",
       "streak": "Your {name} streak breaks today unless you log it.",
-      "streaks": "Your {names} streaks break today unless you log them."
+      "streaks": "Your {names} streaks break today unless you log them.",
+      "challenge": "And the challenge: {names}."
     },
-    "mission": "Time for “{name}”."
+    "mission": "Time for “{name}”.",
+    "social": {
+      "friend-request": "{alias} wants to be your friend.",
+      "friend-accepted": "You and {alias} are now friends.",
+      "challenge-invite": "{alias} invites you to the challenge «{name}».",
+      "challenge-progress": "{done} of {total} already did «{name}» today.",
+      "challenge-overtaken": "{alias} got ahead of you in «{name}».",
+      "coopWon": "You did it! Challenge «{name}» completed.",
+      "coopLost": "«{name}» is over: not this time, you reached {percent}%.",
+      "won": "«{name}» is over: {alias} won.",
+      "tie": "«{name}» is over: a tie between {names}.",
+      "place": "You finished in place {place}."
+    }
   },
   "city": {
     "welcome": "Your city now grows with you: each level brings lights, traffic and neighbors. Check “Your city” in your profile.",
@@ -1030,7 +1060,8 @@
       "note-too-long": "The note is too long.",
       "invalid-date": "Check the dates."
     },
-    "summary": "Rest day"
+    "summary": "Rest day",
+    "challengeClash": "This overlaps the challenge {names}: in challenges, rest days count as not done."
   },
   "goals": {
     "title": "Goals",
@@ -1212,7 +1243,10 @@
     "nowFriends": "You and {alias} are now friends",
     "loading": "Loading…",
     "openInApp": "Have ARVID installed? Copy the link, open ARVID and paste it in Profile → Friends → I have a link.",
-    "copyLink": "Copy link"
+    "copyLink": "Copy link",
+    "inviteTo": "Invite to a challenge:",
+    "invited": "Invitation sent: {name}",
+    "noOpenChallenges": "You have no challenges open to new people."
   },
   "challenges": {
     "title": "Challenges",
@@ -1278,6 +1312,17 @@
       "full": "This challenge is full.",
       "unavailable": "This link isn't available."
     },
-    "locked": "This is a challenge activity: its name, frequency and difficulty come from the challenge. You can change the area and reminders."
+    "locked": "This is a challenge activity: its name, frequency and difficulty come from the challenge. You can change the area and reminders.",
+    "resultPending": "Finished · result on {date}",
+    "coopWon": "You did it!",
+    "coopLost": "Not this time: you reached {percent}%",
+    "won": "{alias} won",
+    "tie": "A tie between {names}",
+    "noWinner": "Nobody completed a day",
+    "yourPlace": "You finished in place {place}.",
+    "fulfilledTitle_one": "Challenges completed · {count}",
+    "fulfilledTitle_other": "Challenges completed · {count}",
+    "fulfilled": "completed",
+    "yourDays": "your days: {days} of {total}"
   }
 }

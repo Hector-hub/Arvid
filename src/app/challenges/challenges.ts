@@ -65,6 +65,11 @@ export async function leaveChallenge(ctx: DataContext, account: DeviceAccount, i
   await archiveActivity(ctx, id);
 }
 
+/** IN-01: invitar directamente a un amigo; le llega como aviso. */
+export async function inviteFriend(ctx: DataContext, account: DeviceAccount, id: string, friendId: string) {
+  await social(account, 'POST', 'challenges/invite', { id, friendId, today: todayOf(ctx) });
+}
+
 /** RT-04: solo el creador y antes de que empiece. */
 export async function cancelChallenge(ctx: DataContext, account: DeviceAccount, id: string) {
   const view = await social<ChallengeView>(account, 'POST', 'challenges/cancel', { id, today: todayOf(ctx) });

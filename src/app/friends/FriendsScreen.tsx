@@ -5,8 +5,11 @@ import { useNavigate } from 'react-router';
 import { t } from '../../i18n';
 import { AccountPanel, Confirm, errorText } from '../account/AccountPanel';
 import { accountsEnabled, type DeviceAccount } from '../account/account';
-import { useSettings } from '../data';
 import { BackLink, Panel } from '../design/components';
+import { useChallenges, useData, useSettings } from '../data';
+import { useToday } from '../clock';
+import { inviteFriend } from '../challenges/challenges';
+import { Link } from 'react-router';
 import { intText } from '../text';
 import {
   blockFriend,
@@ -111,6 +114,7 @@ function Friends({ account }: { account: DeviceAccount }) {
                   {t('friends.level', { level: intText(f.level) })} · {t('friends.together', { count: f.together })}
                 </span>
               </button>
+              {open === f.id && <InviteToChallenge account={account} friend={f} />}
               {open === f.id && (
                 <div className="row">
                   <button type="button" className="btn grow" onClick={() => setConfirm({ kind: 'remove', friend: f })}>
@@ -228,5 +232,49 @@ function InvitePanel({ account }: { account: DeviceAccount }) {
         )}
       </form>
     </Panel>
+  );
+}
+
+/** «Invitar a un reto» desde un amigo (AM-04, IN-01): los retos tuyos que aún admiten gente. */
+function InviteToChallenge({ account, friend }: { account: DeviceAccount; friend: FriendCard }) {
+  const ctx = useData();
+  const today = useToday();
+  const challenges = useChallenges() ?? [];
+  const [sent, setSent] = useState<string[]>([]);
+  const [error, setError] = useState<string>();
+  const open = challenges.filter((l) => !l.left && !l.view.challenge.cancelled && today <= l.view.challenge.start && !l.view.participants.some((p) => p.id === friend.id));
+  if (open.length === 0)
+    return (
+      <p className="small muted">
+        {t('friends.noOpenChallenges')} <Link to="/retos/nuevo">{t('challenges.new')}</Link>
+      </p>
+    );
+  return (
+    <div className="stack" style={{ gap: 'var(--s2)' }}>
+      <span className="small muted">{t('friends.inviteTo')}</span>
+      {open.map((l) => (
+        <button
+          key={l.id}
+          type="button"
+          className="btn"
+          disabled={sent.includes(l.id)}
+          onClick={async () => {
+            try {
+              await inviteFriend(ctx, account, l.id, friend.id);
+              setSent((s) => [...s, l.id]);
+            } catch (e) {
+              setError(errorText(e));
+            }
+          }}
+        >
+          {sent.includes(l.id) ? t('friends.invited', { name: l.view.challenge.name }) : l.view.challenge.name}
+        </button>
+      ))}
+      {error && (
+        <p role="alert" className="field-error">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
