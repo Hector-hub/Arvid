@@ -13,6 +13,7 @@ import { FriendLanding } from '../friends/FriendLinkScreen';
 import { setPendingLink } from '../friends/friends';
 import { enableAccountsFlag } from '../account/account';
 import { UpdateBanner } from './UpdateBanner';
+import { PullToRefresh } from './PullToRefresh';
 import { AnalysisProvider } from '../analysis';
 import { AchievementsWatcher } from '../achievements/AchievementsWatcher';
 import { ChatLogWatcher } from '../arvid/chatLog';
@@ -85,6 +86,7 @@ export function AppLayout() {
       <MusicProvider>
       <div className="app">
         <main className="main">
+          <PullToRefresh />
           <UpdateBanner />
           <Outlet />
         </main>

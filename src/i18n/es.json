@@ -1356,5 +1356,12 @@
     "inviteFormHint": "Les llega al momento. Pueden aceptar hasta el día de inicio.",
     "createInvite_one": "Crear reto e invitar ({count})",
     "createInvite_other": "Crear reto e invitar ({count})"
+  },
+  "refresh": {
+    "pull": "Desliza para actualizar",
+    "release": "Suelta para actualizar",
+    "loading": "Actualizando…",
+    "done": "Al día",
+    "offline": "Sin conexión"
   }
 }
