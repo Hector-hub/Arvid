@@ -345,3 +345,12 @@ describe('invitaciones directas (enmienda 1, D-177 a D-179)', () => {
     expect((await call(undefined, 'GET', 'friends')).status).toBe(401);
   });
 });
+
+describe('abandonar con la fecha del teléfono mal puesta', () => {
+  it('se usa la fecha del servidor en lugar de rechazarlo', async () => {
+    const id = ((await call(ANA, 'POST', 'challenges/create', { name: 'Leer', difficulty: 'easy', days: 7, start: '2026-10-28', mode: 'coop', today: '2026-10-28' })).body as unknown as { challenge: { id: string } }).challenge.id;
+    const res = await call(ANA, 'POST', 'challenges/leave', { id, today: '2026-11-15' });
+    expect(res.status).toBe(200);
+    expect(((await call(ANA, 'GET', 'challenges/mine')).body as unknown as { challenges: unknown[] }).challenges).toEqual([]);
+  });
+});

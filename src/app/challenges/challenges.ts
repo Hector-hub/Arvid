@@ -106,8 +106,9 @@ export async function leaveChallenge(ctx: DataContext, account: DeviceAccount, i
  */
 export async function deleteChallenge(ctx: DataContext, account: DeviceAccount, id: string) {
   removed.add(id);
-  await social(account, 'POST', 'challenges/leave', { id, today: todayOf(ctx) }).catch((e: { status?: number }) => {
-    if (e?.status !== 404 && e?.status !== 403) throw e;
+  // Solo sin conexión se detiene: si el servidor lo rechaza (ya no estás, ya no existe…), se borra igualmente aquí
+  await social(account, 'POST', 'challenges/leave', { id, today: todayOf(ctx) }).catch((e: { code?: string }) => {
+    if (e?.code === 'offline') throw e;
   });
   // La actividad del reto (y, si quedó alguna más de ese reto de antes, también: p. ej. de un reto ya abandonado)
   const activities = (await ctx.db.activities.toArray()).filter((a) => a.challengeId === id).map((a) => a.id);

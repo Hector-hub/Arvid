@@ -302,8 +302,8 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
     }
 
     if (sub === 'leave' && req.method === 'POST') {
-      const today = clientToday(body.today);
-      if (!today) return json(400, { error: 'invalid' });
+      // Con la fecha del teléfono mal puesta se usa la del servidor: abandonar o eliminar no debe fallar por eso
+      const today = clientToday(body.today) ?? serverToday;
       if (!p.left) await cs.set(`c:${c.id}:p:${me}`, { ...p, left: today });
       // Sale de tu lista de retos (D-186); los demás te siguen viendo como «abandonó»
       await cs.set(`u:${me}`, (await myList(me)).filter((id) => id !== c.id));
