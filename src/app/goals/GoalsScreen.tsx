@@ -7,6 +7,7 @@ import { useToday } from '../clock';
 import { useCategories, useGoals, useMissions } from '../data';
 import { CategoryIcon, Panel, Segments, Sprite, categoryColor } from '../design/components';
 import { dayMonth } from '../text';
+import { ChallengesSection } from '../challenges/ChallengeScreens';
 
 export function GoalsScreen() {
   useLocale();
@@ -57,6 +58,9 @@ export function GoalsScreen() {
           </ul>
         </section>
       )}
+
+      {/* Retos entre amigos (spec 15, S15-03): oculto hasta la 2.0 */}
+      <ChallengesSection />
     </div>
   );
 }

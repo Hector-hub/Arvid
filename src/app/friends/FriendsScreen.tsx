@@ -75,7 +75,7 @@ function Friends({ account }: { account: DeviceAccount }) {
     <>
       <InvitePanel account={account} />
       {error && (
-        <p role="alert" className="small" style={{ color: 'var(--danger)' }}>
+        <p role="alert" className="field-error">
           {error}
         </p>
       )}
@@ -222,7 +222,7 @@ function InvitePanel({ account }: { account: DeviceAccount }) {
           </button>
         </div>
         {bad && (
-          <p role="alert" className="small" style={{ color: 'var(--danger)' }}>
+          <p role="alert" className="field-error">
             {t('friends.badLink')}
           </p>
         )}

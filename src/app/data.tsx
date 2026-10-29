@@ -62,6 +62,12 @@ export function useGoals() {
 }
 
 /** Memoria del compañero (spec 13). */
+/** Retos entre amigos, copia local (spec 15). */
+export function useChallenges() {
+  const { db } = useData();
+  return useLiveQuery(() => db.challenges.toArray(), [db]);
+}
+
 export function useMemories() {
   const { db } = useData();
   return useLiveQuery(() => loadMemories(db), [db]);

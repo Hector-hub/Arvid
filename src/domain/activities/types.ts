@@ -11,6 +11,8 @@ export interface Activity {
   order: number;
   /** Recordatorios (spec 10, RA-01): como mucho uno por cada vez del periodo. */
   reminders?: Reminder[];
+  /** Actividad de un reto entre amigos (spec 15, RT-07): no se edita salvo recordatorios y área. */
+  challengeId?: string;
 }
 
 /**

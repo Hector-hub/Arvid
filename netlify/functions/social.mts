@@ -2,13 +2,34 @@
 //   GET friends (AM-04, AM-07) · GET profile/<id> (AM-02, IN-05)
 //   POST accept (enlace de amistad: mutua al instante, D-147) · request (tras un reto, AM-03) · respond (AM-07)
 //   POST remove (AM-05) · block · unblock (AM-06)
+// Retos (§3.2 a §3.6, fase 15b), bajo /api/social/challenges/:
+//   POST create (RT) · GET mine · GET <id> (IN-02, MK) · POST join (IN-03, IN-04) · mark · unmark (SY) · leave (MK-04)
+//   · cancel (RT-04)
+// Cada participante escribe solo su documento `c:<reto>:p:<cuenta>` (S15-01); el servidor solo guarda las fechas
+// cumplidas (NFR15-01).
 // Cada cuenta tiene un documento `friends:<cuenta>`; el servidor escribe en las dos al hacer o deshacer una amistad.
 import { getStore } from '@netlify/blobs';
-import { verifySession, type Account, type KV } from '../lib/account.mts';
+import { z } from 'zod';
+import {
+  MARK_GRACE_DAYS,
+  MAX_ACTIVE,
+  MAX_DAYS,
+  MAX_PARTICIPANTS,
+  MAX_START_DAYS,
+  MIN_DAYS,
+  inRange,
+  isActive,
+  type Challenge,
+  type Participant,
+} from '../../src/domain/challenges/challenges.ts';
+import { addDays, type LocalDate } from '../../src/domain/time/localDate.ts';
+import { verifySession, type Account, type KV, type ListKV } from '../lib/account.mts';
 
 export const MAX_FRIENDS = 100; // AM-08
 export const REQUEST_DAYS = 30; // AM-07
 const REQUESTS_PER_DAY = 50; // NFR15-03
+const CREATED_PER_DAY = 20; // NFR15-03
+const MARKS_PER_HOUR = 60; // NFR15-03
 
 export interface Social {
   friends: { id: string; since: string }[];
@@ -20,6 +41,8 @@ export interface SocialStores {
   accounts: KV<Account>;
   social: KV<Social>;
   limits: KV<{ count: number; until: number }>;
+  /** `c:<reto>`, `c:<reto>:p:<cuenta>` y `u:<cuenta>` (§4.1). */
+  challenges: ListKV<unknown>;
 }
 
 export interface Deps {
@@ -40,7 +63,31 @@ const blobKV = <T,>(name: string): KV<T> => {
   };
 };
 
-const blobStores = (): SocialStores => ({ accounts: blobKV('accounts'), social: blobKV('social'), limits: blobKV('account-limits') });
+const blobListKV = <T,>(name: string): ListKV<T> => {
+  const store = getStore({ name, consistency: 'strong' });
+  return {
+    ...blobKV<T>(name),
+    list: async (prefix) => (await store.list({ prefix })).blobs.map((b) => b.key),
+  };
+};
+
+const blobStores = (): SocialStores => ({
+  accounts: blobKV('accounts'),
+  social: blobKV('social'),
+  limits: blobKV('account-limits'),
+  challenges: blobListKV('challenges'),
+});
+
+const ChallengeIn = z.object({
+  name: z.string().trim().min(1).max(40),
+  difficulty: z.enum(['easy', 'medium', 'hard']),
+  days: z.number().int().min(MIN_DAYS).max(MAX_DAYS),
+  start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  mode: z.enum(['coop', 'versus']),
+  /** Fecha local de quien lo pide (SY-03); el servidor la acepta si está a un día de la suya. */
+  today: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+});
+const DateIn = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
 const isId = (v: unknown): v is string => typeof v === 'string' && /^[A-Za-z0-9-]{8,64}$/.test(v);
 
@@ -91,6 +138,139 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
   }
 
   const card = (a: Account) => ({ id: a.id, alias: a.alias, level: a.level });
+
+  /** Límite con ventana: devuelve `false` si se superó. */
+  async function within(key: string, max: number, windowMs: number): Promise<boolean> {
+    const entry = await stores.limits.get(key);
+    const current = entry && entry.until > now ? entry : { count: 0, until: now + windowMs };
+    if (current.count >= max) return false;
+    await stores.limits.set(key, { count: current.count + 1, until: current.until });
+    return true;
+  }
+
+  // ---------- Retos ----------
+  const serverToday = new Date(now).toISOString().slice(0, 10) as LocalDate;
+  /** La fecha local del cliente, si está a un día como mucho de la del servidor (zonas horarias, SY-03). */
+  const clientToday = (v: unknown): string | undefined => {
+    const d = DateIn.safeParse(v);
+    return d.success && d.data >= addDays(serverToday, -1) && d.data <= addDays(serverToday, 1) ? d.data : undefined;
+  };
+  const cs = stores.challenges;
+  const getChallenge = async (id: unknown) => (isId(id) ? ((await cs.get(`c:${id}`)) as Challenge | null) : null);
+  const getParticipant = async (cid: string, aid: string) => (await cs.get(`c:${cid}:p:${aid}`)) as Participant | null;
+  const myList = async (aid: string) => ((await cs.get(`u:${aid}`)) as string[] | null) ?? [];
+
+  async function view(c: Challenge) {
+    const keys = await cs.list(`c:${c.id}:p:`);
+    const parts = (await Promise.all(keys.map((k) => cs.get(k)))).filter(Boolean) as Participant[];
+    // El alias y el nivel, al día desde la cuenta (PV-02)
+    const accounts = await Promise.all(parts.map((p) => stores.accounts.get(p.id)));
+    const participants = parts
+      .map((p, i) => ({ ...p, alias: accounts[i]?.alias ?? p.alias, level: accounts[i]?.level ?? p.level }))
+      .sort((a, b) => a.joinedAt.localeCompare(b.joinedAt));
+    const ownerFriend = c.owner === me || (await load(me!)).friends.some((f) => f.id === c.owner);
+    return { challenge: c, participants, ownerFriend };
+  }
+
+  async function activeCount(aid: string, today: string) {
+    let n = 0;
+    for (const id of await myList(aid)) {
+      const c = await getChallenge(id);
+      const p = c && (await getParticipant(c.id, aid));
+      if (c && p && isActive(c, today, p.left)) n++;
+    }
+    return n;
+  }
+
+  async function addParticipant(c: Challenge) {
+    const p: Participant = { id: me!, alias: account!.alias, level: account!.level, joinedAt: new Date(now).toISOString(), done: [] };
+    await cs.set(`c:${c.id}:p:${me}`, p);
+    await cs.set(`u:${me}`, [...new Set([...(await myList(me!)), c.id])]);
+  }
+
+  if (route.startsWith('challenges')) {
+    const sub = route.slice('challenges'.length).replace(/^\//, '');
+
+    if (sub === 'create' && req.method === 'POST') {
+      const input = ChallengeIn.safeParse(body);
+      const today = input.success ? clientToday(input.data.today) : undefined;
+      if (!input.success || !today) return json(400, { error: 'invalid' });
+      const { today: _, ...data } = input.data;
+      if (data.start < today || data.start > addDays(today as LocalDate, MAX_START_DAYS)) return json(400, { error: 'invalid' });
+      if ((await activeCount(me, today)) >= MAX_ACTIVE) return json(409, { error: 'too-many' });
+      if (!(await within(`acc:${me}:challenges`, CREATED_PER_DAY, 86_400_000))) return json(429, { error: 'limit' });
+      const c: Challenge = { id: crypto.randomUUID(), owner: me, ...data, createdAt: new Date(now).toISOString() };
+      await cs.set(`c:${c.id}`, c);
+      await addParticipant(c);
+      return json(200, await view(c));
+    }
+
+    if (sub === 'mine' && req.method === 'GET') {
+      const views = [];
+      for (const id of await myList(me)) {
+        const c = await getChallenge(id);
+        if (c) views.push(await view(c));
+      }
+      return json(200, { challenges: views });
+    }
+
+    if (req.method === 'GET' && isId(sub)) {
+      const c = await getChallenge(sub);
+      if (!c) return json(404, { error: 'unavailable' });
+      const [mine, theirs] = await Promise.all([load(me), load(c.owner)]);
+      if (c.owner !== me && blockedBetween(mine, me, theirs, c.owner) && !(await getParticipant(c.id, me))) return json(404, { error: 'unavailable' });
+      return json(200, await view(c));
+    }
+
+    const c = await getChallenge(body.id);
+    if (!c) return json(404, { error: 'unavailable' });
+
+    if (sub === 'join' && req.method === 'POST') {
+      const today = clientToday(body.today);
+      if (!today) return json(400, { error: 'invalid' });
+      if (await getParticipant(c.id, me)) return json(200, await view(c));
+      const [mine, theirs] = await Promise.all([load(me), load(c.owner)]);
+      if (c.cancelled || blockedBetween(mine, me, theirs, c.owner)) return json(404, { error: 'unavailable' });
+      // Se acepta hasta el día de inicio incluido (IN-03)
+      if (today > c.start) return json(409, { error: 'started' });
+      if ((await cs.list(`c:${c.id}:p:`)).length >= MAX_PARTICIPANTS) return json(409, { error: 'full' });
+      if ((await activeCount(me, today)) >= MAX_ACTIVE) return json(409, { error: 'too-many' });
+      await addParticipant(c);
+      return json(200, await view(c));
+    }
+
+    const p = await getParticipant(c.id, me);
+    if (!p) return json(403, { error: 'not-in' });
+
+    if ((sub === 'mark' || sub === 'unmark') && req.method === 'POST') {
+      const date = DateIn.safeParse(body.date);
+      if (!date.success || !inRange(c, date.data) || c.cancelled || p.left) return json(400, { error: 'invalid' });
+      // Pasados 2 días (más uno por zonas horarias) el día queda cerrado (SY-04)
+      if (date.data < addDays(serverToday, -(MARK_GRACE_DAYS + 1)) || date.data > addDays(serverToday, 1)) return json(409, { error: 'closed' });
+      if (!(await within(`acc:${me}:marks`, MARKS_PER_HOUR, 3_600_000))) return json(429, { error: 'limit' });
+      const done = sub === 'mark' ? [...new Set([...p.done, date.data])].sort() : p.done.filter((d) => d !== date.data);
+      await cs.set(`c:${c.id}:p:${me}`, { ...p, done });
+      return json(200, { done });
+    }
+
+    if (sub === 'leave' && req.method === 'POST') {
+      const today = clientToday(body.today);
+      if (!today) return json(400, { error: 'invalid' });
+      if (!p.left) await cs.set(`c:${c.id}:p:${me}`, { ...p, left: today });
+      return json(200, await view(c));
+    }
+
+    if (sub === 'cancel' && req.method === 'POST') {
+      const today = clientToday(body.today);
+      if (c.owner !== me || !today) return json(403, { error: 'not-owner' });
+      if (today >= c.start) return json(409, { error: 'started' });
+      const cancelled = { ...c, cancelled: true };
+      await cs.set(`c:${c.id}`, cancelled);
+      return json(200, await view(cancelled));
+    }
+
+    return json(404, { error: 'route' });
+  }
 
   if (route === 'friends' && req.method === 'GET') {
     const mine = await load(me);

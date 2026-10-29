@@ -48,6 +48,7 @@ export function ActivityFormScreen() {
         }
       }
       fromCompanion={!!draft}
+      locked={!!record?.activity.challengeId}
     />
   );
 }
@@ -58,12 +59,15 @@ function ActivityForm({
   initialConfig,
   initialReminders,
   fromCompanion = false,
+  locked = false,
 }: {
   activityId?: string;
   initialName: string;
   initialConfig: ActivityConfig;
   initialReminders: ReminderSlot[];
   fromCompanion?: boolean;
+  /** Actividad de un reto: nombre, frecuencia y dificultad vienen del reto (spec 15, RT-10). */
+  locked?: boolean;
 }) {
   const ctx = useData();
   const navigate = useNavigate();
@@ -121,12 +125,14 @@ function ActivityForm({
     <form className="stack" style={{ gap: 'var(--s5)' }} onSubmit={(e) => void submit(e)} noValidate>
       <h1>{activityId ? t('activityForm.editTitle') : t('activityForm.newTitle')}</h1>
       {fromCompanion && <DraftBanner />}
+      {locked && <p className="small muted">{t('challenges.locked')}</p>}
 
       <div className="field">
         <label htmlFor="name">{t('activityForm.name')}</label>
         <input
           id="name"
           type="text"
+          disabled={locked}
           value={name}
           maxLength={60}
           autoComplete="off"
@@ -166,7 +172,7 @@ function ActivityForm({
         )}
       </fieldset>
 
-      <fieldset className="field">
+      <fieldset className="field" disabled={locked}>
         <legend>{t('activityForm.frequency')}</legend>
         <div className="choice-group">
           {PERIODS.map((p) => (
@@ -195,6 +201,7 @@ function ActivityForm({
         <input
           id="target"
           type="number"
+          disabled={locked}
           inputMode="numeric"
           min={1}
           max={max}
@@ -217,7 +224,7 @@ function ActivityForm({
 
       <RemindersField period={config.period} target={config.target} value={reminders} onChange={setReminderSlots} />
 
-      <fieldset className="field">
+      <fieldset className="field" disabled={locked}>
         <legend>{t('activityForm.difficulty')}</legend>
         <div className="choice-group">
           {DIFFICULTIES.map((d) => (

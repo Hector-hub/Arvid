@@ -20,7 +20,8 @@ import { IntroSheet } from './Onboarding';
 import { compareDates } from '../../domain/time/localDate';
 import { celebrate, floatXp } from '../scene/engine';
 import { TodayMissionsSection, useTodayMissions } from './missions/TodayMissions';
-import { useCategories, useData, useRecords, useRests, useSettings } from '../data';
+import { useCategories, useChallenges, useData, useRecords, useRests, useSettings } from '../data';
+import { challengeDay } from '../../domain/challenges/challenges';
 import { CategoryIcon, Panel, Segments, Sprite, XpBar, categoryColor } from '../design/components';
 import {
   daysLeftText,
@@ -158,6 +159,8 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
   const undoDate = record ? latestUndoableDate(record, today) : undefined;
   const streak = useAnalysis()?.byActivity.get(item.activityId)?.streak.current ?? 0;
   const loggable = record ? canLog(record, today, today).ok : false;
+  // Actividad de un reto: «Reto · día 3 de 7» (spec 15, RT-09)
+  const challenge = useChallenges()?.find((c) => c.activityId === item.activityId && challengeDay(c.view.challenge, today) > 0 && challengeDay(c.view.challenge, today) <= c.view.challenge.days);
 
   async function run(action: () => Promise<{ text: string; shown?: boolean }>) {
     if (inFlight.current) return;
@@ -219,6 +222,7 @@ function TodayRow({ item, record, category }: { item: TodayItem; record?: Activi
             {item.name}
           </Link>
           {item.resting && !item.done && <span className="chip chip-muted">{t('rests.chip')}</span>}
+          {challenge && <span className="chip">{t('challenges.chip', { day: challengeDay(challenge.view.challenge, today), days: challenge.view.challenge.days })}</span>}
         </div>
         <Segments count={item.count} target={item.target} color={categoryColor(category)} />
         <p className="small muted">{meta}</p>

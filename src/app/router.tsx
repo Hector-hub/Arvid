@@ -23,6 +23,7 @@ import { SettingsScreen } from './screens/SettingsScreen';
 import { TodayScreen } from './screens/TodayScreen';
 import { FriendLinkScreen } from './friends/FriendLinkScreen';
 import { FriendsScreen } from './friends/FriendsScreen';
+import { ChallengeFormScreen, ChallengeLinkScreen, ChallengeScreen } from './challenges/ChallengeScreens';
 
 /** Rutas (PWA-05). */
 export const routes: RouteObject[] = [
@@ -53,6 +54,9 @@ export const routes: RouteObject[] = [
       { path: 'perfil/ciudad', element: <CityScreen /> },
       { path: 'perfil/amigos', element: <FriendsScreen /> },
       { path: 'a/:id', element: <FriendLinkScreen /> },
+      { path: 'r/:id', element: <ChallengeLinkScreen /> },
+      { path: 'retos/nuevo', element: <ChallengeFormScreen /> },
+      { path: 'retos/:id', element: <ChallengeScreen /> },
       // La pantalla se llamaba Personaje hasta la 0.5.0 (PF-01)
       { path: 'personaje/*', element: <LegacyProfileRedirect /> },
       { path: 'ajustes', element: <SettingsScreen /> },

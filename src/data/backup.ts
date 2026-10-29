@@ -7,6 +7,7 @@ import type { Goal } from '../domain/goals/goals';
 import { analyze } from '../domain/progress/progress';
 import { isLocalDate, toLocalDate } from '../domain/time/localDate';
 import { SCHEMA_VERSION, type ArvidDB } from './db';
+import type { ChallengeView } from '../domain/challenges/challenges';
 import { ensureSeed, type DataContext } from './repository';
 
 export const BACKUP_FORMAT = 'arvid-backup';
@@ -38,7 +39,16 @@ const category = z.object({
 });
 
 const reminder = z.object({ day: z.number().int().min(1).max(31).optional(), time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/) });
-const activity = z.object({ id, name: z.string().min(1).max(40), order: z.number().int(), reminders: z.array(reminder).max(100).optional() });
+const activity = z.object({ id, name: z.string().min(1).max(40), order: z.number().int(), reminders: z.array(reminder).max(100).optional(), challengeId: z.string().max(64).optional() });
+// Desde el esquema 5 (spec 15): copia local de los retos, tal como la guardó la app
+const challenge = z.object({
+  id: z.string().min(1).max(64),
+  activityId: id.optional(),
+  view: z.custom<ChallengeView>((v) => typeof v === 'object' && v !== null && 'challenge' in v),
+  fetchedAt: z.string(),
+  sent: z.array(z.string()).optional(),
+  left: z.boolean().optional(),
+});
 
 const activityVersion = z
   .object({
@@ -145,6 +155,7 @@ const backupSchema = z.object({
     goals: z.array(goal).default([]),
     // Desde el esquema 4 (spec 13)
     memories: z.array(memory).default([]),
+    challenges: z.array(challenge).default([]),
   }),
 });
 
@@ -172,6 +183,7 @@ export async function buildBackup(db: ArvidDB, appVersion: string, now: Date): P
       rests: await db.rests.toArray(),
       goals: await db.goals.toArray(),
       memories: await db.memories.toArray(),
+      challenges: await db.challenges.toArray(),
     },
   }));
 }
@@ -248,6 +260,7 @@ function findBrokenReference({ data }: Backup): string | undefined {
     ['rests', data.rests],
     ['goals', data.goals],
     ['memories', data.memories],
+    ['challenges', data.challenges],
   ];
   for (const [name, rows] of tables) {
     if (new Set(rows.map((r) => r.id)).size !== rows.length) return `${name}: IDs duplicados`;
@@ -313,6 +326,7 @@ export async function replaceAllData(ctx: DataContext, backup: Backup): Promise<
     await db.rests.bulkAdd(data.rests as Rest[]);
     await db.goals.bulkAdd(data.goals as Goal[]);
     await db.memories.bulkAdd(data.memories);
+    await db.challenges.bulkAdd(data.challenges);
     await db.settings.bulkPut([
       ...data.settings.filter((s) => exported(s.key)),
       ...device,

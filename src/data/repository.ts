@@ -120,6 +120,8 @@ export interface ActivityInput {
   config: ActivityConfig;
   /** Spec 10, RA-01. */
   reminders?: Reminder[];
+  /** Spec 15, RT-07. */
+  challengeId?: string;
 }
 
 /** ACT-02: actividad + versión desde el inicio del periodo actual + evento `created`. */
@@ -130,7 +132,7 @@ export async function createActivity(ctx: DataContext, input: ActivityInput): Pr
   const at = ctx.now().toISOString();
   await db.transaction('rw', [db.activities, db.activityVersions, db.activityStatusEvents], async () => {
     const last = await db.activities.orderBy('order').last();
-    await db.activities.add({ id, name: input.name.trim(), order: (last?.order ?? -1) + 1, ...(input.reminders?.length ? { reminders: input.reminders } : {}) });
+    await db.activities.add({ id, name: input.name.trim(), order: (last?.order ?? -1) + 1, ...(input.reminders?.length ? { reminders: input.reminders } : {}), ...(input.challengeId ? { challengeId: input.challengeId } : {}) });
     const { effectiveFrom } = planNewVersion([], input.config, t);
     await db.activityVersions.add({ id: ctx.newId(), activityId: id, effectiveFrom, ...input.config });
     await db.activityStatusEvents.add({ id: ctx.newId(), activityId: id, date: t, type: 'created', at });

@@ -234,7 +234,7 @@ Se configuran en **Ajustes → Notificaciones**, en un grupo nuevo «Amigos y re
 | Fase | Qué |
 |---|---|
 | **15a** ✅ (1.8.8) | Amigos: enlaces, solicitudes, lista, bloquear y la ruta en iPhone (EN-03) |
-| **15b** | Retos: crear, invitar, aceptar, actividad, marcar y sincronizar, marcador y abandonar |
+| **15b** ✅ (1.8.9) | Retos: crear, invitar, aceptar, actividad, marcar y sincronizar, marcador y abandonar |
 | **15c** | Final, retos cumplidos en el Perfil, avisos y celebración del compañero |
 | **2.0.0** | Con la spec 14, se enciende `VITE_ACCOUNTS` |
 
@@ -256,3 +256,10 @@ Se configuran en **Ajustes → Notificaciones**, en un grupo nuevo «Amigos y re
 - Las pruebas del servidor viven en `src/app/friends/social-server.test.ts` (no en `netlify/functions/`), junto a las de la cuenta.
 - Detección del portapapeles (EN-03): en vez de leerlo solo al volver a la app (iOS pide permiso cada vez), «Tengo un enlace» tiene un botón **Pegar** que lo lee con un toque del usuario y abre la invitación.
 - «Retos juntos» se muestra a 0 hasta la 15b; «Invitar a un reto» llega con la 15b.
+
+### Notas de implementación (15b)
+
+- **Sin tabla `socialQueue`:** la app compara las fechas registradas en la actividad del reto (dentro del margen de SY-04) con las que el servidor ya tiene y envía solo la diferencia. Sin conexión no se pierde nada: se compara de nuevo al volver, al abrir la app y cada 5 minutos. La tabla `challenges` (esquema 5) guarda el reto, la actividad y el último marcador.
+- **Área al aceptar:** el servidor no guarda el área; cada participante la elige al crear o aceptar (RT-02).
+- **Actividad de un reto que empieza más tarde:** se crea al unirse; los registros antes del inicio no cuentan en el reto.
+- **Pendiente para la 15c:** «Invitar a un reto» directo desde un amigo (va con los avisos, IN-01), «retos juntos» en la lista de amigos, el aviso al planificar un descanso que coincide con un reto (RT-12) y el resultado final (FN).

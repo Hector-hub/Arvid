@@ -18,7 +18,7 @@ export interface LinkProfile extends FriendCard {
   friend?: boolean;
 }
 
-async function social<T>(account: Pick<DeviceAccount, 'session'>, method: string, route: string, body?: unknown): Promise<T> {
+export async function social<T>(account: Pick<DeviceAccount, 'session'>, method: string, route: string, body?: unknown): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`/api/social/${route}`, {

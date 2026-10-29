@@ -2,14 +2,15 @@
 // Servidor de amigos (spec 15, §3.1) con almacenes en memoria.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { handle, MAX_FRIENDS, type SocialStores } from '../../../netlify/functions/social.mts';
-import { signSession, type Account, type KV } from '../../../netlify/lib/account.mts';
+import { signSession, type Account, type ListKV } from '../../../netlify/lib/account.mts';
 
 const SECRET = 'secreto-de-prueba';
 
-function memory<T>(): KV<T> & { map: Map<string, T> } {
+function memory<T>(): ListKV<T> & { map: Map<string, T> } {
   const map = new Map<string, T>();
   return {
     map,
+    list: async (prefix) => [...map.keys()].filter((k) => k.startsWith(prefix)),
     get: async (k) => map.get(k) ?? null,
     set: async (k, v) => void map.set(k, structuredClone(v)),
     delete: async (k) => void map.delete(k),
@@ -28,7 +29,7 @@ function account(id: string, alias: string, level = 3): Account {
 }
 
 beforeEach(async () => {
-  stores = { accounts: memory(), social: memory(), limits: memory() };
+  stores = { accounts: memory(), social: memory(), limits: memory(), challenges: memory() };
   now = Date.UTC(2026, 9, 28, 12);
   for (const [id, alias] of [[ANA, 'Ana'], [LUIS, 'Luis'], [EVA, 'Eva']] as const) await stores.accounts.set(id, account(id, alias));
 });
@@ -125,5 +126,93 @@ describe('amigos (spec 15, AM)', () => {
     expect((await call(ANA, 'GET', `profile/${ANA}`)).body).toMatchObject({ alias: 'Ana', self: true });
     expect((await call(ANA, 'GET', 'profile/no-existe-cuenta')).status).toBe(404);
     expect((await call(ANA, 'POST', 'accept', { id: ANA })).status).toBe(404);
+  });
+});
+
+interface ViewReply {
+  error?: string;
+  challenge: { id: string; name: string; cancelled?: boolean };
+  participants: { alias: string; done: string[]; left?: string }[];
+  ownerFriend?: boolean;
+  done?: string[];
+}
+
+describe('retos (spec 15, RT, IN, SY, MK)', () => {
+  const TODAY = '2026-10-28';
+  const base = { name: 'Leer 10 páginas', difficulty: 'easy', days: 7, start: TODAY, mode: 'coop', today: TODAY };
+  const create = async (as: string, extra: object = {}) => (await call(as, 'POST', 'challenges/create', { ...base, ...extra })) as unknown as { status: number; body: ViewReply };
+  const ch = async (as: string, method: string, route: string, body?: unknown) => (await call(as, method, `challenges/${route}`, body)) as unknown as { status: number; body: ViewReply };
+
+  it('RT-03/IN-02/IN-04: el creador es el primer participante; quien abre el enlace ve el reto y se une', async () => {
+    const { body } = await create(ANA);
+    expect(body.participants.map((p) => p.alias)).toEqual(['Ana']);
+    const seen = await ch(LUIS, 'GET', body.challenge.id);
+    expect(seen.body).toMatchObject({ challenge: { name: 'Leer 10 páginas' }, ownerFriend: false });
+    const joined = await ch(LUIS, 'POST', 'join', { id: body.challenge.id, today: TODAY });
+    expect(joined.body.participants.map((p) => p.alias)).toEqual(['Ana', 'Luis']);
+    expect((await ch(LUIS, 'GET', 'mine')).body).toMatchObject({ challenges: [{ challenge: { id: body.challenge.id } }] });
+  });
+
+  it('RT-02: duración de 3 a 60 días e inicio hasta 30 días después', async () => {
+    expect((await create(ANA, { days: 2 })).status).toBe(400);
+    expect((await create(ANA, { days: 61 })).status).toBe(400);
+    expect((await create(ANA, { start: '2026-12-01' })).status).toBe(400);
+    expect((await create(ANA, { start: '2026-10-27' })).status).toBe(400);
+    expect((await create(ANA, { start: '2026-11-27', days: 60 })).status).toBe(200);
+  });
+
+  it('RT-05: como mucho 5 retos activos', async () => {
+    for (let i = 0; i < 5; i++) expect((await create(ANA)).status).toBe(200);
+    expect((await create(ANA)).body.error).toBe('too-many');
+  });
+
+  it('IN-03: se acepta hasta el día de inicio incluido; con 20 está completo', async () => {
+    const { body } = await create(ANA);
+    now += 86_400_000;
+    expect((await ch(LUIS, 'POST', 'join', { id: body.challenge.id, today: '2026-10-29' })).body.error).toBe('started');
+    now -= 86_400_000;
+    for (let i = 0; i < 19; i++) {
+      const id = `otra-${i}-cuenta`;
+      await stores.accounts.set(id, account(id, `P${i}`));
+      expect((await ch(id, 'POST', 'join', { id: body.challenge.id, today: TODAY })).status).toBe(200);
+    }
+    expect((await ch(LUIS, 'POST', 'join', { id: body.challenge.id, today: TODAY })).body.error).toBe('full');
+  });
+
+  it('IN-05: el enlace de alguien que te bloqueó no está disponible', async () => {
+    const { body } = await create(ANA);
+    await call(ANA, 'POST', 'block', { id: LUIS });
+    expect((await ch(LUIS, 'GET', body.challenge.id)).status).toBe(404);
+    expect((await ch(LUIS, 'POST', 'join', { id: body.challenge.id, today: TODAY })).status).toBe(404);
+  });
+
+  it('SY-02/SY-04: se marcan y desmarcan fechas del reto; pasado el margen el día queda cerrado', async () => {
+    const { body } = await create(ANA);
+    const id = body.challenge.id;
+    expect((await ch(ANA, 'POST', 'mark', { id, date: TODAY })).body.done).toEqual([TODAY]);
+    expect((await ch(ANA, 'POST', 'mark', { id, date: '2026-10-27' })).status).toBe(400); // fuera del reto
+    expect((await ch(LUIS, 'POST', 'mark', { id, date: TODAY })).status).toBe(403); // no participa
+    now += 2 * 86_400_000;
+    expect((await ch(ANA, 'POST', 'mark', { id, date: '2026-10-29' })).status).toBe(200);
+    now += 2 * 86_400_000; // 1 de noviembre: el 29 queda a 3 días, aún dentro del margen con zona horaria
+    expect((await ch(ANA, 'POST', 'unmark', { id, date: TODAY })).body.error).toBe('closed');
+    expect((await ch(ANA, 'POST', 'unmark', { id, date: '2026-10-29' })).body.done).toEqual([TODAY]);
+  });
+
+  it('MK-04: al abandonar queda «abandonó» con sus días y no puede marcar más', async () => {
+    const { body } = await create(ANA);
+    const id = body.challenge.id;
+    await ch(ANA, 'POST', 'mark', { id, date: TODAY });
+    const left = await ch(ANA, 'POST', 'leave', { id, today: TODAY });
+    expect(left.body.participants[0]).toMatchObject({ left: TODAY, done: [TODAY] });
+    expect((await ch(ANA, 'POST', 'mark', { id, date: TODAY })).status).toBe(400);
+  });
+
+  it('RT-04: el creador puede cancelarlo solo antes de que empiece', async () => {
+    expect((await ch(ANA, 'POST', 'cancel', { id: (await create(ANA)).body.challenge.id, today: TODAY })).body.error).toBe('started');
+    const later = (await create(ANA, { start: '2026-11-02' })).body.challenge.id;
+    await ch(LUIS, 'POST', 'join', { id: later, today: TODAY });
+    expect((await ch(LUIS, 'POST', 'cancel', { id: later, today: TODAY })).status).toBe(403);
+    expect((await ch(ANA, 'POST', 'cancel', { id: later, today: TODAY })).body.challenge.cancelled).toBe(true);
   });
 });

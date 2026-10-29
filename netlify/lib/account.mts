@@ -91,3 +91,8 @@ const b64 = z.string().regex(/^[A-Za-z0-9_-]+$/);
 export const Alias = z.string().trim().min(1).max(40);
 export const RecoveryIn = z.object({ auth: b64.length(43), wrapped: b64.max(200) });
 export const BackupIn = z.object({ baseVersion: z.number().int().min(0), data: b64.max(BACKUP_MAX_CHARS), level: z.number().int().min(1).max(999) });
+
+/** Almacén con listado por prefijo (los participantes de un reto, spec 15 §4.1). */
+export interface ListKV<T> extends KV<T> {
+  list(prefix: string): Promise<string[]>;
+}

@@ -10,6 +10,7 @@ import type { Category } from '../domain/categories';
 import type { Mission, MissionEvent } from '../domain/missions/missions';
 import type { Goal } from '../domain/goals/goals';
 import type { Memory } from '../domain/arvid/memory';
+import type { LocalChallenge } from '../domain/challenges/challenges';
 
 export interface SettingRow {
   key: string;
@@ -22,7 +23,7 @@ export interface AchievementRow {
   unlockedAt: string;
 }
 
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 export class ArvidDB extends Dexie {
   categories!: EntityTable<Category, 'id'>;
@@ -40,6 +41,8 @@ export class ArvidDB extends Dexie {
   goals!: EntityTable<Goal, 'id'>;
   /** Memoria del compañero (spec 13). Desde la versión 4 del esquema. */
   memories!: EntityTable<Memory, 'id'>;
+  /** Copia local de los retos entre amigos y su marcador (spec 15, §4.3). Desde la versión 5 del esquema. */
+  challenges!: EntityTable<LocalChallenge, 'id'>;
 
   constructor(name = 'arvid') {
     super(name);
@@ -60,5 +63,7 @@ export class ArvidDB extends Dexie {
     this.version(3).stores({ goals: 'id' });
     // Versión 4 (spec 13): memoria del compañero
     this.version(4).stores({ memories: 'id' });
+    // Versión 5 (spec 15): retos; las actividades ganan `challengeId` (opcional, sin índice)
+    this.version(5).stores({ challenges: 'id' });
   }
 }
