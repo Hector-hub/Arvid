@@ -151,14 +151,25 @@ export const passkeysAvailable = () => browserSupportsWebAuthn();
  * (D-192). La passkey sirve igual para entrar; los datos se descifran con la clave de recuperación.
  */
 async function registerPasskey(options: PublicKeyCredentialCreationOptionsJSON) {
-  try {
-    return await startRegistration({ optionsJSON: withPrf(options) });
-  } catch (e) {
-    const name = (e as { name?: string; cause?: { name?: string } })?.cause?.name ?? (e as { name?: string })?.name;
-    // Cancelar o cerrar el diálogo del sistema no se reintenta
-    if (name === 'NotAllowedError' || name === 'AbortError' || (e as { code?: string })?.code === 'ERROR_CEREMONY_ABORTED') throw e;
-    return startRegistration({ optionsJSON: options });
+  // Sin «en este dispositivo»: si el teléfono no tiene gestor de passkeys, que ofrezca lo que tenga (otro dispositivo)
+  const anywhere: PublicKeyCredentialCreationOptionsJSON = {
+    ...options,
+    hints: undefined,
+    authenticatorSelection: { ...options.authenticatorSelection, authenticatorAttachment: undefined },
+  };
+  const attempts = [withPrf(options), options, anywhere];
+  let last: unknown;
+  for (const optionsJSON of attempts) {
+    try {
+      return await startRegistration({ optionsJSON });
+    } catch (e) {
+      const name = (e as { cause?: { name?: string } })?.cause?.name ?? (e as { name?: string })?.name;
+      // Cancelar o cerrar el diálogo del sistema no se reintenta
+      if (name === 'NotAllowedError' || name === 'AbortError' || (e as { code?: string })?.code === 'ERROR_CEREMONY_ABORTED') throw e;
+      last = e;
+    }
   }
+  throw last;
 }
 
 // ---------- Crear la cuenta (CU-02, CU-04) ----------

@@ -20,7 +20,7 @@ import { InstallGuide } from './InstallGuide';
 import { enablePush, pushSupport } from '../notifications/push';
 import { accountsEnabled, createAccount, passkeysAvailable } from '../account/account';
 import { takePendingLink } from '../friends/friends';
-import { RecoveryKeySheet, SignInSheet } from '../account/AccountPanel';
+import { RecoveryKeySheet, SignInSheet, errorText as accountErrorText } from '../account/AccountPanel';
 
 type Step = 'language' | 'companion' | 'welcome' | 'alias' | 'gender' | 'character' | 'arvidColor' | 'ai' | 'account' | 'notifications' | 'categories' | 'install' | 'done';
 
@@ -55,7 +55,7 @@ function AccountStep({ next }: { next: () => void }) {
       setKey((await createAccount(ctx, alias, withPasskey)).recoveryKey);
       await saveSetting(ctx.db, 'accountOffered', true);
     } catch (e) {
-      setError(e instanceof DOMException ? t('account.errors.cancelled') : t('account.errors.failed'));
+      setError(accountErrorText(e));
     } finally {
       setBusy(false);
     }
