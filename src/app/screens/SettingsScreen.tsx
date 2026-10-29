@@ -19,6 +19,7 @@ import { NotificationsPanel } from '../notifications/NotificationsPanel';
 import { AiCodeField, AliasField, CharacterCarousel, CompanionColorPicker, CompanionPicker, GenderPicker, LanguagePicker } from '../profile/pickers';
 import { categoryName, errorText } from '../text';
 import { BackupPanel, DeletePanel } from './DataPanels';
+import { AccountPanel } from '../account/AccountPanel';
 
 const PERSIST_TEXT: Record<PersistState, { title: TKey; body: TKey }> = {
   granted: { title: 'settings.persistGranted', body: 'settings.persistGrantedText' },
@@ -57,6 +58,9 @@ export function SettingsScreen() {
       <h1>{t('settings.title')}</h1>
 
       <ProfilePanel settings={settings} />
+
+      {/* Cuenta y copia en la nube (spec 14): oculta hasta la 2.0 */}
+      <AccountPanel />
 
       <SoundPanel />
 

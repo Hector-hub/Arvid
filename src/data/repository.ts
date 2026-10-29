@@ -239,6 +239,8 @@ export async function undoCompletion(ctx: DataContext, activityId: string, date:
 
 export interface Settings {
   onboardingCompletedAt?: string;
+  /** Cuenta en este dispositivo (spec 14): sesión y clave de datos. Solo del dispositivo. */
+  account?: import('../app/account/account').DeviceAccount;
   lastBackupAt?: string;
   reducedMotion: 'system' | 'on' | 'off';
   vibration: boolean;

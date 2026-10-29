@@ -148,7 +148,7 @@ export async function unwrapDataKey(wrapped: string, wrap: CryptoKey): Promise<C
 }
 
 async function pipe(bytes: Uint8Array<ArrayBuffer>, stream: CompressionStream | DecompressionStream): Promise<Uint8Array<ArrayBuffer>> {
-  return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer());
+  return new Uint8Array(await new Response(new Response(bytes).body!.pipeThrough(stream)).arrayBuffer());
 }
 
 /** La copia: comprimida (gzip) y cifrada con la clave de datos antes de salir del dispositivo (CP-01). */

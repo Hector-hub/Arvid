@@ -1783,3 +1783,17 @@ input[type='range']:disabled { opacity: 0.45; }
 .player.has-cover .small.muted,
 .player.has-cover .player-time { color: #d4daf5; text-shadow: 0 1px 0 #000; }
 @keyframes player-fade { from { opacity: 0; } }
+
+/* Clave de recuperación (spec 14, CU-02): grande, en monoespaciado pixel y fácil de copiar a mano */
+.recovery-key {
+  padding: var(--s3);
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  text-align: center;
+  word-break: break-all;
+  color: var(--level);
+  background: rgb(255 255 255 / 0.05);
+  box-shadow: inset 0 0 0 1px rgb(245 198 107 / 0.45);
+  clip-path: var(--notch-2);
+  user-select: all;
+}
