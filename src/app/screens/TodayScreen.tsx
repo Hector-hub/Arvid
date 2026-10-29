@@ -23,6 +23,7 @@ import { TodayMissionsSection, useTodayMissions } from './missions/TodayMissions
 import { useCategories, useChallenges, useData, useRecords, useRests, useSettings } from '../data';
 import { challengeDay } from '../../domain/challenges/challenges';
 import { ChallengeCelebration } from '../challenges/ChallengeCelebration';
+import { Invitations } from '../challenges/ChallengeScreens';
 import { CategoryIcon, Panel, Segments, Sprite, XpBar, categoryColor } from '../design/components';
 import {
   daysLeftText,
@@ -94,6 +95,8 @@ export function TodayScreen() {
       )}
 
       <AccountCard />
+      {/* Invitaciones a retos (spec 15, IN-14) */}
+      <Invitations />
 
       {needsInstallForSafety() && (
         <div className="banner">

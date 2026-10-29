@@ -1,6 +1,6 @@
 import { setAccessCode, setTrial } from '../arvid/brain';
 import { saveSetting } from '../../data/repository';
-import { NavLink, Outlet } from 'react-router';
+import { NavLink, Outlet, useLocation } from 'react-router';
 import { useData, useSettings } from '../data';
 import { Sprite } from '../design/components';
 import { useMotionPreference } from '../motion';
@@ -8,7 +8,10 @@ import { Onboarding } from '../screens/Onboarding';
 import type { SpriteName } from '../design/sprites.generated';
 import { detectLocale, setLocale, t, useLocale, type TKey } from '../../i18n';
 import { useCompanionSync } from '../companion';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { FriendLanding } from '../friends/FriendLinkScreen';
+import { setPendingLink } from '../friends/friends';
+import { enableAccountsFlag } from '../account/account';
 import { UpdateBanner } from './UpdateBanner';
 import { AnalysisProvider } from '../analysis';
 import { AchievementsWatcher } from '../achievements/AchievementsWatcher';
@@ -51,8 +54,30 @@ export function AppLayout() {
     if (settings && !trialId) void saveSetting(db, 'trialDeviceId', crypto.randomUUID());
   }, [db, settings, trialId]);
 
+  const location = useLocation();
+  const [registering, setRegistering] = useState(false);
+  // Abrir un enlace de amistad activa la cuenta en este dispositivo (hasta la 2.0 está oculta, D-170)
+  useEffect(() => {
+    if (/^\/a\//.test(location.pathname)) enableAccountsFlag();
+  }, [location.pathname]);
+
   if (!settings) return null;
   // El service worker se registra desde UpdateBanner: debe montarse también durante el onboarding (PWA-02).
+  // Un enlace de amistad sin haber empezado (EN-10): primero la invitación; «Registrarme» abre el onboarding
+  const friendLink = location.pathname.match(/^\/a\/([A-Za-z0-9-]{8,64})\/?$/)?.[1];
+  if (!settings.onboardingCompletedAt && friendLink && !registering)
+    return (
+      <main className="main stack" style={{ padding: 'var(--s4)', gap: 'var(--s5)' }}>
+        <UpdateBanner />
+        <FriendLanding
+          id={friendLink}
+          onRegister={() => {
+            setPendingLink(`/a/${friendLink}`);
+            setRegistering(true);
+          }}
+        />
+      </main>
+    );
   if (!settings.onboardingCompletedAt) return <Onboarding banner={<UpdateBanner />} />;
 
   return (

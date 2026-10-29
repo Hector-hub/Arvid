@@ -28,9 +28,9 @@ import { accountsEnabled, type DeviceAccount } from '../account/account';
 import { useToday } from '../clock';
 import { useCategories, useChallenges, useData, useSettings } from '../data';
 import { BackLink, CategoryIcon, Panel } from '../design/components';
-import { requestFriend, shareLink, iosBrowser } from '../friends/friends';
+import { loadFriends, type FriendCard } from '../friends/friends';
 import { categoryName, dayMonth, difficultyLabel, intText } from '../text';
-import { cancelChallenge, challengeLink, createChallenge, getChallenge, joinChallenge, leaveChallenge, refreshChallenge, type ChallengeInput } from './challenges';
+import { cancelChallenge, createChallenge, declineInvite, inviteFriend, joinChallenge, leaveChallenge, refreshChallenge, type ChallengeInput, type ChallengeInvite } from './challenges';
 
 const DIFFICULTIES: ChallengeDifficulty[] = ['easy', 'medium', 'hard'];
 
@@ -128,6 +128,7 @@ export function ChallengesSection() {
           {t('challenges.new')}
         </Link>
       </header>
+      <Invitations title />
       {current.length === 0 && <p className="muted">{t('challenges.empty')}</p>}
       <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
         {sorted.map((l) => (
@@ -202,6 +203,7 @@ export function ChallengeFormScreen() {
   const [mode, setMode] = useState<ChallengeMode>('coop');
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
+  const [invitees, setInvitees] = useState<string[]>([]);
   if (!settings) return null;
   if (!accountsEnabled()) return <Navigate to="/objetivos" replace />;
   const account = settings.account;
@@ -215,6 +217,8 @@ export function ChallengeFormScreen() {
     try {
       const input: ChallengeInput = { name: name.trim(), difficulty, days, start, mode };
       const id = await createChallenge(ctx, account, input, categoryId);
+      // IN-11: las invitaciones salen al crearlo; si alguna falla, se puede repetir desde el detalle
+      for (const friendId of invitees) await inviteFriend(ctx, account, id, friendId).catch(() => undefined);
       navigate(`/retos/${id}`, { replace: true });
     } catch (err) {
       setError(challengeError(err));
@@ -288,13 +292,18 @@ export function ChallengeFormScreen() {
               ))}
             </div>
           </fieldset>
+          <fieldset className="field">
+            <legend>{t('challenges.inviteFriends')}</legend>
+            <FriendPicker account={account} exclude={[]} selected={invitees} onChange={setInvitees} />
+            <p className="small muted">{t('challenges.inviteFormHint')}</p>
+          </fieldset>
           {error && (
             <p role="alert" className="field-error">
               {error}
             </p>
           )}
           <button type="submit" className="btn btn-primary" disabled={!valid || busy}>
-            {t('challenges.create')}
+            {invitees.length ? t('challenges.createInvite', { count: invitees.length }) : t('challenges.create')}
           </button>
         </form>
       )}
@@ -399,7 +408,6 @@ export function ChallengeScreen() {
   const local = useChallenges()?.find((l) => l.id === id);
   const [error, setError] = useState<string>();
   const [confirm, setConfirm] = useState<'leave' | 'cancel'>();
-  const [copied, setCopied] = useState(false);
   const account = settings?.account;
 
   useEffect(() => {
@@ -409,7 +417,7 @@ export function ChallengeScreen() {
 
   if (!settings) return null;
   if (!accountsEnabled()) return <Navigate to="/objetivos" replace />;
-  if (!local) return <Navigate to={`/r/${id}`} replace />;
+  if (!local) return <Navigate to="/objetivos" replace />;
   const view = local.view;
   const c = view.challenge;
   const me = account?.id ?? '';
@@ -443,23 +451,7 @@ export function ChallengeScreen() {
           <h2>{result}</h2>
         </Panel>
       )}
-      {canInvite && (
-        <Panel className="stack">
-          <p className="small">{t('challenges.inviteHint', { date: dm(c.start) })}</p>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={async () => setCopied((await shareLink(challengeLink(c.id), t('challenges.shareText', { name: c.name }))) === 'copied')}
-          >
-            {t('challenges.invite')}
-          </button>
-          {copied && (
-            <p className="small" role="status">
-              {t('friends.copied')}
-            </p>
-          )}
-        </Panel>
-      )}
+      {canInvite && account && <InviteFriendsPanel account={account} local={local} />}
       <Scoreboard view={view} me={me} today={today} />
       {error && (
         <p role="alert" className="field-error">
@@ -496,143 +488,171 @@ export function ChallengeScreen() {
   );
 }
 
-// ---------- Abrir un enlace de reto (IN-02) ----------
+// ---------- Invitar amigos (IN-11, IN-12) ----------
 
-export function ChallengeLinkScreen() {
-  const { id = '' } = useParams();
-  const settings = useSettings();
-  if (!settings) return null;
-  if (!accountsEnabled()) return <Navigate to="/hoy" replace />;
-  return (
-    <div className="stack" style={{ gap: 'var(--s5)' }}>
-      {iosBrowser() && (
-        <Panel className="stack">
-          <p className="small">{t('friends.openInApp')}</p>
-          <button type="button" className="btn" onClick={() => void navigator.clipboard.writeText(location.href)}>
-            {t('friends.copyLink')}
-          </button>
-        </Panel>
-      )}
-      {settings.account ? <ChallengeInvitation account={settings.account} id={id} /> : <NeedAccount text={t('challenges.linkNeedAccount')} />}
-    </div>
-  );
-}
-
-function ChallengeInvitation({ account, id }: { account: DeviceAccount; id: string }) {
-  const ctx = useData();
-  const today = useToday();
-  const navigate = useNavigate();
-  const local = useChallenges()?.find((l) => l.id === id);
-  const [view, setView] = useState<ChallengeView | 'unavailable'>();
-  const [error, setError] = useState<string>();
-  const [categoryId, setCategoryId] = useState('');
-  const [joined, setJoined] = useState<ChallengeView>();
-  const [requested, setRequested] = useState(false);
-  // Al aceptar, la copia local aparece antes de la respuesta: no se salta todavía al detalle
-  const [accepting, setAccepting] = useState(false);
-
+/** Casillas con tus amigos (menos los que ya están en el reto); `selected` y `onChange` los controla quien la usa. */
+function FriendPicker({ account, exclude, selected, onChange }: { account: DeviceAccount; exclude: string[]; selected: string[]; onChange: (ids: string[]) => void }) {
+  const [friends, setFriends] = useState<FriendCard[] | 'error'>();
   useEffect(() => {
     let live = true;
-    getChallenge(account, id).then(
-      (v) => live && setView(v),
-      (e) => live && (e?.status === 404 ? setView('unavailable') : setError(errorText(e))),
+    loadFriends(account).then(
+      (l) => live && setFriends(l.friends),
+      () => live && setFriends('error'),
     );
     return () => {
       live = false;
     };
-  }, [account, id]);
-
-  if (local && !joined && !accepting) return <Navigate to={`/retos/${id}`} replace />;
-  if (error) return <p role="alert">{error}</p>;
-  if (!view) return <p className="muted">{t('friends.loading')}</p>;
-  if (view === 'unavailable' || view.challenge.cancelled)
+  }, [account]);
+  if (!friends) return <p className="small muted">{t('friends.loading')}</p>;
+  if (friends === 'error') return <p className="small muted">{t('challenges.friendsOffline')}</p>;
+  const options = friends.filter((f) => !exclude.includes(f.id));
+  if (options.length === 0)
     return (
-      <Panel className="stack">
-        <h1>{t('friends.unavailable')}</h1>
-        <Link to="/objetivos" className="btn">
-          {t('goals.title')}
-        </Link>
-      </Panel>
+      <p className="small muted">
+        {t('challenges.noFriends')} <Link to="/perfil/amigos">{t('friends.title')}</Link>
+      </p>
     );
-
-  const c = view.challenge;
-  const owner = view.participants.find((p) => p.id === c.owner);
-  const ownerAlias = owner?.alias ?? '—';
-
-  // Tras aceptar: si quien invitó no es tu amigo, se ofrece añadirlo (AM-03)
-  if (joined)
-    return (
-      <Panel className="stack">
-        <h1>{t('challenges.joined', { name: c.name })}</h1>
-        {!joined.ownerFriend && c.owner !== account.id && (
-          <button
-            type="button"
-            className="btn"
-            disabled={requested}
-            onClick={async () => {
-              try {
-                await requestFriend(account, c.owner);
-                setRequested(true);
-              } catch (e) {
-                setError(errorText(e));
-              }
-            }}
-          >
-            {requested ? t('challenges.requestSent') : t('challenges.addFriend', { alias: ownerAlias })}
-          </button>
-        )}
-        <Link to={`/retos/${c.id}`} className="btn btn-primary">
-          {t('challenges.see')}
-        </Link>
-      </Panel>
-    );
-
-  const closed = today > c.start;
-  const full = view.participants.length >= MAX_PARTICIPANTS;
   return (
-    <div className="stack" style={{ gap: 'var(--s5)' }}>
+    <div className="stack" style={{ gap: 'var(--s1)' }}>
+      {options.map((f) => (
+        <label key={f.id} className="choice">
+          <input
+            type="checkbox"
+            checked={selected.includes(f.id)}
+            onChange={(e) => onChange(e.target.checked ? [...selected, f.id] : selected.filter((x) => x !== f.id))}
+          />
+          <span className="grow">{f.alias}</span>
+          <span className="small muted">{t('friends.level', { level: intText(f.level) })}</span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
+/** «Invitar amigos» en el detalle del reto, hasta el día de inicio (IN-12). */
+function InviteFriendsPanel({ account, local }: { account: DeviceAccount; local: LocalChallenge }) {
+  const ctx = useData();
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [sent, setSent] = useState<string[]>([]);
+  const [error, setError] = useState<string>();
+  const c = local.view.challenge;
+  if (!open)
+    return (
       <Panel className="stack">
-        <h1>{t('challenges.invites', { alias: ownerAlias })}</h1>
-        <p>
-          <strong>{c.name}</strong>
-        </p>
-        <p className="small muted">
-          {t(`challenges.mode.${c.mode}`)} · {t('challenges.days', { count: c.days })} · {t('challenges.range', { from: dm(c.start), to: dm(endDate(c)) })} ·{' '}
-          {difficultyLabel(c.difficulty)}
-        </p>
-        <p className="small">{view.participants.map((p) => p.alias).join(', ')}</p>
-        {closed ? (
-          <p role="alert">{t('challenges.errors.started')}</p>
-        ) : full ? (
-          <p role="alert">{t('challenges.errors.full')}</p>
-        ) : null}
+        <p className="small">{t('challenges.inviteHint', { date: dm(c.start) })}</p>
+        <button type="button" className="btn btn-primary" onClick={() => setOpen(true)}>
+          {t('challenges.inviteFriends')}
+        </button>
+        {sent.length > 0 && (
+          <p className="small" role="status">
+            {t('challenges.invitesSent', { count: sent.length })}
+          </p>
+        )}
       </Panel>
-      {!closed && !full && (
-        <>
-          <CategoryChoice value={categoryId} onChange={setCategoryId} />
-          <div className="row">
-            <button type="button" className="btn grow" onClick={() => navigate('/objetivos')}>
-              {t('friends.reject')}
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary grow"
-              disabled={!categoryId}
-              onClick={async () => {
-                setAccepting(true);
-                try {
-                  setJoined(await joinChallenge(ctx, account, c.id, categoryId));
-                } catch (e) {
-                  setError(challengeError(e));
-                  setAccepting(false);
-                }
-              }}
-            >
-              {t('friends.accept')}
-            </button>
-          </div>
-        </>
+    );
+  return (
+    <Panel className="stack">
+      <h2>{t('challenges.inviteFriends')}</h2>
+      <FriendPicker account={account} exclude={[...local.view.participants.map((p) => p.id), ...sent]} selected={selected} onChange={setSelected} />
+      {error && (
+        <p role="alert" className="field-error">
+          {error}
+        </p>
       )}
+      <div className="row">
+        <button type="button" className="btn grow" onClick={() => setOpen(false)}>
+          {t('common.cancel')}
+        </button>
+        <button
+          type="button"
+          className="btn btn-primary grow"
+          disabled={selected.length === 0}
+          onClick={async () => {
+            try {
+              for (const id of selected) await inviteFriend(ctx, account, c.id, id);
+              setSent((s) => [...s, ...selected]);
+              setSelected([]);
+              setOpen(false);
+            } catch (e) {
+              setError(challengeError(e));
+            }
+          }}
+        >
+          {t('challenges.sendInvites', { count: selected.length })}
+        </button>
+      </div>
+    </Panel>
+  );
+}
+
+// ---------- Invitaciones recibidas (IN-14) ----------
+
+/** Tarjeta de una invitación: Aceptar pide el área (RT-02) y crea la actividad (RT-07); Rechazar no avisa. */
+export function InvitationCard({ invite }: { invite: ChallengeInvite }) {
+  const ctx = useData();
+  const settings = useSettings();
+  const navigate = useNavigate();
+  const [choosing, setChoosing] = useState(false);
+  const [categoryId, setCategoryId] = useState('');
+  const [error, setError] = useState<string>();
+  const account = settings?.account;
+  const c = invite.challenge;
+  if (!account) return null;
+  return (
+    <section className="panel stack invite-card" aria-label={t('challenges.invites', { alias: invite.from.alias })}>
+      <p className="small muted">{t('challenges.inviteKicker')}</p>
+      <h2>{t('challenges.invitesTo', { alias: invite.from.alias, name: c.name })}</h2>
+      <p className="small muted">
+        {t(`challenges.mode.${c.mode}`)} · {t('challenges.days', { count: c.days })} · {t('challenges.range', { from: dm(c.start), to: dm(endDate(c)) })} ·{' '}
+        {t('challenges.people', { count: invite.people })}
+      </p>
+      {choosing && <CategoryChoice value={categoryId} onChange={setCategoryId} />}
+      {error && (
+        <p role="alert" className="field-error">
+          {error}
+        </p>
+      )}
+      <div className="row">
+        <button
+          type="button"
+          className="btn grow"
+          onClick={() => (choosing ? setChoosing(false) : void declineInvite(ctx, account, c.id).catch((e) => setError(challengeError(e))))}
+        >
+          {choosing ? t('common.cancel') : t('friends.reject')}
+        </button>
+        <button
+          type="button"
+          className="btn btn-primary grow"
+          disabled={choosing && !categoryId}
+          onClick={async () => {
+            if (!choosing) return setChoosing(true);
+            try {
+              await joinChallenge(ctx, account, c.id, categoryId);
+              navigate(`/retos/${c.id}`);
+            } catch (e) {
+              setError(challengeError(e));
+            }
+          }}
+        >
+          {choosing ? t('challenges.join') : t('friends.accept')}
+        </button>
+      </div>
+    </section>
+  );
+}
+
+/** Las invitaciones pendientes (Hoy y Objetivos). */
+export function Invitations({ title = false }: { title?: boolean }) {
+  const settings = useSettings();
+  const invites = settings?.challengeInvites ?? [];
+  if (!settings?.account || !accountsEnabled() || invites.length === 0) return null;
+  return (
+    <div className="stack">
+      {title && <h3>{t('challenges.invitationsTitle')}</h3>}
+      {invites.map((i) => (
+        <InvitationCard key={i.challenge.id} invite={i} />
+      ))}
     </div>
   );
 }

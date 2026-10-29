@@ -4,7 +4,7 @@ import Dexie from 'dexie';
 import { useEffect, useRef } from 'react';
 import { accountsEnabled } from '../account/account';
 import { useData, useSettings } from '../data';
-import { refreshChallenges, syncMarks } from './challenges';
+import { refreshChallenges, refreshInvites, syncMarks } from './challenges';
 import { linkDevice } from '../friends/friends';
 
 export const REFRESH_MS = 5 * 60_000;
@@ -33,7 +33,10 @@ export function ChallengeSync() {
       busy.current = true;
       try {
         await syncMarks(ctx, account);
-        if (full) await refreshChallenges(ctx, account);
+        if (full) {
+          await refreshChallenges(ctx, account);
+          await refreshInvites(ctx, account);
+        }
       } catch {
         // Sin conexión o error del servidor: se reintenta en la siguiente ocasión
       } finally {

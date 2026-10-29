@@ -271,3 +271,44 @@ Se configuran en **Ajustes → Notificaciones**, en un grupo nuevo «Amigos y re
 - **AV-02** no lo manda el servidor: el service worker añade «Y el reto: …» al resumen de la tarde con los datos del dispositivo.
 - **AV-03 cooperativo:** avisa a quien aún no ha cumplido hoy cuando ya cumplió al menos la mitad del grupo.
 - **FN-05:** el compañero celebra cada reto una vez por dispositivo (`challengesCelebrated`), con frase fija o con IA (momento `challengeEnd`).
+
+## 10. Enmienda 1 (2026-10-29): invitaciones directas, sin enlaces de reto
+
+Aprobada el 2026-10-29 (D-177 a D-181), salvo EN-12, que se descarta. Surge de la prueba en los teléfonos.
+
+### 10.1 Invitar a un reto (sustituye IN-01, IN-02 y el enlace `…/r/<id>`)
+- **IN-10. Sin enlaces de reto:** desaparecen «Invitar al reto» con enlace y la ruta `/r/:id`. Un reto solo se comparte con amigos de tu lista. AM-03 («Añadir a {alias} a amigos» tras aceptar) deja de hacer falta: todos los participantes son amigos de alguien del reto.
+- **IN-11. Al crear el reto:** debajo del modo, «Invitar amigos» con una casilla por amigo (alias y nivel). Se envían al crearlo.
+- **IN-12. En el detalle del reto:** «Invitar amigos» abre la misma lista (sin los que ya están o ya invitaste) hasta el día de inicio incluido.
+- **IN-13. Desde un amigo:** se mantiene «Invitar a un reto» (15c).
+- **IN-14. Bandeja de invitaciones:** la invitación queda guardada en el servidor para quien la recibe (caduca el día de inicio del reto) y se ve:
+  - en **Hoy**, una tarjeta «{alias} te invita a «{reto}»» con Ver, Aceptar y Rechazar;
+  - en **Objetivos → Retos → Invitaciones**.
+
+  Aceptar pide el área (RT-02) y crea la actividad (RT-07). Rechazar no avisa.
+- **IN-15. Aviso al momento:** además de la bandeja, el push AV-01 «{alias} te invita a «{reto}»» sale en cuanto se envía (ya era así); al tocarlo se abre la invitación en Hoy.
+
+### 10.2 Enlace de amistad sin cuenta o desde Safari (amplía AM-02 y EN-03)
+- **EN-10.** Abrir `…/a/<id>` **no lleva al onboarding**. Sale una pantalla propia con la invitación («{alias} quiere ser tu amigo» si se puede leer sin sesión, o «Te han invitado a ser amigos en ARVID») y dos botones:
+  - **«Registrarme»**: hace el onboarding con la cuenta y, al terminar, muestra la invitación;
+  - **«Copiar código de invitación»**, con la nota «¿Ya tienes ARVID instalada? Ábrela y pégalo en Perfil → Amigos → Tengo un enlace».
+- **EN-11. El código es el mismo enlace.** Al pegarlo se acepta el enlace completo, el código suelto o un texto que lo contenga (p. ej. el mensaje compartido entero).
+- ~~EN-12~~ **Descartada:** no hay «Pegar invitación» en Hoy; la invitación de amistad se pega en Perfil → Amigos → Tengo un enlace, como hasta ahora (iOS no deja leer el portapapeles sin un toque).
+- **EN-13. Perfil sin sesión:** `GET /api/social/profile/<id>` responde también sin sesión, solo con alias (para EN-10); el nivel y el resto siguen requiriendo sesión.
+
+### 10.3 Cuenta en el onboarding (amplía spec 14, CU-01)
+- **CU-10.** Paso propio tras elegir el nombre: «Guarda tu progreso» con tres ventajas:
+  - recuperas todo si cambias o pierdes el móvil;
+  - retos con amigos;
+  - sin email ni contraseña, solo tu cara o tu huella.
+
+  Botón principal «Crear con passkey», secundario «Con clave de recuperación» si no hay passkeys, y «Ahora no».
+
+### 10.4 Passkey en Android (spec 14, S14-03)
+- **PK-10.** Al crear la cuenta o añadir una passkey se pide guardarla **en el propio dispositivo** (`authenticatorAttachment: 'platform'` y la pista `client-device`), para que Android use el gestor del teléfono y no ofrezca «otro dispositivo» con QR. Entrar sigue admitiendo cualquier passkey.
+
+### 10.5 Amigos desde Hoy y buscador (D-182)
+- **AM-10. Botón de Amigos en la escena:** en Hoy, en la columna derecha de la escena, entre la bocina y el botón de juegos; abre Perfil → Amigos. Se ve con la cuenta activada.
+- **AM-11. Botones visibles al abrir:** al abrir la app (tras la presentación), los botones de la escena se ven unos segundos y luego se desvanecen como siempre (D-155).
+- **AM-12. Buscador:** en Amigos, un campo «Buscar por alias o código» filtra la lista. Cada amigo muestra su código (las 8 primeras cifras de su ID de cuenta) (solo para buscar en la lista; para agregar a alguien se usa su enlace). «Tengo un enlace» acepta también el código completo suelto.
+- **AM-13. Tarjetas de amigos:** cada amigo es una tarjeta tocable con «alias · Nv» en la primera línea y «Código · retos juntos» debajo. Abre su página (`/perfil/amigos/:id`) con los retos que tenéis en común, «Invitar a un reto», Eliminar y Bloquear.

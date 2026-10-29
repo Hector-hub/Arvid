@@ -153,6 +153,8 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
       userID: new TextEncoder().encode(accountId),
       attestationType: 'none',
       authenticatorSelection: { residentKey: 'required', userVerification: 'required' },
+      // En el propio teléfono: Android usa su gestor y no ofrece el QR de otro dispositivo (D-181)
+      preferredAuthenticatorType: 'localDevice',
     });
     const challengeId = newId();
     await stores.challenges.set(challengeId, { kind: 'register', challenge: options.challenge, accountId, alias: alias.data, exp: now + CHALLENGE_MS });
@@ -298,6 +300,8 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
       attestationType: 'none',
       excludeCredentials: account.credentials.map((id) => ({ id })),
       authenticatorSelection: { residentKey: 'required', userVerification: 'required' },
+      // En el propio teléfono: Android usa su gestor y no ofrece el QR de otro dispositivo (D-181)
+      preferredAuthenticatorType: 'localDevice',
     });
     const challengeId = newId();
     await stores.challenges.set(challengeId, { kind: 'passkey', challenge: options.challenge, accountId, exp: now + CHALLENGE_MS });

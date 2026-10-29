@@ -791,8 +791,8 @@
         "1": "You can change the times in Settings, and your data stays on your phone. Shall I remind you?"
       },
       "account": {
-        "0": "One more thing: I can save your progress to the cloud, encrypted so nobody else can read it.",
-        "1": "That way, if you lose or change your phone, you get it back with Face ID or fingerprint. No email or password.",
+        "0": "Now, save your progress: I encrypt it in the cloud so nobody else can read it.",
+        "1": "If you lose or change phones, you get it back with your face or fingerprint.",
         "2": "Shall we save it?"
       }
     },
@@ -1206,7 +1206,21 @@
     "saveTitle": "Save your progress",
     "notNow": "Not now",
     "cardText": "Save your progress to the cloud so you don't lose it if you change phones. No email or password.",
-    "cardGo": "Save my progress"
+    "cardGo": "Save my progress",
+    "benefits": {
+      "restore": {
+        "title": "Get everything back",
+        "text": "If you change or lose your phone, sign in and your progress returns."
+      },
+      "friends": {
+        "title": "Challenges with friends",
+        "text": "Invite your friends and build habits together."
+      },
+      "passkey": {
+        "title": "No email or password",
+        "text": "Just your face or fingerprint, with a passkey."
+      }
+    }
   },
   "friends": {
     "title": "Friends",
@@ -1216,7 +1230,7 @@
     "invite": "Invite friends",
     "shareText": "{alias} invites you to be friends on ARVID",
     "copied": "Link copied.",
-    "haveLink": "I have a link",
+    "haveLink": "I have a link or code",
     "paste": "Paste",
     "open": "Open",
     "badLink": "That doesn't look like an ARVID link.",
@@ -1246,7 +1260,18 @@
     "copyLink": "Copy link",
     "inviteTo": "Invite to a challenge:",
     "invited": "Invitation sent: {name}",
-    "noOpenChallenges": "You have no challenges open to new people."
+    "noOpenChallenges": "You have no challenges open to new people.",
+    "search": "Search by alias or code",
+    "noMatch": "No friend matches.",
+    "code": "Code {code}",
+    "landingTitle": "{alias} wants to be your friend on ARVID",
+    "landingTitleAnon": "You've been invited to be friends on ARVID",
+    "landingText": "Build habits together with challenges.",
+    "register": "Sign up",
+    "copyCode": "Copy invitation code",
+    "landingHint": "Already have ARVID installed? Open it and paste the code in Profile → Friends → I have a link or code.",
+    "togetherTitle": "Challenges together",
+    "noTogether": "No challenges together yet."
   },
   "challenges": {
     "title": "Challenges",
@@ -1285,8 +1310,6 @@
     "range": "{from} – {to}",
     "updated": "Updated at {time}",
     "inviteHint": "People can join until {date}, inclusive.",
-    "invite": "Invite to the challenge",
-    "shareText": "Join my challenge on ARVID: {name}",
     "groupGoal": "Group goal",
     "groupProgress": "{done} of {goal} days needed",
     "left": "left",
@@ -1300,12 +1323,7 @@
     "leaveText": "You'll show as «left» with your days so far and your activity will be archived. You can't rejoin.",
     "cancelTitle": "Cancel the challenge?",
     "cancelText": "It hasn't started yet. It'll be cancelled for everyone and the activity archived.",
-    "linkNeedAccount": "You've been invited to a challenge on ARVID. Create your account (or sign in) first, then you'll see the invitation.",
     "invites": "{alias} invites you to a challenge",
-    "joined": "You're in «{name}»!",
-    "addFriend": "Add {alias} as a friend",
-    "requestSent": "Request sent",
-    "see": "See the challenge",
     "errors": {
       "too-many": "You already have 5 active or upcoming challenges.",
       "started": "This challenge has already started.",
@@ -1323,6 +1341,20 @@
     "fulfilledTitle_one": "Challenges completed · {count}",
     "fulfilledTitle_other": "Challenges completed · {count}",
     "fulfilled": "completed",
-    "yourDays": "your days: {days} of {total}"
+    "yourDays": "your days: {days} of {total}",
+    "inviteFriends": "Invite friends",
+    "invitesSent_one": "Invitation sent to {count} friend.",
+    "invitesSent_other": "Invitations sent to {count} friends.",
+    "sendInvites_one": "Invite ({count})",
+    "sendInvites_other": "Invite ({count})",
+    "friendsOffline": "Your friends list can't load offline.",
+    "noFriends": "You have no friends to invite yet.",
+    "inviteKicker": "Challenge invitation",
+    "invitesTo": "{alias} invites you to «{name}»",
+    "join": "Join",
+    "invitationsTitle": "Invitations",
+    "inviteFormHint": "They get it right away and can accept until the start day.",
+    "createInvite_one": "Create and invite ({count})",
+    "createInvite_other": "Create and invite ({count})"
   }
 }

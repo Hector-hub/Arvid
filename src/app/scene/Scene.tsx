@@ -7,7 +7,8 @@ import { useSettings } from '../data';
 import { MusicButton } from '../music/MusicProvider';
 import { TrackName } from '../music/TrackName';
 import { Link } from 'react-router';
-import { GameIcon } from '../design/icons';
+import { FriendsIcon, GameIcon } from '../design/icons';
+import { accountsEnabled } from '../account/account';
 import { ChatControl } from './Chat';
 import { claimIntro, currentSpeechText, introAvailable, releaseEntrance, subscribeSpeech } from './engine';
 
@@ -95,6 +96,16 @@ function GameButton() {
   );
 }
 
+/** Abre Perfil → Amigos (spec 15, AM-10). */
+function FriendsButton() {
+  const t = useT();
+  return (
+    <Link to="/perfil/amigos" className="btn chat-button" aria-label={t('friends.title')} title={t('friends.title')}>
+      <FriendsIcon />
+    </Link>
+  );
+}
+
 /** Cuánto siguen a la vista los botones de la escena tras tocarla. */
 const CONTROLS_VISIBLE_MS = 4000;
 
@@ -117,6 +128,15 @@ export function Scene({ overlay, controls = true, intro }: { overlay?: ReactNode
     hideTimer.current = window.setTimeout(() => setRevealed(false), CONTROLS_VISIBLE_MS);
   };
   useEffect(() => () => window.clearTimeout(hideTimer.current), []);
+  // Al abrir (tras la presentación), los botones se ven unos segundos para que se sepa que están (AM-11)
+  const shownOnce = useRef(false);
+  useEffect(() => {
+    if (!controls || playing || shownOnce.current) return;
+    shownOnce.current = true;
+    const timer = window.setTimeout(reveal, 0);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [controls, playing]);
   return (
     <div className={revealed ? 'scene controls-shown' : 'scene'} onPointerDown={reveal}>
       <Suspense fallback={null}>
@@ -133,6 +153,7 @@ export function Scene({ overlay, controls = true, intro }: { overlay?: ReactNode
             <MusicButton />
           </div>
           <div className="scene-corner">
+            {accountsEnabled() && <FriendsButton />}
             {settings?.games !== false && <GameButton />}
             <ChatControl />
           </div>

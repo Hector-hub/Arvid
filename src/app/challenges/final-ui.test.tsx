@@ -8,7 +8,7 @@ import { newDataKey } from '../../domain/account/crypto';
 import type { ChallengeView, Participant } from '../../domain/challenges/challenges';
 import { addDays, toLocalDate, type LocalDate } from '../../domain/time/localDate';
 import { noticeFor } from '../notifications/handlePush';
-import { FriendsScreen } from '../friends/FriendsScreen';
+import { FriendScreen, FriendsScreen } from '../friends/FriendsScreen';
 import { RestsScreen } from '../rests/RestsScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { renderRoutes, setupData } from '../test-utils';
@@ -97,9 +97,18 @@ describe('pendientes de la 15b', () => {
       return reply(200, { ok: true });
     }));
     await storeChallenge('r1', { challenge: { id: 'r1', owner: ME, name: 'Leer', difficulty: 'easy', days: 7, start: addDays(today, 2), mode: 'coop', createdAt: '' }, participants: [p(ME, 'Luis', [])] });
-    renderRoutes(ctx, [{ path: '/perfil/amigos', element: <FriendsScreen /> }], '/perfil/amigos');
+    renderRoutes(
+      ctx,
+      [
+        { path: '/perfil/amigos', element: <FriendsScreen /> },
+        { path: '/perfil/amigos/:id', element: <FriendScreen /> },
+      ],
+      '/perfil/amigos',
+    );
     expect(await screen.findByText(/1 reto juntos/)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /Eva/ }));
+    // AM-04: la tarjeta abre la página del amigo con los retos en común
+    await user.click(screen.getByRole('link', { name: /Eva/ }));
+    expect(await screen.findByRole('heading', { name: 'Retos juntos' })).toBeInTheDocument();
     await user.click(await screen.findByRole('button', { name: 'Leer' }));
     expect(await screen.findByRole('button', { name: 'Invitación enviada: Leer' })).toBeDisabled();
     expect(calls.at(-1)).toContain('POST /api/social/challenges/invite');

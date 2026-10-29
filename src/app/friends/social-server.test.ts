@@ -47,6 +47,12 @@ interface Reply {
 }
 
 async function call(as: string | undefined, method: string, route: string, body?: unknown): Promise<{ status: number; body: Reply }> {
+  // Para unirse hace falta invitación (D-177): las pruebas de retos la dan por hecha salvo con `noInvite`
+  const b = body as { id?: string; noInvite?: boolean } | undefined;
+  if (as && route === 'challenges/join' && b?.id && !b.noInvite) {
+    const social = (await stores.social.get(as)) ?? { friends: [], blocked: [], requests: [] };
+    await stores.social.set(as, { ...social, invites: [...(social.invites ?? []), { challenge: b.id, from: ANA, at: '' }] });
+  }
   const res = await handle(
     new Request(`https://arvid.test/api/social/${route}`, {
       method,
@@ -240,7 +246,7 @@ describe('avisos (spec 15, AV)', () => {
     await call(LUIS, 'POST', 'accept', { id: ANA });
     const id = await challengeOf(ANA);
     expect((await call(ANA, 'POST', 'challenges/invite', { id, friendId: LUIS, today: TODAY })).status).toBe(200);
-    expect(pushes.at(-1)).toMatchObject({ to: LUIS, type: 'challenge-invite', alias: 'Ana', name: 'Leer', url: `/r/${id}` });
+    expect(pushes.at(-1)).toMatchObject({ to: LUIS, type: 'challenge-invite', alias: 'Ana', name: 'Leer', url: '/hoy' });
     expect((await call(ANA, 'POST', 'challenges/invite', { id, friendId: EVA, today: TODAY })).status).toBe(404);
   });
 
@@ -282,5 +288,46 @@ describe('avisos (spec 15, AV)', () => {
     ]);
     await cron();
     expect(pushes).toHaveLength(3);
+  });
+});
+
+describe('invitaciones directas (enmienda 1, D-177 a D-179)', () => {
+  const TODAY = '2026-10-28';
+  const create = async () =>
+    ((await call(ANA, 'POST', 'challenges/create', { name: 'Leer', difficulty: 'easy', days: 7, start: TODAY, mode: 'coop', today: TODAY })).body as unknown as { challenge: { id: string } }).challenge.id;
+
+  it('sin invitación no se puede entrar en un reto', async () => {
+    const id = await create();
+    expect((await call(LUIS, 'POST', 'challenges/join', { id, today: TODAY, noInvite: true })).status).toBe(403);
+  });
+
+  it('IN-14: la invitación queda en la bandeja; aceptarla la quita; rechazarla también, sin avisar', async () => {
+    await call(LUIS, 'POST', 'accept', { id: ANA });
+    await call(EVA, 'POST', 'accept', { id: ANA });
+    const id = await create();
+    await call(ANA, 'POST', 'challenges/invite', { id, friendId: LUIS, today: TODAY });
+    await call(ANA, 'POST', 'challenges/invite', { id, friendId: EVA, today: TODAY });
+    const inbox = (await call(LUIS, 'GET', 'invites')).body as unknown as { invites: { challenge: { name: string }; from: { alias: string }; people: number }[] };
+    expect(inbox.invites).toMatchObject([{ challenge: { name: 'Leer' }, from: { alias: 'Ana' }, people: 1 }]);
+    expect((await call(LUIS, 'POST', 'challenges/join', { id, today: TODAY, noInvite: true })).status).toBe(200);
+    expect(((await call(LUIS, 'GET', 'invites')).body as unknown as { invites: unknown[] }).invites).toEqual([]);
+    const n = pushes.length;
+    await call(EVA, 'POST', 'invites/decline', { id });
+    expect(((await call(EVA, 'GET', 'invites')).body as unknown as { invites: unknown[] }).invites).toEqual([]);
+    expect(pushes).toHaveLength(n);
+  });
+
+  it('IN-14: una invitación caduca cuando el reto ya empezó', async () => {
+    await call(LUIS, 'POST', 'accept', { id: ANA });
+    const id = await create();
+    await call(ANA, 'POST', 'challenges/invite', { id, friendId: LUIS, today: TODAY });
+    now += 2 * 86_400_000;
+    expect(((await call(LUIS, 'GET', 'invites')).body as unknown as { invites: unknown[] }).invites).toEqual([]);
+  });
+
+  it('EN-13: sin sesión, el enlace de amistad solo muestra el alias', async () => {
+    const res = await call(undefined, 'GET', `profile/${ANA}`);
+    expect(res.body).toEqual({ id: ANA, alias: 'Ana' });
+    expect((await call(undefined, 'GET', 'friends')).status).toBe(401);
   });
 });

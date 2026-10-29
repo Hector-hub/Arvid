@@ -791,8 +791,8 @@
         "1": "Las horas se pueden cambiar en Ajustes, y tus datos no salen del móvil. ¿Te aviso?"
       },
       "account": {
-        "0": "Una cosa más: puedo guardar tu progreso en la nube, cifrado para que nadie más pueda leerlo.",
-        "1": "Así, si pierdes o cambias de teléfono, lo recuperas con Face ID o huella. Sin email ni contraseña.",
+        "0": "Ahora, guarda tu progreso: lo cifro en la nube para que nadie más pueda leerlo.",
+        "1": "Si pierdes o cambias de teléfono, lo recuperas con tu cara o tu huella.",
         "2": "¿Lo guardamos?"
       }
     },
@@ -1206,7 +1206,21 @@
     "saveTitle": "Guarda tu progreso",
     "notNow": "Ahora no",
     "cardText": "Guarda tu progreso en la nube para no perderlo si cambias de teléfono. Sin email ni contraseña.",
-    "cardGo": "Guardar mi progreso"
+    "cardGo": "Guardar mi progreso",
+    "benefits": {
+      "restore": {
+        "title": "Recupera todo",
+        "text": "Si cambias o pierdes el móvil, entras y vuelve tu progreso."
+      },
+      "friends": {
+        "title": "Retos con amigos",
+        "text": "Invita a tus amigos y haced hábitos juntos."
+      },
+      "passkey": {
+        "title": "Sin email ni contraseña",
+        "text": "Solo tu cara o tu huella, con una passkey."
+      }
+    }
   },
   "friends": {
     "title": "Amigos",
@@ -1216,7 +1230,7 @@
     "invite": "Invitar amigos",
     "shareText": "{alias} te invita a ser su amigo en ARVID",
     "copied": "Enlace copiado.",
-    "haveLink": "Tengo un enlace",
+    "haveLink": "Tengo un enlace o código",
     "paste": "Pegar",
     "open": "Abrir",
     "badLink": "Ese no parece un enlace de ARVID.",
@@ -1246,7 +1260,18 @@
     "copyLink": "Copiar enlace",
     "inviteTo": "Invitar a un reto:",
     "invited": "Invitación enviada: {name}",
-    "noOpenChallenges": "No tienes retos que admitan gente."
+    "noOpenChallenges": "No tienes retos que admitan gente.",
+    "search": "Buscar por alias o código",
+    "noMatch": "Ningún amigo coincide.",
+    "code": "Código {code}",
+    "landingTitle": "{alias} quiere ser tu amigo en ARVID",
+    "landingTitleAnon": "Te han invitado a ser amigos en ARVID",
+    "landingText": "Haced hábitos juntos con retos.",
+    "register": "Registrarme",
+    "copyCode": "Copiar código de invitación",
+    "landingHint": "¿Ya tienes ARVID instalada? Ábrela y pega el código en Perfil → Amigos → Tengo un enlace o código.",
+    "togetherTitle": "Retos juntos",
+    "noTogether": "Aún no tenéis retos juntos."
   },
   "challenges": {
     "title": "Retos",
@@ -1285,8 +1310,6 @@
     "range": "{from} – {to}",
     "updated": "Actualizado a las {time}",
     "inviteHint": "Se puede unir hasta el {date}, incluido.",
-    "invite": "Invitar al reto",
-    "shareText": "Únete a mi reto en ARVID: {name}",
     "groupGoal": "Meta del grupo",
     "groupProgress": "Llevamos {done} de {goal} días necesarios",
     "left": "abandonó",
@@ -1300,12 +1323,7 @@
     "leaveText": "Quedarás como «abandonó» con tus días hasta hoy y tu actividad se archivará. No podrás volver a entrar.",
     "cancelTitle": "¿Cancelar el reto?",
     "cancelText": "Aún no ha empezado. Se cancelará para todos y se archivará la actividad.",
-    "linkNeedAccount": "Te han invitado a un reto en ARVID. Primero crea tu cuenta (o entra) y después verás la invitación.",
     "invites": "{alias} te invita a un reto",
-    "joined": "¡Estás dentro de «{name}»!",
-    "addFriend": "Añadir a {alias} a amigos",
-    "requestSent": "Solicitud enviada",
-    "see": "Ver el reto",
     "errors": {
       "too-many": "Ya tienes 5 retos activos o por empezar.",
       "started": "Este reto ya empezó.",
@@ -1323,6 +1341,20 @@
     "fulfilledTitle_one": "Retos cumplidos · {count}",
     "fulfilledTitle_other": "Retos cumplidos · {count}",
     "fulfilled": "cumplido",
-    "yourDays": "tus días: {days} de {total}"
+    "yourDays": "tus días: {days} de {total}",
+    "inviteFriends": "Invitar amigos",
+    "invitesSent_one": "Invitación enviada a {count} amigo.",
+    "invitesSent_other": "Invitaciones enviadas a {count} amigos.",
+    "sendInvites_one": "Invitar ({count})",
+    "sendInvites_other": "Invitar ({count})",
+    "friendsOffline": "Sin conexión no se puede cargar tu lista de amigos.",
+    "noFriends": "Aún no tienes amigos a quien invitar.",
+    "inviteKicker": "Invitación a un reto",
+    "invitesTo": "{alias} te invita a «{name}»",
+    "join": "Unirme",
+    "invitationsTitle": "Invitaciones",
+    "inviteFormHint": "Les llega al momento. Pueden aceptar hasta el día de inicio.",
+    "createInvite_one": "Crear reto e invitar ({count})",
+    "createInvite_other": "Crear reto e invitar ({count})"
   }
 }

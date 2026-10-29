@@ -19,6 +19,7 @@ import { useCompanionSync } from '../companion';
 import { InstallGuide } from './InstallGuide';
 import { enablePush, pushSupport } from '../notifications/push';
 import { accountsEnabled, createAccount, passkeysAvailable } from '../account/account';
+import { takePendingLink } from '../friends/friends';
 import { RecoveryKeySheet, SignInSheet } from '../account/AccountPanel';
 
 type Step = 'language' | 'companion' | 'welcome' | 'alias' | 'gender' | 'character' | 'arvidColor' | 'ai' | 'account' | 'notifications' | 'categories' | 'install' | 'done';
@@ -29,8 +30,10 @@ type Step = 'language' | 'companion' | 'welcome' | 'alias' | 'gender' | 'charact
  */
 function onboardingSteps(): Step[] {
   return [
-    'language', 'companion', 'welcome', 'alias', 'gender', 'character', 'arvidColor', 'ai',
+    'language', 'companion', 'welcome', 'alias',
+    // Tras elegir el nombre: «Guarda tu progreso» (CU-10)
     ...(accountsEnabled() ? (['account'] as const) : []),
+    'gender', 'character', 'arvidColor', 'ai',
     'notifications', 'categories', ...(needsInstallForSafety() ? (['install'] as const) : []), 'done',
   ];
 }
@@ -45,11 +48,11 @@ function AccountStep({ next }: { next: () => void }) {
   const alias = settings?.profile?.alias ?? 'ARVID';
   const passkeys = passkeysAvailable();
   const skip = () => void saveSetting(ctx.db, 'accountOffered', true).then(next);
-  async function create() {
+  async function create(withPasskey: boolean) {
     setBusy(true);
     setError(undefined);
     try {
-      setKey((await createAccount(ctx, alias, passkeys)).recoveryKey);
+      setKey((await createAccount(ctx, alias, withPasskey)).recoveryKey);
       await saveSetting(ctx.db, 'accountOffered', true);
     } catch (e) {
       setError(e instanceof DOMException ? t('account.errors.cancelled') : t('account.errors.failed'));
@@ -59,8 +62,27 @@ function AccountStep({ next }: { next: () => void }) {
   }
   return (
     <>
-      <ContinueButton label={passkeys ? t('account.create') : t('account.createRecovery')} onClick={() => !busy && void create()} />
-      <button type="button" className="btn btn-block" disabled={busy} onClick={skip}>
+      {/* Las tres ventajas de tener cuenta (CU-10) */}
+      <ul className="panel stack account-benefits">
+        {(['restore', 'friends', 'passkey'] as const).map((k) => (
+          <li key={k}>
+            <span aria-hidden="true" className="benefit-dot" />
+            <span>
+              <strong>{t(`account.benefits.${k}.title`)}</strong>
+              <span className="small muted" style={{ display: 'block' }}>
+                {t(`account.benefits.${k}.text`)}
+              </span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <ContinueButton label={passkeys ? t('account.create') : t('account.createRecovery')} onClick={() => !busy && void create(passkeys)} />
+      {passkeys && (
+        <button type="button" className="btn btn-block" disabled={busy} onClick={() => void create(false)}>
+          {t('account.createRecovery')}
+        </button>
+      )}
+      <button type="button" className="btn btn-ghost btn-block" disabled={busy} onClick={skip}>
         {t('account.notNow')}
       </button>
       {error && (
@@ -302,7 +324,8 @@ export function Onboarding({ banner }: { banner?: ReactNode }) {
     const persist = await requestPersistentStorage();
     await saveSetting(ctx.db, 'persistGranted', persist === 'granted');
     await saveSetting(ctx.db, 'onboardingCompletedAt', ctx.now().toISOString());
-    navigate('/hoy', { replace: true });
+    // Llegó con un enlace de amistad y eligió «Registrarme» (EN-10): al terminar, la invitación
+    navigate(takePendingLink() ?? '/hoy', { replace: true });
   }
 
   async function confirmCategories(next: () => void) {

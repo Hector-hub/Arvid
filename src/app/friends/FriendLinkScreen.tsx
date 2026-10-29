@@ -8,7 +8,7 @@ import { accountsEnabled, type DeviceAccount } from '../account/account';
 import { useSettings } from '../data';
 import { Panel } from '../design/components';
 import { intText } from '../text';
-import { acceptLink, iosBrowser, linkProfile, type LinkProfile } from './friends';
+import { acceptLink, iosBrowser, linkProfile, publicProfile, type LinkProfile } from './friends';
 
 export function FriendLinkScreen() {
   const { id = '' } = useParams();
@@ -17,14 +17,18 @@ export function FriendLinkScreen() {
   if (!accountsEnabled()) return <Navigate to="/hoy" replace />;
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
-      {iosBrowser() && <OpenInApp />}
       {settings.account ? (
-        <Invitation account={settings.account} id={id} />
-      ) : (
         <>
-          <p>{t('friends.linkNeedAccount')}</p>
-          <AccountPanel />
+          {iosBrowser() && <OpenInApp />}
+          <Invitation account={settings.account} id={id} />
         </>
+      ) : (
+        <FriendLanding id={id} onRegister={() => document.getElementById('account-panel')?.scrollIntoView({ behavior: 'smooth' })} />
+      )}
+      {!settings.account && (
+        <div id="account-panel">
+          <AccountPanel />
+        </div>
       )}
     </div>
   );
@@ -121,6 +125,42 @@ function OpenInApp() {
       >
         {copied ? t('friends.copied') : t('friends.copyLink')}
       </button>
+    </Panel>
+  );
+}
+
+/**
+ * Enlace de amistad sin cuenta o en Safari (EN-10): la invitación, «Registrarme» y «Copiar código de invitación» para
+ * pegarlo en la app instalada. No pasa por el onboarding hasta que se elige registrarse.
+ */
+export function FriendLanding({ id, onRegister }: { id: string; onRegister: () => void }) {
+  const [alias, setAlias] = useState<string>();
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    let live = true;
+    void publicProfile(id).then((p) => live && setAlias(p?.alias));
+    return () => {
+      live = false;
+    };
+  }, [id]);
+  return (
+    <Panel className="stack">
+      <h1>{alias ? t('friends.landingTitle', { alias }) : t('friends.landingTitleAnon')}</h1>
+      <p className="muted">{t('friends.landingText')}</p>
+      <button type="button" className="btn btn-primary" onClick={onRegister}>
+        {t('friends.register')}
+      </button>
+      <button
+        type="button"
+        className="btn"
+        onClick={async () => {
+          await navigator.clipboard.writeText(`${location.origin}/a/${id}`).catch(() => undefined);
+          setCopied(true);
+        }}
+      >
+        {copied ? t('friends.copied') : t('friends.copyCode')}
+      </button>
+      <p className="small muted">{t('friends.landingHint')}</p>
     </Panel>
   );
 }

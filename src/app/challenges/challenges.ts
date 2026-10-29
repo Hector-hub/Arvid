@@ -1,6 +1,6 @@
 // Retos en la app (spec 15, §3.2 a §3.6): crear, unirse, abandonar, cancelar y sincronizar. La copia local vive en la
 // tabla `challenges`; al servidor solo van las fechas cumplidas de la actividad del reto (SY-02, NFR15-01).
-import { changeStatus, createActivity, loadRecord, type DataContext } from '../../data/repository';
+import { changeStatus, createActivity, loadRecord, loadSettings, saveSetting, type DataContext } from '../../data/repository';
 import {
   MARK_GRACE_DAYS,
   endDate,
@@ -25,8 +25,27 @@ export interface ChallengeInput {
 
 const todayOf = (ctx: DataContext) => toLocalDate(ctx.now());
 
-/** Enlace del reto (IN-01). */
-export const challengeLink = (id: string) => `${location.origin}/r/${id}`;
+/** Invitación a un reto en la bandeja (IN-14). */
+export interface ChallengeInvite {
+  challenge: Challenge;
+  from: { id: string; alias: string; level: number };
+  at: string;
+  people: number;
+}
+
+/** Descarga las invitaciones pendientes y las guarda en el dispositivo para Hoy y Objetivos (IN-14). */
+export async function refreshInvites(ctx: DataContext, account: DeviceAccount): Promise<ChallengeInvite[]> {
+  const { invites } = await social<{ invites: ChallengeInvite[] }>(account, 'GET', 'invites');
+  await saveSetting(ctx.db, 'challengeInvites', invites);
+  return invites;
+}
+
+/** Rechazar no avisa a quien invitó (IN-14). */
+export async function declineInvite(ctx: DataContext, account: DeviceAccount, id: string) {
+  await social(account, 'POST', 'invites/decline', { id });
+  const settings = await loadSettings(ctx.db);
+  await saveSetting(ctx.db, 'challengeInvites', (settings.challengeInvites ?? []).filter((i) => i.challenge.id !== id));
+}
 
 export const getChallenge = (a: DeviceAccount, id: string) => social<ChallengeView>(a, 'GET', `challenges/${encodeURIComponent(id)}`);
 
@@ -54,6 +73,8 @@ export async function joinChallenge(ctx: DataContext, account: DeviceAccount, id
   const local = await ctx.db.challenges.get(id);
   const activityId = local?.activityId ?? (await createChallengeActivity(ctx, view.challenge, categoryId));
   await saveView(ctx, view, { activityId, sent: local?.sent ?? [] });
+  const settings = await loadSettings(ctx.db);
+  await saveSetting(ctx.db, 'challengeInvites', (settings.challengeInvites ?? []).filter((i) => i.challenge.id !== id));
   return view;
 }
 

@@ -51,13 +51,49 @@ export const unblockFriend = (a: DeviceAccount, id: string) => social(a, 'POST',
 export const friendLink = (accountId: string) => `${location.origin}/a/${accountId}`;
 
 /**
- * La ruta de un enlace de ARVID pegado (EN-03): `…/a/<id>` y, desde la 15b, `…/r/<id>`. Admite el enlace con o sin
- * dominio; cualquier otra cosa devuelve `undefined`.
+ * La ruta de una invitación de amistad pegada (EN-03, EN-11): el enlace `…/a/<id>` (también dentro de un mensaje) o el
+ * código suelto; cualquier otra cosa devuelve `undefined`.
  */
 export function linkPath(text: string): string | undefined {
-  const m = text.trim().match(/(?:^|\/)(a|r)\/([A-Za-z0-9-]{8,64})\/?$/);
-  return m ? `/${m[1]}/${m[2]}` : undefined;
+  const value = text.trim();
+  const link = value.match(/(?:^|\/)a\/([A-Za-z0-9-]{8,64})(?=$|[/?#\s])/);
+  if (link) return `/a/${link[1]}`;
+  return /^[A-Za-z0-9]{8}-[A-Za-z0-9-]{4,55}$/.test(value) ? `/a/${value}` : undefined;
 }
+
+const PENDING_KEY = 'arvid-pending-link';
+
+/** Recuerda la invitación mientras se hace el onboarding (EN-10). */
+export function setPendingLink(path: string) {
+  try {
+    localStorage.setItem(PENDING_KEY, path);
+  } catch {
+    // Sin almacenamiento: al terminar se va a Hoy
+  }
+}
+
+export function takePendingLink(): string | undefined {
+  try {
+    const path = localStorage.getItem(PENDING_KEY) ?? undefined;
+    localStorage.removeItem(PENDING_KEY);
+    return path && linkPath(path) ? path : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Alias de quien invita, sin sesión (EN-13). */
+export async function publicProfile(id: string): Promise<{ alias: string } | undefined> {
+  try {
+    const res = await fetch(`/api/social/profile/${encodeURIComponent(id)}`);
+    return res.ok ? ((await res.json()) as { alias: string }) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Código de amigo visible (AM-12): las 8 primeras cifras del ID de cuenta. */
+export const friendCode = (id: string) => id.slice(0, 8).toUpperCase();
 
 /** iPhone o iPad en Safari, fuera de la app instalada: los enlaces no llegan a la PWA (EN-03). */
 export function iosBrowser(): boolean {

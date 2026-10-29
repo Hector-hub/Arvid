@@ -30,9 +30,12 @@ const routes = [
 ];
 
 describe('enlaces de amistad (EN-01, AM-02)', () => {
-  it('linkPath reconoce enlaces de ARVID con o sin dominio', () => {
+  it('linkPath reconoce enlaces de ARVID con o sin dominio, dentro de un mensaje o el código suelto', () => {
     expect(linkPath(`https://arvid-app.netlify.app/a/${ANA}`)).toBe(`/a/${ANA}`);
     expect(linkPath(` /a/${ANA}/ `)).toBe(`/a/${ANA}`);
+    expect(linkPath(`Ana te invita https://arvid-app.netlify.app/a/${ANA} ¡vamos!`)).toBe(`/a/${ANA}`);
+    expect(linkPath('3f2a9c1d-5b6e-4f70-8a9b-0c1d2e3f4a5b')).toBe('/a/3f2a9c1d-5b6e-4f70-8a9b-0c1d2e3f4a5b');
+    expect(linkPath('hola')).toBeUndefined();
     expect(linkPath('https://example.com/otra')).toBeUndefined();
   });
 
@@ -60,9 +63,12 @@ describe('enlaces de amistad (EN-01, AM-02)', () => {
     expect(await screen.findByRole('heading', { name: 'Este enlace no está disponible' })).toBeInTheDocument();
   });
 
-  it('AM-02: sin cuenta, primero se ofrece crearla', async () => {
+  it('AM-02/EN-10: sin cuenta, la invitación con «Registrarme» y «Copiar código»', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => reply(200, { id: ANA, alias: 'Ana' })));
     renderRoutes(ctx, routes, `/a/${ANA}`);
-    expect(await screen.findByText(/Primero crea tu cuenta/)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Ana quiere ser tu amigo en ARVID' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Registrarme' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Copiar código de invitación' })).toBeInTheDocument();
     expect(await screen.findByRole('heading', { name: 'Cuenta' })).toBeInTheDocument();
   });
 });
@@ -80,8 +86,8 @@ describe('Perfil → Amigos (AM-04, AM-07, EN-03)', () => {
     renderRoutes(ctx, routes, '/perfil/amigos');
     expect(await screen.findByText('Leo quiere ser tu amigo')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '1 amigo' })).toBeInTheDocument();
-    expect(screen.getByText('Eva')).toBeInTheDocument();
-    await user.type(screen.getByLabelText('Tengo un enlace'), `https://arvid-app.netlify.app/a/${ANA}`);
+    expect(screen.getByRole('link', { name: /Eva/ })).toHaveTextContent('Eva · Nv 7Código EVA-0000 · 0 retos juntos');
+    await user.type(screen.getByLabelText('Tengo un enlace o código'), `https://arvid-app.netlify.app/a/${ANA}`);
     await user.click(screen.getByRole('button', { name: 'Abrir' }));
     expect(await screen.findByRole('heading', { name: 'Ana quiere ser tu amigo' })).toBeInTheDocument();
   });
@@ -91,8 +97,27 @@ describe('Perfil → Amigos (AM-04, AM-07, EN-03)', () => {
     await signIn();
     vi.stubGlobal('fetch', vi.fn(() => reply(200, { friends: [], requests: [], blocked: [] })));
     renderRoutes(ctx, routes, '/perfil/amigos');
-    await user.type(await screen.findByLabelText('Tengo un enlace'), 'https://example.com/x');
+    await user.type(await screen.findByLabelText('Tengo un enlace o código'), 'https://example.com/x');
     await user.click(screen.getByRole('button', { name: 'Abrir' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Ese no parece un enlace de ARVID.');
+  });
+});
+
+describe('buscador de amigos (AM-12)', () => {
+  it('filtra por alias (sin acentos) o por código', async () => {
+    const user = userEvent.setup();
+    await signIn();
+    vi.stubGlobal('fetch', vi.fn(() =>
+      reply(200, { friends: [{ id: 'eva00000-cuenta', alias: 'Eva', level: 7, together: 0 }, { id: 'zed0beef-cuenta', alias: 'Zoé', level: 1, together: 0 }], requests: [], blocked: [] }),
+    ));
+    renderRoutes(ctx, routes, '/perfil/amigos');
+    const search = await screen.findByRole('searchbox', { name: 'Buscar por alias o código' });
+    await user.type(search, 'zoe');
+    expect(screen.queryByRole('link', { name: /Eva/ })).toBeNull();
+    expect(screen.getByRole('link', { name: /Zoé/ })).toBeInTheDocument();
+    await user.clear(search);
+    await user.type(search, 'EVA0');
+    expect(screen.getByRole('link', { name: /Eva/ })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Zoé/ })).toBeNull();
   });
 });

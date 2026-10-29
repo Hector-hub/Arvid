@@ -8,7 +8,7 @@ import type { ChallengeView } from '../../domain/challenges/challenges';
 import { toLocalDate, type LocalDate } from '../../domain/time/localDate';
 import { renderRoutes, setupData } from '../test-utils';
 import { TodayScreen } from '../screens/TodayScreen';
-import { ChallengeFormScreen, ChallengeLinkScreen, ChallengeScreen } from './ChallengeScreens';
+import { ChallengeFormScreen, ChallengeScreen } from './ChallengeScreens';
 import { syncMarks } from './challenges';
 
 const reply = (status: number, body: unknown) => Promise.resolve(new Response(JSON.stringify(body), { status }));
@@ -38,61 +38,75 @@ const view = (extra: Partial<ChallengeView['challenge']> = {}, participants = [{
 const routes = [
   { path: '/retos/nuevo', element: <ChallengeFormScreen /> },
   { path: '/retos/:id', element: <ChallengeScreen /> },
-  { path: '/r/:id', element: <ChallengeLinkScreen /> },
   { path: '/hoy', element: <TodayScreen /> },
 ];
 
 describe('retos (spec 15, 15b)', () => {
-  it('RT-02/RT-03: crear un reto crea su actividad diaria y abre el detalle', async () => {
+  it('RT-02/RT-03/IN-11: crear un reto crea su actividad diaria, invita a los amigos marcados y abre el detalle', async () => {
     const user = userEvent.setup();
     let sent: Record<string, unknown> = {};
+    const invited: string[] = [];
+    const created = view({ owner: ME, name: 'Correr', mode: 'versus', days: 14 }, [{ id: ME, alias: 'Luis', level: 1, joinedAt: '1', done: [] }]);
     vi.stubGlobal('fetch', vi.fn((url: string, init: RequestInit) => {
       if (url.endsWith('challenges/create')) {
         sent = JSON.parse(init.body as string);
-        return reply(200, view({ owner: ME, name: 'Correr', mode: 'versus', days: 14 }, [{ id: ME, alias: 'Luis', level: 1, joinedAt: '1', done: [] }]));
+        return reply(200, created);
       }
-      return reply(200, view({ owner: ME, name: 'Correr', mode: 'versus', days: 14 }, [{ id: ME, alias: 'Luis', level: 1, joinedAt: '1', done: [] }]));
+      if (url.endsWith('friends')) return reply(200, { friends: [{ id: ANA, alias: 'Ana', level: 4, together: 0 }, { id: 'eva-0000-cuenta', alias: 'Eva', level: 2, together: 0 }], requests: [], blocked: [] });
+      if (url.endsWith('challenges/invite')) {
+        invited.push(JSON.parse(init.body as string).friendId);
+        return reply(200, { ok: true });
+      }
+      return reply(200, created);
     }));
     renderRoutes(ctx, routes, '/retos/nuevo');
     await user.type(await screen.findByLabelText('Actividad'), 'Correr');
     await user.click(screen.getByRole('radio', { name: '14 días' }));
     await user.click(screen.getByRole('radio', { name: /Competitivo/ }));
-    await user.click(screen.getByRole('button', { name: 'Crear reto' }));
+    await user.click(await screen.findByRole('checkbox', { name: /Ana/ }));
+    await user.click(screen.getByRole('button', { name: 'Crear reto e invitar (1)' }));
     expect(await screen.findByRole('heading', { name: 'Correr' })).toBeInTheDocument();
     expect(sent).toMatchObject({ name: 'Correr', days: 14, mode: 'versus', start: today, today });
+    expect(invited).toEqual([ANA]);
     const records = await loadRecords(ctx.db);
     const activity = records.find((r) => r.activity.name === 'Correr')!;
     expect(activity.activity.challengeId).toBe(CID);
     expect(activity.versions[0]).toMatchObject({ period: 'day', target: 1, difficulty: 'easy' });
-    expect(screen.getByRole('button', { name: 'Invitar al reto' })).toBeInTheDocument();
+    // IN-12: desde el detalle, más amigos hasta el día de inicio; sin enlace de reto (D-177)
+    expect(screen.getByRole('button', { name: 'Invitar amigos' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /enlace/i })).toBeNull();
   });
 
-  it('IN-02/IN-04/AM-03: abrir el enlace, aceptar y ofrecer añadir a quien invitó', async () => {
+  it('IN-14: la invitación sale en Hoy; aceptar pide el área, crea la actividad y abre el reto', async () => {
     const user = userEvent.setup();
-    const calls: string[] = [];
-    vi.stubGlobal('fetch', vi.fn((url: string, init: RequestInit) => {
-      calls.push(`${init.method} ${url}`);
+    vi.stubGlobal('fetch', vi.fn((url: string) => {
       if (url.endsWith('challenges/join')) return reply(200, view({}, [...view().participants, { id: ME, alias: 'Luis', level: 1, joinedAt: '2', done: [] }]));
-      if (url.endsWith('request')) return reply(200, { ok: true, friend: false });
+      if (url.endsWith('invites')) return reply(200, { invites: [] });
       return reply(200, view());
     }));
-    renderRoutes(ctx, routes, `/r/${CID}`);
-    expect(await screen.findByRole('heading', { name: 'Ana te invita a un reto' })).toBeInTheDocument();
-    // El área se elige al aceptar (RT-02); por defecto, la primera
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Aceptar' })).toBeEnabled());
+    await saveSetting(ctx.db, 'challengeInvites', [{ challenge: view().challenge, from: { id: ANA, alias: 'Ana', level: 4 }, at: '', people: 1 }]);
+    renderRoutes(ctx, routes, '/hoy');
+    expect(await screen.findByRole('heading', { name: 'Ana te invita a «Leer»' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Aceptar' }));
-    expect(await screen.findByRole('heading', { name: '¡Estás dentro de «Leer»!' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Añadir a Ana a amigos' }));
-    expect(await screen.findByRole('button', { name: 'Solicitud enviada' })).toBeDisabled();
-    expect(calls).toContain('POST /api/social/request');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Unirme' })).toBeEnabled());
+    await user.click(screen.getByRole('button', { name: 'Unirme' }));
+    expect(await screen.findByRole('heading', { name: 'Leer' })).toBeInTheDocument();
     expect((await loadRecords(ctx.db)).some((r) => r.activity.challengeId === CID)).toBe(true);
+    expect((await ctx.db.settings.get('challengeInvites'))?.value).toEqual([]);
   });
 
-  it('IN-03: un reto que ya empezó no se puede aceptar', async () => {
-    vi.stubGlobal('fetch', vi.fn(() => reply(200, view({ start: '2020-01-01' }))));
-    renderRoutes(ctx, routes, `/r/${CID}`);
-    expect(await screen.findByRole('alert')).toHaveTextContent('Este reto ya empezó.');
-    expect(screen.queryByRole('button', { name: 'Aceptar' })).toBeNull();
+  it('IN-14: rechazar la invitación la quita sin avisar', async () => {
+    const user = userEvent.setup();
+    const calls: string[] = [];
+    vi.stubGlobal('fetch', vi.fn((url: string) => {
+      calls.push(url);
+      return reply(200, { ok: true });
+    }));
+    await saveSetting(ctx.db, 'challengeInvites', [{ challenge: view().challenge, from: { id: ANA, alias: 'Ana', level: 4 }, at: '', people: 1 }]);
+    renderRoutes(ctx, routes, '/hoy');
+    await user.click(await screen.findByRole('button', { name: 'Rechazar' }));
+    await waitFor(() => expect(screen.queryByRole('heading', { name: 'Ana te invita a «Leer»' })).toBeNull());
+    expect(calls).toContain('/api/social/invites/decline');
   });
 
   it('SY-02: registrar la actividad del reto envía la fecha; deshacerlo la retira', async () => {

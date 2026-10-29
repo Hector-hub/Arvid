@@ -1653,9 +1653,10 @@ input[type='range']:disabled { opacity: 0.45; }
 
 /* ---------- Escena: sin marco, de lado a lado arriba y fundida hacia el fondo ---------- */
 .scene { background: transparent; border: 0; box-shadow: none; }
+/* Nítida hasta abajo: solo los últimos 5 px se funden con el fondo (D-183) */
 .scene-canvas {
-  -webkit-mask-image: linear-gradient(180deg, #000 62%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 62%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 5px), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 5px), transparent 100%);
 }
 /* La cabecera fija desenfoca lo que pasa por debajo al hacer scroll (los textos no se mezclan) y se funde hacia abajo */
 .scene-sticky {
@@ -1800,3 +1801,25 @@ input[type='range']:disabled { opacity: 0.45; }
   clip-path: var(--notch-2);
   user-select: all;
 }
+
+/* Todos los botones de la escena iguales: 40 × 40 con el icono a 20 px (D-183) */
+.scene-icon,
+.scene-corner .btn,
+.scene-corner .chat-button {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  justify-content: center;
+}
+.scene-icon svg,
+.scene-corner .btn svg { width: 20px; height: 20px; }
+
+/* Ventajas de la cuenta en el onboarding (CU-10) */
+.account-benefits { list-style: none; margin: 0; padding: var(--s4); }
+.account-benefits li { display: flex; gap: var(--s3); align-items: flex-start; }
+.benefit-dot { flex: none; width: 10px; height: 10px; margin-top: 6px; background: var(--c-cyan); box-shadow: 0 0 8px rgb(95 225 245 / 0.5); }
+.invite-card { box-shadow: inset 0 0 0 1px rgb(94 231 255 / 0.35); }
+.friend-card { color: var(--text); text-decoration: none; padding: var(--s3); transition: box-shadow 150ms; }
+.friend-card:hover, .friend-card:focus-visible { box-shadow: inset 0 0 0 1px rgb(94 231 255 / 0.45); }

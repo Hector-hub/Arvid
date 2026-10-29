@@ -247,6 +247,8 @@ export interface Settings {
   accountOffered?: boolean;
   /** Retos cuyo resultado ya celebró el compañero (spec 15, FN-05). Del dispositivo. */
   challengesCelebrated?: string[];
+  /** Invitaciones a retos pendientes, la última copia descargada (spec 15, IN-14). Del dispositivo. */
+  challengeInvites?: import('../app/challenges/challenges').ChallengeInvite[];
   lastBackupAt?: string;
   reducedMotion: 'system' | 'on' | 'off';
   vibration: boolean;

@@ -40,6 +40,15 @@ export function accountsEnabled(): boolean {
   }
 }
 
+/** Activa la cuenta en este dispositivo (al abrir un enlace de amistad). */
+export function enableAccountsFlag() {
+  try {
+    localStorage.setItem('arvid-accounts', '1');
+  } catch {
+    // Sin almacenamiento no se puede activar
+  }
+}
+
 /** Activa o desactiva la cuenta en este dispositivo antes de la 2.0 (7 toques en la versión, en Ajustes). */
 export function toggleAccountsFlag(): boolean {
   try {

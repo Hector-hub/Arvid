@@ -38,6 +38,8 @@ export interface Social {
   requests: { from: string; at: string }[];
   /** Dispositivos con avisos de esta cuenta y qué tipos quieren (AV-05). */
   devices?: SocialDevice[];
+  /** Invitaciones a retos pendientes (IN-14, D-178). */
+  invites?: { challenge: string; from: string; at: string }[];
 }
 
 export interface SocialStores {
@@ -106,6 +108,11 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
   const route = new URL(req.url).pathname.replace(/^\/api\/social\/?/, '').replace(/\/$/, '');
 
   const me = verifySession(req.headers.get('authorization')?.replace(/^Bearer /, ''), secret, now);
+  // EN-13: sin sesión, el enlace de amistad solo deja ver el alias de quien invita
+  if (!me && route.startsWith('profile/') && req.method === 'GET') {
+    const other = await stores.accounts.get(route.slice('profile/'.length));
+    return other ? json(200, { id: other.id, alias: other.alias }) : json(404, { error: 'unavailable' });
+  }
   const account = me ? await stores.accounts.get(me) : null;
   if (!me || !account) return json(401, { error: 'session' });
 
@@ -198,6 +205,33 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
     await cs.set(`u:${me}`, [...new Set([...(await myList(me!)), c.id])]);
   }
 
+  /** Invitaciones vigentes: del reto que aún no empezó, no cancelado y donde aún no estás (IN-14). */
+  async function pendingInvites() {
+    const mine = await load(me!);
+    const out = [];
+    const keep = [];
+    for (const inv of mine.invites ?? []) {
+      const c = (await stores.challenges.get(`c:${inv.challenge}`)) as Challenge | null;
+      const joined = c && (await stores.challenges.get(`c:${c.id}:p:${me}`));
+      if (!c || c.cancelled || joined || c.start < addDays(serverToday, -1)) continue;
+      keep.push(inv);
+      const from = await stores.accounts.get(inv.from);
+      const people = (await stores.challenges.list(`c:${c.id}:p:`)).length;
+      out.push({ challenge: c, from: from ? card(from) : { id: inv.from, alias: '—', level: 1 }, at: inv.at, people });
+    }
+    if (keep.length !== (mine.invites ?? []).length) await save(me!, { ...mine, invites: keep });
+    return out;
+  }
+
+  if (route === 'invites' && req.method === 'GET') return json(200, { invites: await pendingInvites() });
+
+  if (route === 'invites/decline' && req.method === 'POST') {
+    const mine = await load(me);
+    // Rechazar no avisa (IN-14)
+    await save(me, { ...mine, invites: (mine.invites ?? []).filter((i) => i.challenge !== body.id) });
+    return json(200, { ok: true });
+  }
+
   if (route.startsWith('challenges')) {
     const sub = route.slice('challenges'.length).replace(/^\//, '');
 
@@ -242,11 +276,14 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
       if (await getParticipant(c.id, me)) return json(200, await view(c));
       const [mine, theirs] = await Promise.all([load(me), load(c.owner)]);
       if (c.cancelled || blockedBetween(mine, me, theirs, c.owner)) return json(404, { error: 'unavailable' });
+      // Solo se entra con invitación (D-177)
+      if (!(mine.invites ?? []).some((i) => i.challenge === c.id)) return json(403, { error: 'not-invited' });
       // Se acepta hasta el día de inicio incluido (IN-03)
       if (today > c.start) return json(409, { error: 'started' });
       if ((await cs.list(`c:${c.id}:p:`)).length >= MAX_PARTICIPANTS) return json(409, { error: 'full' });
       if ((await activeCount(me, today)) >= MAX_ACTIVE) return json(409, { error: 'too-many' });
       await addParticipant(c);
+      await save(me, { ...(await load(me)), invites: (mine.invites ?? []).filter((i) => i.challenge !== c.id) });
       return json(200, await view(c));
     }
 
@@ -278,8 +315,13 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
       if (c.cancelled || p.left || today > c.start) return json(409, { error: 'started' });
       const mine = await load(me);
       if (!isFriend(mine, body.friendId)) return json(404, { error: 'unavailable' });
+      if (await getParticipant(c.id, body.friendId)) return json(200, { ok: true, already: true });
+      if ((await cs.list(`c:${c.id}:p:`)).length >= MAX_PARTICIPANTS) return json(409, { error: 'full' });
       if (!(await within(`acc:${me}:invites`, INVITES_PER_DAY, 86_400_000))) return json(429, { error: 'limit' });
-      await tell(body.friendId, { type: 'challenge-invite', alias: account.alias, name: c.name, url: `/r/${c.id}` });
+      const theirs = await load(body.friendId);
+      if (!(theirs.invites ?? []).some((i) => i.challenge === c.id))
+        await save(body.friendId, { ...theirs, invites: [...(theirs.invites ?? []), { challenge: c.id, from: me, at: new Date(now).toISOString() }].slice(-50) });
+      await tell(body.friendId, { type: 'challenge-invite', alias: account.alias, name: c.name, url: '/hoy' });
       return json(200, { ok: true });
     }
 

@@ -247,6 +247,17 @@ export const PIXEL_ICON_RECTS: Partial<Record<SpriteName, readonly (readonly [nu
   'arrow-down': [[5, 1, 2, 6], [1, 5, 2, 1], [9, 5, 2, 1], [1, 6, 3, 1], [8, 6, 3, 1], [2, 7, 8, 1], [3, 8, 6, 1], [4, 9, 4, 1], [5, 10, 2, 1]],
 };
 
+/** Dos personas (abrir Amigos desde la escena, spec 15 AM-10): la silueta de Relaciones. */
+export function FriendsIcon() {
+  return (
+    <PixelIcon>
+      {PIXEL_ICON_RECTS['cat-relationships']!.map(([x, y, w, h]) => (
+        <rect key={`${x}-${y}`} x={x} y={y} width={w} height={h} />
+      ))}
+    </PixelIcon>
+  );
+}
+
 /** Marca de completar (✓) en una cuadrícula de 16 px, del mismo tamaño que «+» y «−» en las tarjetas (D-160). */
 export function CheckIcon() {
   return (

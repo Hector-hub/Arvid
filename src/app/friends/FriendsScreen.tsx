@@ -1,7 +1,7 @@
 // Perfil → Amigos (spec 15, §3.1 y EN-03): invitar con un enlace, «Tengo un enlace», solicitudes, lista, eliminar,
 // bloquear y desbloquear. Hace falta la cuenta (D-140); sin ella se ofrece crearla aquí mismo.
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { t } from '../../i18n';
 import { AccountPanel, Confirm, errorText } from '../account/AccountPanel';
 import { accountsEnabled, type DeviceAccount } from '../account/account';
@@ -9,11 +9,13 @@ import { BackLink, Panel } from '../design/components';
 import { useChallenges, useData, useSettings } from '../data';
 import { useToday } from '../clock';
 import { inviteFriend } from '../challenges/challenges';
-import { Link } from 'react-router';
+import { challengeStatusText } from '../challenges/ChallengeScreens';
+
 import { intText } from '../text';
 import {
   blockFriend,
   friendLink,
+  friendCode,
   linkPath,
   loadFriends,
   removeFriend,
@@ -46,8 +48,11 @@ export function FriendsScreen() {
 function Friends({ account }: { account: DeviceAccount }) {
   const [list, setList] = useState<FriendsList>();
   const [error, setError] = useState<string>();
-  const [open, setOpen] = useState<string>();
-  const [confirm, setConfirm] = useState<{ kind: 'remove' | 'block'; friend: FriendCard }>();
+  // Buscador (AM-12): por alias o por código, sin distinguir mayúsculas ni acentos
+  const [query, setQuery] = useState('');
+  const norm = (v: string) => v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  const q = norm(query);
+  const shown = (list?.friends ?? []).filter((f) => !q || norm(f.alias).includes(q) || f.id.toLowerCase().replace(/-/g, '').startsWith(q.replace(/-/g, '')));
 
   const [version, setVersion] = useState(0);
   useEffect(() => {
@@ -104,29 +109,34 @@ function Friends({ account }: { account: DeviceAccount }) {
         <Panel className="stack">
           <h2>{t('friends.list', { count: list.friends.length })}</h2>
           {list.friends.length === 0 && <p className="muted">{t('friends.empty')}</p>}
-          {list.friends.map((f) => (
-            <div key={f.id} className="stack" style={{ gap: 'var(--s2)' }}>
-              <button type="button" className="row btn-ghost btn" aria-expanded={open === f.id} onClick={() => setOpen(open === f.id ? undefined : f.id)}>
-                <span className="grow" style={{ textAlign: 'left' }}>
-                  {f.alias}
-                </span>
-                <span className="muted small">
-                  {t('friends.level', { level: intText(f.level) })} · {t('friends.together', { count: f.together })}
-                </span>
-              </button>
-              {open === f.id && <InviteToChallenge account={account} friend={f} />}
-              {open === f.id && (
-                <div className="row">
-                  <button type="button" className="btn grow" onClick={() => setConfirm({ kind: 'remove', friend: f })}>
-                    {t('friends.remove')}
-                  </button>
-                  <button type="button" className="btn btn-danger grow" onClick={() => setConfirm({ kind: 'block', friend: f })}>
-                    {t('friends.block')}
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
+          {list.friends.length > 0 && (
+            <input
+              type="search"
+              value={query}
+              placeholder={t('friends.search')}
+              aria-label={t('friends.search')}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          )}
+          {shown.length === 0 && list.friends.length > 0 && <p className="small muted">{t('friends.noMatch')}</p>}
+          {/* Cada amigo es una tarjeta que abre su página: retos en común, invitar, eliminar y bloquear (AM-04) */}
+          <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 'var(--s2)' }}>
+            {shown.map((f) => (
+              <li key={f.id}>
+                <Link to={`/perfil/amigos/${f.id}`} className="panel row friend-card">
+                  <span className="grow stack" style={{ gap: 2 }}>
+                    <span>
+                      <strong>{f.alias}</strong> <span className="muted small">· {t('friends.level', { level: intText(f.level) })}</span>
+                    </span>
+                    <span className="small muted">
+                      {t('friends.code', { code: friendCode(f.id) })} · {t('friends.together', { count: f.together })}
+                    </span>
+                  </span>
+                  <span aria-hidden="true">›</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </Panel>
       )}
       {list && list.blocked.length > 0 && (
@@ -141,21 +151,6 @@ function Friends({ account }: { account: DeviceAccount }) {
             </div>
           ))}
         </Panel>
-      )}
-      {confirm && (
-        <Confirm
-          title={t(confirm.kind === 'remove' ? 'friends.removeTitle' : 'friends.blockTitle', { alias: confirm.friend.alias })}
-          text={t(confirm.kind === 'remove' ? 'friends.removeText' : 'friends.blockText')}
-          yes={t(confirm.kind === 'remove' ? 'friends.remove' : 'friends.block')}
-          danger
-          onCancel={() => setConfirm(undefined)}
-          onYes={() => {
-            const { kind, friend } = confirm;
-            setConfirm(undefined);
-            setOpen(undefined);
-            void act(() => (kind === 'remove' ? removeFriend : blockFriend)(account, friend.id));
-          }}
-        />
       )}
     </>
   );
@@ -274,6 +269,107 @@ function InviteToChallenge({ account, friend }: { account: DeviceAccount; friend
         <p role="alert" className="field-error">
           {error}
         </p>
+      )}
+    </div>
+  );
+}
+
+/** Un amigo (AM-04): alias, nivel, código, los retos que tenéis en común, invitar a un reto, eliminar y bloquear. */
+export function FriendScreen() {
+  const { id = '' } = useParams();
+  const settings = useSettings();
+  const today = useToday();
+  const navigate = useNavigate();
+  const challenges = useChallenges() ?? [];
+  const [friend, setFriend] = useState<FriendsList['friends'][number] | 'missing'>();
+  const [error, setError] = useState<string>();
+  const [confirm, setConfirm] = useState<'remove' | 'block'>();
+  const account = settings?.account;
+  useEffect(() => {
+    if (!account) return;
+    let live = true;
+    loadFriends(account).then(
+      (l) => live && setFriend(l.friends.find((f) => f.id === id) ?? 'missing'),
+      (e) => live && setError(errorText(e)),
+    );
+    return () => {
+      live = false;
+    };
+  }, [account, id]);
+  if (!settings) return null;
+  if (!account || friend === 'missing') return <Navigate to="/perfil/amigos" replace />;
+  // Retos en común: los que tengo en el dispositivo donde también participa
+  const together = challenges
+    .filter((l) => l.view.participants.some((p) => p.id === id))
+    .sort((a, b) => b.view.challenge.start.localeCompare(a.view.challenge.start));
+  return (
+    <div className="stack" style={{ gap: 'var(--s5)' }}>
+      <BackLink to="/perfil/amigos" label={t('friends.title')} />
+      {error && (
+        <p role="alert" className="field-error">
+          {error}
+        </p>
+      )}
+      {!friend ? (
+        <p className="muted">{t('friends.loading')}</p>
+      ) : (
+        <>
+          <header className="stack" style={{ gap: 'var(--s1)' }}>
+            <h1>
+              {friend.alias} <span className="muted small">· {t('friends.level', { level: intText(friend.level) })}</span>
+            </h1>
+            <p className="small muted">{t('friends.code', { code: friendCode(friend.id) })}</p>
+          </header>
+          <Panel className="stack">
+            <h2>{t('friends.togetherTitle')}</h2>
+            {together.length === 0 && <p className="muted">{t('friends.noTogether')}</p>}
+            <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+              {together.map((l) => (
+                <li key={l.id}>
+                  <Link to={`/retos/${l.id}`} className="row" style={{ color: 'var(--text)', textDecoration: 'none' }}>
+                    <span className="grow stack" style={{ gap: 0 }}>
+                      <span>{l.view.challenge.name}</span>
+                      <span className="small muted">
+                        {t(`challenges.mode.${l.view.challenge.mode}`)} · {challengeStatusText(l.view, today)}
+                      </span>
+                    </span>
+                    <span aria-hidden="true">›</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+          <Panel className="stack">
+            <InviteToChallenge account={account} friend={friend} />
+          </Panel>
+          <div className="row">
+            <button type="button" className="btn grow" onClick={() => setConfirm('remove')}>
+              {t('friends.remove')}
+            </button>
+            <button type="button" className="btn btn-danger grow" onClick={() => setConfirm('block')}>
+              {t('friends.block')}
+            </button>
+          </div>
+          {confirm && (
+            <Confirm
+              title={t(confirm === 'remove' ? 'friends.removeTitle' : 'friends.blockTitle', { alias: friend.alias })}
+              text={t(confirm === 'remove' ? 'friends.removeText' : 'friends.blockText')}
+              yes={t(confirm === 'remove' ? 'friends.remove' : 'friends.block')}
+              danger
+              onCancel={() => setConfirm(undefined)}
+              onYes={async () => {
+                const kind = confirm;
+                setConfirm(undefined);
+                try {
+                  await (kind === 'remove' ? removeFriend : blockFriend)(account, friend.id);
+                  navigate('/perfil/amigos', { replace: true });
+                } catch (e) {
+                  setError(errorText(e));
+                }
+              }}
+            />
+          )}
+        </>
       )}
     </div>
   );
