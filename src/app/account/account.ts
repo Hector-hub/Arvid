@@ -40,6 +40,17 @@ export function accountsEnabled(): boolean {
   }
 }
 
+/** Activa o desactiva la cuenta en este dispositivo antes de la 2.0 (7 toques en la versión, en Ajustes). */
+export function toggleAccountsFlag(): boolean {
+  try {
+    if (localStorage.getItem('arvid-accounts') === '1') localStorage.removeItem('arvid-accounts');
+    else localStorage.setItem('arvid-accounts', '1');
+  } catch {
+    // Sin almacenamiento no se puede activar
+  }
+  return accountsEnabled();
+}
+
 // ---------- Estado de la copia (CP-03), solo en este dispositivo ----------
 
 export interface CloudState {

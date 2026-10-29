@@ -241,6 +241,8 @@ export interface Settings {
   onboardingCompletedAt?: string;
   /** Cuenta en este dispositivo (spec 14): sesión y clave de datos. Solo del dispositivo. */
   account?: import('../app/account/account').DeviceAccount;
+  /** Ya se le ofreció crear la cuenta (onboarding o tarjeta en Hoy, CU-01). Solo del dispositivo. */
+  accountOffered?: boolean;
   lastBackupAt?: string;
   reducedMotion: 'system' | 'on' | 'off';
   vibration: boolean;

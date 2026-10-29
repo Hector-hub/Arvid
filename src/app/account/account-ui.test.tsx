@@ -7,6 +7,8 @@ import { buildBackup } from '../../data/backup';
 import { createActivity, loadCategories, loadSettings, type DataContext } from '../../data/repository';
 import { deriveRecovery, encryptBackup, newDataKey, newRecoveryKey, wrapDataKey } from '../../domain/account/crypto';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { TodayScreen } from '../screens/TodayScreen';
+import { saveSetting } from '../../data/repository';
 import { renderRoutes, setupData } from '../test-utils';
 import { resetCloud, setCloud, uploadBackup } from './account';
 
@@ -122,5 +124,26 @@ describe('copia en la nube', () => {
     expect(useCloud).toBeDefined();
     await waitFor(() => expect(JSON.parse(localStorage.getItem('arvid-cloud')!)).toMatchObject({ dirty: true, error: 'offline' }));
     vi.restoreAllMocks();
+  });
+});
+
+describe('ofrecer la cuenta (CU-01)', () => {
+  it('a quien ya usaba la app se le ofrece una vez en Hoy; «Ahora no» no la vuelve a mostrar', async () => {
+    const user = userEvent.setup();
+    await saveSetting(ctx.db, 'onboardingCompletedAt', new Date().toISOString());
+    renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
+    const card = await screen.findByRole('region', { name: 'Guarda tu progreso' });
+    expect(card).toHaveTextContent('Sin email ni contraseña');
+    await user.click(screen.getByRole('button', { name: 'Ahora no' }));
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'Guarda tu progreso' })).toBeNull());
+    expect((await loadSettings(ctx.db)).accountOffered).toBe(true);
+  });
+
+  it('con la cuenta oculta (antes de la 2.0) no aparece', async () => {
+    vi.stubEnv('VITE_ACCOUNTS', '');
+    await saveSetting(ctx.db, 'onboardingCompletedAt', new Date().toISOString());
+    renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
+    await screen.findByRole('heading', { name: /Hoy|Tus actividades/ }).catch(() => undefined);
+    expect(screen.queryByRole('region', { name: 'Guarda tu progreso' })).toBeNull();
   });
 });

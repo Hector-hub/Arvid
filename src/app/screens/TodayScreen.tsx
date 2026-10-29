@@ -34,6 +34,7 @@ import {
   xpDeltaText,
 } from '../text';
 import { FlipList, useHeldOrder } from '../design/FlipList';
+import { accountsEnabled } from '../account/account';
 
 /** Tras registrar, el botón ignora toques durante este tiempo: un doble toque no duplica (LOG-06). */
 const TAP_COOLDOWN_MS = 400;
@@ -88,6 +89,8 @@ export function TodayScreen() {
           {summary}
         </p>
       )}
+
+      <AccountCard />
 
       {needsInstallForSafety() && (
         <div className="banner">
@@ -389,6 +392,25 @@ function LevelStrip() {
       </span>
       <XpBar xp={progress.xp} start={progress.levelStartXp} next={progress.nextLevelXp} compact />
     </Link>
+  );
+}
+
+/** A quien ya usaba la app se le ofrece una vez guardar su progreso en la nube (spec 14, CU-01). */
+function AccountCard() {
+  const ctx = useData();
+  const settings = useSettings();
+  if (!accountsEnabled() || !settings?.onboardingCompletedAt || settings.account || settings.accountOffered) return null;
+  const dismiss = () => void saveSetting(ctx.db, 'accountOffered', true);
+  return (
+    <div className="banner" role="region" aria-label={t('account.saveTitle')}>
+      <p className="grow small">{t('account.cardText')}</p>
+      <Link to="/ajustes" className="btn btn-primary" onClick={dismiss}>
+        {t('account.cardGo')}
+      </Link>
+      <button type="button" className="btn btn-ghost" onClick={dismiss}>
+        {t('account.notNow')}
+      </button>
+    </div>
   );
 }
 

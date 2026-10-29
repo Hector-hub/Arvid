@@ -527,7 +527,9 @@
       "error": "Couldn't turn them on. Check your connection and try again.",
       "unsupported": "This browser doesn't support ARVID notifications.",
       "install": "On iPhone, notifications only work with ARVID installed on the home screen (iOS 16.4 or later)."
-    }
+    },
+    "accountsOn": "Account (beta) turned on for this device. It's at the top of Settings.",
+    "accountsOff": "Account (beta) turned off for this device."
   },
   "backup": {
     "title": "Backup",
@@ -770,6 +772,11 @@
       "notifications": {
         "0": "I can also remind you: in the morning about what you have today, and at night about what's left.",
         "1": "You can change the times in Settings, and your data stays on your phone. Shall I remind you?"
+      },
+      "account": {
+        "0": "One more thing: I can save your progress to the cloud, encrypted so nobody else can read it.",
+        "1": "That way, if you lose or change your phone, you get it back with Face ID or fingerprint. No email or password.",
+        "2": "Shall we save it?"
       }
     },
     "achievementsFound_one": "I checked your history: you already had 1 achievement. It's on your profile.",
@@ -1164,6 +1171,10 @@
       "passkey": "The passkey couldn't be verified.",
       "cancelled": "Cancelled.",
       "failed": "Something went wrong. Try again."
-    }
+    },
+    "saveTitle": "Save your progress",
+    "notNow": "Not now",
+    "cardText": "Save your progress to the cloud so you don't lose it if you change phones. No email or password.",
+    "cardGo": "Save my progress"
   }
 }

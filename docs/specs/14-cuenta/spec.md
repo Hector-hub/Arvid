@@ -195,7 +195,7 @@ En **Ajustes → Cuenta**:
 |---|---|---|
 | **14a** | Prototipo de passkey + PRF en una página oculta, probado en el iPhone y el Android reales | Sí, oculto |
 | **14b** | Función `account`, cifrado y API con pruebas (hecha en la 1.8.6) | Sí, sin interfaz |
-| **14c** | Interfaz (onboarding, Ajustes, tarjeta en Hoy) y vigilante de copia, detrás de `VITE_ACCOUNTS` | Apagado |
+| **14c** ✅ (1.8.7) | Interfaz (onboarding, Ajustes, tarjeta en Hoy) y vigilante de copia, detrás de `VITE_ACCOUNTS` | Apagado |
 | **2.0.0** | Se enciende junto con la spec 15 | Sí |
 
 ## 10. Decisiones de esta spec (aprobadas)
@@ -208,3 +208,8 @@ En **Ajustes → Cuenta**:
 | S14-05 | Sesión de 1 año renovable, con un secreto nuevo `ARVID_SESSION_SECRET` |
 | S14-06 | Todo detrás de `VITE_ACCOUNTS` hasta la 2.0 y un prototipo de passkeys primero (14a) |
 | S14-07 | Dominio: se sigue con `arvid-app.netlify.app`. Si algún día hay dominio propio, se migra con *Related Origin Requests* (`/.well-known/webauthn` en el dominio antiguo autoriza al nuevo, de modo que las passkeys siguen valiendo) y la clave de recuperación como respaldo; los datos locales se recuperan desde la copia en la nube. El sitio de Netlify se mantiene para servir ese archivo y redirigir |
+
+### Notas de implementación (14c)
+
+- La clave de datos es **extraíble** (no «no exportable», como decía §5.1): hay que volver a envolverla al generar otra clave de recuperación (GC-02) o añadir una passkey (GC-03). Solo vive en IndexedDB del dispositivo.
+- Antes de la 2.0 la cuenta se activa por dispositivo: `?cuentas=1` en el navegador, o **7 toques seguidos en la versión** (Ajustes, al final) en la app instalada. Los mismos 7 toques la vuelven a ocultar.

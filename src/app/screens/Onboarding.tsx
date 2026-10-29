@@ -18,12 +18,60 @@ import { categoryName, errorText } from '../text';
 import { useCompanionSync } from '../companion';
 import { InstallGuide } from './InstallGuide';
 import { enablePush, pushSupport } from '../notifications/push';
+import { accountsEnabled, createAccount, passkeysAvailable } from '../account/account';
+import { RecoveryKeySheet, SignInSheet } from '../account/AccountPanel';
 
-type Step = 'language' | 'companion' | 'welcome' | 'alias' | 'gender' | 'character' | 'arvidColor' | 'ai' | 'notifications' | 'categories' | 'install' | 'done';
+type Step = 'language' | 'companion' | 'welcome' | 'alias' | 'gender' | 'character' | 'arvidColor' | 'ai' | 'account' | 'notifications' | 'categories' | 'install' | 'done';
 
-/** Pasos del onboarding (ON-02); el de instalar, solo en iPhone sin instalar; el compañero, tras el idioma (CO-02). */
+/**
+ * Pasos del onboarding (ON-02); el de instalar, solo en iPhone sin instalar; el compañero, tras el idioma (CO-02); el
+ * de guardar el progreso, tras el permiso de la IA y mientras la cuenta esté activa (spec 14, CU-01).
+ */
 function onboardingSteps(): Step[] {
-  return ['language', 'companion', 'welcome', 'alias', 'gender', 'character', 'arvidColor', 'ai', 'notifications', 'categories', ...(needsInstallForSafety() ? (['install'] as const) : []), 'done'];
+  return [
+    'language', 'companion', 'welcome', 'alias', 'gender', 'character', 'arvidColor', 'ai',
+    ...(accountsEnabled() ? (['account'] as const) : []),
+    'notifications', 'categories', ...(needsInstallForSafety() ? (['install'] as const) : []), 'done',
+  ];
+}
+
+/** «Guarda tu progreso» (CU-01): crear la cuenta ahora o seguir; con la clave mostrada una vez (CU-02). */
+function AccountStep({ next }: { next: () => void }) {
+  const ctx = useData();
+  const settings = useSettings();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string>();
+  const [key, setKey] = useState<string>();
+  const alias = settings?.profile?.alias ?? 'ARVID';
+  const passkeys = passkeysAvailable();
+  const skip = () => void saveSetting(ctx.db, 'accountOffered', true).then(next);
+  async function create() {
+    setBusy(true);
+    setError(undefined);
+    try {
+      setKey((await createAccount(ctx, alias, passkeys)).recoveryKey);
+      await saveSetting(ctx.db, 'accountOffered', true);
+    } catch (e) {
+      setError(e instanceof DOMException ? t('account.errors.cancelled') : t('account.errors.failed'));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <>
+      <ContinueButton label={passkeys ? t('account.create') : t('account.createRecovery')} onClick={() => !busy && void create()} />
+      <button type="button" className="btn btn-block" disabled={busy} onClick={skip}>
+        {t('account.notNow')}
+      </button>
+      {error && (
+        <p role="alert" className="small field-error">
+          {error}
+        </p>
+      )}
+      <p className="small muted">{t('account.privacy')}</p>
+      {key && <RecoveryKeySheet recoveryKey={key} alias={alias} onDone={next} />}
+    </>
+  );
 }
 
 /** Lo que el usuario va eligiendo; se guarda paso a paso para que la escena lo refleje al momento. */
@@ -245,6 +293,8 @@ export function Onboarding({ banner }: { banner?: ReactNode }) {
   const [steps] = useState(onboardingSteps);
   const [selection, setSelection] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string>();
+  // «Ya tengo cuenta» en la primera pantalla (spec 14, RC-01)
+  const [signIn, setSignIn] = useState(false);
 
   const isSelected = (c: Category) => selection[c.id] ?? c.active;
 
@@ -275,6 +325,20 @@ export function Onboarding({ banner }: { banner?: ReactNode }) {
       banner={banner}
       renderControl={(step, next) => {
         switch (step) {
+          case 'language':
+            return (
+              <>
+                {control(step, next)}
+                {accountsEnabled() && (
+                  <button type="button" className="btn btn-ghost" onClick={() => setSignIn(true)}>
+                    {t('account.haveAccount')}
+                  </button>
+                )}
+                {signIn && <SignInSheet onClose={() => setSignIn(false)} onRestored={() => navigate('/hoy', { replace: true })} />}
+              </>
+            );
+          case 'account':
+            return <AccountStep next={next} />;
           case 'welcome':
             return <ContinueButton label={t('onboarding.start')} onClick={next} />;
           case 'categories':

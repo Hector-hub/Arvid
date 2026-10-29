@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router';
 import { DEFAULT_SOUND, saveSetting, setCategoryActive, type Settings, type SoundSettings } from '../../data/repository';
 import { COMPANION_NAME } from '../../domain/arvid/companion';
@@ -20,6 +20,7 @@ import { AiCodeField, AliasField, CharacterCarousel, CompanionColorPicker, Compa
 import { categoryName, errorText } from '../text';
 import { BackupPanel, DeletePanel } from './DataPanels';
 import { AccountPanel } from '../account/AccountPanel';
+import { toggleAccountsFlag } from '../account/account';
 
 const PERSIST_TEXT: Record<PersistState, { title: TKey; body: TKey }> = {
   granted: { title: 'settings.persistGranted', body: 'settings.persistGrantedText' },
@@ -129,7 +130,7 @@ export function SettingsScreen() {
         {t('settings.credits')}
       </Link>
 
-      <p className="small muted">{t('settings.version', { version: __APP_VERSION__ })}</p>
+      <VersionLine />
     </div>
   );
 }
@@ -249,6 +250,34 @@ function ProfilePanel({ settings }: { settings: Settings }) {
         </span>
       </label>
     </Panel>
+  );
+}
+
+/**
+ * La versión. Siete toques seguidos activan o desactivan la cuenta en este dispositivo antes de la 2.0 (spec 14,
+ * S14-06): la app instalada no tiene barra de direcciones para usar `?cuentas=1`.
+ */
+function VersionLine() {
+  const taps = useRef<number[]>([]);
+  const [notice, setNotice] = useState<string>();
+  const tap = () => {
+    const now = Date.now();
+    taps.current = [...taps.current.filter((at) => now - at < 3000), now];
+    if (taps.current.length < 7) return;
+    taps.current = [];
+    setNotice(toggleAccountsFlag() ? t('settings.accountsOn') : t('settings.accountsOff'));
+  };
+  return (
+    <>
+      <p className="small muted" onClick={tap}>
+        {t('settings.version', { version: __APP_VERSION__ })}
+      </p>
+      {notice && (
+        <p className="small" role="status">
+          {notice}
+        </p>
+      )}
+    </>
   );
 }
 

@@ -527,7 +527,9 @@
       "error": "No se pudieron activar. Revisa la conexión e inténtalo de nuevo.",
       "unsupported": "Este navegador no admite notificaciones de ARVID.",
       "install": "En iPhone, las notificaciones solo funcionan con ARVID instalada en la pantalla de inicio (iOS 16.4 o posterior)."
-    }
+    },
+    "accountsOn": "Cuenta (beta) activada en este dispositivo. Está arriba, en Ajustes.",
+    "accountsOff": "Cuenta (beta) desactivada en este dispositivo."
   },
   "backup": {
     "title": "Copia de seguridad",
@@ -770,6 +772,11 @@
       "notifications": {
         "0": "También puedo avisarte: por la mañana de lo que tienes hoy y por la noche de lo que falta.",
         "1": "Las horas se pueden cambiar en Ajustes, y tus datos no salen del móvil. ¿Te aviso?"
+      },
+      "account": {
+        "0": "Una cosa más: puedo guardar tu progreso en la nube, cifrado para que nadie más pueda leerlo.",
+        "1": "Así, si pierdes o cambias de teléfono, lo recuperas con Face ID o huella. Sin email ni contraseña.",
+        "2": "¿Lo guardamos?"
       }
     },
     "achievementsFound_one": "Revisé tu historial: ya tenías 1 logro. Lo tienes en tu perfil.",
@@ -1164,6 +1171,10 @@
       "passkey": "No se pudo verificar la passkey.",
       "cancelled": "Cancelado.",
       "failed": "Algo falló. Inténtalo de nuevo."
-    }
+    },
+    "saveTitle": "Guarda tu progreso",
+    "notNow": "Ahora no",
+    "cardText": "Guarda tu progreso en la nube para no perderlo si cambias de teléfono. Sin email ni contraseña.",
+    "cardGo": "Guardar mi progreso"
   }
 }
