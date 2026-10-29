@@ -21,7 +21,6 @@ import { CreditsScreen } from './screens/CreditsScreen';
 import { AttributeDetailScreen, DisciplineDetailScreen } from './screens/profile/AttributeDetailScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { TodayScreen } from './screens/TodayScreen';
-import { PasskeyLab } from './lab/PasskeyLab';
 
 /** Rutas (PWA-05). */
 export const routes: RouteObject[] = [
@@ -57,8 +56,6 @@ export const routes: RouteObject[] = [
       { path: 'ajustes/creditos', element: <CreditsScreen /> },
       { path: 'ajustes/categorias/nueva', element: <CategoryFormScreen /> },
       { path: 'ajustes/categorias/:id', element: <CategoryFormScreen /> },
-      // Prototipo oculto de passkeys (spec 14, fase 14a): sin enlaces desde la app
-      { path: 'lab/passkey', element: <PasskeyLab /> },
       { path: '*', element: <Navigate to="/hoy" replace /> },
     ],
   },

@@ -141,7 +141,7 @@ En **Ajustes → Cuenta**:
 
 ### 5.3 App
 - **Datos nuevos solo del dispositivo** (en `settings`, fuera del backup):
-  - `account`: `{ id, session, dataKey }`; la clave de datos se guarda en IndexedDB como `CryptoKey` **no exportable**;
+  - `account`: `{ id, session, dataKey }`; la clave de datos se guarda en IndexedDB como `CryptoKey`. Tiene que ser **exportable** solo en el dispositivo, para poder volver a envolverla al generar otra clave de recuperación o añadir una passkey (GC-02, GC-03); nunca sale en claro (cambio en la 14b, 2026-10-28);
   - `cloudBackup`: `{ version, uploadedAt, dirty }`.
 - **Un vigilante** `CloudBackupWatcher` marca `dirty` con cada cambio en Dexie y sube según CP-02.
 - **Cifrado:** Web Crypto, sin librerías: AES-256-GCM con IV aleatorio, HKDF y compresión con `CompressionStream('gzip')`.
@@ -194,7 +194,7 @@ En **Ajustes → Cuenta**:
 | Fase | Qué | Se publica |
 |---|---|---|
 | **14a** | Prototipo de passkey + PRF en una página oculta, probado en el iPhone y el Android reales | Sí, oculto |
-| **14b** | Función `account`, cifrado y API con pruebas | Sí, sin interfaz |
+| **14b** | Función `account`, cifrado y API con pruebas (hecha en la 1.8.6) | Sí, sin interfaz |
 | **14c** | Interfaz (onboarding, Ajustes, tarjeta en Hoy) y vigilante de copia, detrás de `VITE_ACCOUNTS` | Apagado |
 | **2.0.0** | Se enciende junto con la spec 15 | Sí |
 

@@ -1,4 +1,3 @@
-import { Link } from 'react-router';
 import { t, type TKey } from '../../i18n';
 import { BackLink, Panel } from '../design/components';
 import { GAMES } from '../games';
@@ -65,10 +64,6 @@ export function CreditsScreen() {
           </ul>
         </Panel>
       ))}
-      {/* Temporal (spec 14, fase 14a): la app instalada no tiene barra de direcciones para abrir el prototipo */}
-      <Link to="/lab/passkey" className="btn btn-ghost" style={{ alignSelf: 'center' }}>
-        Prueba de passkeys (temporal)
-      </Link>
     </div>
   );
 }
