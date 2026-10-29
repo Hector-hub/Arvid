@@ -8,7 +8,7 @@ import { SCENE_H, SCENE_W } from '../../domain/scene/scene';
 import { t, useLocale } from '../../i18n';
 import { useReducedMotion } from '../motion';
 import { loadArvidAtlas, loadDarisAtlas, loadHero, loadSceneImages, type HeroSheets, type SceneImages } from './assets';
-import { drawHero, drawScene } from './draw';
+import { drawHero, drawScene, drawSkyBleed } from './draw';
 import { DARIS_ANIM, DARIS_CELL } from './daris';
 import { DRONE, EXTRAS_FRAME } from './extras';
 import {
@@ -126,14 +126,27 @@ export function SceneCanvas({
     if (!c) return;
     // El lienzo a la resolución de la pantalla (D-161): el pixel art se dibuja igual (cada píxel, k×k) pero el fondo
     // avanza de 1 en 1 píxel de pantalla y el desplazamiento se ve suave
-    const k = sceneScale(canvas);
-    if (canvas.width !== SCENE_W * k) {
-      canvas.width = SCENE_W * k;
-      canvas.height = SCENE_H * k;
-    }
-    c.setTransform(k, 0, 0, k, 0, 0);
-    c.imageSmoothingEnabled = false;
-    const draw = () =>
+    let k = 1;
+    // Franja de arriba (D-188): lo que la escena tenga de relleno superior (la zona del notch), en píxeles de escena.
+    // Cambia si aparece o se va el aviso de nueva versión, así que se recalcula al cambiar el tamaño
+    let bleed = 0;
+    const fit = () => {
+      k = sceneScale(canvas);
+      bleed = sceneBleed(canvas);
+      if (canvas.width !== SCENE_W * k || canvas.height !== (SCENE_H + bleed) * k) {
+        canvas.width = SCENE_W * k;
+        canvas.height = (SCENE_H + bleed) * k;
+      }
+      c.imageSmoothingEnabled = false;
+    };
+    fit();
+    const draw = () => {
+      if (bleed > 0 && images.bg[0]) {
+        c.setTransform(k, 0, 0, k, 0, bleed * k);
+        c.clearRect(0, -bleed, SCENE_W, bleed);
+        drawSkyBleed(c, images.bg[0], scene.offset, bleed, k);
+      }
+      c.setTransform(k, 0, 0, k, 0, bleed * k);
       drawScene(c, scene, images, { cast, sheets }, reduced, {
         snap: k,
         arvid,
@@ -145,6 +158,17 @@ export function SceneCanvas({
         neighbor: currentNeighborSpeech(),
         xp: currentXpFloats(),
       });
+    };
+
+    // Cambiar el tamaño del lienzo lo borra: se ajusta y se redibuja (también si la escena está quieta)
+    const resize =
+      typeof ResizeObserver === 'undefined'
+        ? undefined
+        : new ResizeObserver(() => {
+            fit();
+            draw();
+          });
+    resize?.observe(canvas);
 
     let raf = 0;
     // `undefined` = sin temporizador (un id puede ser 0, p. ej. con relojes simulados)
@@ -202,6 +226,7 @@ export function SceneCanvas({
     draw();
     update();
     return () => {
+      resize?.disconnect();
       observer?.disconnect();
       document.removeEventListener('visibilitychange', update);
       unsubscribe();
@@ -229,6 +254,15 @@ const PREVIEW_H = 72;
 
 /** Vista previa del protagonista caminando en el sitio (carrusel, onboarding y Ajustes). */
 /** Píxeles de pantalla por píxel de la escena (de 1 a 3): el ancho en pantalla por la densidad, entre el ancho lógico. */
+/** Relleno superior de la escena en píxeles de escena (D-188): la zona del notch cuando la escena llega arriba. */
+function sceneBleed(canvas: HTMLCanvasElement): number {
+  const scene = canvas.parentElement;
+  const css = canvas.getBoundingClientRect().width;
+  if (!scene || !css) return 0;
+  const top = parseFloat(getComputedStyle(scene).paddingTop) || 0;
+  return Math.ceil((top * SCENE_W) / css);
+}
+
 function sceneScale(canvas: HTMLCanvasElement): number {
   const css = canvas.getBoundingClientRect().width || SCENE_W;
   return Math.max(1, Math.min(3, Math.round((css * (window.devicePixelRatio || 1)) / SCENE_W)));

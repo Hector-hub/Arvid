@@ -76,6 +76,21 @@ function tiled(c: Ctx, img: HTMLImageElement, offset: number, factor: number, sn
   for (let x = -mod(offset * factor, img.width); x < SCENE_W; x += img.width) c.drawImage(img, snapTo(x, snap), LAYOUT.bgY);
 }
 
+/**
+ * Cielo por encima de la escena (D-188), para la franja del notch: el fondo lejano muestra la parte de arriba que la
+ * escena recorta (la luna completa), con el mismo parallax que la capa. Si hace falta más alto, se continúa con el
+ * color liso de la primera fila del cielo. Se llama con el origen ya en el borde de arriba de la escena.
+ */
+export function drawSkyBleed(c: Ctx, img: HTMLImageElement, offset: number, bleed: number, snap: number) {
+  if (bleed <= 0) return;
+  if (bleed > -LAYOUT.bgY) rect(c, 0, -bleed, SCENE_W, bleed + LAYOUT.bgY + 1, SKY_TOP);
+  const factor = PARALLAX[0] ?? 0;
+  for (let x = -mod(offset * factor, img.width); x < SCENE_W; x += img.width) c.drawImage(img, snapTo(x, snap), LAYOUT.bgY);
+}
+
+/** Color de la primera fila del fondo lejano (bg-1.png). */
+const SKY_TOP = '#00003c';
+
 /** Río (D-125): banda entre el horizonte y la carretera, con el parallax del horizonte y sus 24 fotogramas a 12 fps. */
 const WATER = { y: 117, w: 360, h: 15, frames: 24, ticks: 5 } as const;
 
