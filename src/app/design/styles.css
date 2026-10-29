@@ -1896,3 +1896,27 @@ html, body { overscroll-behavior-y: contain; }
   .main > .banner + * .scene-sticky .scene-corner { top: 6px; }
   .main > .banner + * .scene-sticky .scene-intro { padding-top: 0; }
 }
+
+/* Avisos en cristal (D-191): sin borde dorado ni icono antiguo; una línea de color a la izquierda indica el tipo
+   (cian por defecto, verde para el descanso, ámbar para lo que conviene hacer) y el botón va compacto */
+.banner {
+  --tone: var(--c-cyan);
+  border: 0;
+  clip-path: none;
+  padding: var(--s3) var(--s3) var(--s3) var(--s4);
+  background: rgb(14 17 38 / 0.62);
+  box-shadow:
+    inset 3px 0 0 var(--tone),
+    inset 0 0 0 1px color-mix(in srgb, var(--tone) 32%, transparent),
+    0 0 14px color-mix(in srgb, var(--tone) 8%, transparent);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+.banner.tone-success { --tone: var(--success); }
+.banner.tone-warn { --tone: var(--level); }
+.banner > .sprite:first-child { display: none; }
+.banner > .btn { flex: none; padding: var(--s2) var(--s3); min-height: 40px; }
+.update-banner { padding-left: var(--s3); }
+/* …con su icono pixel en el color del aviso y un brillo neón suave (D-191) */
+.banner { box-shadow: inset 3px 0 0 var(--tone), inset 0 0 0 1px color-mix(in srgb, var(--tone) 40%, transparent), 0 0 16px color-mix(in srgb, var(--tone) 16%, transparent); }
+.notice-icon { flex: none; color: var(--tone); filter: drop-shadow(0 0 5px color-mix(in srgb, var(--tone) 70%, transparent)); }

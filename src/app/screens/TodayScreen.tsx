@@ -23,6 +23,7 @@ import { TodayMissionsSection, useTodayMissions } from './missions/TodayMissions
 import { useCategories, useChallenges, useData, useRecords, useRests, useSettings } from '../data';
 import { challengeDay } from '../../domain/challenges/challenges';
 import { ChallengeCelebration } from '../challenges/ChallengeCelebration';
+import { NoticeIcon } from '../design/icons';
 import { Invitations } from '../challenges/ChallengeScreens';
 import { CategoryIcon, Panel, Segments, Sprite, XpBar, categoryColor } from '../design/components';
 import {
@@ -99,8 +100,8 @@ export function TodayScreen() {
       <Invitations />
 
       {needsInstallForSafety() && (
-        <div className="banner">
-          <Sprite name="warning" color="var(--level)" />
+        <div className="banner tone-warn">
+          <NoticeIcon kind="warning" />
           <p className="grow small">{t('today.installBanner')}</p>
           <Link to="/ajustes/instalar" className="btn">
             {t('common.how')}
@@ -376,8 +377,8 @@ function RestBanner() {
     .sort((a, b) => Number(!!a.activityIds) - Number(!!b.activityIds))[0];
   if (!rest) return null;
   return (
-    <div className="banner" role="status">
-      <Sprite name="info" color="var(--success)" />
+    <div className="banner tone-success" role="status">
+      <NoticeIcon kind="rest" />
       <p className="grow small">{rest.note ? t('rests.todayNote', { note: rest.note }) : t('rests.today')}</p>
       <Link to="/descansos" className="btn">
         {t('common.edit')}
@@ -439,8 +440,8 @@ function BackupReminder({ records }: { records: ActivityRecord[] }) {
   });
   if (!show) return null;
   return (
-    <div className="banner" role="region" aria-label={t('today.backupRegion')}>
-      <Sprite name="info" color="var(--level)" />
+    <div className="banner tone-warn" role="region" aria-label={t('today.backupRegion')}>
+      <NoticeIcon kind="info" />
       <p className="grow small">{t('today.backupReminder')}</p>
       <button
         type="button"

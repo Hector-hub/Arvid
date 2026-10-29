@@ -272,3 +272,20 @@ export function CheckIcon() {
     </svg>
   );
 }
+
+/** Iconos de los avisos en cristal neón (D-191), en la cuadrícula de 12 px: advertencia, información y luna (descanso). */
+const NOTICE_ICONS = {
+  warning: [[5, 0, 2, 2], [4, 2, 4, 1], [4, 3, 1, 1], [7, 3, 1, 1], [3, 4, 2, 2], [7, 4, 2, 2], [2, 6, 3, 1], [7, 6, 3, 1], [2, 7, 8, 1], [1, 8, 4, 1], [7, 8, 4, 1], [1, 9, 10, 1], [0, 10, 12, 1]],
+  info: [[3, 1, 6, 1], [1, 2, 4, 1], [7, 2, 4, 1], [1, 3, 10, 1], [0, 4, 5, 4], [7, 4, 5, 4], [1, 8, 4, 1], [7, 8, 4, 1], [1, 9, 10, 1], [3, 10, 6, 1]],
+  rest: [[5, 0, 4, 1], [3, 1, 4, 1], [2, 2, 3, 1], [1, 3, 3, 2], [0, 5, 3, 2], [1, 7, 3, 1], [11, 7, 1, 1], [1, 8, 4, 1], [9, 8, 3, 1], [2, 9, 9, 1], [3, 10, 7, 1], [5, 11, 3, 1]],
+} as const;
+
+export function NoticeIcon({ kind }: { kind: keyof typeof NOTICE_ICONS }) {
+  return (
+    <svg className="notice-icon" width={24} height={24} viewBox="0 0 12 12" fill="currentColor" shapeRendering="crispEdges" aria-hidden="true">
+      {NOTICE_ICONS[kind].map(([x, y, w, h]) => (
+        <rect key={`${x}-${y}`} x={x} y={y} width={w} height={h} />
+      ))}
+    </svg>
+  );
+}

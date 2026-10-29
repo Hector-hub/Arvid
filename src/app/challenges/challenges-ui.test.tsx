@@ -207,3 +207,25 @@ describe('retos (spec 15, 15b)', () => {
     expect(await ctx.db.completions.where('activityId').equals(activityId).count()).toBe(0);
   });
 });
+
+describe('carreras de la sincronización (D-190)', () => {
+  it('un reto eliminado mientras una descarga estaba en marcha no vuelve a la lista', async () => {
+    let releaseMine: (r: Response) => void = () => undefined;
+    const stale = view({}, [...view().participants, { id: ME, alias: 'Luis', level: 1, joinedAt: '2', done: [] }]);
+    vi.stubGlobal('fetch', vi.fn((url: string) => {
+      // La lista llega tarde y todavía con el reto (se pidió antes de eliminarlo)
+      if (url.endsWith('challenges/mine')) return new Promise<Response>((ok) => (releaseMine = ok));
+      return reply(200, stale);
+    }));
+    const { deleteChallenge, joinChallenge, refreshChallenges } = await import('./challenges');
+    const categoryId = (await ctx.db.categories.toArray())[0]!.id;
+    const account = (await ctx.db.settings.get('account'))!.value as never;
+    await joinChallenge(ctx, account, CID, categoryId);
+    const inFlight = refreshChallenges(ctx, account);
+    await deleteChallenge(ctx, account, CID);
+    expect(await ctx.db.challenges.get(CID)).toBeUndefined();
+    releaseMine(new Response(JSON.stringify({ challenges: [stale] }), { status: 200 }));
+    await inFlight;
+    expect(await ctx.db.challenges.get(CID)).toBeUndefined();
+  });
+});

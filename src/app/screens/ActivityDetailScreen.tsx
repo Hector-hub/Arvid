@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { Confirm, errorText } from '../account/AccountPanel';
+import { Confirm } from '../account/AccountPanel';
 import { deleteChallenge } from '../challenges/challenges';
 import { changeStatus, deleteActivity, logCompletion, undoCompletion } from '../../data/repository';
 import { playSfx } from '../sound/sfx';
@@ -196,17 +196,11 @@ function DeleteChallengeActivity({ challengeId, activityId }: { challengeId: str
   const account = useSettings()?.account;
   const navigate = useNavigate();
   const [confirm, setConfirm] = useState(false);
-  const [error, setError] = useState<string>();
   return (
     <>
       <button type="button" className="btn btn-danger" onClick={() => setConfirm(true)}>
         {t('challenges.delete')}
       </button>
-      {error && (
-        <p role="alert" className="field-error">
-          {error}
-        </p>
-      )}
       {confirm && (
         <Confirm
           title={t('challenges.deleteTitle')}
@@ -216,12 +210,14 @@ function DeleteChallengeActivity({ challengeId, activityId }: { challengeId: str
           onCancel={() => setConfirm(false)}
           onYes={async () => {
             setConfirm(false);
+            // Primero se sale: al borrarse la actividad, esta pantalla deja de existir y ya no podría navegar
+            navigate('/actividades', { replace: true });
             try {
               if (account) await deleteChallenge(ctx, account, challengeId);
               else await deleteActivity(ctx, activityId);
-              navigate('/actividades', { replace: true });
-            } catch (e) {
-              setError(errorText(e));
+            } catch {
+              // Sin conexión, el servidor no se entera; se borra igualmente aquí
+              await deleteActivity(ctx, activityId).catch(() => undefined);
             }
           }}
         />
