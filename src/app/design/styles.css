@@ -1653,10 +1653,10 @@ input[type='range']:disabled { opacity: 0.45; }
 
 /* ---------- Escena: sin marco, de lado a lado arriba y fundida hacia el fondo ---------- */
 .scene { background: transparent; border: 0; box-shadow: none; }
-/* Nítida hasta abajo: solo los últimos 5 px se funden con el fondo (D-183) */
+/* Nítida hasta la barandilla (pies y acera sin oscurecer); desde ahí se funde con la app (D-183) */
 .scene-canvas {
-  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 5px), transparent 100%);
-  mask-image: linear-gradient(180deg, #000 calc(100% - 5px), transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 88%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 88%, transparent 100%);
 }
 /* La cabecera fija desenfoca lo que pasa por debajo al hacer scroll (los textos no se mezclan) y se funde hacia abajo */
 .scene-sticky {
@@ -1823,3 +1823,16 @@ input[type='range']:disabled { opacity: 0.45; }
 .invite-card { box-shadow: inset 0 0 0 1px rgb(94 231 255 / 0.35); }
 .friend-card { color: var(--text); text-decoration: none; padding: var(--s3); transition: box-shadow 150ms; }
 .friend-card:hover, .friend-card:focus-visible { box-shadow: inset 0 0 0 1px rgb(94 231 255 / 0.45); }
+
+/* Botones de la escena en una columna con separación uniforme (D-184) */
+.scene-corner { top: var(--s2); bottom: auto; gap: var(--s2); }
+.scene-corner > * { margin: 0; }
+/* Caben los cuatro en la escena de un móvil de 360 px: 36 px cada uno, 6 px entre ellos (D-184) */
+.scene-corner { top: 6px; right: 6px; gap: 6px; }
+.scene-corner .btn,
+.scene-corner .scene-icon,
+.scene-corner .chat-button { width: 36px; height: 36px; min-width: 36px; min-height: 36px; }
+.scene-corner .btn svg { width: 18px; height: 18px; }
+.scene-corner .chat-input { min-height: 36px; }
+/* El foco con teclado sigue siendo dorado también en los botones de la escena (BT-03) */
+.scene-corner .btn:focus-visible { --btn-edge: var(--focus); }

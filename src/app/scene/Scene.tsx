@@ -149,10 +149,9 @@ export function Scene({ overlay, controls = true, intro }: { overlay?: ReactNode
           <div className="scene-bottom-left">
             <TrackName />
           </div>
-          <div className="scene-top-right">
-            <MusicButton />
-          </div>
+          {/* Una sola columna arriba a la derecha, con la misma separación entre todos los botones (D-184) */}
           <div className="scene-corner">
+            <MusicButton />
             {accountsEnabled() && <FriendsButton />}
             {settings?.games !== false && <GameButton />}
             <ChatControl />
