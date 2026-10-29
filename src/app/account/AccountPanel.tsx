@@ -12,6 +12,8 @@ import {
   createAccount,
   deleteAccount,
   passkeysAvailable,
+  usePasskeySupport,
+  type PasskeySupport,
   recoveryKeyFile,
   restore,
   rotateRecoveryKey,
@@ -45,6 +47,49 @@ function ago(at: string): string {
   return rtf.format(-Math.round(minutes / 1440), 'day');
 }
 
+/**
+ * Botones para crear la cuenta según lo que admita el teléfono (D-194): con autenticador propio, la passkey en dorado;
+ * si solo podría con otro dispositivo o una llave USB, la clave de recuperación en dorado y la passkey aparte.
+ */
+export function CreateButtons({
+  support,
+  disabled,
+  onCreate,
+  block = false,
+}: {
+  support: PasskeySupport | undefined;
+  disabled: boolean;
+  onCreate: (withPasskey: boolean) => void;
+  block?: boolean;
+}) {
+  const cls = (primary: boolean) => `btn${primary ? ' btn-primary' : ''}${block ? ' btn-block' : ''}`;
+  if (support === 'local')
+    return (
+      <>
+        <button type="button" className={cls(true)} disabled={disabled} onClick={() => onCreate(true)}>
+          {t('account.create')}
+        </button>
+        <button type="button" className={cls(false)} disabled={disabled} onClick={() => onCreate(false)}>
+          {t('account.createRecovery')}
+        </button>
+      </>
+    );
+  return (
+    <>
+      {support === 'remote' && <p className="small muted">{t('account.remoteOnly')}</p>}
+      {support === 'none' && <p className="small muted">{t('account.noPasskeys')}</p>}
+      <button type="button" className={cls(true)} disabled={disabled || support === undefined} onClick={() => onCreate(false)}>
+        {t('account.createRecovery')}
+      </button>
+      {support === 'remote' && (
+        <button type="button" className={cls(false)} disabled={disabled} onClick={() => onCreate(true)}>
+          {t('account.createRemote')}
+        </button>
+      )}
+    </>
+  );
+}
+
 export function AccountPanel() {
   const settings = useSettings();
   // Las hojas viven aquí y no dentro de cada estado: al crear la cuenta o entrar, el panel cambia de «sin cuenta» a
@@ -72,7 +117,7 @@ function SignedOut({ alias, onKey, onSignIn }: { alias: string; onKey: (key: str
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const online = typeof navigator === 'undefined' || navigator.onLine !== false;
-  const passkeys = passkeysAvailable();
+  const support = usePasskeySupport();
 
   async function create(withPasskey: boolean) {
     setBusy(true);
@@ -89,16 +134,7 @@ function SignedOut({ alias, onKey, onSignIn }: { alias: string; onKey: (key: str
   return (
     <>
       <p className="small muted">{t('account.intro')}</p>
-      {!passkeys && <p className="small muted">{t('account.noPasskeys')}</p>}
-      <button type="button" className="btn btn-primary" disabled={busy || !online} onClick={() => void create(passkeys)}>
-        {passkeys ? t('account.create') : t('account.createRecovery')}
-      </button>
-      {/* Con passkeys, también la clave sola: hay teléfonos que no pueden guardarlas (D-193) */}
-      {passkeys && (
-        <button type="button" className="btn" disabled={busy || !online} onClick={() => void create(false)}>
-          {t('account.createRecovery')}
-        </button>
-      )}
+      <CreateButtons support={support} disabled={busy || !online} onCreate={(withPasskey) => void create(withPasskey)} />
       <button type="button" className="btn" disabled={busy || !online} onClick={onSignIn}>
         {t('account.haveAccount')}
       </button>
@@ -114,6 +150,8 @@ function SignedOut({ alias, onKey, onSignIn }: { alias: string; onKey: (key: str
 }
 
 function SignedIn({ account, onKey }: { account: DeviceAccount; onKey: (key: string) => void }) {
+  // «Añadir passkey» solo si este teléfono puede guardarla (D-194)
+  const passkeySupport = usePasskeySupport();
   const ctx = useData();
   const cloud = useCloud();
   const [busy, setBusy] = useState(false);
@@ -169,7 +207,7 @@ function SignedIn({ account, onKey }: { account: DeviceAccount; onKey: (key: str
       <button type="button" className="btn" disabled={busy} onClick={() => void run(async () => onKey(await rotateRecoveryKey(account)))}>
         {t('account.newRecovery')}
       </button>
-      {account.viaRecovery && passkeysAvailable() && (
+      {account.viaRecovery && passkeySupport === 'local' && (
         <button type="button" className="btn" disabled={busy} onClick={() => void run(() => addPasskey(ctx, account))}>
           {t('account.addPasskey')}
         </button>

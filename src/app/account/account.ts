@@ -1,6 +1,6 @@
 // Cuenta ligera y copia en la nube en la app (spec 14, fase 14c). Todo lo visible va detrás de `accountsEnabled()`
 // hasta la 2.0 (S14-06). El cifrado vive en `domain/account/crypto` y el servidor en `netlify/functions/account`.
-import { startAuthentication, startRegistration, browserSupportsWebAuthn } from '@simplewebauthn/browser';
+import { startAuthentication, startRegistration, browserSupportsWebAuthn, platformAuthenticatorIsAvailable } from '@simplewebauthn/browser';
 import type { PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/browser';
 import { useSyncExternalStore } from 'react';
 import { buildBackup, parseBackup, replaceAllData } from '../../data/backup';
@@ -145,6 +145,33 @@ function prfOutput(results: unknown): Uint8Array<ArrayBuffer> | undefined {
 }
 
 export const passkeysAvailable = () => browserSupportsWebAuthn();
+
+/**
+ * Dónde puede guardar passkeys este teléfono (D-194): `local` si tiene su propio autenticador (cara, huella o PIN con
+ * gestor de passkeys); `remote` si el navegador las admite pero solo con otro dispositivo o una llave USB; `none` si no
+ * las admite. Mientras se pregunta, `undefined`.
+ */
+export type PasskeySupport = 'local' | 'remote' | 'none';
+let support: PasskeySupport | undefined;
+const supportListeners = new Set<() => void>();
+
+export function usePasskeySupport(): PasskeySupport | undefined {
+  return useSyncExternalStore(
+    (fn) => {
+      supportListeners.add(fn);
+      if (support === undefined) {
+        const done = (value: PasskeySupport) => {
+          support = value;
+          supportListeners.forEach((l) => l());
+        };
+        if (!passkeysAvailable()) done('none');
+        else platformAuthenticatorIsAvailable().then((ok) => done(ok ? 'local' : 'remote'), () => done('remote'));
+      }
+      return () => supportListeners.delete(fn);
+    },
+    () => support,
+  );
+}
 
 /**
  * Crea la passkey pidiendo el PRF (S14-03). Algunos Android rechazan el PRF al crearla: entonces se reintenta sin él

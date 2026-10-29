@@ -18,9 +18,9 @@ import { categoryName, errorText } from '../text';
 import { useCompanionSync } from '../companion';
 import { InstallGuide } from './InstallGuide';
 import { enablePush, pushSupport } from '../notifications/push';
-import { accountsEnabled, createAccount, passkeysAvailable } from '../account/account';
+import { accountsEnabled, createAccount, usePasskeySupport } from '../account/account';
 import { takePendingLink } from '../friends/friends';
-import { RecoveryKeySheet, SignInSheet, errorText as accountErrorText } from '../account/AccountPanel';
+import { CreateButtons, RecoveryKeySheet, SignInSheet, errorText as accountErrorText } from '../account/AccountPanel';
 
 type Step = 'language' | 'companion' | 'welcome' | 'alias' | 'gender' | 'character' | 'arvidColor' | 'ai' | 'account' | 'notifications' | 'categories' | 'install' | 'done';
 
@@ -46,7 +46,7 @@ function AccountStep({ next }: { next: () => void }) {
   const [error, setError] = useState<string>();
   const [key, setKey] = useState<string>();
   const alias = settings?.profile?.alias ?? 'ARVID';
-  const passkeys = passkeysAvailable();
+  const support = usePasskeySupport();
   const skip = () => void saveSetting(ctx.db, 'accountOffered', true).then(next);
   async function create(withPasskey: boolean) {
     setBusy(true);
@@ -76,12 +76,7 @@ function AccountStep({ next }: { next: () => void }) {
           </li>
         ))}
       </ul>
-      <ContinueButton label={passkeys ? t('account.create') : t('account.createRecovery')} onClick={() => !busy && void create(passkeys)} />
-      {passkeys && (
-        <button type="button" className="btn btn-block" disabled={busy} onClick={() => void create(false)}>
-          {t('account.createRecovery')}
-        </button>
-      )}
+      <CreateButtons support={support} disabled={busy} block onCreate={(withPasskey) => void create(withPasskey)} />
       <button type="button" className="btn btn-ghost btn-block" disabled={busy} onClick={skip}>
         {t('account.notNow')}
       </button>

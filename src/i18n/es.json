@@ -1221,7 +1221,9 @@
         "title": "Sin email ni contraseña",
         "text": "Solo tu cara o tu huella, con una passkey."
       }
-    }
+    },
+    "remoteOnly": "Este teléfono no puede guardar passkeys por sí mismo (solo con otro dispositivo o una llave USB). Te recomendamos la clave de recuperación.",
+    "createRemote": "Crear con passkey de otro dispositivo"
   },
   "friends": {
     "title": "Amigos",

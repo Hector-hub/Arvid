@@ -1221,7 +1221,9 @@
         "title": "No email or password",
         "text": "Just your face or fingerprint, with a passkey."
       }
-    }
+    },
+    "remoteOnly": "This phone can't store passkeys on its own (only with another device or a USB key). We recommend the recovery key.",
+    "createRemote": "Create with a passkey on another device"
   },
   "friends": {
     "title": "Friends",
