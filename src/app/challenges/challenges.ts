@@ -78,12 +78,15 @@ export async function joinChallenge(ctx: DataContext, account: DeviceAccount, id
   return view;
 }
 
-/** MK-04: abandonar archiva la actividad; sus días se quedan. */
+/**
+ * MK-04 y D-186: abandonar archiva la actividad (su historial y su XP se quedan) y quita el reto de tu lista. Si eras
+ * el último, el servidor lo borra del todo.
+ */
 export async function leaveChallenge(ctx: DataContext, account: DeviceAccount, id: string) {
   await syncMarks(ctx, account).catch(() => undefined);
-  const view = await social<ChallengeView>(account, 'POST', 'challenges/leave', { id, today: todayOf(ctx) });
-  await saveView(ctx, view, { left: true });
+  await social(account, 'POST', 'challenges/leave', { id, today: todayOf(ctx) });
   await archiveActivity(ctx, id);
+  await ctx.db.challenges.delete(id);
 }
 
 /** IN-01: invitar directamente a un amigo; le llega como aviso. */
@@ -104,22 +107,32 @@ async function archiveActivity(ctx: DataContext, challengeId: string) {
 }
 
 /**
- * Descarga el progreso de todos los retos (SY-05) y archiva la actividad de los terminados, cancelados o abandonados
- * (RT-11). Un reto en el que ya no estás (por ejemplo, tras restaurar en otro dispositivo) se queda con la última copia.
+ * Descarga el progreso de todos los retos (SY-05) y archiva la actividad de los terminados o cancelados (RT-11). Un
+ * reto que ya no está en tu lista (lo abandonaste desde otro dispositivo o se borró, D-186) sale también de este.
  */
 export async function refreshChallenges(ctx: DataContext, account: DeviceAccount) {
   const { challenges } = await social<{ challenges: ChallengeView[] }>(account, 'GET', 'challenges/mine');
   const today = todayOf(ctx);
+  const ids = new Set(challenges.map((v) => v.challenge.id));
+  for (const local of await ctx.db.challenges.toArray()) {
+    if (ids.has(local.id)) continue;
+    await archiveIfActive(ctx, local.activityId);
+    await ctx.db.challenges.delete(local.id);
+  }
   for (const view of challenges) {
     const me = view.participants.find((p) => p.id === account.id);
     await saveView(ctx, view, { left: !!me?.left });
     if (view.challenge.cancelled || me?.left || endDate(view.challenge) < today) {
       const local = await ctx.db.challenges.get(view.challenge.id);
-      const record = local?.activityId ? await loadRecord(ctx.db, local.activityId) : undefined;
-      const archived = record?.events.some((e) => e.type === 'archived');
-      if (local?.activityId && !archived) await changeStatus(ctx, local.activityId, 'archived');
+      await archiveIfActive(ctx, local?.activityId);
     }
   }
+}
+
+async function archiveIfActive(ctx: DataContext, activityId: string | undefined) {
+  if (!activityId) return;
+  const record = await loadRecord(ctx.db, activityId);
+  if (record && !record.events.some((e) => e.type === 'archived')) await changeStatus(ctx, activityId, 'archived');
 }
 
 /** Refresca un reto (al entrar en él, SY-05). */

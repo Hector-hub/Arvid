@@ -156,6 +156,22 @@ describe('retos (spec 15, 15b)', () => {
       const record = (await loadRecords(ctx.db)).find((r) => r.activity.challengeId === CID)!;
       expect(record.events.some((e) => e.type === 'archived')).toBe(true);
     });
-    expect(await screen.findByText(/Lo abandonaste/)).toBeInTheDocument();
+    // D-186: sale de tu lista (la actividad queda archivada con su historial)
+    await waitFor(async () => expect(await ctx.db.challenges.get(CID)).toBeUndefined());
+  });
+
+  it('D-186: un reto que ya no está en tu lista (abandonado en otro dispositivo o borrado) sale también de este', async () => {
+    vi.stubGlobal('fetch', vi.fn((url: string) => {
+      if (url.endsWith('challenges/mine')) return reply(200, { challenges: [] });
+      return reply(200, view({}, [...view().participants, { id: ME, alias: 'Luis', level: 1, joinedAt: '2', done: [] }]));
+    }));
+    const { joinChallenge, refreshChallenges } = await import('./challenges');
+    const categoryId = (await ctx.db.categories.toArray())[0]!.id;
+    const account = (await ctx.db.settings.get('account'))!.value as never;
+    await joinChallenge(ctx, account, CID, categoryId);
+    await refreshChallenges(ctx, account);
+    expect(await ctx.db.challenges.get(CID)).toBeUndefined();
+    const record = (await loadRecords(ctx.db)).find((r) => r.activity.challengeId === CID)!;
+    expect(record.events.some((e) => e.type === 'archived')).toBe(true);
   });
 });

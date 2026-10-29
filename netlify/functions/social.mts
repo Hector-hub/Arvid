@@ -305,6 +305,17 @@ export async function handle(req: Request, deps: Deps = {}): Promise<Response> {
       const today = clientToday(body.today);
       if (!today) return json(400, { error: 'invalid' });
       if (!p.left) await cs.set(`c:${c.id}:p:${me}`, { ...p, left: today });
+      // Sale de tu lista de retos (D-186); los demás te siguen viendo como «abandonó»
+      await cs.set(`u:${me}`, (await myList(me)).filter((id) => id !== c.id));
+      const keys = await cs.list(`c:${c.id}:p:`);
+      const parts = (await Promise.all(keys.map((k) => cs.get(k)))).filter(Boolean) as Participant[];
+      // Si ya no queda nadie en el reto, se borra del todo
+      if (parts.every((x) => x.left)) {
+        await Promise.all([...keys.map((k) => cs.delete(k)), cs.delete(`c:${c.id}`), cs.delete(`n:${c.id}`)]);
+        const index = ((await cs.get('index:active')) as string[] | null) ?? [];
+        if (index.includes(c.id)) await cs.set('index:active', index.filter((id) => id !== c.id));
+        return json(200, { deleted: true });
+      }
       return json(200, await view(c));
     }
 

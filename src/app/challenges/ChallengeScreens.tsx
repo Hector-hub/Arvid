@@ -480,7 +480,7 @@ export function ChallengeScreen() {
           onYes={() => {
             const kind = confirm;
             setConfirm(undefined);
-            void act((a) => (kind === 'leave' ? leaveChallenge : cancelChallenge)(ctx, a, c.id)).then(() => kind === 'cancel' && navigate('/objetivos'));
+            void act((a) => (kind === 'leave' ? leaveChallenge : cancelChallenge)(ctx, a, c.id)).then(() => navigate('/objetivos'));
           }}
         />
       )}

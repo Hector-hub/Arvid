@@ -208,13 +208,27 @@ describe('retos (spec 15, RT, IN, SY, MK)', () => {
     expect((await ch(ANA, 'POST', 'unmark', { id, date: '2026-10-29' })).body.done).toEqual([TODAY]);
   });
 
-  it('MK-04: al abandonar queda «abandonó» con sus días y no puede marcar más', async () => {
+  it('MK-04/D-186: al abandonar sale de tu lista; los demás te ven como «abandonó» con tus días y no puedes marcar más', async () => {
     const { body } = await create(ANA);
     const id = body.challenge.id;
+    await ch(LUIS, 'POST', 'join', { id, today: TODAY });
     await ch(ANA, 'POST', 'mark', { id, date: TODAY });
     const left = await ch(ANA, 'POST', 'leave', { id, today: TODAY });
-    expect(left.body.participants[0]).toMatchObject({ left: TODAY, done: [TODAY] });
+    expect(left.body.participants[0]).toMatchObject({ alias: 'Ana', left: TODAY, done: [TODAY] });
+    expect(((await ch(ANA, 'GET', 'mine')).body as unknown as { challenges: unknown[] }).challenges).toEqual([]);
+    expect(((await ch(LUIS, 'GET', 'mine')).body as unknown as { challenges: unknown[] }).challenges).toHaveLength(1);
     expect((await ch(ANA, 'POST', 'mark', { id, date: TODAY })).status).toBe(400);
+  });
+
+  it('D-186: cuando abandona el último, el reto se borra del todo', async () => {
+    const { body } = await create(ANA);
+    const id = body.challenge.id;
+    await ch(LUIS, 'POST', 'join', { id, today: TODAY });
+    await ch(ANA, 'POST', 'leave', { id, today: TODAY });
+    expect((await ch(LUIS, 'POST', 'leave', { id, today: TODAY })).body).toEqual({ deleted: true });
+    expect([...(stores.challenges as unknown as { map: Map<string, unknown> }).map.keys()].filter((k) => k.includes(id))).toEqual([]);
+    expect(((await stores.challenges.get('index:active')) as string[]).includes(id)).toBe(false);
+    expect((await ch(LUIS, 'GET', id)).status).toBe(404);
   });
 
   it('RT-04: el creador puede cancelarlo solo antes de que empiece', async () => {

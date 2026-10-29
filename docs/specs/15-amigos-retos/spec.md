@@ -312,3 +312,7 @@ Aprobada el 2026-10-29 (D-177 a D-181), salvo EN-12, que se descarta. Surge de l
 - **AM-11. Botones visibles al abrir:** al abrir la app (tras la presentación), los botones de la escena se ven unos segundos y luego se desvanecen como siempre (D-155).
 - **AM-12. Buscador:** en Amigos, un campo «Buscar por alias o código» filtra la lista. Cada amigo muestra su código (las 8 primeras cifras de su ID de cuenta) (solo para buscar en la lista; para agregar a alguien se usa su enlace). «Tengo un enlace» acepta también el código completo suelto.
 - **AM-13. Tarjetas de amigos:** cada amigo es una tarjeta tocable con «alias · Nv» en la primera línea y «Código · retos juntos» debajo. Abre su página (`/perfil/amigos/:id`) con los retos que tenéis en común, «Invitar a un reto», Eliminar y Bloquear.
+
+### 10.6 Abandonar (amplía MK-04, D-186)
+- **MK-10.** Al abandonar, el reto **sale de tu lista** (en este y en tus otros dispositivos); la actividad queda archivada con su historial y su XP. Los demás te siguen viendo como «abandonó» con tus días.
+- **MK-11.** Si al abandonar ya no queda ningún participante activo, el reto **se borra del todo** del servidor (reto, participantes y avisos).

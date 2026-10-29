@@ -1675,7 +1675,8 @@ input[type='range']:disabled { opacity: 0.45; }
   background: linear-gradient(180deg, rgb(7 9 20 / 0.95), rgb(7 9 20 / 0));
 }
 @media (max-width: 767px) {
-  .scene-sticky .scene { width: auto; margin-inline: calc(-1 * var(--s4)); }
+  /* Ancho explícito: Safari calcula el alto (2:1) con el ancho sin los márgenes negativos y cortaba la barandilla */
+  .scene-sticky .scene { width: calc(100% + 2 * var(--s4)); margin-inline: calc(-1 * var(--s4)); }
 }
 .scene-overlay .scene-date { text-shadow: 0 1px 0 #000, 0 0 8px rgb(95 225 245 / 0.25); }
 /* Los botones de la escena y la fecha de Hoy se desvanecen; aparecen unos segundos al tocarla (o con el teclado) */
