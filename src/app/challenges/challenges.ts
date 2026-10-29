@@ -36,7 +36,9 @@ export interface ChallengeInvite {
 /** Descarga las invitaciones pendientes y las guarda en el dispositivo para Hoy y Objetivos (IN-14). */
 export async function refreshInvites(ctx: DataContext, account: DeviceAccount): Promise<ChallengeInvite[]> {
   const { invites } = await social<{ invites: ChallengeInvite[] }>(account, 'GET', 'invites');
-  await saveSetting(ctx.db, 'challengeInvites', invites);
+  // Solo si cambió: guardar lo mismo cada 5 minutos marcaría la copia en la nube como pendiente
+  const saved = (await loadSettings(ctx.db)).challengeInvites ?? [];
+  if (JSON.stringify(saved) !== JSON.stringify(invites)) await saveSetting(ctx.db, 'challengeInvites', invites);
   return invites;
 }
 
@@ -49,7 +51,14 @@ export async function declineInvite(ctx: DataContext, account: DeviceAccount, id
 
 export const getChallenge = (a: DeviceAccount, id: string) => social<ChallengeView>(a, 'GET', `challenges/${encodeURIComponent(id)}`);
 
+/**
+ * Retos que acabas de abandonar o eliminar en este dispositivo: una descarga que ya estaba en marcha (hecha un instante
+ * antes) no los vuelve a poner en la lista.
+ */
+const removed = new Set<string>();
+
 async function saveView(ctx: DataContext, view: ChallengeView, patch: Partial<LocalChallenge> = {}) {
+  if (removed.has(view.challenge.id)) return;
   const prev = await ctx.db.challenges.get(view.challenge.id);
   await ctx.db.challenges.put({ ...prev, ...patch, id: view.challenge.id, view, fetchedAt: ctx.now().toISOString() });
 }
@@ -69,6 +78,7 @@ export async function createChallenge(ctx: DataContext, account: DeviceAccount, 
 
 /** IN-04: unirse crea siempre una actividad nueva (D-145). */
 export async function joinChallenge(ctx: DataContext, account: DeviceAccount, id: string, categoryId: string): Promise<ChallengeView> {
+  removed.delete(id);
   const view = await social<ChallengeView>(account, 'POST', 'challenges/join', { id, today: todayOf(ctx) });
   const local = await ctx.db.challenges.get(id);
   const activityId = local?.activityId ?? (await createChallengeActivity(ctx, view.challenge, categoryId));
@@ -84,6 +94,7 @@ export async function joinChallenge(ctx: DataContext, account: DeviceAccount, id
  */
 export async function leaveChallenge(ctx: DataContext, account: DeviceAccount, id: string) {
   await syncMarks(ctx, account).catch(() => undefined);
+  removed.add(id);
   await social(account, 'POST', 'challenges/leave', { id, today: todayOf(ctx) });
   await archiveActivity(ctx, id);
   await ctx.db.challenges.delete(id);
@@ -94,6 +105,7 @@ export async function leaveChallenge(ctx: DataContext, account: DeviceAccount, i
  * borra con su historial, en cualquier estado del reto. Si el servidor ya no lo conoce, se borra igualmente aquí.
  */
 export async function deleteChallenge(ctx: DataContext, account: DeviceAccount, id: string) {
+  removed.add(id);
   await social(account, 'POST', 'challenges/leave', { id, today: todayOf(ctx) }).catch((e: { status?: number }) => {
     if (e?.status !== 404 && e?.status !== 403) throw e;
   });

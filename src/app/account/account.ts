@@ -170,9 +170,11 @@ export async function createAccount(ctx: DataContext, alias: string, withPasskey
     result = await api('POST', 'register/recovery', { alias, recovery: { auth, wrapped } });
   }
   const account: DeviceAccount = { id: result.accountId, alias, session: result.session, dataKey, viaRecovery: !withPasskey };
+  quiet();
   await saveSetting(ctx.db, 'account', account);
   resetCloud();
   await uploadBackup(ctx, account);
+  quiet();
   return { account, recoveryKey: recovery.text };
 }
 
@@ -217,7 +219,20 @@ export async function signInWithRecoveryKey(text: string, afterPasskey?: LoginRe
 }
 
 /** Descarga la copia, la descifra y sustituye lo de este dispositivo (RC-02, RC-05). Sin copia, sube la local. */
+/**
+ * Los cambios que hace la propia cuenta en la base de datos (guardarla, restaurar la copia) no son cambios del usuario:
+ * durante un momento el vigilante de la copia no los marca como pendientes (si no, la copia recién bajada o subida se
+ * volvería a subir).
+ */
+let quietUntil = 0;
+const QUIET_MS = 2000;
+export const accountWriting = () => Date.now() < quietUntil;
+const quiet = () => {
+  quietUntil = Date.now() + QUIET_MS;
+};
+
 export async function restore(ctx: DataContext, account: DeviceAccount): Promise<'restored' | 'empty'> {
+  quiet();
   await saveSetting(ctx.db, 'account', account);
   let remote: { version: number; data: string };
   try {
@@ -232,7 +247,9 @@ export async function restore(ctx: DataContext, account: DeviceAccount): Promise
   }
   const parsed = parseBackup(await decryptBackup(account.dataKey, remote.data));
   if (!parsed.ok) throw new AccountError('backup-invalid');
+  quiet();
   await replaceAllData(ctx, parsed.backup);
+  quiet();
   // `replaceAllData` conserva los ajustes del dispositivo, incluida la cuenta
   setCloud({ version: remote.version, uploadedAt: new Date().toISOString(), dirty: false, error: undefined, conflict: undefined });
   return 'restored';

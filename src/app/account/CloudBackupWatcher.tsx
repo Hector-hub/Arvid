@@ -3,7 +3,7 @@
 import Dexie from 'dexie';
 import { useEffect, useRef } from 'react';
 import { useData, useSettings } from '../data';
-import { setCloud, uploadBackup, useCloud } from './account';
+import { accountWriting, setCloud, uploadBackup, useCloud } from './account';
 
 export const UPLOAD_DELAY_MS = 30_000;
 
@@ -29,8 +29,11 @@ export function CloudBackupWatcher() {
       timer = window.setTimeout(upload, UPLOAD_DELAY_MS);
     };
     // Cualquier cambio en la base de datos marca la copia como pendiente
-    const onChange = () => {
-      if (latest.current.cloud.uploading) return;
+    const onChange = (parts: unknown) => {
+      if (latest.current.cloud.uploading || accountWriting()) return;
+      // La copia local de los retos se vuelve a descargar del servidor: sus cambios no hacen falta en la copia
+      const tables = parts && typeof parts === 'object' ? Object.keys(parts).map((k) => k.split('/')[3]).filter(Boolean) : [];
+      if (tables.length > 0 && tables.every((table) => table === 'challenges')) return;
       setCloud({ dirty: true });
       schedule();
     };

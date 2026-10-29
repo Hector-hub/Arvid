@@ -405,7 +405,8 @@ export function ChallengeScreen() {
   const ctx = useData();
   const today = useToday();
   const navigate = useNavigate();
-  const local = useChallenges()?.find((l) => l.id === id);
+  const challenges = useChallenges();
+  const local = challenges?.find((l) => l.id === id);
   const [error, setError] = useState<string>();
   const [confirm, setConfirm] = useState<'leave' | 'cancel' | 'delete'>();
   const account = settings?.account;
@@ -415,7 +416,8 @@ export function ChallengeScreen() {
     refreshChallenge(ctx, account, id).catch(() => undefined);
   }, [ctx, account, id]);
 
-  if (!settings) return null;
+  // Mientras se lee la lista del dispositivo no se sabe si el reto está: se espera antes de volver a Objetivos
+  if (!settings || !challenges) return null;
   if (!accountsEnabled()) return <Navigate to="/objetivos" replace />;
   if (!local) return <Navigate to="/objetivos" replace />;
   const view = local.view;
