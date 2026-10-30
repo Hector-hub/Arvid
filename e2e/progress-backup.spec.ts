@@ -69,7 +69,7 @@ test('BAK · NFR2-03: exportar, borrar todo e importar recupera los mismos datos
   // Esperar a que el registro se haya guardado antes de navegar.
   await expect(row(page, 'Leer').getByText('Hecho')).toBeVisible();
 
-  await page.goto('/ajustes');
+  await page.goto('/ajustes/cuenta');
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Exportar copia' }).click();
   const download = await downloadPromise;
@@ -80,6 +80,7 @@ test('BAK · NFR2-03: exportar, borrar todo e importar recupera los mismos datos
   await expect(page.getByText('Última copia: hoy')).toBeVisible();
 
   // DEL-01
+  await page.goto('/ajustes');
   await page.getByRole('button', { name: 'Eliminar todos mis datos' }).click();
   await page.getByLabel('Escribe BORRAR para confirmar').fill('BORRAR');
   await page.getByRole('button', { name: 'Eliminar', exact: true }).click();
@@ -87,7 +88,7 @@ test('BAK · NFR2-03: exportar, borrar todo e importar recupera los mismos datos
   await completeOnboarding(page);
   await expect(page.getByRole('heading', { name: 'Crea tu primera actividad' })).toBeVisible();
 
-  await page.goto('/ajustes');
+  await page.goto('/ajustes/cuenta');
   await page.getByLabel('Archivo de copia de seguridad').setInputFiles(file);
   const dialog = page.getByRole('alertdialog', { name: '¿Reemplazar tus datos?' });
   await expect(dialog).toContainText('1 actividad · 1 registro');

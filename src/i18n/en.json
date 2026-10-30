@@ -256,7 +256,8 @@
       "fog": "Grey",
       "green": "Green",
       "white": "White"
-    }
+    },
+    "previewNote": "This is how it looks in your activities and on the radar. Changes save automatically."
   },
   "missions": {
     "title": "Missions",
@@ -349,7 +350,10 @@
     "attributesNote": "Attributes measure how much of what you set out to do you completed in each area over the last {count} days, not your health or ability.",
     "discipline": "Discipline",
     "disciplineText": "How much of everything you set out to do you completed.",
-    "seeDetail": "See details"
+    "seeDetail": "See details",
+    "levelShort": "LEVEL",
+    "left": "{count} to go",
+    "friendsHint": "Team challenges"
   },
   "achievements": {
     "title": "Achievements",
@@ -488,13 +492,9 @@
     "volume": "Volume",
     "nowPlaying": "{state}: {track}",
     "needsConnection": "Music needs a connection the first time.",
-    "musicNote": "Off by default. A track that has already played can be heard offline.",
     "musicBackground": "Keep playing when you leave the app",
     "musicBackgroundHelp": "With the screen locked or in another app. The controls appear on the lock screen.",
     "musicBackgroundIos": "Keeps playing with the screen locked or in another app. On iPhone, the music volume is then set with the phone buttons.",
-    "musicVolume": "Music volume",
-    "trackOf": "Track {n} of {total}",
-    "musicOff": "Music off",
     "prevTrack": "Previous track",
     "nextTrack": "Next track",
     "play": "Play",
@@ -509,7 +509,7 @@
     "listen": "Listen",
     "effectsNote": "They play when you log, complete the day, level up and when {companion} talks. They don't play with the iPhone on silent.",
     "arvidAi": "{companion} with AI",
-    "arvidAiHelp": "To give you advice, {companion} sends your progress, activities and its notes about you to an external AI service (in Europe). You can turn it off anytime.",
+    "arvidAiHelp": "With AI, {companion} gives you advice based on your progress, chats with you and creates activities, missions, goals and rest days just by asking.",
     "companion": "Companion",
     "games": "Games",
     "gamesHelp": "Shows the “Play” button in the Today scene.",
@@ -535,8 +535,21 @@
         "final": "Result when a challenge ends"
       }
     },
-    "accountsOn": "Account (beta) turned on for this device. It's at the top of Settings.",
-    "accountsOff": "Account (beta) turned off for this device."
+    "account": "Account",
+    "profileCard": "Alias, character, companion and language",
+    "accountCard": "Storage and backup",
+    "accountCardCloud": "Cloud backup, storage and backup file",
+    "soundCard": "Music and effects",
+    "categoriesCard_one": "{count} active",
+    "categoriesCard_other": "{count} active",
+    "profileMore": "Alias, language and AI",
+    "categoriesActive": "Active",
+    "categoriesInactive": "Inactive",
+    "categoriesUsed": "{count} of {max} active",
+    "categoryActivities_one": "{count} activity",
+    "categoryActivities_other": "{count} activities",
+    "categoryHidden": "Not shown when creating or on the radar",
+    "categoryActiveHelp": "Shown when creating activities and on your radar."
   },
   "backup": {
     "title": "Backup",
@@ -813,7 +826,8 @@
     "aiActivate": "Turn on",
     "aiNotNow": "Not now",
     "companionTitle": "Choose your companion",
-    "notificationsActivate": "Turn on reminders"
+    "notificationsActivate": "Turn on reminders",
+    "aiActivateTrial": "Turn on (trial quota)"
   },
   "companion": {
     "arvid": {
@@ -1237,7 +1251,7 @@
     "invite": "Invite friends",
     "shareText": "{alias} invites you to be friends on ARVID",
     "copied": "Link copied.",
-    "haveLink": "I have a link or code",
+    "haveLink": "I have an invite link or code",
     "paste": "Paste",
     "open": "Open",
     "badLink": "That doesn't look like an ARVID link.",
@@ -1278,7 +1292,12 @@
     "copyCode": "Copy invitation code",
     "landingHint": "Already have ARVID installed? Open it and paste the code in Profile → Friends → I have a link or code.",
     "togetherTitle": "Challenges together",
-    "noTogether": "No challenges together yet."
+    "noTogether": "No challenges together yet.",
+    "ownCode": "Your code",
+    "codeCopied": "Copied",
+    "add": "Add friends",
+    "wantsShort": "Wants to be your friend",
+    "copyOwnCode": "Copy your code {code}"
   },
   "challenges": {
     "title": "Challenges",
@@ -1373,5 +1392,10 @@
     "loading": "Refreshing…",
     "done": "Up to date",
     "offline": "Offline"
+  },
+  "sound": {
+    "list": "Tracks",
+    "settings": "Sound settings",
+    "muteAll": "Mute everything"
   }
 }

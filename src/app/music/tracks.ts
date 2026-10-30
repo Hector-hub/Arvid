@@ -7,16 +7,18 @@ export interface Track {
   src: string;
   /** Color neón de su portada, para el brillo del reproductor (D-168). */
   glow: string;
+  /** Duración en segundos, para la lista de la página Sonido antes de cargar la pista (D-195). */
+  seconds: number;
 }
 
 export const TRACKS: Track[] = [
-  { id: 'midnight-sector-drive', name: 'Midnight Sector Drive', src: '/music/midnight-sector-drive.m4a', glow: '#4470f2' },
-  { id: 'glass-tower-horizon', name: 'Glass Tower Horizon', src: '/music/glass-tower-horizon.m4a', glow: '#f27348' },
-  { id: 'black-chrome-horizon', name: 'Black Chrome Horizon', src: '/music/black-chrome-horizon.m4a', glow: '#f2472a' },
-  { id: 'chrome-horizon-drive', name: 'Chrome Horizon Drive', src: '/music/chrome-horizon-drive.m4a', glow: '#f20faa' },
-  { id: 'rain-on-the-expressway', name: 'Rain on the Expressway', src: '/music/rain-on-the-expressway.m4a', glow: '#3bc2f2' },
+  { id: 'midnight-sector-drive', name: 'Midnight Sector Drive', src: '/music/midnight-sector-drive.m4a', glow: '#4470f2', seconds: 179 },
+  { id: 'glass-tower-horizon', name: 'Glass Tower Horizon', src: '/music/glass-tower-horizon.m4a', glow: '#f27348', seconds: 171 },
+  { id: 'black-chrome-horizon', name: 'Black Chrome Horizon', src: '/music/black-chrome-horizon.m4a', glow: '#f2472a', seconds: 178 },
+  { id: 'chrome-horizon-drive', name: 'Chrome Horizon Drive', src: '/music/chrome-horizon-drive.m4a', glow: '#f20faa', seconds: 174 },
+  { id: 'rain-on-the-expressway', name: 'Rain on the Expressway', src: '/music/rain-on-the-expressway.m4a', glow: '#3bc2f2', seconds: 173 },
   // Versión corta de «Rain Slicked Boulevard»: de 1:09,95 a 1:44,86 (16 compases a 110 BPM), unida a tempo (D-166)
-  { id: 'afterglow-avenue', name: 'Afterglow Avenue', src: '/music/afterglow-avenue.m4a', glow: '#f24876' },
+  { id: 'afterglow-avenue', name: 'Afterglow Avenue', src: '/music/afterglow-avenue.m4a', glow: '#f24876', seconds: 90 },
 ];
 
 /**

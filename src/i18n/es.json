@@ -256,7 +256,8 @@
       "fog": "Gris",
       "green": "Verde",
       "white": "Blanco"
-    }
+    },
+    "previewNote": "Así se verá en tus actividades y en el radar. Los cambios se guardan solos."
   },
   "missions": {
     "title": "Misiones",
@@ -349,7 +350,10 @@
     "attributesNote": "Los atributos miden cuánto cumpliste lo que te propusiste en cada área durante los últimos {count} días, no tu salud ni tu capacidad.",
     "discipline": "Disciplina",
     "disciplineText": "Cuánto cumpliste de todo lo que te propusiste.",
-    "seeDetail": "Ver detalle"
+    "seeDetail": "Ver detalle",
+    "levelShort": "NIVEL",
+    "left": "faltan {count}",
+    "friendsHint": "Retos en equipo"
   },
   "achievements": {
     "title": "Logros",
@@ -488,13 +492,9 @@
     "volume": "Volumen",
     "nowPlaying": "{state}: {track}",
     "needsConnection": "La música necesita conexión la primera vez.",
-    "musicNote": "Desactivada por defecto. Una pista que ya ha sonado se puede escuchar sin conexión.",
     "musicBackground": "Seguir sonando al salir de la app",
     "musicBackgroundHelp": "Con la pantalla bloqueada o en otra app. Los controles salen en la pantalla de bloqueo.",
     "musicBackgroundIos": "Sigue sonando con la pantalla bloqueada o en otra app. En iPhone, así el volumen de la música se ajusta con los botones del teléfono.",
-    "musicVolume": "Volumen de la música",
-    "trackOf": "Pista {n} de {total}",
-    "musicOff": "Música apagada",
     "prevTrack": "Pista anterior",
     "nextTrack": "Pista siguiente",
     "play": "Reproducir",
@@ -509,7 +509,7 @@
     "listen": "Escuchar",
     "effectsNote": "Suenan al registrar, completar el día, subir de nivel y cuando habla {companion}. Con el iPhone en silencio no suenan.",
     "arvidAi": "{companion} con IA",
-    "arvidAiHelp": "Para darte consejos, {companion} envía tu progreso, tus actividades y sus notas sobre ti a un servicio de IA externo (en Europa). Puedes desactivarlo cuando quieras.",
+    "arvidAiHelp": "Con IA, {companion} te da consejos según tu progreso, conversa contigo y te crea actividades, misiones, objetivos y descansos con solo pedírselo.",
     "companion": "Compañero",
     "games": "Juegos",
     "gamesHelp": "Muestra el botón «Jugar» en la escena de Hoy.",
@@ -535,8 +535,21 @@
         "final": "Resultado al terminar un reto"
       }
     },
-    "accountsOn": "Cuenta (beta) activada en este dispositivo. Está arriba, en Ajustes.",
-    "accountsOff": "Cuenta (beta) desactivada en este dispositivo."
+    "account": "Cuenta",
+    "profileCard": "Alias, personaje, compañero e idioma",
+    "accountCard": "Almacenamiento y copia de seguridad",
+    "accountCardCloud": "Copia en la nube, almacenamiento y copia de seguridad",
+    "soundCard": "Música y efectos",
+    "categoriesCard_one": "{count} activa",
+    "categoriesCard_other": "{count} activas",
+    "profileMore": "Alias, idioma e IA",
+    "categoriesActive": "Activas",
+    "categoriesInactive": "Inactivas",
+    "categoriesUsed": "{count} de {max} activas",
+    "categoryActivities_one": "{count} actividad",
+    "categoryActivities_other": "{count} actividades",
+    "categoryHidden": "No aparece al crear ni en el radar",
+    "categoryActiveHelp": "Aparece al crear actividades y en tu radar."
   },
   "backup": {
     "title": "Copia de seguridad",
@@ -813,7 +826,8 @@
     "aiActivate": "Activar",
     "aiNotNow": "Ahora no",
     "companionTitle": "Elige a tu compañero",
-    "notificationsActivate": "Activar avisos"
+    "notificationsActivate": "Activar avisos",
+    "aiActivateTrial": "Activar (cuota de prueba)"
   },
   "companion": {
     "arvid": {
@@ -1237,7 +1251,7 @@
     "invite": "Invitar amigos",
     "shareText": "{alias} te invita a ser su amigo en ARVID",
     "copied": "Enlace copiado.",
-    "haveLink": "Tengo un enlace o código",
+    "haveLink": "Tengo un enlace o código de invitación",
     "paste": "Pegar",
     "open": "Abrir",
     "badLink": "Ese no parece un enlace de ARVID.",
@@ -1278,7 +1292,12 @@
     "copyCode": "Copiar código de invitación",
     "landingHint": "¿Ya tienes ARVID instalada? Ábrela y pega el código en Perfil → Amigos → Tengo un enlace o código.",
     "togetherTitle": "Retos juntos",
-    "noTogether": "Aún no tenéis retos juntos."
+    "noTogether": "Aún no tenéis retos juntos.",
+    "ownCode": "Tu código",
+    "codeCopied": "Copiado",
+    "add": "Añadir amigos",
+    "wantsShort": "Quiere ser tu amigo",
+    "copyOwnCode": "Copiar tu código {code}"
   },
   "challenges": {
     "title": "Retos",
@@ -1373,5 +1392,10 @@
     "loading": "Actualizando…",
     "done": "Al día",
     "offline": "Sin conexión"
+  },
+  "sound": {
+    "list": "Lista",
+    "settings": "Ajustes de sonido",
+    "muteAll": "Silenciar todo"
   }
 }

@@ -2,7 +2,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadSettings, type DataContext } from '../../data/repository';
-import { SettingsScreen } from '../screens/SettingsScreen';
+import { SoundScreen } from '../screens/SoundScreen';
 import { renderRoutes, setupData } from '../test-utils';
 import { MusicPlayer } from './player';
 import { TRACKS } from './tracks';
@@ -56,6 +56,23 @@ describe('música en segundo plano (D-163)', () => {
     b.destroy();
   });
 
+  it('pausar mientras arranca deja la música parada: gana lo último que se pidió (D-195)', async () => {
+    let resolvePlay: () => void = () => undefined;
+    play.mockImplementation(() => new Promise<void>((r) => (resolvePlay = r)));
+    const states: boolean[] = [];
+    const p = new MusicPlayer(TRACKS, 0.5, (s) => states.push(s.playing), undefined, () => undefined, true);
+    const started = p.start();
+    await vi.waitFor(() => expect(play).toHaveBeenCalled());
+    p.stop();
+    pause.mockClear();
+    resolvePlay();
+    await started;
+    expect(p.isEnabled()).toBe(false);
+    expect(pause).toHaveBeenCalled();
+    expect(states.at(-1)).toBe(false);
+    p.destroy();
+  });
+
   it('en primer plano se pausa al ocultar la app (MUS-05)', async () => {
     const p = new MusicPlayer(TRACKS, 0.5, () => undefined, undefined, () => undefined, false);
     await p.start();
@@ -82,7 +99,8 @@ describe('ajustes y pantalla de bloqueo (D-163)', () => {
 
   it('el interruptor viene encendido, se guarda al cambiarlo y los controles de bloqueo quedan registrados', async () => {
     const user = userEvent.setup();
-    renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
+    renderRoutes(ctx, [{ path: '/sonido', element: <SoundScreen /> }], '/sonido');
+    await user.click(await screen.findByText('Ajustes de sonido'));
     const toggle = await screen.findByRole('checkbox', { name: 'Seguir sonando al salir de la app' });
     expect(toggle).toBeChecked();
     expect([...handlers.keys()]).toEqual(expect.arrayContaining(['play', 'pause', 'previoustrack', 'nexttrack', 'seekto']));

@@ -72,7 +72,7 @@ export function NotificationsPanel() {
                 <span className="grow">{t('settings.notifications.badge')}</span>
               </label>
               <p className="small muted">{t('settings.notifications.remindersHint')}</p>
-              {/* Amigos y retos (spec 15, §3.8): con la cuenta, oculto hasta la 2.0 */}
+              {/* Amigos y retos (spec 15, §3.8) */}
               {accountsEnabled() && account && (
                 <fieldset className="field">
                   <legend>{t('settings.notifications.social.title')}</legend>

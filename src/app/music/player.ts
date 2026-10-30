@@ -82,6 +82,8 @@ export class MusicPlayer {
 
   /** Debe llamarse desde un gesto del usuario (MUS-04). */
   async start(): Promise<void> {
+    // Idempotente: si ya suena, no hace nada
+    if (this.enabled && !this.audio.paused) return;
     this.setup();
     this.enabled = true;
     this.failures = 0;
@@ -103,6 +105,25 @@ export class MusicPlayer {
 
   skip(): void {
     this.change(1);
+  }
+
+  /** Suena una pista concreta (la lista de la página Sonido, D-195); si ya es la actual, solo la reanuda. */
+  playTrack(id: string): void {
+    if (this.state.track?.id === id) {
+      if (!this.enabled) void this.start();
+      return;
+    }
+    this.current = id;
+    if (!this.enabled) {
+      this.setup();
+      this.enabled = true;
+      this.failures = 0;
+      void this.ctx?.resume().catch(() => undefined);
+      void this.play(0);
+      return;
+    }
+    this.fadeTo(0, 0.3);
+    setTimeout(() => this.enabled && void this.play(0), 300);
   }
 
   /** Anterior: al inicio de la pista si ya lleva un rato; si no, la pista anterior (PS-01). */
@@ -154,7 +175,7 @@ export class MusicPlayer {
       return;
     }
     this.fadeTo(0, 0.3);
-    setTimeout(() => void this.play(step), 300);
+    setTimeout(() => this.enabled && void this.play(step), 300);
   }
 
   private setup() {
@@ -206,6 +227,11 @@ export class MusicPlayer {
   private async resume() {
     try {
       await this.audio.play();
+      // Se pausó mientras arrancaba (dos toques seguidos): gana lo último que se pidió
+      if (!this.enabled) {
+        this.audio.pause();
+        return;
+      }
       // Hora absoluta con precisión de microsegundos: comparable entre copias de la app y sin empates
       this.playingSince = performance.timeOrigin + performance.now();
       this.channel?.postMessage({ playing: this.id, at: this.playingSince });
@@ -227,7 +253,9 @@ export class MusicPlayer {
 
   /** Suena la pista a `step` de la actual (0 = la actual, o la primera si no hay). */
   private async play(step: -1 | 0 | 1) {
-    const track = stepTrack(this.tracks, await this.available(), this.current, step);
+    const available = await this.available();
+    if (!this.enabled) return;
+    const track = stepTrack(this.tracks, available, this.current, step);
     if (!track) {
       this.enabled = false;
       this.emit({ playing: false, needsConnection: true });

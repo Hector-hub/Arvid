@@ -5,7 +5,7 @@ import { TrackName } from './TrackName';
 
 vi.mock('./MusicProvider', () => ({ useMusic: vi.fn() }));
 
-const track = { id: 'black-chrome-horizon', name: 'Black Chrome Horizon', src: '/music/black-chrome-horizon.m4a', glow: '#f2472a' };
+const track = { id: 'black-chrome-horizon', name: 'Black Chrome Horizon', src: '/music/black-chrome-horizon.m4a', glow: '#f2472a', seconds: 120 };
 const music = (patch: Partial<Music>) => vi.mocked(useMusic).mockReturnValue({ playing: true, needsConnection: false, ...patch } as Music);
 
 let animate: ReturnType<typeof vi.fn>;

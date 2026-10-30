@@ -35,7 +35,8 @@ test.describe('escena neón (spec 05)', () => {
     const a = await snapshot(page);
     await page.waitForTimeout(400);
     expect(await snapshot(page)).not.toBe(a);
-    await expect(page.getByRole('button', { name: 'Música' })).toHaveAttribute('aria-pressed', 'false');
+    // La bocina abre la página Sonido (D-195); tachada mientras la música está apagada
+    await expect(page.getByRole('link', { name: 'Música' })).toHaveAttribute('href', '/sonido');
   });
 
   test('UB-05: al hacer scroll en Hoy, la escena, la fecha y el nivel siguen arriba', async ({ page }) => {
@@ -94,12 +95,12 @@ test.describe('escena neón (spec 05)', () => {
     await expect(page.getByRole('img', { name: SCENE })).toBeVisible();
     await expect(page.getByRole('heading', { name: /Nivel 1 · / })).toBeVisible();
 
-    await page.goto('/ajustes');
-    // El carrusel se maneja con las flechas (los radios son para teclado y lectores de pantalla)
-    await page.getByRole('button', { name: 'Anterior', exact: true }).click();
+    await page.goto('/ajustes/perfil');
+    // Los personajes, en lista como las pistas de Sonido (D-197)
+    await page.getByRole('radio', { name: /^Drifter,/ }).check();
     await expect(page.getByRole('radio', { name: /^Drifter,/ })).toBeChecked();
     await page.getByRole('radio', { name: 'Ocaso' }).check();
-    await expect(page.locator('.carousel-name')).toHaveText('Drifter');
+    await expect(page.locator('.profile-hero-name')).toHaveText('Drifter');
     // Antes de recargar, esperar a que el ajuste esté guardado
     await expect
       .poll(() =>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { t } from '../../i18n';
-import { AccountPanel, Confirm, errorText } from '../account/AccountPanel';
+import { AccountPanel, Confirm, Sheet, errorText } from '../account/AccountPanel';
 import { accountsEnabled, type DeviceAccount } from '../account/account';
 import { BackLink, Panel } from '../design/components';
 import { useChallenges, useData, useSettings } from '../data';
@@ -30,9 +30,13 @@ export function FriendsScreen() {
   const settings = useSettings();
   if (!settings) return null;
   return (
-    <div className="stack" style={{ gap: 'var(--s5)' }}>
-      <BackLink to="/perfil" label={t('nav.profile')} />
-      <h1>{t('friends.title')}</h1>
+    <div className="stack" style={{ gap: 'var(--s4)' }}>
+      {!settings.account && (
+        <>
+          <BackLink to="/perfil" label={t('nav.profile')} />
+          <h1>{t('friends.title')}</h1>
+        </>
+      )}
       {!accountsEnabled() ? null : settings.account ? (
         <Friends account={settings.account} />
       ) : (
@@ -55,6 +59,7 @@ function Friends({ account }: { account: DeviceAccount }) {
   const shown = (list?.friends ?? []).filter((f) => !q || norm(f.alias).includes(q) || f.id.toLowerCase().replace(/-/g, '').startsWith(q.replace(/-/g, '')));
 
   const [version, setVersion] = useState(0);
+  const [adding, setAdding] = useState(false);
   useEffect(() => {
     let live = true;
     loadFriends(account).then(
@@ -81,33 +86,64 @@ function Friends({ account }: { account: DeviceAccount }) {
 
   return (
     <>
-      <InvitePanel account={account} />
+      {/* Lista primero (D-202): arriba el título, tu código para copiar y «+» para añadir */}
+      <header className="friends-top">
+        <Link to="/perfil" className="btn btn-icon btn-ghost" aria-label={t('nav.profile')}>
+          <span aria-hidden="true">‹</span>
+        </Link>
+        <div className="grow">
+          <h1>{t('friends.title')}</h1>
+          <OwnCode account={account} />
+        </div>
+        <button type="button" className="btn btn-primary btn-icon player-main friends-add" aria-label={t('friends.add')} onClick={() => setAdding(true)}>
+          +
+        </button>
+      </header>
+      {adding && (
+        <Sheet label={t('friends.add')} onClose={() => setAdding(false)}>
+          <h2>{t('friends.add')}</h2>
+          <InvitePanel account={account} />
+          <button type="button" className="btn btn-ghost" onClick={() => setAdding(false)}>
+            {t('common.close')}
+          </button>
+        </Sheet>
+      )}
       {error && (
         <p role="alert" className="field-error">
           {error}
         </p>
       )}
       {list && list.requests.length > 0 && (
-        <Panel className="stack">
-          <h2>{t('friends.requests')}</h2>
+        <section className="stack" style={{ gap: 'var(--s2)' }}>
+          <h2 className="sound-heading">{t('friends.requests')}</h2>
           {list.requests.map((r) => (
-            <div key={r.id} className="row">
-              <span className="grow">
-                {t('friends.wants', { alias: r.alias })} <span className="muted small">· {t('friends.level', { level: intText(r.level) })}</span>
+            <div key={r.id} className="friend-request">
+              <span className="friend-initial" aria-hidden="true">
+                {r.alias.trim().charAt(0).toUpperCase() || '?'}
               </span>
-              <button type="button" className="btn" onClick={() => act(() => respondRequest(account, r.id, false))}>
-                {t('friends.reject')}
+              <span className="grow sound-row-name">
+                <b>{r.alias}</b>
+                <span>
+                  {t('friends.wantsShort')} · {t('friends.level', { level: intText(r.level) })}
+                </span>
+              </span>
+              <button type="button" className="btn btn-icon" aria-label={t('friends.reject')} onClick={() => act(() => respondRequest(account, r.id, false))}>
+                ✕
               </button>
               <button type="button" className="btn btn-primary" onClick={() => act(() => respondRequest(account, r.id, true))}>
                 {t('friends.accept')}
               </button>
             </div>
           ))}
-        </Panel>
+        </section>
       )}
       {list && (
-        <Panel className="stack">
-          <h2>{t('friends.list', { count: list.friends.length })}</h2>
+        // Como las listas de Sonido y Perfil (D-202): cada amigo es una fila con su inicial, nivel, código y retos juntos
+        <section className="stack" style={{ gap: 'var(--s2)' }}>
+          <h2 className="sound-heading friends-head" aria-label={t('friends.list', { count: list.friends.length })}>
+            <span>{t('friends.title')}</span>
+            <span>{intText(list.friends.length)}</span>
+          </h2>
           {list.friends.length === 0 && <p className="muted">{t('friends.empty')}</p>}
           {list.friends.length > 0 && (
             <input
@@ -119,25 +155,28 @@ function Friends({ account }: { account: DeviceAccount }) {
             />
           )}
           {shown.length === 0 && list.friends.length > 0 && <p className="small muted">{t('friends.noMatch')}</p>}
-          {/* Cada amigo es una tarjeta que abre su página: retos en común, invitar, eliminar y bloquear (AM-04) */}
-          <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 'var(--s2)' }}>
+          <ul className="friend-rows">
             {shown.map((f) => (
               <li key={f.id}>
-                <Link to={`/perfil/amigos/${f.id}`} className="panel row friend-card">
-                  <span className="grow stack" style={{ gap: 2 }}>
-                    <span>
-                      <strong>{f.alias}</strong> <span className="muted small">· {t('friends.level', { level: intText(f.level) })}</span>
-                    </span>
-                    <span className="small muted">
-                      {t('friends.code', { code: friendCode(f.id) })} · {t('friends.together', { count: f.together })}
-                    </span>
+                <Link to={`/perfil/amigos/${f.id}`} className="sound-row friend-row">
+                  <span className="friend-initial" aria-hidden="true">
+                    {f.alias.trim().charAt(0).toUpperCase() || '?'}
                   </span>
-                  <span aria-hidden="true">›</span>
+                  <span className="grow sound-row-name">
+                    <b>{f.alias}</b>
+                    <span>
+                      {t('friends.level', { level: intText(f.level) })} · {t('friends.code', { code: friendCode(f.id) })}
+                    </span>
+                    <span>{t('friends.together', { count: f.together })}</span>
+                  </span>
+                  <span className="settings-card-go" aria-hidden="true">
+                    ›
+                  </span>
                 </Link>
               </li>
             ))}
           </ul>
-        </Panel>
+        </section>
       )}
       {list && list.blocked.length > 0 && (
         <Panel className="stack">
@@ -153,6 +192,27 @@ function Friends({ account }: { account: DeviceAccount }) {
         </Panel>
       )}
     </>
+  );
+}
+
+/**
+ * Tu código (D-202): se ven sus 8 primeras letras, para que tus amigos sepan cuál eres si hay dos con el mismo alias;
+ * «Copiar» copia el código de invitación completo, que también sirve para añadirte pegándolo en «Tengo un enlace».
+ */
+function OwnCode({ account }: { account: DeviceAccount }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      className="own-code"
+      onClick={() => void navigator.clipboard?.writeText(account.id).then(() => setCopied(true), () => undefined)}
+      aria-label={t('friends.copyOwnCode', { code: friendCode(account.id) })}
+    >
+      <span className="small muted">{t('friends.ownCode')}</span> <b>{friendCode(account.id)}</b>{' '}
+      <span className="small" aria-live="polite">
+        {copied ? t('friends.codeCopied') : '⧉'}
+      </span>
+    </button>
   );
 }
 
@@ -177,7 +237,7 @@ function InvitePanel({ account }: { account: DeviceAccount }) {
     }
   };
   return (
-    <Panel className="stack">
+    <div className="stack">
       <button
         type="button"
         className="btn btn-primary"
@@ -226,7 +286,7 @@ function InvitePanel({ account }: { account: DeviceAccount }) {
           </p>
         )}
       </form>
-    </Panel>
+    </div>
   );
 }
 

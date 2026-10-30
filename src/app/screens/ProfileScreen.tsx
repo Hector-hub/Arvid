@@ -1,4 +1,6 @@
+import type { CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router';
+import { FriendsIcon, GearIcon } from '../design/icons';
 import { saveSetting } from '../../data/repository';
 import { trend, type Score, type WindowDays } from '../../domain/attributes/attributes';
 import { MIN_RADAR_AXES } from '../../domain/attributes/radar';
@@ -8,7 +10,7 @@ import { AchievementsSection } from '../achievements/AchievementsSection';
 import { CITY_ITEMS } from '../../domain/scene/city';
 import { useAnalysis } from '../analysis';
 import { useData, useSettings } from '../data';
-import { CategoryIcon, Panel, Sprite, XpBar, categoryColor } from '../design/components';
+import { CategoryIcon, Panel, Sprite, categoryColor } from '../design/components';
 import { Radar } from '../profile/Radar';
 import { Scene } from '../scene/Scene';
 import { scoreValueText, trendText } from '../profile/scoreText';
@@ -37,38 +39,65 @@ export function ProfileScreen() {
       <div className="scene-sticky">
         <Scene overlay={<h2>{t('level.long', { level: p.level, title: levelTitle(p.level) })}</h2>} />
       </div>
-      <header className="row">
-        <h1 className="grow">
-          {settings.profile ? `${settings.profile.alias} · ${t(`avatar.styles.${settings.avatar.cast}`)}` : t('profile.noAlias')}
-        </h1>
-        <Link to="/ajustes" className="btn btn-icon btn-ghost" aria-label={t('nav.settings')}>
-          <Sprite name="nav-settings" />
+      {/* Cabecera (D-198): el nivel en un anillo de XP, el alias y el progreso; ciudad y amigos como filas de lista */}
+      <header className="profile-head">
+        <div
+          className="level-ring"
+          role="progressbar"
+          aria-label={t('level.xpBar')}
+          aria-valuemin={p.levelStartXp}
+          aria-valuemax={p.nextLevelXp}
+          aria-valuenow={p.xp}
+          style={{ '--v': `${Math.round(Math.max(0, Math.min(1, (p.xp - p.levelStartXp) / Math.max(1, p.nextLevelXp - p.levelStartXp))) * 100)}%` } as CSSProperties}
+        >
+          <span>
+            <b>{p.level}</b>
+            <small>{t('profile.levelShort')}</small>
+          </span>
+        </div>
+        <div className="grow stack" style={{ gap: 2, minWidth: 0 }}>
+          <h1 className="profile-alias">{settings.profile?.alias ?? t('profile.noAlias')}</h1>
+          <p className="small muted">
+            {t(`avatar.styles.${settings.avatar.cast}`)} · {levelTitle(p.level)}
+          </p>
+          <p className="small pixel" style={{ color: 'var(--xp)' }}>
+            <span>{t('profile.xpOf', { xp: intText(p.xp), next: intText(p.nextLevelXp) })}</span>
+            <span className="muted"> · {t('profile.left', { count: intText(p.nextLevelXp - p.xp) })}</span>
+          </p>
+        </div>
+        <Link to="/ajustes" className="btn btn-icon btn-ghost" aria-label={t('nav.settings')} style={{ alignSelf: 'flex-start' }}>
+          <span style={{ color: 'var(--xp)', display: 'grid' }}>
+            <GearIcon />
+          </span>
         </Link>
       </header>
+      <p className="muted small">{p.xpCents === 0 ? t('profile.firstXp') : t('profile.totalXp', { xp: intText(p.xp) })}</p>
 
-      <Panel className="stack">
-        <XpBar xp={p.xp} start={p.levelStartXp} next={p.nextLevelXp} />
-        <p className="row small">
-          <span className="grow pixel" style={{ color: 'var(--xp)' }}>
-            {t('profile.xpOf', { xp: intText(p.xp), next: intText(p.nextLevelXp) })}
+      <nav className="profile-links">
+        <Link to="/perfil/ciudad" className="sound-row">
+          <span className="profile-link-icon" aria-hidden="true">
+            <Sprite name="crown" color="var(--xp)" />
           </span>
-          <span className="muted">{t('profile.toNext', { count: intText(p.nextLevelXp - p.xp), level: p.level + 1 })}</span>
-        </p>
-        {p.xpCents === 0 ? (
-          <p className="muted">{t('profile.firstXp')}</p>
-        ) : (
-          <p className="muted small">{t('profile.totalXp', { xp: intText(p.xp) })}</p>
-        )}
-        <Link to="/perfil/ciudad" className="btn">
-          {t('city.title')} · {t('city.progress', { done: CITY_ITEMS.filter((u) => u.level <= p.level).length, total: CITY_ITEMS.length })}
+          <span className="grow sound-row-name">
+            <b>{t('city.title')}</b>
+            <span>{t('city.progress', { done: CITY_ITEMS.filter((u) => u.level <= p.level).length, total: CITY_ITEMS.length })}</span>
+          </span>
+          <span className="settings-card-go" aria-hidden="true">›</span>
         </Link>
-        {/* Amigos (spec 15, AM-01): con la cuenta, oculta hasta la 2.0 */}
+        {/* Amigos (spec 15, AM-01) */}
         {accountsEnabled() && (
-          <Link to="/perfil/amigos" className="btn">
-            {t('friends.link')}
+          <Link to="/perfil/amigos" className="sound-row">
+            <span className="profile-link-icon" aria-hidden="true">
+              <FriendsIcon />
+            </span>
+            <span className="grow sound-row-name">
+              <b>{t('friends.link')}</b>
+              <span>{t('profile.friendsHint')}</span>
+            </span>
+            <span className="settings-card-go" aria-hidden="true">›</span>
           </Link>
         )}
-      </Panel>
+      </nav>
 
       <div className="tabs" role="group" aria-label={t('profile.windowLabel')}>
         {WINDOWS.map((w) => (

@@ -5,7 +5,8 @@ import { createActivity, loadCategories, logCompletion, type DataContext } from 
 import { toLocalDate } from '../../domain/time/localDate';
 import { renderRoutes, setupData } from '../test-utils';
 import { ActivityFormScreen } from './ActivityFormScreen';
-import { SettingsScreen } from './SettingsScreen';
+import { CategoryFormScreen } from './CategoryFormScreen';
+import { SettingsAccountScreen, SettingsCategoriesScreen, SettingsScreen } from './SettingsScreen';
 import { TodayScreen } from './TodayScreen';
 
 vi.mock('../../pwa/platform', () => ({
@@ -100,16 +101,27 @@ describe('Formulario de actividad', () => {
 
 describe('Ajustes', () => {
   it('SET-01: estado del almacenamiento y versión', async () => {
-    renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
+    const { unmount } = renderRoutes(ctx, [{ path: '/ajustes/cuenta', element: <SettingsAccountScreen /> }], '/ajustes/cuenta');
     expect(await screen.findByText('Protegido')).toBeInTheDocument();
-    expect(screen.getByText(/^ARVID \d+\.\d+\.\d+( · .+)?$/)).toBeInTheDocument();
+    unmount();
+    renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
+    expect(await screen.findByText(/^ARVID \d+\.\d+\.\d+( · .+)?$/)).toBeInTheDocument();
   });
 
   it('CAT-02: explica por qué no se puede desactivar una categoría en uso', async () => {
     await add('Gym', 'week', 3);
-    renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
-    await userEvent.click(await screen.findByRole('checkbox', { name: /Cuerpo/ }));
+    const cuerpo = (await loadCategories(ctx.db)).find((c) => c.name === 'Cuerpo')!;
+    renderRoutes(ctx, [{ path: '/ajustes/categorias/:id', element: <CategoryFormScreen /> }], `/ajustes/categorias/${cuerpo.id}`);
+    await userEvent.click(await screen.findByRole('checkbox', { name: 'Activa' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Tiene 1 actividad');
+  });
+
+  it('D-199: Categorías muestra las activas con sus actividades y cada una lleva a su edición', async () => {
+    await add('Gym', 'week', 3);
+    renderRoutes(ctx, [{ path: '/ajustes/categorias', element: <SettingsCategoriesScreen /> }], '/ajustes/categorias');
+    const cuerpo = await screen.findByRole('link', { name: /^Cuerpo/ });
+    expect(cuerpo).toHaveTextContent('1 actividad');
+    expect(screen.getByRole('img', { name: '6 de 8 activas' })).toBeInTheDocument();
   });
 
   it('SET-02: guardar movimiento reducido', async () => {

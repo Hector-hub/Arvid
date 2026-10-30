@@ -13,7 +13,7 @@ test('RE-02: Hoy con un año de datos se puede usar en ≤ 2 s', async ({ page }
   await completeOnboarding(page);
 
   // Se parte de un backup real (categorías y ajustes de este dispositivo) y se le añade el año de datos
-  await page.goto('/ajustes');
+  await page.goto('/ajustes/cuenta');
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Exportar copia' }).click();
   const backup = JSON.parse(await readFile((await (await downloadPromise).path())!, 'utf8'));

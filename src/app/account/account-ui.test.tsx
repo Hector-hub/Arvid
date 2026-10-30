@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildBackup } from '../../data/backup';
 import { createActivity, loadCategories, loadSettings, type DataContext } from '../../data/repository';
 import { deriveRecovery, encryptBackup, newDataKey, newRecoveryKey, wrapDataKey } from '../../domain/account/crypto';
-import { SettingsScreen } from '../screens/SettingsScreen';
+import { SettingsAccountScreen } from '../screens/SettingsScreen';
 import { TodayScreen } from '../screens/TodayScreen';
 import { saveSetting } from '../../data/repository';
 import { renderRoutes, setupData } from '../test-utils';
@@ -31,12 +31,6 @@ async function addActivity(c: DataContext, name: string) {
 }
 
 describe('Ajustes → Cuenta', () => {
-  it('oculta hasta la 2.0 (S14-06)', async () => {
-    vi.stubEnv('VITE_ACCOUNTS', '');
-    renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
-    await screen.findByRole('heading', { name: 'Sonido' });
-    expect(screen.queryByRole('heading', { name: 'Cuenta' })).toBeNull();
-  });
 
   it('CU-02/CU-04: sin passkeys se crea con la clave, que se muestra una vez y obliga a marcar que se guardó', async () => {
     const user = userEvent.setup();
@@ -47,7 +41,7 @@ describe('Ajustes → Cuenta', () => {
       if (url.endsWith('backup')) return reply(200, { version: 1, updatedAt: new Date().toISOString() });
       return reply(404, {});
     }));
-    renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
+    renderRoutes(ctx, [{ path: '/ajustes/cuenta', element: <SettingsAccountScreen /> }], '/ajustes/cuenta');
     await user.click(await screen.findByRole('button', { name: 'Crear con clave de recuperación' }));
     const dialog = await screen.findByRole('dialog', { name: 'Tu clave de recuperación' });
     expect(dialog).toHaveTextContent(/ARVID(-[0-9A-Z]{3,4}){7}/);
@@ -77,7 +71,7 @@ describe('Ajustes → Cuenta', () => {
     }));
     // Este teléfono ya tiene «Caminar»
     await addActivity(ctx, 'Caminar');
-    renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
+    renderRoutes(ctx, [{ path: '/ajustes/cuenta', element: <SettingsAccountScreen /> }], '/ajustes/cuenta');
     await user.click(await screen.findByRole('button', { name: 'Ya tengo cuenta' }));
     await user.type(screen.getByRole('textbox', { name: 'Clave de recuperación' }), key.text.toLowerCase());
     await user.click(screen.getByRole('button', { name: 'Entrar con la clave' }));
@@ -91,7 +85,7 @@ describe('Ajustes → Cuenta', () => {
     const user = userEvent.setup();
     const fetchMock = vi.fn(() => reply(404, {}));
     vi.stubGlobal('fetch', fetchMock);
-    renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
+    renderRoutes(ctx, [{ path: '/ajustes/cuenta', element: <SettingsAccountScreen /> }], '/ajustes/cuenta');
     await user.click(await screen.findByRole('button', { name: 'Ya tengo cuenta' }));
     await user.type(screen.getByRole('textbox', { name: 'Clave de recuperación' }), 'ARVID-AAAA-AAAA-AAAA-AAAA-AAAA-AAAA-AAA');
     await user.click(screen.getByRole('button', { name: 'Entrar con la clave' }));
@@ -106,7 +100,7 @@ describe('copia en la nube', () => {
   it('CP-05: si otro dispositivo subió antes, se ofrece elegir la copia', async () => {
     vi.stubGlobal('fetch', vi.fn(() => reply(409, { error: 'conflict', version: 3 })));
     await ctx.db.settings.put({ key: 'account', value: await account() });
-    renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
+    renderRoutes(ctx, [{ path: '/ajustes/cuenta', element: <SettingsAccountScreen /> }], '/ajustes/cuenta');
     await uploadBackup(ctx, (await loadSettings(ctx.db)).account!);
     expect(await screen.findByText('Otro dispositivo subió una copia más nueva')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Usar la de este teléfono' })).toBeInTheDocument();
@@ -139,11 +133,4 @@ describe('ofrecer la cuenta (CU-01)', () => {
     expect((await loadSettings(ctx.db)).accountOffered).toBe(true);
   });
 
-  it('con la cuenta oculta (antes de la 2.0) no aparece', async () => {
-    vi.stubEnv('VITE_ACCOUNTS', '');
-    await saveSetting(ctx.db, 'onboardingCompletedAt', new Date().toISOString());
-    renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
-    await screen.findByRole('heading', { name: /Hoy|Tus actividades/ }).catch(() => undefined);
-    expect(screen.queryByRole('region', { name: 'Guarda tu progreso' })).toBeNull();
-  });
 });

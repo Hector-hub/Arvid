@@ -135,7 +135,7 @@ Principio: ARVID **acompaña, no juzga ni presiona**. Habla en momentos concreto
   Si la IA no responde en 6 s por iniciativa propia (15 s en el chat), o falla, ARVID dice su frase fija del momento.
 - **IA-06.** **Permiso:**
   - La IA solo se usa con **"ARVID con IA" activado**.
-  - Se pregunta en el onboarding (y en la presentación PR), explicando qué se envía y a quién: "Para darte consejos, ARVID envía tu progreso y tus actividades a Mistral AI (Francia). Puedes desactivarlo cuando quieras".
+  - Se pregunta en el onboarding (y en la presentación PR) contando lo que aporta: "Con IA, ARVID te da consejos según tu progreso, conversa contigo y te crea actividades, misiones, objetivos y descansos con solo pedírselo" (D-196; antes explicaba qué se envía y a quién).
   - Hasta que el usuario lo acepte, está desactivado.
 - **IA-07.** **Límites:** cuerpo de la petición de 24 KB como máximo (validado con Zod en la función) y 350 tokens de respuesta. La clave es **de pruebas y tiene sus propios límites en Mistral**, sin cargos por abuso (indicación del responsable, 2026-10-18), así que no hay contadores en el servidor. Si Mistral responde 429 (cuota agotada), la función lo devuelve tal cual y ARVID lo explica con su frase fija (CH-05).
 - **IA-08.** **Seguridad del texto:** la respuesta se trata como texto plano, sin HTML ni Markdown; se eliminan los símbolos de Markdown y se recorta a 1 200 caracteres.

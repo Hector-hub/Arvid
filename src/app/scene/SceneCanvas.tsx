@@ -91,11 +91,14 @@ export function SceneCanvas({
   arvidColor,
   companion = 'arvid',
   darisColor,
+  quiet = false,
 }: {
   avatar: Avatar;
   arvidColor: ArvidColor;
   companion?: Companion;
   darisColor?: DarisColor;
+  /** Sin burbujas de ARVID ni de los vecinos (Ajustes → Perfil, D-197). */
+  quiet?: boolean;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const reduced = useReducedMotion();
@@ -151,11 +154,11 @@ export function SceneCanvas({
         snap: k,
         arvid,
         daris: companion === 'daris' ? { atlas: daris, ...darisState() } : undefined,
-        speech: currentSpeech(),
+        speech: quiet ? undefined : currentSpeech(),
         lamps: lampsState(),
         layers: layersState(),
         water: waterAlpha(),
-        neighbor: currentNeighborSpeech(),
+        neighbor: quiet ? undefined : currentNeighborSpeech(),
         xp: currentXpFloats(),
       });
     };
@@ -233,7 +236,7 @@ export function SceneCanvas({
       stop();
       if (running) setActive(false);
     };
-  }, [images, sheets, cast, reduced, arvid, daris, companion]);
+  }, [images, sheets, cast, reduced, arvid, daris, companion, quiet]);
 
   if (imagesFailed || hero.failed) return null;
   return (
@@ -268,9 +271,10 @@ function sceneScale(canvas: HTMLCanvasElement): number {
   return Math.max(1, Math.min(3, Math.round((css * (window.devicePixelRatio || 1)) / SCENE_W)));
 }
 
-export function AvatarCanvas({ avatar, scale = 2 }: { avatar: Avatar; scale?: number }) {
+export function AvatarCanvas({ avatar, scale = 2, still = false }: { avatar: Avatar; scale?: number; still?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
-  const reduced = useReducedMotion();
+  // Quieto (miniaturas de Ajustes → Perfil, D-197) o con movimiento reducido: un solo fotograma
+  const reduced = useReducedMotion() || still;
   useLocale();
   const { sheets, failed } = useHero(avatar);
   const cast = CASTS[avatar.cast];
@@ -313,9 +317,9 @@ export function AvatarCanvas({ avatar, scale = 2 }: { avatar: Avatar; scale?: nu
 }
 
 /** ARVID flotando en su color; escanea mientras `talking` (retrato del diálogo, selector de color, aviso de nivel). */
-export function ArvidCanvas({ color, size = 64, talking = false }: { color: ArvidColor; size?: number; talking?: boolean }) {
+export function ArvidCanvas({ color, size = 64, talking = false, still = false }: { color: ArvidColor; size?: number; talking?: boolean; still?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
-  const reduced = useReducedMotion();
+  const reduced = useReducedMotion() || still;
   const atlas = useArvidAtlas(color);
 
   useEffect(() => {
@@ -358,9 +362,9 @@ export function ArvidCanvas({ color, size = 64, talking = false }: { color: Arvi
 }
 
 /** DARIS en su color: flotando, o con la cara contenta mientras `talking` (retratos y selectores, spec 08). */
-export function DarisCanvas({ color, size = 64, talking = false }: { color: DarisColor; size?: number; talking?: boolean }) {
+export function DarisCanvas({ color, size = 64, talking = false, still = false }: { color: DarisColor; size?: number; talking?: boolean; still?: boolean }) {
   const ref = useRef<HTMLCanvasElement>(null);
-  const reduced = useReducedMotion();
+  const reduced = useReducedMotion() || still;
   const atlas = useDarisAtlas(color);
 
   useEffect(() => {

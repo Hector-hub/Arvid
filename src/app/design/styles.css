@@ -1655,12 +1655,23 @@ input[type='range']:disabled { opacity: 0.45; }
 .scene { background: transparent; border: 0; box-shadow: none; }
 /* Nítida hasta la barandilla (pies y acera sin oscurecer); desde ahí se funde con la app (D-183) */
 .scene-canvas {
-  -webkit-mask-image: linear-gradient(180deg, #000 88%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 88%, transparent 100%);
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+/* El borde de la barandilla se oscurece con un degradado negro transparente, como en el design system */
+.scene::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 14%;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(0 0 0 / 0), rgb(0 0 0 / 0.55));
 }
 /* La cabecera fija desenfoca lo que pasa por debajo al hacer scroll (los textos no se mezclan) y se funde hacia abajo */
 .scene-sticky {
-  background: rgb(7 9 20 / 0.95);
+  background: rgb(9 9 21 / 0.95);
   -webkit-backdrop-filter: blur(24px) saturate(140%);
   backdrop-filter: blur(24px) saturate(140%);
 }
@@ -1672,7 +1683,7 @@ input[type='range']:disabled { opacity: 0.45; }
   top: 100%;
   height: 12px;
   pointer-events: none;
-  background: linear-gradient(180deg, rgb(7 9 20 / 0.95), rgb(7 9 20 / 0));
+  background: linear-gradient(180deg, rgb(9 9 21 / 0.95), rgb(9 9 21 / 0));
 }
 @media (max-width: 767px) {
   /* Ancho explícito: Safari calcula el alto (2:1) con el ancho sin los márgenes negativos y cortaba la barandilla */
@@ -1753,7 +1764,8 @@ input[type='range']:disabled { opacity: 0.45; }
 
 /* ---------- Reproductor con la portada de la pista (D-168): de fondo difuminada y oscurecida bajo el cristal, una
    miniatura encima y un brillo neón del color de la portada en los bordes ---------- */
-.player.has-cover { position: relative; isolation: isolate; overflow: hidden; background: var(--bg); box-shadow: none; }
+/* `clip` y no solo `hidden`: el fondo difuminado sobresale y, con `hidden`, enfocar un control desplazaba el recuadro por dentro */
+.player.has-cover { position: relative; isolation: isolate; overflow: hidden; overflow: clip; background: var(--bg); box-shadow: none; }
 .player-bg {
   position: absolute;
   inset: -28px;
@@ -1881,8 +1893,6 @@ html, body { overscroll-behavior-y: contain; }
     inset: 0;
     width: 100%;
     height: 100%;
-    -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 6vw), transparent 100%);
-    mask-image: linear-gradient(180deg, #000 calc(100% - 6vw), transparent 100%);
   }
   /* Las franjas negras de la presentación cubren también la zona del notch: la presentación ocupa toda la escena */
   .scene-sticky .scene-overlay { top: calc(env(safe-area-inset-top) + var(--s1)); }
@@ -1920,3 +1930,222 @@ html, body { overscroll-behavior-y: contain; }
 /* …con su icono pixel en el color del aviso y un brillo neón suave (D-191) */
 .banner { box-shadow: inset 3px 0 0 var(--tone), inset 0 0 0 1px color-mix(in srgb, var(--tone) 40%, transparent), 0 0 16px color-mix(in srgb, var(--tone) 16%, transparent); }
 .notice-icon { flex: none; color: var(--tone); filter: drop-shadow(0 0 5px color-mix(in srgb, var(--tone) 70%, transparent)); }
+
+/* ---------- Ajustes en tarjetas (D-195) ---------- */
+h1.h2 { font-size: 1.25rem; text-shadow: none; }
+.settings-cards { list-style: none; margin: 0; padding: 0; }
+.settings-card { padding: var(--s3); gap: var(--s3); color: var(--text); text-decoration: none; }
+.settings-card-title { font-family: var(--font-pixel); font-size: 1.0625rem; }
+.settings-card-go { font-family: var(--font-pixel); font-size: 1.5rem; color: var(--text-muted); }
+.settings-card:hover .settings-card-go, .settings-card:focus-visible .settings-card-go { color: var(--xp); }
+
+/* ---------- Página Sonido (D-195): como la de una app de música ---------- */
+.sound-top { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; }
+.sound-top h1 { grid-column: 2; text-align: center; font-size: 1rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); text-shadow: none; }
+.sound-top .btn { font-size: 1.5rem; }
+.player.sound-player { justify-items: stretch; text-align: left; gap: var(--s3); padding: var(--s5) var(--s4) var(--s4); }
+.sound-player .player-cover { justify-self: center; width: min(48vw, 180px); height: auto; aspect-ratio: 1; }
+.sound-meta { display: flex; flex-direction: column; align-items: center; gap: var(--s2); margin-top: var(--s1); text-align: center; }
+.sound-eq-slot { display: flex; align-items: flex-end; height: 18px; }
+.sound-player .player-track { font-size: 1.25rem; text-align: center; text-wrap: balance; }
+.sound-seek input { width: 100%; }
+.sound-times { display: flex; justify-content: space-between; margin-top: var(--s1); }
+.sound-controls { display: flex; align-items: center; justify-content: center; gap: 22px; }
+.btn.sound-skip { width: 52px; height: 52px; min-height: 0; padding: 0; display: grid; place-items: center; color: var(--c-white); }
+/* Como la maqueta (D-195), más pequeño: 45 px, dorado, con el halo del color de la pista */
+.btn.player-main.sound-play { width: 45px; height: 45px; min-width: 0; min-height: 0; padding: 0; display: grid; place-items: center; box-shadow: 0 0 20px -3px var(--glow, var(--c-gold)); }
+.equalizer { display: inline-flex; align-items: flex-end; gap: 3px; height: 18px; flex: none; }
+.equalizer i { width: 4px; height: 30%; background: var(--glow, var(--xp)); animation: eq-bar 0.9s ease-in-out infinite alternate; }
+.equalizer i:nth-child(2) { animation-delay: 0.25s; }
+.equalizer i:nth-child(3) { animation-delay: 0.5s; }
+.equalizer i:nth-child(4) { animation-delay: 0.1s; }
+.equalizer.small { height: 14px; }
+@keyframes eq-bar { from { height: 20%; } to { height: 100%; } }
+@media (prefers-reduced-motion: reduce) { .equalizer i { animation: none; height: 60%; } }
+.sound-heading { font-size: 0.9375rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+.sound-list { list-style: none; margin: 0 calc(-1 * var(--s2)); padding: 0; }
+.sound-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  width: 100%;
+  padding: var(--s2);
+  border: 0;
+  background: none;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.sound-row img { width: 48px; height: 48px; flex: none; object-fit: cover; image-rendering: pixelated; }
+.sound-row-name { display: flex; flex-direction: column; min-width: 0; }
+.sound-row-name b { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sound-row-name span { font-size: 0.8125rem; color: var(--text-muted); }
+.sound-row-time { font-size: 0.8125rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.sound-row:hover { background: rgb(255 255 255 / 0.04); }
+.sound-row:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.sound-row.on { background: color-mix(in srgb, var(--glow) 12%, transparent); box-shadow: inset 3px 0 0 var(--glow); }
+.sound-row.on b { color: color-mix(in srgb, var(--glow) 55%, white); }
+.sound-option { display: flex; align-items: center; gap: var(--s3); padding: var(--s3) 0; border-top: 1px solid rgb(255 255 255 / 0.07); cursor: pointer; }
+.sound-option .small { display: block; margin-top: 2px; }
+.sound-effects { gap: var(--s3); padding: 0 0 var(--s3); }
+input[type='checkbox'].switch {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: none;
+  position: relative;
+  width: 44px;
+  height: 24px;
+  margin: 0;
+  background: var(--c-indigo);
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+input[type='checkbox'].switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  background: var(--c-ink);
+  transition: transform 150ms ease;
+}
+input[type='checkbox'].switch:checked { background: var(--xp); box-shadow: 0 0 10px color-mix(in srgb, var(--xp) 35%, transparent); }
+input[type='checkbox'].switch:checked::after { transform: translateX(20px); }
+input[type='checkbox'].switch:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.settings-card-icon { width: 36px; flex: none; display: grid; place-items: center; }
+.sound-settings { border-top: 1px solid rgb(255 255 255 / 0.07); }
+.sound-settings > summary { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); min-height: 48px; cursor: pointer; list-style: none; }
+.sound-settings > summary::-webkit-details-marker { display: none; }
+.sound-settings > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.sound-settings-chevron { font-family: var(--font-pixel); font-size: 1.5rem; color: var(--text-muted); transition: transform 150ms ease; }
+.sound-settings[open] .sound-settings-chevron { transform: rotate(90deg); color: var(--xp); }
+.sound-settings > .sound-option:first-of-type { border-top: 0; }
+/* Línea divisoria entre los botones y la lista, como la de «Ajustes de sonido» */
+.sound-tracks { border-top: 1px solid rgb(255 255 255 / 0.07); padding-top: var(--s4); }
+/* Los tiempos de la barra, con el mismo formato que los de la lista */
+.sound-times .player-time, .player.has-cover .sound-times .player-time { font-family: var(--font-text); font-size: 0.8125rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+/* ---------- Ajustes → Perfil (D-197): como la página Sonido, con la escena de cerca fija arriba ---------- */
+/* La cámara cerca del protagonista y su compañero */
+.scene.focus .scene-canvas { transform: scale(1.6); transform-origin: 42% 88%; }
+/* La escena se funde en negro por abajo, sin el borde de color */
+.profile-hero .scene { border: 0; box-shadow: none; }
+/* Solo desde la barandilla hacia abajo: con la cámara cerca, los pies quedan justo encima (≈ 93 % del alto) */
+.profile-hero .scene::after { height: 7%; background: linear-gradient(180deg, rgb(0 0 0 / 0), #000); }
+.profile-hero { padding-bottom: 0; }
+.profile-back { position: absolute; z-index: 2; top: calc(var(--main-top) + 8px); left: var(--s2); font-size: 1.5rem; }
+/* Debajo, sobre negro de lado a lado: el personaje y sus colores; se funde con el fondo de la app al final */
+.profile-hero-info {
+  display: grid;
+  justify-items: center;
+  gap: var(--s1);
+  margin-inline: calc(-1 * var(--s4));
+  padding: 0 var(--s4) var(--s4);
+  text-align: center;
+  background: linear-gradient(180deg, #000 0%, #000 65%, var(--bg) 100%);
+}
+.profile-hero-name { font-family: var(--font-pixel); font-size: 1.25rem; color: var(--level); text-shadow: 0 1px 0 #000, 0 0 10px rgb(245 198 107 / 0.3); }
+.profile-hero-text { color: #d4daf5; }
+.profile-hero-info .field { margin-top: var(--s2); }
+.profile-hero-info .swatches { justify-content: center; margin-top: 0; }
+/* Más pequeños en la cabecera fija y en Compañero, para que ocupen poco */
+.profile-page .swatch { width: 28px; height: 28px; border-width: 2px; }
+.profile-list { border: 0; margin: 0; padding: 0; min-width: 0; }
+/* El título como bloque normal (no sobre el borde del fieldset), con la letra pixel como «Lista» en Sonido */
+.profile-list > legend { float: left; width: 100%; padding: 0; margin-bottom: var(--s2); font-family: var(--font-pixel); }
+.profile-rows { clear: both; display: grid; gap: var(--s1); }
+.profile-list .sound-row { margin-inline: calc(-1 * var(--s2)); width: calc(100% + 2 * var(--s2)); }
+.profile-list .sound-row { position: relative; }
+/* La opción ocupa toda la fila, invisible: se elige tocando en cualquier punto */
+.profile-list .row-radio { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.profile-list .sound-row:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: -2px; }
+.profile-list + .profile-list { border-top: 1px solid rgb(255 255 255 / 0.07); padding-top: var(--s4); }
+.profile-thumb { position: relative; width: 64px; height: 64px; flex: none; display: grid; place-items: center; overflow: hidden; background: rgb(255 255 255 / 0.04); }
+/* Retrato de la cadera para arriba: el fotograma al doble; la posición de cada personaje la da `thumbPosition` */
+.profile-thumb-avatar { position: absolute; width: 200px; }
+.profile-check { font-family: var(--font-pixel); color: var(--glow); }
+.profile-colors { clear: both; display: grid; gap: var(--s1); margin-top: var(--s3); }
+.profile-colors .swatches { justify-content: flex-start; margin-top: 0; }
+.profile-colors h3 { font-family: var(--font-text); font-weight: 400; }
+.profile-more { gap: var(--s3); padding-bottom: var(--s3); }
+@media (max-width: 767px) {
+  .profile-back { top: calc(env(safe-area-inset-top) + 8px); }
+}
+.profile-page > .sound-settings { border-top: 0; border-bottom: 1px solid rgb(255 255 255 / 0.07); }
+
+/* ---------- Cabecera de Perfil (D-198): nivel en anillo y enlaces como filas ---------- */
+.profile-head { display: flex; align-items: center; gap: var(--s3); }
+.profile-alias { font-size: 1.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.level-ring { flex: none; width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--xp) 0 var(--v), rgb(255 255 255 / 0.1) var(--v)); }
+.level-ring > span { width: 68px; height: 68px; border-radius: 50%; background: var(--bg); display: grid; place-content: center; text-align: center; }
+.level-ring b { font-family: var(--font-pixel); font-weight: 500; font-size: 1.5rem; color: var(--level); line-height: 1; }
+.level-ring small { font-family: var(--font-pixel); font-size: 0.625rem; letter-spacing: 0.1em; color: var(--text-muted); }
+.profile-links { display: grid; margin-inline: calc(-1 * var(--s2)); }
+.profile-links .sound-row { text-decoration: none; border-top: 1px solid rgb(255 255 255 / 0.07); }
+.profile-link-icon { width: 40px; height: 40px; flex: none; display: grid; place-items: center; background: rgb(115 239 247 / 0.1); color: var(--xp); }
+
+/* ---------- Ajustes → Categorías (D-199) ---------- */
+.category-head { display: flex; align-items: center; justify-content: space-between; }
+.category-dots { display: flex; gap: 4px; } .category-dots i { width: 14px; height: 6px; background: var(--c-indigo); } .category-dots i.on { background: var(--xp); }
+.category-rows { display: grid; margin-inline: calc(-1 * var(--s2)); }
+.category-rows.inactive { opacity: 0.55; }
+.category-link, .category-new { text-decoration: none; border-top: 1px solid rgb(255 255 255 / 0.06); }
+.category-bar { width: 4px; align-self: stretch; flex: none; background: var(--c); }
+.category-new { margin-inline: calc(-1 * var(--s2)); width: calc(100% + 2 * var(--s2)); color: var(--xp); font-family: var(--font-pixel); }
+.category-plus { width: 40px; height: 40px; display: grid; place-items: center; font-size: 1.5rem; box-shadow: inset 0 0 0 1px rgb(115 239 247 / 0.5); }
+
+/* ---------- Editar categoría (D-200): vista previa y elección con guardado automático ---------- */
+.category-preview { display: grid; justify-items: center; gap: var(--s2); padding: var(--s5) var(--s4); text-align: center; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--c) 22%, transparent), transparent 70%), #000; }
+.category-preview-icon { width: 88px; height: 88px; display: grid; place-items: center; background: color-mix(in srgb, var(--c) 14%, transparent); box-shadow: inset 0 0 0 2px var(--c), 0 0 24px color-mix(in srgb, var(--c) 40%, transparent); }
+.category-preview-name { font-family: var(--font-pixel); font-size: 1.375rem; color: var(--c); }
+.category-section { border-top: 1px solid rgb(255 255 255 / 0.07); padding-top: var(--s3); }
+.category-section > legend { float: left; width: 100%; margin-bottom: var(--s2); font-family: var(--font-pixel); }
+.category-section .swatches { clear: both; justify-content: flex-start; margin-top: 0; }
+.category-icons { clear: both; display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--s2); }
+.category-icon-option { position: relative; aspect-ratio: 1; display: grid; place-items: center; cursor: pointer; background: rgb(255 255 255 / 0.03); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08); }
+.category-icon-option input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.category-icon-option:has(input:checked) { background: color-mix(in srgb, var(--c) 16%, transparent); box-shadow: inset 0 0 0 2px var(--c); }
+.category-icon-option:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- Onboarding (D-201): «Atrás» del tamaño del botón dorado y áreas como en Ajustes ---------- */
+.onboarding-actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); }
+.onboarding-categories { display: grid; }
+.onboarding-category { display: flex; align-items: center; gap: var(--s3); padding: var(--s2) 0; border-top: 1px solid rgb(255 255 255 / 0.07); cursor: pointer; font-size: 1.0625rem; }
+.onboarding-category:last-child { border-bottom: 1px solid rgb(255 255 255 / 0.07); }
+.onboarding-category:has(input:not(:checked)) { opacity: 0.55; }
+.onboarding-category-icon { width: 44px; height: 44px; flex: none; display: grid; place-items: center; background: color-mix(in srgb, var(--c) 16%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent); }
+
+/* ---------- Amigos (D-202): filas como las de Sonido y tu código ---------- */
+.friends-head { display: flex; justify-content: space-between; }
+.friend-rows { list-style: none; margin: 0 calc(-1 * var(--s2)); padding: 0; display: grid; }
+.friend-row { text-decoration: none; border-top: 1px solid rgb(255 255 255 / 0.06); }
+.friend-row .sound-row-name > span + span { font-size: 0.75rem; }
+.friend-initial { width: 44px; height: 44px; flex: none; display: grid; place-items: center; font-family: var(--font-pixel); font-size: 1.25rem; color: var(--level); background: rgb(245 198 107 / 0.1); box-shadow: inset 0 0 0 1px rgb(245 198 107 / 0.4); }
+.friends-top { display: flex; align-items: center; gap: var(--s2); }
+.friends-top h1 { font-size: 1.5rem; }
+.friends-add { width: 44px; height: 44px; min-height: 0; padding: 0; font-family: var(--font-pixel); font-size: 1.5rem; }
+.own-code { border: 0; background: none; padding: 0; color: inherit; font: inherit; cursor: pointer; text-align: left; }
+.own-code b { font-family: var(--font-pixel); font-weight: 500; letter-spacing: 0.1em; color: var(--xp); }
+.friend-request { display: flex; align-items: center; gap: var(--s2); padding: var(--s2); background: rgb(245 198 107 / 0.06); box-shadow: inset 3px 0 0 var(--level); }
+/* Buscador y enlaces (Amigos): como el resto de campos, sin el gris del navegador */
+input[type='search'],
+input[type='url'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--s2) var(--s3);
+  color: var(--text);
+  font: inherit;
+  background: rgb(255 255 255 / 0.05);
+  border: 0;
+  border-radius: 0;
+  box-shadow: inset 0 0 0 1px var(--border-strong);
+  clip-path: var(--notch-2);
+}
+input[type='search']:focus,
+input[type='url']:focus { outline: 0; box-shadow: inset 0 0 0 1px var(--neon-cyan), inset 0 0 10px rgb(95 225 245 / 0.1); }
+input[type='search']::placeholder,
+input[type='url']::placeholder { color: var(--text-muted); opacity: 0.7; }

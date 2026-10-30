@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { useId, type CSSProperties, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { Category } from '../../domain/categories';
 import { SPRITE_COUNT, SPRITE_TILE, SPRITES, type SpriteName } from './sprites.generated';
@@ -125,6 +125,32 @@ export function XpBar({ xp, start, next, compact = false }: { xp: number; start:
       style={{ height: compact ? 8 : 14 }}
     >
       <span style={{ width: `${ratio * 100}%` }} />
+    </div>
+  );
+}
+
+/** Un ajuste con interruptor a la derecha; la ayuda va debajo del nombre y se anuncia como descripción. */
+export function SwitchOption({ label, help, checked, onChange, musicControl = false }: { label: string; help?: string; checked: boolean; onChange: (on: boolean) => void; musicControl?: boolean }) {
+  const id = useId();
+  return (
+    <div className="sound-option">
+      <span className="grow">
+        <label htmlFor={id}>{label}</label>
+        {help && (
+          <span id={`${id}-help`} className="small muted">
+            {help}
+          </span>
+        )}
+      </span>
+      <input
+        id={id}
+        type="checkbox"
+        className="switch"
+        checked={checked}
+        aria-describedby={help ? `${id}-help` : undefined}
+        onChange={(e) => onChange(e.target.checked)}
+        data-music-control={musicControl ? '' : undefined}
+      />
     </div>
   );
 }

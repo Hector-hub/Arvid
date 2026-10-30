@@ -1,5 +1,5 @@
 // Ajustes → Cuenta (spec 14, §4.1 a §4.5): crear la cuenta, entrar en un dispositivo nuevo, estado de la copia,
-// conflicto entre dispositivos y gestionar la cuenta. Oculto hasta la 2.0 (S14-06).
+// conflicto entre dispositivos y gestionar la cuenta. Para todos desde la 2.0 (D-203).
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { getLocale, t, type TKey } from '../../i18n';

@@ -41,6 +41,12 @@ async function auditOnboarding(page: Page, found: Finding[]) {
       },
     ],
     [
+      'onboarding · guarda tu progreso',
+      async () => {
+        await page.getByRole('button', { name: 'Ahora no' }).click();
+      },
+    ],
+    [
       'onboarding · género',
       async () => {
         await page.getByRole('radio', { name: 'Prefiero no decirlo' }).check();
@@ -80,6 +86,10 @@ async function auditApp(page: Page, found: Finding[], lang: string) {
     ['Perfil', '/perfil'],
     ['Disciplina', '/perfil/disciplina'],
     ['Ajustes', '/ajustes'],
+    ['Ajustes · Perfil', '/ajustes/perfil'],
+    ['Ajustes · Cuenta', '/ajustes/cuenta'],
+    ['Ajustes · Categorías', '/ajustes/categorias'],
+    ['Sonido', '/sonido'],
     ['Instalar', '/ajustes/instalar'],
     ['Créditos', '/ajustes/creditos'],
     ['Nueva categoría', '/ajustes/categorias/nueva'],
@@ -114,7 +124,8 @@ test.describe('accesibilidad (spec 07, AC-01)', () => {
     await expect(page).toHaveURL(/\/actividades\/misiones$/);
     await auditApp(page, found, 'es');
 
-    await page.goto('/ajustes');
+    await page.goto('/ajustes/perfil');
+    await page.getByText('Alias, idioma e IA').click();
     await page.getByRole('radio', { name: 'English' }).click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await auditApp(page, found, 'en');

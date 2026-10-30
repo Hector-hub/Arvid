@@ -38,18 +38,19 @@ test('PJ-01/02 · DA-01: radar, ventana recordada y detalle de atributo', async 
 
 test('CAT-04/05: categoría propia en el formulario y el radar; renombrar una predefinida', async ({ page }) => {
   await completeOnboarding(page);
-  await page.goto('/ajustes');
+  await page.goto('/ajustes/categorias');
   await page.getByRole('link', { name: 'Nueva categoría' }).click();
   await page.getByLabel('Nombre').fill('Música');
   await page.getByLabel('Nota musical').check();
   await page.getByRole('button', { name: 'Crear categoría' }).click();
-  await expect(page.getByRole('checkbox', { name: /^Música (Activa|Inactiva)$/ })).toBeChecked();
+  await expect(page.getByRole('link', { name: /^Música/ })).toBeVisible();
 
-  await page.getByRole('link', { name: 'Editar Cuerpo' }).click();
+  await page.getByRole('link', { name: /^Cuerpo/ }).click();
   await page.getByLabel('Nombre').fill('Salud');
-  await page.getByRole('button', { name: 'Guardar' }).click();
+  // Se guarda solo (D-200)
+  await page.getByRole('link', { name: /Categorías$/ }).click();
   // Esperar a que se guarde antes de navegar
-  await expect(page.getByRole('link', { name: 'Editar Salud' })).toBeVisible();
+  await expect(page.getByRole('link', { name: /^Salud/ })).toBeVisible();
 
   await createActivity(page, { name: 'Guitarra', category: 'Música' });
   await createActivity(page, { name: 'Correr', category: 'Salud' });

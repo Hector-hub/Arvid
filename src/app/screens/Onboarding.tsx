@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { saveSetting, setCategoryActive, type Settings } from '../../data/repository';
 import { castOrder, validateAlias, ALIAS_MAX, type ArvidColor, type Gender } from '../../domain/arvid/arvid';
@@ -10,7 +10,7 @@ import { needsInstallForSafety, requestPersistentStorage } from '../../pwa/platf
 import { DialogueBox } from '../arvid/DialogueBox';
 import { lines } from '../arvid/lines';
 import { useCategories, useData, useSettings } from '../data';
-import { CategoryIcon } from '../design/components';
+import { CategoryIcon, categoryColor } from '../design/components';
 import { AiCodeField, AliasField, CharacterCarousel, CompanionColorPicker, CompanionPicker, GenderPicker, LanguagePicker } from '../profile/pickers';
 import { Scene } from '../scene/Scene';
 import { setCity } from '../scene/engine';
@@ -132,6 +132,8 @@ function Wizard({
   const gender = settings?.profile?.gender;
   const alias = settings?.profile?.alias ?? '';
   const group = step === 'welcome' && onLater ? 'onboarding.intro' : `onboarding.${step}`;
+  // Pasos con dos botones apilados: «Atrás» va debajo de ellos
+  const stacked = step === 'ai' || step === 'notifications' || step === 'account';
 
   const go = (delta: number) => {
     setReady(false);
@@ -147,14 +149,15 @@ function Wizard({
       {scene && <Scene controls={false} />}
       <DialogueBox key={`${step}:${settings?.locale ?? ''}`} lines={lines(group as `onboarding.${string}`, gender, { alias })} onDone={() => setReady(true)} />
       <fieldset className="stack onboarding-step" disabled={!ready} style={{ opacity: ready ? 1 : 0.5 }}>
-        {renderControl(step, () => go(1), ready)}
-      </fieldset>
-      <div className="row">
-        {index > 0 && (
-          <button type="button" className="btn btn-ghost" onClick={() => go(-1)}>
+        <InlineBack.Provider value={index > 0 && !stacked ? () => go(-1) : undefined}>{renderControl(step, () => go(1), ready)}</InlineBack.Provider>
+        {/* Con dos opciones («Activar» y «Ahora no»), «Atrás» va debajo, del mismo tamaño (D-201) */}
+        {index > 0 && stacked && (
+          <button type="button" className="btn btn-block" onClick={() => go(-1)}>
             ‹ {t('common.back')}
           </button>
         )}
+      </fieldset>
+      <div className="row">
         {onLater && (
           <button type="button" className="btn btn-ghost" style={{ marginLeft: 'auto' }} onClick={onLater}>
             {t('common.later')}
@@ -277,7 +280,8 @@ function useProfileControls() {
             {/* Sin código la IA no responde (D-100); se puede poner luego en Ajustes → Perfil */}
             <AiCodeField value={aiCode} onChange={setAiCode} />
             <ContinueButton
-              label={t('onboarding.aiActivate')}
+              // Sin un código con la forma válida, la IA solo tiene los mensajes de prueba (D-135)
+              label={AI_CODE.test(aiCode.trim().toUpperCase().replace(/\s+/g, '')) ? t('onboarding.aiActivate') : t('onboarding.aiActivateTrial')}
               onClick={() =>
                 void Promise.all([
                   saveSetting(ctx.db, 'arvidAi', true),
@@ -299,12 +303,29 @@ function useProfileControls() {
 }
 
 function ContinueButton({ onClick, disabled, label = t('common.continue') }: { onClick: () => void; disabled?: boolean; label?: string }) {
-  return (
+  const back = useContext(InlineBack);
+  const primary = (
     <button type="button" className="btn btn-primary btn-block" disabled={disabled} onClick={onClick}>
       {label}
     </button>
   );
+  if (!back) return primary;
+  // Uno al lado del otro y del mismo tamaño (D-201)
+  return (
+    <div className="onboarding-actions">
+      <button type="button" className="btn btn-block" onClick={back}>
+        ‹ {t('common.back')}
+      </button>
+      {primary}
+    </div>
+  );
 }
+
+/** Forma de un código de acceso a la IA (D-100), como lo comprueba el servidor: ARVID-NOMBRE-XXXXXXXXXX. */
+const AI_CODE = /^ARVID-[A-Z0-9]{2,16}-[A-Z0-9]{10}$/;
+
+/** «Atrás» junto al botón dorado (D-201): lo pone el paso con un solo botón; si no hay, `undefined`. */
+const InlineBack = createContext<(() => void) | undefined>(undefined);
 
 /** Onboarding con ARVID (spec 06, ON). */
 export function Onboarding({ banner }: { banner?: ReactNode }) {
@@ -370,20 +391,23 @@ export function Onboarding({ banner }: { banner?: ReactNode }) {
             return (
               <>
                 <h1>{t('onboarding.categoriesTitle')}</h1>
-                <div className="stack" aria-describedby={error ? 'cat-error' : undefined}>
+                {/* Como Ajustes → Categorías (D-201): icono en su color, nombre e interruptor */}
+                <div className="onboarding-categories" aria-describedby={error ? 'cat-error' : undefined}>
                   {categories?.map((c) => (
-                    <label key={c.id} className="choice">
+                    <label key={c.id} className="onboarding-category" style={{ '--c': categoryColor(c) } as CSSProperties}>
+                      <span className="onboarding-category-icon" aria-hidden="true">
+                        <CategoryIcon category={c} />
+                      </span>
+                      <span className="grow">{categoryName(c)}</span>
                       <input
                         type="checkbox"
+                        className="switch"
                         checked={isSelected(c)}
                         onChange={(e) => {
                           setError(undefined);
-                          setSelection((s) => ({ ...s, [c.id]: e.target.checked }));
+                          setSelection((sel) => ({ ...sel, [c.id]: e.target.checked }));
                         }}
                       />
-                      <CategoryIcon category={c} />
-                      <span className="grow">{categoryName(c)}</span>
-                      {isSelected(c) && <span className="chip chip-done">{t('settings.categoryActive')}</span>}
                     </label>
                   ))}
                 </div>

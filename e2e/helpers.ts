@@ -25,6 +25,8 @@ export async function onboardingToCategories(page: Page, alias = 'Prueba', ai = 
   await page.getByLabel('Tu nombre o alias').fill(alias);
   await page.getByRole('button', { name: 'Continuar' }).click();
   await skipDialogue(page);
+  await page.getByRole('button', { name: 'Ahora no' }).click(); // «Guarda tu progreso» (CU-10, D-203)
+  await skipDialogue(page);
   await page.getByRole('radio', { name: 'Prefiero no decirlo' }).check();
   await page.getByRole('button', { name: 'Continuar' }).click();
   await skipDialogue(page);

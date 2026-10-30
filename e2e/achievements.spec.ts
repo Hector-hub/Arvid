@@ -24,7 +24,7 @@ test.describe('logros (spec 07)', () => {
   test('BT-03: con el teclado, el botón enfocado tiene el contorno dorado (y se ve aunque los botones de la escena estén ocultos)', async ({ page, browserName }) => {
     test.skip(browserName === 'webkit', 'Safari no lleva el foco a los botones con Tab por defecto');
     await completeOnboarding(page);
-    const button = page.getByRole('button', { name: 'Música' });
+    const button = page.getByRole('link', { name: 'Música' });
     await button.focus();
     await page.keyboard.press('Shift+Tab');
     await page.keyboard.press('Tab');

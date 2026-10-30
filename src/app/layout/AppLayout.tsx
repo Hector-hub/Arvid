@@ -11,7 +11,6 @@ import { useCompanionSync } from '../companion';
 import { useEffect, useState } from 'react';
 import { FriendLanding } from '../friends/FriendLinkScreen';
 import { setPendingLink } from '../friends/friends';
-import { enableAccountsFlag } from '../account/account';
 import { UpdateBanner } from './UpdateBanner';
 import { PullToRefresh } from './PullToRefresh';
 import { AnalysisProvider } from '../analysis';
@@ -57,11 +56,6 @@ export function AppLayout() {
 
   const location = useLocation();
   const [registering, setRegistering] = useState(false);
-  // Abrir un enlace de amistad activa la cuenta en este dispositivo (hasta la 2.0 está oculta, D-170)
-  useEffect(() => {
-    if (/^\/a\//.test(location.pathname)) enableAccountsFlag();
-  }, [location.pathname]);
-
   if (!settings) return null;
   // El service worker se registra desde UpdateBanner: debe montarse también durante el onboarding (PWA-02).
   // Un enlace de amistad sin haber empezado (EN-10): primero la invitación; «Registrarme» abre el onboarding

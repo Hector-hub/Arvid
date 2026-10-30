@@ -6,7 +6,7 @@ import { createActivity, loadCategories, logCompletion, saveSetting, type DataCo
 import { addDays, toLocalDate } from '../../domain/time/localDate';
 import { renderRoutes, setupData } from '../test-utils';
 import { ProfileScreen } from './ProfileScreen';
-import { SettingsScreen } from './SettingsScreen';
+import { SettingsAccountScreen, SettingsScreen } from './SettingsScreen';
 import { TodayScreen } from './TodayScreen';
 
 vi.mock('../../pwa/platform', () => ({
@@ -100,7 +100,7 @@ describe('Ajustes → copia de seguridad (BAK-02, BAK-03, BAK-05)', () => {
 
   it('con compartir disponible usa la hoja del sistema y guarda la fecha', async () => {
     stubShare(() => Promise.resolve());
-    renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
+    renderRoutes(ctx, [{ path: '/ajustes/cuenta', element: <SettingsAccountScreen /> }], '/ajustes/cuenta');
     await userEvent.click(await screen.findByRole('button', { name: 'Exportar copia' }));
     expect(await screen.findByText('Copia exportada.')).toBeInTheDocument();
     expect(navigator.share).toHaveBeenCalledOnce();
@@ -109,7 +109,7 @@ describe('Ajustes → copia de seguridad (BAK-02, BAK-03, BAK-05)', () => {
 
   it('cancelar la hoja de compartir no guarda la fecha', async () => {
     stubShare(() => Promise.reject(new DOMException('cancel', 'AbortError')));
-    renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
+    renderRoutes(ctx, [{ path: '/ajustes/cuenta', element: <SettingsAccountScreen /> }], '/ajustes/cuenta');
     await userEvent.click(await screen.findByRole('button', { name: 'Exportar copia' }));
     expect(await screen.findByText('Exportación cancelada.')).toBeInTheDocument();
     expect(await ctx.db.settings.get('lastBackupAt')).toBeUndefined();
@@ -119,7 +119,7 @@ describe('Ajustes → copia de seguridad (BAK-02, BAK-03, BAK-05)', () => {
     const createUrl = vi.fn(() => 'blob:x');
     Object.assign(URL, { createObjectURL: createUrl, revokeObjectURL: vi.fn() });
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
-    renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
+    renderRoutes(ctx, [{ path: '/ajustes/cuenta', element: <SettingsAccountScreen /> }], '/ajustes/cuenta');
     await userEvent.click(await screen.findByRole('button', { name: 'Exportar copia' }));
     await screen.findByText('Copia exportada.');
     expect(click).toHaveBeenCalledOnce();
@@ -129,7 +129,7 @@ describe('Ajustes → copia de seguridad (BAK-02, BAK-03, BAK-05)', () => {
   it('importar: archivo inválido muestra el motivo; válido pide confirmación con resumen', async () => {
     await addDaily('Caminar', [1, 2]);
     const backup = await buildBackup(ctx.db, '0.2.0', new Date('2026-10-12T10:00:00Z'));
-    renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
+    renderRoutes(ctx, [{ path: '/ajustes/cuenta', element: <SettingsAccountScreen /> }], '/ajustes/cuenta');
     const fileInput = await screen.findByLabelText('Archivo de copia de seguridad');
 
     await userEvent.upload(fileInput, new File(['{"hola":1}'], 'x.json', { type: 'application/json' }));

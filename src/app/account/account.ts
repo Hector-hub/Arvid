@@ -1,5 +1,4 @@
-// Cuenta ligera y copia en la nube en la app (spec 14, fase 14c). Todo lo visible va detrás de `accountsEnabled()`
-// hasta la 2.0 (S14-06). El cifrado vive en `domain/account/crypto` y el servidor en `netlify/functions/account`.
+// Cuenta ligera y copia en la nube en la app (spec 14, fase 14c), para todos desde la 2.0 (D-203). El cifrado vive en `domain/account/crypto` y el servidor en `netlify/functions/account`.
 import { startAuthentication, startRegistration, browserSupportsWebAuthn, platformAuthenticatorIsAvailable } from '@simplewebauthn/browser';
 import type { PublicKeyCredentialCreationOptionsJSON, PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/browser';
 import { useSyncExternalStore } from 'react';
@@ -27,37 +26,9 @@ export interface DeviceAccount {
   viaRecovery?: boolean;
 }
 
-/** Hasta la 2.0 la cuenta está oculta; para probarla en un teléfono, abrir la app con `?cuentas=1` (y `?cuentas=0`). */
+/** Desde la 2.0 la cuenta está para todos (D-203): sin `VITE_ACCOUNTS`, `?cuentas=1` ni los 7 toques. */
 export function accountsEnabled(): boolean {
-  if (import.meta.env.VITE_ACCOUNTS === '1') return true;
-  try {
-    const flag = new URLSearchParams(location.search).get('cuentas');
-    if (flag === '1') localStorage.setItem('arvid-accounts', '1');
-    if (flag === '0') localStorage.removeItem('arvid-accounts');
-    return localStorage.getItem('arvid-accounts') === '1';
-  } catch {
-    return false;
-  }
-}
-
-/** Activa la cuenta en este dispositivo (al abrir un enlace de amistad). */
-export function enableAccountsFlag() {
-  try {
-    localStorage.setItem('arvid-accounts', '1');
-  } catch {
-    // Sin almacenamiento no se puede activar
-  }
-}
-
-/** Activa o desactiva la cuenta en este dispositivo antes de la 2.0 (7 toques en la versión, en Ajustes). */
-export function toggleAccountsFlag(): boolean {
-  try {
-    if (localStorage.getItem('arvid-accounts') === '1') localStorage.removeItem('arvid-accounts');
-    else localStorage.setItem('arvid-accounts', '1');
-  } catch {
-    // Sin almacenamiento no se puede activar
-  }
-  return accountsEnabled();
+  return true;
 }
 
 // ---------- Estado de la copia (CP-03), solo en este dispositivo ----------

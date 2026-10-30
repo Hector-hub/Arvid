@@ -84,10 +84,15 @@ describe('Perfil → Amigos (AM-04, AM-07, EN-03)', () => {
       return reply(404, {});
     }));
     renderRoutes(ctx, routes, '/perfil/amigos');
-    expect(await screen.findByText('Leo quiere ser tu amigo')).toBeInTheDocument();
+    // Solicitud como fila (D-202): su alias y «Quiere ser tu amigo»
+    expect(await screen.findByText('Leo')).toBeInTheDocument();
+    expect(screen.getByText(/Quiere ser tu amigo/)).toBeInTheDocument();
+    // Lista como las de Sonido (D-202): cada amigo con su inicial, nivel, código y retos juntos
     expect(screen.getByRole('heading', { name: '1 amigo' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Eva/ })).toHaveTextContent('Eva · Nv 7Código EVA-0000 · 0 retos juntos');
-    await user.type(screen.getByLabelText('Tengo un enlace o código'), `https://arvid-app.netlify.app/a/${ANA}`);
+    expect(screen.getByRole('link', { name: /Eva/ })).toHaveTextContent('EEvaNv 7 · Código EVA-00000 retos juntos›');
+    // Añadir va en una hoja que se abre con «+» (D-202)
+    await user.click(screen.getByRole('button', { name: 'Añadir amigos' }));
+    await user.type(screen.getByLabelText('Tengo un enlace o código de invitación'), `https://arvid-app.netlify.app/a/${ANA}`);
     await user.click(screen.getByRole('button', { name: 'Abrir' }));
     expect(await screen.findByRole('heading', { name: 'Ana quiere ser tu amigo' })).toBeInTheDocument();
   });
@@ -97,7 +102,8 @@ describe('Perfil → Amigos (AM-04, AM-07, EN-03)', () => {
     await signIn();
     vi.stubGlobal('fetch', vi.fn(() => reply(200, { friends: [], requests: [], blocked: [] })));
     renderRoutes(ctx, routes, '/perfil/amigos');
-    await user.type(await screen.findByLabelText('Tengo un enlace o código'), 'https://example.com/x');
+    await user.click(await screen.findByRole('button', { name: 'Añadir amigos' }));
+    await user.type(screen.getByLabelText('Tengo un enlace o código de invitación'), 'https://example.com/x');
     await user.click(screen.getByRole('button', { name: 'Abrir' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Ese no parece un enlace de ARVID.');
   });

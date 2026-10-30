@@ -61,14 +61,14 @@ async function newPhone(context: BrowserContext, alias: string): Promise<Page> {
   await onboardingToCategories(page, alias);
   await page.getByRole('button', { name: 'Continuar' }).click();
   await finishOnboarding(page);
-  await page.goto('/hoy?cuentas=1');
+  await page.goto('/hoy');
   await skipDialogue(page);
   return page;
 }
 
 /** Crea la cuenta con clave de recuperación y devuelve la clave y el id de la cuenta. */
 async function createAccount(page: Page): Promise<{ key: string; id: string }> {
-  await page.goto('/ajustes');
+  await page.goto('/ajustes/cuenta');
   await page.getByRole('button', { name: 'Crear con clave de recuperación' }).click();
   const sheet = page.getByRole('dialog', { name: 'Tu clave de recuperación' });
   const key = (await sheet.getByLabel('Clave de recuperación').textContent())!.trim();
@@ -179,7 +179,7 @@ test('copia en la nube: entrar con la clave en otro teléfono y conflicto entre 
 
   // Otro teléfono entra con la clave (RC-04): sustituye sus datos por los de la cuenta
   const second = await newPhone(await browser.newContext(), 'Otro');
-  await second.goto('/ajustes');
+  await second.goto('/ajustes/cuenta');
   await second.getByRole('button', { name: 'Ya tengo cuenta' }).click();
   await second.getByRole('textbox', { name: 'Clave de recuperación' }).fill(key);
   await second.getByRole('button', { name: 'Entrar con la clave' }).click();
@@ -191,7 +191,7 @@ test('copia en la nube: entrar con la clave en otro teléfono y conflicto entre 
   // El segundo sube primero; el primero, con su copia anterior, recibe el aviso de conflicto (CP-05)
   await second.getByRole('button', { name: 'Subir ahora' }).click();
   await expect(second.getByText(/Copia al día/)).toBeVisible();
-  await first.goto('/ajustes');
+  await first.goto('/ajustes/cuenta');
   await first.getByRole('button', { name: 'Subir ahora' }).click();
   await expect(first.getByText('Otro dispositivo subió una copia más nueva')).toBeVisible();
   await first.getByRole('button', { name: 'Usar la de la nube' }).click();

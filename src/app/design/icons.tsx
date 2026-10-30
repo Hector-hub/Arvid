@@ -204,27 +204,58 @@ export function PauseIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-export function PrevTrackIcon({ size = 16 }: { size?: number }) {
+/** Anterior y siguiente (D-195): copiados píxel a píxel de los iconos de anterior y siguiente de la maqueta, en una cuadrícula de 18×11. */
+function SkipIcon({ children, width }: { children: ReactNode; width: number }) {
   return (
-    <PixelIcon size={size}>
-      <rect x="2" y="2" width="2" height="8" />
-      <rect x="5" y="5" width="1" height="2" />
-      <rect x="6" y="4" width="1" height="4" />
-      <rect x="7" y="3" width="1" height="6" />
-      <rect x="8" y="2" width="2" height="8" />
-    </PixelIcon>
+    <svg width={width} height={Math.round((width * 11) / 18)} viewBox="0 0 18 11" fill="currentColor" shapeRendering="crispEdges" aria-hidden="true">
+      {children}
+    </svg>
   );
 }
 
-export function NextTrackIcon({ size = 16 }: { size?: number }) {
+export function PrevTrackIcon({ size = 18 }: { size?: number }) {
   return (
-    <PixelIcon size={size}>
-      <rect x="2" y="2" width="2" height="8" />
-      <rect x="4" y="3" width="1" height="6" />
-      <rect x="5" y="4" width="1" height="4" />
-      <rect x="6" y="5" width="1" height="2" />
-      <rect x="8" y="2" width="2" height="8" />
-    </PixelIcon>
+    <SkipIcon width={size}>
+      <rect x="0" y="0" width="3" height="11" />
+      <rect x="3" y="5" width="1" height="1" />
+      <rect x="4" y="4" width="1" height="3" />
+      <rect x="5" y="3" width="1" height="5" />
+      <rect x="6" y="3" width="1" height="5" />
+      <rect x="7" y="2" width="1" height="7" />
+      <rect x="8" y="1" width="1" height="9" />
+      <rect x="9" y="1" width="1" height="9" />
+      <rect x="10" y="5" width="1" height="1" />
+      <rect x="11" y="4" width="1" height="3" />
+      <rect x="12" y="4" width="1" height="3" />
+      <rect x="13" y="3" width="1" height="5" />
+      <rect x="14" y="2" width="1" height="7" />
+      <rect x="15" y="2" width="1" height="7" />
+      <rect x="16" y="1" width="1" height="9" />
+      <rect x="17" y="1" width="1" height="9" />
+    </SkipIcon>
+  );
+}
+
+export function NextTrackIcon({ size = 18 }: { size?: number }) {
+  return (
+    <SkipIcon width={size}>
+      <rect x="15" y="0" width="3" height="11" />
+      <rect x="14" y="5" width="1" height="1" />
+      <rect x="13" y="4" width="1" height="3" />
+      <rect x="12" y="3" width="1" height="5" />
+      <rect x="11" y="3" width="1" height="5" />
+      <rect x="10" y="2" width="1" height="7" />
+      <rect x="9" y="1" width="1" height="9" />
+      <rect x="8" y="1" width="1" height="9" />
+      <rect x="7" y="5" width="1" height="1" />
+      <rect x="6" y="4" width="1" height="3" />
+      <rect x="5" y="4" width="1" height="3" />
+      <rect x="4" y="3" width="1" height="5" />
+      <rect x="3" y="2" width="1" height="7" />
+      <rect x="2" y="2" width="1" height="7" />
+      <rect x="1" y="1" width="1" height="9" />
+      <rect x="0" y="1" width="1" height="9" />
+    </SkipIcon>
   );
 }
 
@@ -286,6 +317,23 @@ export function NoticeIcon({ kind }: { kind: keyof typeof NOTICE_ICONS }) {
       {NOTICE_ICONS[kind].map(([x, y, w, h]) => (
         <rect key={`${x}-${y}`} x={x} y={y} width={w} height={h} />
       ))}
+    </svg>
+  );
+}
+
+/** Engranaje de Ajustes en Perfil (D-198): rueda dentada con su agujero, como en la maqueta. */
+export function GearIcon({ size = 26 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <rect x="10.4" y="1.2" width="3.2" height="4" rx="0.6" transform="rotate(0 12 12)" />
+      <rect x="10.4" y="1.2" width="3.2" height="4" rx="0.6" transform="rotate(45 12 12)" />
+      <rect x="10.4" y="1.2" width="3.2" height="4" rx="0.6" transform="rotate(90 12 12)" />
+      <rect x="10.4" y="1.2" width="3.2" height="4" rx="0.6" transform="rotate(135 12 12)" />
+      <rect x="10.4" y="1.2" width="3.2" height="4" rx="0.6" transform="rotate(180 12 12)" />
+      <rect x="10.4" y="1.2" width="3.2" height="4" rx="0.6" transform="rotate(225 12 12)" />
+      <rect x="10.4" y="1.2" width="3.2" height="4" rx="0.6" transform="rotate(270 12 12)" />
+      <rect x="10.4" y="1.2" width="3.2" height="4" rx="0.6" transform="rotate(315 12 12)" />
+      <path fillRule="evenodd" d="M12 4.6a7.4 7.4 0 1 1 0 14.8 7.4 7.4 0 0 1 0-14.8Zm0 4.4a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" />
     </svg>
   );
 }

@@ -1,26 +1,19 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router';
-import { DEFAULT_SOUND, saveSetting, setCategoryActive, type Settings, type SoundSettings } from '../../data/repository';
-import { COMPANION_NAME } from '../../domain/arvid/companion';
-import { trackPosition } from '../../domain/music/playlist';
-import { ALIAS_MAX, castOrder, validateAlias, type Gender } from '../../domain/arvid/arvid';
-import type { Avatar } from '../../domain/avatar/catalog';
+import { saveSetting, type Settings } from '../../data/repository';
+import { statusAt } from '../../domain/activities/rules';
+import { useToday } from '../clock';
 import type { Category } from '../../domain/categories';
-import { getLocale, setLocale, t, type TKey } from '../../i18n';
+import { getLocale, t, type TKey } from '../../i18n';
 import { currentPersistState, isIOS, requestPersistentStorage, type PersistState } from '../../pwa/platform';
-import { useCategories, useData, useSettings } from '../data';
-import { BackLink, CategoryIcon, Panel } from '../design/components';
-import { useMusic } from '../music/MusicProvider';
-import { trackCover, TRACKS } from '../music/tracks';
-import { resumeAudio } from '../sound/audio';
-import { previewSfx } from '../sound/sfx';
-import { NextTrackIcon, PauseIcon, PlayIcon, PrevTrackIcon } from '../design/icons';
+import { useCategories, useData, useRecords, useSettings } from '../data';
+import { BackLink, CategoryIcon, Panel, Sprite, categoryColor } from '../design/components';
+import type { SpriteName } from '../design/sprites.generated';
 import { NotificationsPanel } from '../notifications/NotificationsPanel';
-import { AiCodeField, AliasField, CharacterCarousel, CompanionColorPicker, CompanionPicker, GenderPicker, LanguagePicker } from '../profile/pickers';
-import { categoryName, errorText } from '../text';
+import { categoryName } from '../text';
 import { BackupPanel, DeletePanel } from './DataPanels';
 import { AccountPanel } from '../account/AccountPanel';
-import { toggleAccountsFlag } from '../account/account';
+import { accountsEnabled } from '../account/account';
 
 const PERSIST_TEXT: Record<PersistState, { title: TKey; body: TKey }> = {
   granted: { title: 'settings.persistGranted', body: 'settings.persistGrantedText' },
@@ -39,6 +32,81 @@ export function SettingsScreen() {
   const ctx = useData();
   const settings = useSettings();
   const categories = useCategories();
+
+  if (!settings) return null;
+  const activeCategories = categories?.filter((c) => c.active).length ?? 0;
+
+  return (
+    <div className="stack" style={{ gap: 'var(--s5)' }}>
+      <BackLink to="/perfil" label={t('nav.profile')} />
+      <h1>{t('settings.title')}</h1>
+
+      {/* Lo principal en tarjetas como las de Hoy, cada una con su página (D-195) */}
+      <nav aria-label={t('settings.title')}>
+        <ul className="stack settings-cards" style={{ gap: 'var(--s2)' }}>
+          <SettingsCard to="/ajustes/perfil" icon="nav-character" title={t('settings.profile')} text={t('settings.profileCard')} />
+          <SettingsCard to="/ajustes/cuenta" icon="cat-key" title={t('settings.account')} text={t(accountsEnabled() ? 'settings.accountCardCloud' : 'settings.accountCard')} />
+          <SettingsCard to="/sonido" icon="cat-music" title={t('settings.sound')} text={t('settings.soundCard')} />
+          <SettingsCard to="/ajustes/categorias" icon="cat-gem" title={t('settings.categories')} text={t('settings.categoriesCard', { count: activeCategories })} />
+        </ul>
+      </nav>
+
+      <NotificationsPanel />
+
+      <Panel>
+        <fieldset className="field">
+          <legend>
+            <h2>{t('settings.reduceMotion')}</h2>
+          </legend>
+          <div className="choice-group" style={{ marginTop: 'var(--s2)' }}>
+            {MOTION_OPTIONS.map((o) => (
+              <label key={o.value} className="choice">
+                <input
+                  type="radio"
+                  name="motion"
+                  checked={settings.reducedMotion === o.value}
+                  onChange={() => void saveSetting(ctx.db, 'reducedMotion', o.value)}
+                />
+                {t(o.label)}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      </Panel>
+
+      <DeletePanel />
+
+      <Link to="/ajustes/creditos" className="btn">
+        {t('settings.credits')}
+      </Link>
+
+      <VersionLine />
+    </div>
+  );
+}
+
+function SettingsCard({ to, icon, title, text }: { to: string; icon: SpriteName; title: string; text: string }) {
+  return (
+    <li>
+      <Link to={to} className="panel row settings-card">
+        <span className="settings-card-icon">
+          <Sprite name={icon} color="var(--xp)" />
+        </span>
+        <span className="grow stack" style={{ gap: 2 }}>
+          <span className="settings-card-title">{title}</span>
+          <span className="small muted">{text}</span>
+        </span>
+        <span aria-hidden="true" className="settings-card-go">
+          ›
+        </span>
+      </Link>
+    </li>
+  );
+}
+
+/** Ajustes → Cuenta (D-195): la cuenta (spec 14), el almacenamiento y la copia de seguridad. */
+export function SettingsAccountScreen() {
+  const ctx = useData();
   const [persist, setPersist] = useState<PersistState>();
 
   useEffect(() => {
@@ -51,21 +119,14 @@ export function SettingsScreen() {
     await saveSetting(ctx.db, 'persistGranted', state === 'granted');
   }
 
-  if (!settings) return null;
-
   return (
     <div className="stack" style={{ gap: 'var(--s5)' }}>
-      <BackLink to="/perfil" label={t('nav.profile')} />
-      <h1>{t('settings.title')}</h1>
+      <BackLink to="/ajustes" label={t('nav.settings')} />
+      {/* El panel de la cuenta ya se titula «Cuenta»; el título de la página, solo para lectores de pantalla */}
+      <h1 className="sr-only">{t('settings.account')}</h1>
 
-      <ProfilePanel settings={settings} />
-
-      {/* Cuenta y copia en la nube (spec 14): oculta hasta la 2.0 */}
+      {/* Cuenta y copia en la nube (spec 14) */}
       <AccountPanel />
-
-      <SoundPanel />
-
-      <NotificationsPanel />
 
       <Panel className="stack">
         <h2>{t('settings.storage')}</h2>
@@ -89,367 +150,79 @@ export function SettingsScreen() {
         )}
       </Panel>
 
-      <Panel className="stack">
-        <h2>{t('settings.categories')}</h2>
-        <p className="small muted">{t('settings.categoriesNote')}</p>
-        <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-          {categories?.map((c) => (
-            <CategoryToggle key={c.id} category={c} />
-          ))}
-        </ul>
-        <Link to="/ajustes/categorias/nueva" className="btn">
-          {t('settings.newCategory')}
-        </Link>
-      </Panel>
-
-      <Panel>
-        <fieldset className="field">
-          <legend>
-            <h2>{t('settings.reduceMotion')}</h2>
-          </legend>
-          <div className="choice-group" style={{ marginTop: 'var(--s2)' }}>
-            {MOTION_OPTIONS.map((o) => (
-              <label key={o.value} className="choice">
-                <input
-                  type="radio"
-                  name="motion"
-                  checked={settings.reducedMotion === o.value}
-                  onChange={() => void saveSetting(ctx.db, 'reducedMotion', o.value)}
-                />
-                {t(o.label)}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      </Panel>
-
       <BackupPanel />
-      <DeletePanel />
-
-      <Link to="/ajustes/creditos" className="btn">
-        {t('settings.credits')}
-      </Link>
-
-      <VersionLine />
     </div>
   );
 }
 
 /**
- * Ajustes → Perfil (PF-03): alias, género, idioma, personaje, color de ARVID y si habla por iniciativa propia.
- * Estado local para el personaje: dos toques seguidos (personaje y color) no deben pisarse mientras se relee el ajuste.
+ * Ajustes → Categorías (CAT-02, D-199): las activas, con cuántas de las 8 posibles se usan, y aparte las inactivas.
+ * Cada fila lleva a su edición, donde se activa o desactiva.
  */
-function ProfilePanel({ settings }: { settings: Settings }) {
-  const { db } = useData();
-  const [alias, setAlias] = useState(settings.profile?.alias ?? '');
-  const [aliasError, setAliasError] = useState<string>();
-  const [avatar, setAvatar] = useState<Avatar>(settings.avatar);
-  const [aiCode, setAiCode] = useState(settings.aiCode ?? '');
-  const gender = settings.profile?.gender;
-
-  function saveAlias() {
-    const error = validateAlias(alias);
-    setAliasError(errorText(error, { max: ALIAS_MAX }));
-    if (!error) void saveSetting(db, 'profile', { alias: alias.trim(), gender: gender ?? 'x' });
+export function SettingsCategoriesScreen() {
+  const categories = useCategories();
+  const records = useRecords();
+  const today = useToday();
+  if (!categories) return null;
+  // Actividades en curso (activas o en pausa) de cada categoría, según su versión más reciente
+  const count = new Map<string, number>();
+  for (const r of records ?? []) {
+    const status = statusAt(r.events, today);
+    if (status !== 'active' && status !== 'paused') continue;
+    const latest = [...r.versions].sort((x, y) => y.effectiveFrom.localeCompare(x.effectiveFrom))[0];
+    if (latest) count.set(latest.categoryId, (count.get(latest.categoryId) ?? 0) + 1);
   }
-
-  return (
-    <Panel className="stack">
-      <h2>{t('settings.profile')}</h2>
-      <AliasField
-        label={t('settings.alias')}
-        value={alias}
-        error={aliasError}
-        onChange={(v) => {
-          setAlias(v);
-          setAliasError(undefined);
-        }}
-      />
-      <button type="button" className="btn" onClick={saveAlias} disabled={alias.trim() === (settings.profile?.alias ?? '')}>
-        {t('common.save')}
-      </button>
-
-      {settings.profile && (
-        <>
-          <h3>{t('settings.gender')}</h3>
-          <GenderPicker
-            value={gender}
-            onChange={(g: Gender) => void saveSetting(db, 'profile', { alias: settings.profile!.alias, gender: g })}
-          />
-        </>
-      )}
-
-      <h3>{t('settings.language')}</h3>
-      <LanguagePicker
-        value={getLocale()}
-        onChange={(l) => {
-          setLocale(l);
-          void saveSetting(db, 'locale', l);
-        }}
-      />
-
-      <h3>{t('settings.character')}</h3>
-      <CharacterCarousel
-        value={avatar}
-        order={castOrder(gender)}
-        onChange={(next: Avatar) => {
-          setAvatar(next);
-          void saveSetting(db, 'avatar', next);
-        }}
-      />
-
-      <h3>{t('settings.companion')}</h3>
-      <CompanionPicker value={settings.companion} onChange={(c) => void saveSetting(db, 'companion', c)} />
-
-      <h3>{t('settings.arvidColor')}</h3>
-      <CompanionColorPicker
-        companion={settings.companion}
-        arvidColor={settings.arvidColor}
-        darisColor={settings.darisColor}
-        onArvid={(c) => void saveSetting(db, 'arvidColor', c)}
-        onDaris={(c) => void saveSetting(db, 'darisColor', c)}
-      />
-
-      <label className="choice">
-        <input type="checkbox" checked={settings.arvidAi} onChange={(e) => void saveSetting(db, 'arvidAi', e.target.checked)} />
-        <span className="grow">
-          {t('settings.arvidAi')}
-          <span className="small muted" style={{ display: 'block' }}>
-            {t('settings.arvidAiHelp')}
-          </span>
-        </span>
-      </label>
-
-      {settings.arvidAi && (
-        <AiCodeField
-          value={aiCode}
-          onChange={(code) => {
-            setAiCode(code);
-            void saveSetting(db, 'aiCode', code.trim());
-          }}
-        />
-      )}
-
-      <label className="choice">
-        <input type="checkbox" checked={settings.arvidTalks} onChange={(e) => void saveSetting(db, 'arvidTalks', e.target.checked)} />
-        <span className="grow">
-          {t('settings.arvidTalks')}
-          <span className="small muted" style={{ display: 'block' }}>
-            {t('settings.arvidTalksHelp')}
-          </span>
-        </span>
-      </label>
-
-      <label className="choice">
-        <input type="checkbox" checked={settings.games} onChange={(e) => void saveSetting(db, 'games', e.target.checked)} />
-        <span className="grow">
-          {t('settings.games')}
-          <span className="small muted" style={{ display: 'block' }}>
-            {t('settings.gamesHelp')}
-          </span>
-        </span>
-      </label>
-    </Panel>
+  const active = categories.filter((c) => c.active);
+  const inactive = categories.filter((c) => !c.active);
+  const row = (c: Category, text: string) => (
+    <Link key={c.id} to={`/ajustes/categorias/${c.id}`} className="sound-row category-link" style={{ '--c': categoryColor(c) } as CSSProperties}>
+      <span className="category-bar" aria-hidden="true" />
+      <CategoryIcon category={c} />
+      <span className="grow sound-row-name">
+        <b>{categoryName(c)}</b>
+        <span>{text}</span>
+      </span>
+      <span className="settings-card-go" aria-hidden="true">›</span>
+    </Link>
   );
-}
-
-/**
- * La versión. Siete toques seguidos activan o desactivan la cuenta en este dispositivo antes de la 2.0 (spec 14,
- * S14-06): la app instalada no tiene barra de direcciones para usar `?cuentas=1`.
- */
-function VersionLine() {
-  const taps = useRef<number[]>([]);
-  const [notice, setNotice] = useState<string>();
-  const tap = () => {
-    const now = Date.now();
-    taps.current = [...taps.current.filter((at) => now - at < 3000), now];
-    if (taps.current.length < 7) return;
-    taps.current = [];
-    setNotice(toggleAccountsFlag() ? t('settings.accountsOn') : t('settings.accountsOff'));
-  };
   return (
-    <>
-      <p className="small muted" onClick={tap}>
-        {t('settings.version', { version: __APP_VERSION__ })}
-        {typeof __APP_BUILD__ === 'string' && ` · ${new Date(__APP_BUILD__).toLocaleString(getLocale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}`}
-      </p>
-      {notice && (
-        <p className="small" role="status">
-          {notice}
-        </p>
-      )}
-    </>
-  );
-}
-
-/** Ajustes → Sonido (spec 05, MUS-06; spec 16): reproductor de música centrado y efectos de sonido. */
-function SoundPanel() {
-  const music = useMusic();
-  const { db } = useData();
-  const settings = useSettings();
-  const sound = settings?.sound ?? DEFAULT_SOUND;
-  const saveSound = (patch: Partial<SoundSettings>) => void saveSetting(db, 'sound', { ...sound, ...patch });
-  // La pista que se ve: la que suena o, si no, la guardada (o la primera)
-  const track = music.track ?? TRACKS.find((tr) => tr.id === settings?.music.track) ?? TRACKS[0]!;
-  const position = trackPosition(TRACKS, track.id);
-  const canSeek = music.playing && music.duration > 0;
-  const iosBackground = music.background && isIOS();
-  return (
-    <Panel className="stack">
-      <h2>{t('settings.sound')}</h2>
-
-      {/* La portada de la pista de fondo, difuminada, con su miniatura y un brillo de su color en los bordes (D-168) */}
-      <div className="player has-cover" aria-label={t('settings.music')} style={{ '--glow': track.glow } as CSSProperties}>
-        <div key={`bg-${track.id}`} className="player-bg" style={{ backgroundImage: `url(${trackCover(track, 192)})` }} aria-hidden="true" />
-        <img key={`cover-${track.id}`} className="player-cover" src={trackCover(track, 512)} alt="" width={120} height={120} />
-        <p className="player-track" aria-live="polite">
-          {track.name}
-        </p>
-        <p className="small muted">
-          {music.playing ? t('settings.trackOf', { n: position, total: TRACKS.length }) : t('settings.musicOff')}
-        </p>
-        <div className="player-seek">
-          <span className="player-time">{clock(music.playing ? music.time : 0)}</span>
-          <input
-            type="range"
-            min={0}
-            max={Math.max(1, Math.floor(music.duration))}
-            step={1}
-            value={canSeek ? Math.floor(music.time) : 0}
-            style={fill(canSeek ? music.time / Math.max(1, music.duration) : 0)}
-            disabled={!canSeek}
-            aria-label={t('settings.progress')}
-            onChange={(e) => music.seek(Number(e.target.value))}
-            data-music-control=""
-          />
-          <span className="player-time">{clock(music.playing ? music.duration : 0)}</span>
-        </div>
-        <div className="player-controls">
-          <button type="button" className="btn btn-icon player-btn" aria-label={t('settings.prevTrack')} onClick={music.previous} data-music-control="">
-            <PrevTrackIcon />
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary btn-icon player-btn player-main"
-            aria-label={music.playing ? t('settings.pause') : t('settings.play')}
-            aria-pressed={music.playing}
-            onClick={music.toggle}
-            data-music-control=""
-          >
-            {music.playing ? <PauseIcon size={20} /> : <PlayIcon size={20} />}
-          </button>
-          <button type="button" className="btn btn-icon player-btn" aria-label={t('settings.nextTrack')} onClick={music.next} data-music-control="">
-            <NextTrackIcon />
-          </button>
-        </div>
-      </div>
-      {music.needsConnection && (
-        <p role="status" className="small field-error">
-          {t('settings.needsConnection')}
-        </p>
-      )}
-      <label className="field">
-        <span className="small muted">{t('settings.musicVolume')}</span>
-        <input
-          type="range"
-          min={0}
-          max={1}
-          step={0.05}
-          value={music.volume}
-          style={fill(music.volume)}
-          // En iPhone, sonando en segundo plano, el volumen lo llevan los botones del teléfono (D-163)
-          disabled={iosBackground}
-          onChange={(e) => music.setVolume(Number(e.target.value))}
-          data-music-control=""
-        />
-      </label>
-      <label className="choice">
-        <input type="checkbox" checked={music.background} onChange={(e) => music.setBackground(e.target.checked)} data-music-control="" />
-        <span className="grow">{t('settings.musicBackground')}</span>
-      </label>
-      <p className="small muted">{iosBackground ? t('settings.musicBackgroundIos') : t('settings.musicBackgroundHelp')}</p>
-      <p className="small muted">{t('settings.musicNote')}</p>
-
-      <label className="choice">
-        <input type="checkbox" checked={sound.effects} onChange={(e) => saveSound({ effects: e.target.checked })} />
-        <span className="grow">{t('settings.effects')}</span>
-      </label>
-      <label className="field">
-        <span className="small muted">{t('settings.effectsVolume')}</span>
-        <input
-          type="range"
-          min={0}
-          max={1}
-          step={0.05}
-          value={sound.volume}
-          style={fill(sound.volume)}
-          disabled={!sound.effects}
-          onChange={(e) => saveSound({ volume: Number(e.target.value) })}
-        />
-      </label>
-      <fieldset className="stack" style={{ gap: 'var(--s2)' }} disabled={!sound.effects}>
-        <legend className="small muted">{t('settings.timbre')}</legend>
-        <div className="row" style={{ flexWrap: 'wrap' }}>
-          <div className="segmented">
-            {(['soft', 'chip'] as const).map((id) => (
-              <label key={id}>
-                <input type="radio" name="timbre" checked={sound.timbre === id} onChange={() => saveSound({ timbre: id })} />
-                <span>{t(id === 'soft' ? 'settings.timbreSoft' : 'settings.timbreChip')}</span>
-              </label>
+    <div className="stack" style={{ gap: 'var(--s5)' }}>
+      <BackLink to="/ajustes" label={t('nav.settings')} />
+      <h1>{t('settings.categories')}</h1>
+      <section className="stack" style={{ gap: 'var(--s2)' }}>
+        <h2 className="sound-heading category-head">
+          <span>{t('settings.categoriesActive')}</span>
+          <span className="category-dots" role="img" aria-label={t('settings.categoriesUsed', { count: active.length, max: 8 })}>
+            {Array.from({ length: 8 }, (_, i) => (
+              <i key={i} className={i < active.length ? 'on' : undefined} />
             ))}
-          </div>
-          <button type="button" className="btn" onClick={() => void resumeAudio().then(() => previewSfx({ ...sound, enabled: true }))}>
-            {t('settings.listen')}
-          </button>
-        </div>
-        <p className="small muted">{t('settings.timbreHelp')}</p>
-      </fieldset>
-      <p className="small muted">{t('settings.effectsNote', { companion: settings ? COMPANION_NAME[settings.companion] : '' })}</p>
-    </Panel>
+          </span>
+        </h2>
+        <div className="category-rows">{active.map((c) => row(c, t('settings.categoryActivities', { count: count.get(c.id) ?? 0 })))}</div>
+      </section>
+      <section className="stack" style={{ gap: 'var(--s2)' }}>
+        {inactive.length > 0 && (
+          <>
+            <h2 className="sound-heading">{t('settings.categoriesInactive')}</h2>
+            <div className="category-rows inactive">{inactive.map((c) => row(c, t('settings.categoryHidden')))}</div>
+          </>
+        )}
+        <Link to="/ajustes/categorias/nueva" className="sound-row category-new">
+          <span className="category-plus" aria-hidden="true">+</span>
+          <span className="grow">{t('settings.newCategory')}</span>
+        </Link>
+      </section>
+      <p className="small muted">{t('settings.categoriesNote')}</p>
+    </div>
   );
 }
 
-/** Hasta dónde se pinta la pista del deslizador (0–1), para el estilo Cristal neón (D-155). */
-const fill = (ratio: number) => ({ '--v': `${Math.round(Math.max(0, Math.min(1, ratio)) * 100)}%` }) as CSSProperties;
-
-/** 83 s → «1:23». */
-function clock(seconds: number): string {
-  const s = Math.max(0, Math.floor(seconds));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-}
-
-function CategoryToggle({ category }: { category: Category }) {
-  const ctx = useData();
-  const [error, setError] = useState<string>();
-  const name = categoryName(category);
-
-  async function toggle(active: boolean) {
-    const result = await setCategoryActive(ctx, category.id, active);
-    if (result.ok) setError(undefined);
-    else if (result.reason === 'in-use') setError(t('settings.inUse', { count: result.count }));
-    else if (result.reason === 'last-active') setError(t('settings.lastActive'));
-    else setError(t('settings.tooMany'));
-  }
-
+/** La versión y cuándo se compiló, para distinguir dos builds de la misma versión. */
+function VersionLine() {
   return (
-    <li className="stack" style={{ gap: 'var(--s1)' }}>
-      {/* Una sola línea (D-155): la casilla ya dice si está activa; «Editar» a la derecha */}
-      <div className="row category-row">
-        <label className="choice grow">
-          <input type="checkbox" checked={category.active} onChange={(e) => void toggle(e.target.checked)} />
-          <CategoryIcon category={category} />
-          <span className="grow">{name}</span>
-          <span className="sr-only">{category.active ? t('settings.categoryActive') : t('settings.categoryInactive')}</span>
-        </label>
-        <Link to={`/ajustes/categorias/${category.id}`} className="btn btn-ghost" aria-label={t('settings.editCategory', { name })}>
-          {t('common.edit')}
-        </Link>
-      </div>
-      {error && (
-        <p role="alert" className="field-error">
-          {error}
-        </p>
-      )}
-    </li>
+    <p className="small muted">
+      {t('settings.version', { version: __APP_VERSION__ })}
+      {typeof __APP_BUILD__ === 'string' && ` · ${new Date(__APP_BUILD__).toLocaleString(getLocale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}`}
+    </p>
   );
 }

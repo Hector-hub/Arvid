@@ -1,8 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import { DEFAULT_MUSIC, saveSetting } from '../../data/repository';
 import { useT } from '../../i18n';
 import { useData, useSettings } from '../data';
-import { SpeakerOffIcon, SpeakerOnIcon } from '../design/icons';
+import { SpeakerOnIcon } from '../design/icons';
 import { MusicPlayer, type PlayerState } from './player';
 import { trackArtwork, TRACKS } from './tracks';
 
@@ -11,8 +12,14 @@ export interface Music extends PlayerState {
   enabled: boolean;
   volume: number;
   toggle: () => void;
+  /** Suena (y queda activada). Idempotente: si ya suena, no hace nada. */
+  play: () => void;
+  /** Se para (y queda desactivada). Idempotente: si ya está parada, no hace nada. */
+  pause: () => void;
   next: () => void;
   previous: () => void;
+  /** Suena una pista de la lista (página Sonido, D-195); con la música apagada, la enciende. */
+  playTrack: (id: string) => void;
   seek: (seconds: number) => void;
   setVolume: (volume: number) => void;
   /** Seguir sonando al salir de la app (D-163). */
@@ -81,19 +88,27 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     return () => void p.start();
   }, []);
 
-  const value = useMemo<Music>(
-    () => ({
+  const value = useMemo<Music>(() => {
+    const play = () => {
+      void get().start();
+      if (!music.enabled) void saveSetting(db, 'music', { ...latest.current, enabled: true });
+    };
+    const pause = () => {
+      player.current?.stop();
+      if (music.enabled) void saveSetting(db, 'music', { ...latest.current, enabled: false });
+    };
+    return {
       ...state,
       enabled: music.enabled,
       volume,
+      // Según lo que pasa de verdad (suena o no), no según la preferencia guardada: con la música activada pero aún
+      // esperando el primer toque, el botón dice «Reproducir» y debe hacer sonar, no apagar (D-195)
       toggle() {
-        // Cambia la preferencia guardada (lo que muestra la bocina), aunque la música aún espere al primer toque
-        const p = get();
-        const on = !music.enabled;
-        if (on) void p.start();
-        else p.stop();
-        void saveSetting(db, 'music', { ...latest.current, enabled: on });
+        if (state.playing || player.current?.isEnabled()) pause();
+        else play();
       },
+      play,
+      pause,
       // Cambiar de pista con la música apagada la enciende (PS-01)
       next() {
         if (!music.enabled) void saveSetting(db, 'music', { ...latest.current, enabled: true });
@@ -102,6 +117,10 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       previous() {
         if (!music.enabled) void saveSetting(db, 'music', { ...latest.current, enabled: true });
         get().previous();
+      },
+      playTrack(id) {
+        if (!music.enabled) void saveSetting(db, 'music', { ...latest.current, enabled: true });
+        get().playTrack(id);
       },
       seek: (seconds) => player.current?.seek(seconds),
       hush,
@@ -120,9 +139,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         if (wasPlaying) void player.current.start();
         void saveSetting(db, 'music', { ...latest.current, background: on });
       },
-    }),
-    [state, music.enabled, music.background, volume, get, create, db, hush],
-  );
+    };
+  }, [state, music.enabled, music.background, volume, get, create, db, hush]);
 
   // Controles de la pantalla de bloqueo y de la notificación (Media Session, D-163)
   const actions = useRef(value);
@@ -133,8 +151,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     if (!('mediaSession' in navigator)) return;
     const session = navigator.mediaSession;
     const handlers: [MediaSessionAction, MediaSessionActionHandler][] = [
-      ['play', () => !actions.current.playing && actions.current.toggle()],
-      ['pause', () => actions.current.playing && actions.current.toggle()],
+      ['play', () => actions.current.play()],
+      ['pause', () => actions.current.pause()],
       ['previoustrack', () => actions.current.previous()],
       ['nexttrack', () => actions.current.next()],
       ['seekto', (d) => d.seekTime !== undefined && actions.current.seek(d.seekTime)],
@@ -187,21 +205,21 @@ export function useMusic(): Music {
   return ctx;
 }
 
-/** Bocina de la música arriba a la derecha de la escena: con ondas si está activada y tachada si no (MU-01, MUS-09). */
+/**
+ * Bocina de la música arriba a la derecha de la escena: con ondas si está activada y tachada si no (MU-01, MUS-09).
+ * Abre la página Sonido (D-195); la música se enciende y se apaga allí.
+ */
 export function MusicButton() {
-  const music = useMusic();
   const t = useT();
   return (
-    <button
-      type="button"
+    <Link
+      to="/sonido"
       className="btn btn-icon scene-icon"
-      aria-pressed={music.enabled}
       aria-label={t('scene.music')}
       title={t('scene.music')}
-      {...{ [MUSIC_CONTROL]: '' }}
-      onClick={music.toggle}
     >
-      {music.enabled ? <SpeakerOnIcon /> : <SpeakerOffIcon />}
-    </button>
+      {/* Siempre igual, como los demás iconos de la escena: abre Sonido, no muestra si suena (D-195) */}
+      <SpeakerOnIcon />
+    </Link>
   );
 }

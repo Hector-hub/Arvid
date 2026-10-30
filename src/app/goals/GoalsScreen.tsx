@@ -59,7 +59,7 @@ export function GoalsScreen() {
         </section>
       )}
 
-      {/* Retos entre amigos (spec 15, S15-03): oculto hasta la 2.0 */}
+      {/* Retos entre amigos (spec 15, S15-03) */}
       <ChallengesSection />
     </div>
   );

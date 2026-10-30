@@ -13,7 +13,7 @@ import { ARVID_RAMPS } from '../../domain/arvid/arvid';
  * Valor que se muestra al momento al elegir, aunque el guardado (que vuelve por los ajustes) tarde unos milisegundos;
  * si el valor de fuera cambia por otra vía, manda ese.
  */
-function useOptimistic<T>(value: T, same: (a: T, b: T) => boolean = Object.is): [T, (v: T) => void] {
+export function useOptimistic<T>(value: T, same: (a: T, b: T) => boolean = Object.is): [T, (v: T) => void] {
   const [shown, setShown] = useState(value);
   const [outer, setOuter] = useState(value);
   if (!same(value, outer)) {
@@ -23,10 +23,10 @@ function useOptimistic<T>(value: T, same: (a: T, b: T) => boolean = Object.is): 
   return [shown, setShown];
 }
 
-const sameAvatar = (a: Avatar, b: Avatar) => a.cast === b.cast && a.variant === b.variant;
+export const sameAvatar = (a: Avatar, b: Avatar) => a.cast === b.cast && a.variant === b.variant;
 
 /** Color representativo de cada variante para su muestra (CR-03). */
-const VARIANT_SWATCH: Record<VariantId, string> = {
+export const VARIANT_SWATCH: Record<VariantId, string> = {
   original: '#ffcd75',
   neon: '#05d9e8',
   carmesi: '#ec1e44',

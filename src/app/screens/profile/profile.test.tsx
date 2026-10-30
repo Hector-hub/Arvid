@@ -31,7 +31,7 @@ const routes = [
   { path: '/perfil', element: <ProfileScreen /> },
   { path: '/perfil/atributo/:categoryId', element: <AttributeDetailScreen /> },
   { path: '/perfil/disciplina', element: <DisciplineDetailScreen /> },
-  { path: '/ajustes', element: <p>ajustes</p> },
+  { path: '/ajustes/categorias', element: <p>ajustes</p> },
   { path: '/ajustes/categorias/nueva', element: <CategoryFormScreen /> },
   { path: '/ajustes/categorias/:id', element: <CategoryFormScreen /> },
 ];

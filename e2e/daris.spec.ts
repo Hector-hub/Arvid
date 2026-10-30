@@ -7,7 +7,7 @@ test.describe('DARIS (spec 08)', () => {
     await expect(page.getByRole('img', { name: /con DARIS a su lado/ })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Hablar con DARIS' })).toBeVisible();
 
-    await page.goto('/ajustes');
+    await page.goto('/ajustes/perfil');
     await expect(page.getByRole('heading', { name: 'Color de DARIS' })).toBeVisible();
     await page.getByRole('radio', { name: /ARVID/ }).click();
     await expect(page.getByRole('heading', { name: 'Color de ARVID' })).toBeVisible();

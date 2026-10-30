@@ -414,7 +414,7 @@ function AccountCard() {
   return (
     <div className="banner" role="region" aria-label={t('account.saveTitle')}>
       <p className="grow small">{t('account.cardText')}</p>
-      <Link to="/ajustes" className="btn btn-primary" onClick={dismiss}>
+      <Link to="/ajustes/cuenta" className="btn btn-primary" onClick={dismiss}>
         {t('account.cardGo')}
       </Link>
       <button type="button" className="btn btn-ghost" onClick={dismiss}>
@@ -441,7 +441,10 @@ function BackupReminder({ records }: { records: ActivityRecord[] }) {
   if (!show) return null;
   return (
     <div className="banner tone-warn" role="region" aria-label={t('today.backupRegion')}>
-      <NoticeIcon kind="info" />
+      {/* Icono antiguo (las reglas del cristal ocultan el sprite si va suelto) */}
+      <span style={{ display: 'inline-flex', flex: 'none' }}>
+        <Sprite name="info" color="var(--level)" />
+      </span>
       <p className="grow small">{t('today.backupReminder')}</p>
       <button
         type="button"

@@ -86,6 +86,9 @@ describe('onboarding con ARVID (ON)', () => {
     expect(await screen.findByText('Escribe cómo quieres que te llame')).toBeInTheDocument();
     await user.type(screen.getByLabelText('Tu nombre o alias'), 'Héctor');
     await user.click(screen.getByRole('button', { name: 'Continuar' }));
+    // 3b. «Guarda tu progreso» (CU-10): la cuenta, para todos desde la 2.0 (D-203)
+    await skipDialogue(user);
+    await user.click(screen.getByRole('button', { name: 'Ahora no' }));
     // 4. Género
     await skipDialogue(user);
     await user.click(screen.getByRole('radio', { name: 'Masculino' }));
@@ -103,7 +106,10 @@ describe('onboarding con ARVID (ON)', () => {
     await user.click(screen.getByRole('button', { name: 'Continuar' }));
     // 7. Permiso para la IA (IA-06)
     await skipDialogue(user);
-    expect(screen.getByText(/envía tu progreso, tus actividades y sus notas sobre ti a un servicio de IA externo/)).toBeInTheDocument();
+    expect(screen.getByText(/te da consejos según tu progreso/)).toBeInTheDocument();
+    // Sin código válido, solo la cuota de prueba; con uno con la forma ARVID-NOMBRE-XXXXXXXXXX, «Activar»
+    expect(screen.getByRole('button', { name: 'Activar (cuota de prueba)' })).toBeInTheDocument();
+    await user.type(screen.getByLabelText('Código de acceso'), 'ARVID-ANA-ABCDEFGHIJ');
     await user.click(screen.getByRole('button', { name: 'Activar' }));
     // 7b. Notificaciones (spec 10, NT-02): sin Web Push en el entorno de pruebas, solo se explica
     await skipDialogue(user);
@@ -145,6 +151,8 @@ describe('onboarding con ARVID (ON)', () => {
     await user.type(screen.getByLabelText('Tu nombre o alias'), 'Ana');
     await user.click(screen.getByRole('button', { name: 'Continuar' }));
     await skipDialogue(user);
+    await user.click(screen.getByRole('button', { name: 'Ahora no' })); // «Guarda tu progreso» (D-203)
+    await skipDialogue(user);
     await user.click(screen.getByRole('radio', { name: 'Femenino' }));
     await user.click(screen.getByRole('button', { name: 'Continuar' }));
     await skipDialogue(user);
@@ -168,6 +176,8 @@ describe('onboarding con ARVID (ON)', () => {
     await skipDialogue(user);
     await user.type(screen.getByLabelText('Tu nombre o alias'), 'Ana');
     await user.click(screen.getByRole('button', { name: 'Continuar' }));
+    // «Atrás» va junto a «Continuar» (D-201): se habilita con el resto del paso al terminar el diálogo
+    await skipDialogue(user);
     await user.click(await screen.findByRole('button', { name: /Atrás/ }));
     await skipDialogue(user);
     expect(screen.getByLabelText('Tu nombre o alias')).toHaveValue('Ana');
@@ -215,7 +225,7 @@ describe('Perfil (PF)', () => {
     await saveSetting(ctx.db, 'profile', { alias: 'Héctor', gender: 'm' });
     await saveSetting(ctx.db, 'avatar', { cast: 'el2', variant: 'original' });
     renderRoutes(ctx, [{ path: '/perfil', element: <ProfileScreen /> }], '/perfil');
-    expect(await screen.findByRole('heading', { name: 'Héctor · Drifter', level: 1 })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Héctor', level: 1 })).toBeInTheDocument();
   });
 });
 
@@ -278,9 +288,10 @@ describe('escena: chat y música (CH, MU)', () => {
     fetchSpy.mockRestore();
   });
 
-  it('MU-01: bocina con aria-pressed, apagada por defecto', async () => {
+  it('MU-01, D-195: la bocina abre la página Sonido y se ve apagada por defecto', async () => {
     renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
-    expect(await screen.findByRole('button', { name: 'Música' })).toHaveAttribute('aria-pressed', 'false');
+    const music = await screen.findByRole('link', { name: 'Música' });
+    expect(music).toHaveAttribute('href', '/sonido');
   });
 });
 
