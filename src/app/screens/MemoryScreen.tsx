@@ -6,13 +6,15 @@ import { MEMORY_MAX, type Memory } from '../../domain/arvid/memory';
 import { toLocalDate } from '../../domain/time/localDate';
 import { t, useLocale } from '../../i18n';
 import { useData, useMemories } from '../data';
-import { BackLink, Panel } from '../design/components';
+import { Panel } from '../design/components';
+import { Link, useNavigate } from 'react-router';
 import { TrashIcon } from '../design/icons';
 import { dayMonth } from '../text';
 
 const UNDO_MS = 5000;
 
 export function MemoryScreen() {
+  const navigate = useNavigate();
   useLocale();
   const { db } = useData();
   const memories = useMemories();
@@ -33,7 +35,20 @@ export function MemoryScreen() {
 
   return (
     <div className="stack" style={{ gap: 'var(--s4)' }}>
-      <BackLink to="/chat" label={t('chat.title')} />
+      {/* Vuelve atrás en el historial (no abre el chat otra vez): si no, «Atrás» alternaba chat y memoria sin fin */}
+      <Link
+        to="/chat"
+        className="btn btn-ghost"
+        style={{ alignSelf: 'flex-start', paddingLeft: 0 }}
+        onClick={(e) => {
+          if (((window.history.state as { idx?: number } | null)?.idx ?? 0) > 0) {
+            e.preventDefault();
+            void navigate(-1);
+          }
+        }}
+      >
+        <span aria-hidden="true">‹</span> {t('chat.title')}
+      </Link>
       <h1>{t('memory.title')}</h1>
       <p className="muted">{t('memory.intro', { max: MEMORY_MAX })}</p>
 

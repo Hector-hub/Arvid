@@ -40,51 +40,54 @@ export function SoundScreen() {
 
   return (
     <div className="stack sound-page" style={{ gap: 'var(--s4)' }}>
-      <header className="sound-top">
-        <button type="button" className="btn btn-icon btn-ghost" aria-label={t('common.back')} onClick={back}>
-          <span aria-hidden="true">‹</span>
-        </button>
-        <h1>{t('settings.sound')}</h1>
-      </header>
+      {/* Fijo arriba como la escena de Hoy: solo se desplazan la lista y los ajustes */}
+      <div className="sound-sticky">
+        <header className="sound-top">
+          <button type="button" className="btn btn-icon btn-ghost" aria-label={t('common.back')} onClick={back}>
+            <span aria-hidden="true">‹</span>
+          </button>
+          <h1>{t('settings.sound')}</h1>
+        </header>
 
-      {/* La portada difuminada de fondo y un brillo de su color en los bordes, como el reproductor de antes (D-168) */}
-      <section className="player has-cover sound-player" aria-label={t('settings.music')} style={{ '--glow': track.glow } as CSSProperties}>
-        <div key={`bg-${track.id}`} className="player-bg" style={{ backgroundImage: `url(${trackCover(track, 192)})` }} aria-hidden="true" />
-        <img key={`cover-${track.id}`} className="player-cover" src={trackCover(track, 512)} alt="" width={240} height={240} />
-        {/* Las barras encima del nombre; su hueco se reserva para que el nombre no se mueva al pausar */}
-        <div className="sound-meta">
-          <span className="sound-eq-slot">{music.playing && <Equalizer />}</span>
-          <p className="player-track" aria-live="polite">
-            {track.name}
-          </p>
-        </div>
-        <div className="sound-seek">
-          <SeekBar music={music} />
-          <div className="sound-times">
-            <span className="player-time">{clock(music.playing ? music.time : 0)}</span>
-            <span className="player-time">{clock(music.playing && music.duration > 0 ? music.duration : track.seconds)}</span>
+        {/* La portada difuminada de fondo y un brillo de su color en los bordes, como el reproductor de antes (D-168) */}
+        <section className="player has-cover sound-player" aria-label={t('settings.music')} style={{ '--glow': track.glow } as CSSProperties}>
+          <div key={`bg-${track.id}`} className="player-bg" style={{ backgroundImage: `url(${trackCover(track, 192)})` }} aria-hidden="true" />
+          <img key={`cover-${track.id}`} className="player-cover" src={trackCover(track, 512)} alt="" width={240} height={240} />
+          {/* Las barras encima del nombre; su hueco se reserva para que el nombre no se mueva al pausar */}
+          <div className="sound-meta">
+            <span className="sound-eq-slot">{music.playing && <Equalizer />}</span>
+            <p className="player-track" aria-live="polite">
+              {track.name}
+            </p>
           </div>
-        </div>
-        <div className="sound-controls">
-          <button type="button" className="btn btn-icon btn-ghost sound-skip" aria-label={t('settings.prevTrack')} onClick={music.previous} data-music-control="">
-            <PrevTrackIcon />
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary btn-icon player-main sound-play"
-            aria-label={music.playing ? t('settings.pause') : t('settings.play')}
-            aria-pressed={music.playing}
-            // Idempotente: lo que dice el botón es lo que hace, aunque se toque dos veces seguidas
-            onClick={() => (music.playing ? music.pause() : music.play())}
-            data-music-control=""
-          >
-            {music.playing ? <PauseIcon size={15} /> : <PlayIcon size={15} />}
-          </button>
-          <button type="button" className="btn btn-icon btn-ghost sound-skip" aria-label={t('settings.nextTrack')} onClick={music.next} data-music-control="">
-            <NextTrackIcon />
-          </button>
-        </div>
-      </section>
+          <div className="sound-seek">
+            <SeekBar music={music} />
+            <div className="sound-times">
+              <span className="player-time">{clock(music.playing ? music.time : 0)}</span>
+              <span className="player-time">{clock(music.playing && music.duration > 0 ? music.duration : track.seconds)}</span>
+            </div>
+          </div>
+          <div className="sound-controls">
+            <button type="button" className="btn btn-icon btn-ghost sound-skip" aria-label={t('settings.prevTrack')} onClick={music.previous} data-music-control="">
+              <PrevTrackIcon />
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary btn-icon player-main sound-play"
+              aria-label={music.playing ? t('settings.pause') : t('settings.play')}
+              aria-pressed={music.playing}
+              // Idempotente: lo que dice el botón es lo que hace, aunque se toque dos veces seguidas
+              onClick={() => (music.playing ? music.pause() : music.play())}
+              data-music-control=""
+            >
+              {music.playing ? <PauseIcon size={15} /> : <PlayIcon size={15} />}
+            </button>
+            <button type="button" className="btn btn-icon btn-ghost sound-skip" aria-label={t('settings.nextTrack')} onClick={music.next} data-music-control="">
+              <NextTrackIcon />
+            </button>
+          </div>
+        </section>
+      </div>
       {music.needsConnection && (
         <p role="status" className="small field-error">
           {t('settings.needsConnection')}

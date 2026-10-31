@@ -102,3 +102,28 @@ test('D-098: desde la escena, expandir abre la conversación con lo escrito; env
   await page.reload();
   await expect(log.getByText('¿Qué tal?', { exact: true })).toBeVisible();
 });
+
+test('2.0.1: volver de «Lo que ARVID sabe de ti» no crea un bucle con el chat', async ({ page }) => {
+  await completeOnboarding(page);
+  await page.getByRole('button', { name: 'Hablar con ARVID' }).click();
+  await page.getByRole('button', { name: 'Ver toda la conversación' }).click();
+  await expect(page).toHaveURL(/\/chat$/);
+  await page.getByRole('button', { name: 'Opciones' }).click();
+  await page.getByRole('menuitem', { name: /sabe de ti/ }).click();
+  await expect(page).toHaveURL(/\/chat\/memoria$/);
+  await page.getByRole('link', { name: /Conversación/ }).click();
+  await expect(page).toHaveURL(/\/chat$/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/hoy$/);
+});
+
+test('2.0.1: en Sonido el reproductor queda fijo arriba al hacer scroll', async ({ page }) => {
+  await completeOnboarding(page);
+  await page.goto('/sonido');
+  const player = page.locator('.sound-player');
+  const before = (await player.boundingBox())!.y;
+  // WebKit móvil no admite la rueda: se desplaza la página directamente
+  await page.evaluate(() => window.scrollTo(0, 600));
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await expect.poll(async () => (await player.boundingBox())!.y).toBe(before);
+});
