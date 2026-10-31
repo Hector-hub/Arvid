@@ -1398,5 +1398,13 @@
     "list": "Tracks",
     "settings": "Sound settings",
     "muteAll": "Mute everything"
+  },
+  "whatsNew": {
+    "title": "What's new",
+    "current": "You have ARVID {version}",
+    "major": "ARVID {major}",
+    "features": "New features",
+    "fixes": "Fixes",
+    "open": "ARVID {version}: see what's new"
   }
 }

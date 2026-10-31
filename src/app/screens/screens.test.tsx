@@ -105,7 +105,8 @@ describe('Ajustes', () => {
     expect(await screen.findByText('Protegido')).toBeInTheDocument();
     unmount();
     renderRoutes(ctx, [{ path: '/ajustes', element: <SettingsScreen /> }], '/ajustes');
-    expect(await screen.findByText(/^ARVID \d+\.\d+\.\d+( · .+)?$/)).toBeInTheDocument();
+    // La versión, sin fecha, lleva a las novedades (2.0.4)
+    expect(await screen.findByRole('link', { name: /^ARVID \d+\.\d+\.\d+: ver las novedades$/ })).toHaveAttribute('href', '/ajustes/novedades');
   });
 
   it('CAT-02: explica por qué no se puede desactivar una categoría en uso', async () => {

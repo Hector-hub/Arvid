@@ -22,6 +22,7 @@ import { AttributeDetailScreen, DisciplineDetailScreen } from './screens/profile
 import { SettingsAccountScreen, SettingsCategoriesScreen, SettingsScreen } from './screens/SettingsScreen';
 import { SettingsProfileScreen } from './screens/ProfileSettingsScreen';
 import { SoundRoute } from './music/SoundSheet';
+import { WhatsNewScreen } from './whatsnew/WhatsNewScreen';
 import { TodayScreen } from './screens/TodayScreen';
 import { FriendLinkScreen } from './friends/FriendLinkScreen';
 import { FriendScreen, FriendsScreen } from './friends/FriendsScreen';
@@ -70,6 +71,7 @@ export const routes: RouteObject[] = [
       { path: 'sonido', element: <SoundRoute /> },
       { path: 'ajustes/instalar', element: <InstallGuideScreen /> },
       { path: 'ajustes/creditos', element: <CreditsScreen /> },
+      { path: 'ajustes/novedades', element: <WhatsNewScreen /> },
       { path: 'ajustes/categorias/nueva', element: <CategoryFormScreen /> },
       { path: 'ajustes/categorias/:id', element: <CategoryFormScreen /> },
       { path: '*', element: <Navigate to="/hoy" replace /> },

@@ -4,7 +4,7 @@ import { saveSetting, type Settings } from '../../data/repository';
 import { statusAt } from '../../domain/activities/rules';
 import { useToday } from '../clock';
 import type { Category } from '../../domain/categories';
-import { getLocale, t, type TKey } from '../../i18n';
+import { t, type TKey } from '../../i18n';
 import { currentPersistState, isIOS, requestPersistentStorage, type PersistState } from '../../pwa/platform';
 import { useCategories, useData, useRecords, useSettings } from '../data';
 import { BackLink, CategoryIcon, Panel, Sprite, categoryColor } from '../design/components';
@@ -231,12 +231,11 @@ export function SettingsCategoriesScreen() {
   );
 }
 
-/** La versión y cuándo se compiló, para distinguir dos builds de la misma versión. */
+/** La versión: al tocarla, las novedades (2.0.4). */
 function VersionLine() {
   return (
-    <p className="small muted">
-      {t('settings.version', { version: __APP_VERSION__ })}
-      {typeof __APP_BUILD__ === 'string' && ` · ${new Date(__APP_BUILD__).toLocaleString(getLocale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}`}
-    </p>
+    <Link to="/ajustes/novedades" className="version-link small" aria-label={t('whatsNew.open', { version: __APP_VERSION__ })}>
+      {t('settings.version', { version: __APP_VERSION__ })} <span aria-hidden="true">›</span>
+    </Link>
   );
 }

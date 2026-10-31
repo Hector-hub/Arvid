@@ -1398,5 +1398,13 @@
     "list": "Lista",
     "settings": "Ajustes de sonido",
     "muteAll": "Silenciar todo"
+  },
+  "whatsNew": {
+    "title": "Novedades",
+    "current": "Tienes ARVID {version}",
+    "major": "ARVID {major}",
+    "features": "Nuevas funciones",
+    "fixes": "Correcciones",
+    "open": "ARVID {version}: ver las novedades"
   }
 }
