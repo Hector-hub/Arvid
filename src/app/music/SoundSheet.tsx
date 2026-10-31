@@ -65,28 +65,28 @@ function SoundSheet({ onClose }: { onClose: () => void }) {
         aria-label={t('settings.sound')}
         style={drag ? { transform: `translateY(${drag}px)` } : undefined}
         onClick={(e) => e.stopPropagation()}
+        // La portada es una imagen: el navegador la arrastraría como archivo y cortaría el gesto
+        onDragStart={(e) => e.preventDefault()}
+        // Arrastrar hacia abajo desde la parte fija (asa, portada, título…) la cierra (2.0.3); la lista y los ajustes se
+        // desplazan, y los controles (botones, barras, interruptores) funcionan como siempre
+        onPointerDown={(e) => {
+          if ((e.target as Element).closest('.sound-scroll, button, input, label, a, summary')) return;
+          start.current = e.clientY;
+          e.currentTarget.setPointerCapture(e.pointerId);
+        }}
+        onPointerMove={(e) => start.current !== undefined && setDrag(Math.max(0, e.clientY - start.current))}
+        onPointerUp={() => {
+          if (start.current === undefined) return;
+          start.current = undefined;
+          if (drag > CLOSE_DRAG) close();
+          else setDrag(0);
+        }}
+        onPointerCancel={() => {
+          start.current = undefined;
+          setDrag(0);
+        }}
       >
-        {/* El asa: se arrastra hacia abajo para cerrar */}
-        <div
-          className="sound-sheet-grip"
-          onPointerDown={(e) => {
-            // El botón de cerrar es un toque, no un arrastre: capturar el puntero se comería su clic
-            if ((e.target as Element).closest('button')) return;
-            start.current = e.clientY;
-            e.currentTarget.setPointerCapture(e.pointerId);
-          }}
-          onPointerMove={(e) => start.current !== undefined && setDrag(Math.max(0, e.clientY - start.current))}
-          onPointerUp={() => {
-            if (start.current === undefined) return;
-            start.current = undefined;
-            if (drag > CLOSE_DRAG) close();
-            else setDrag(0);
-          }}
-          onPointerCancel={() => {
-            start.current = undefined;
-            setDrag(0);
-          }}
-        >
+        <div className="sound-sheet-grip">
           <span className="sound-sheet-handle" aria-hidden="true" />
           {/* Sin título ni flecha: se cierra deslizando, tocando fuera o con Escape; el botón queda para el teclado */}
           <button ref={closeButton} type="button" className="sr-only" aria-label={t('common.close')} onClick={close} />

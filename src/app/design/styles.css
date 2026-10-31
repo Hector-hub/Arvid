@@ -1875,7 +1875,7 @@ html, body { overscroll-behavior-y: contain; }
 .pull-refresh.refreshing .pull-refresh-icon { animation: pull-spin 800ms linear infinite; }
 .pull-refresh:not(.pulling):not(.ready) { transition: transform 200ms ease, opacity 200ms ease; }
 @keyframes pull-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .pull-refresh.refreshing .pull-refresh-icon { animation: none; } }
+[data-motion='reduced'] .pull-refresh.refreshing .pull-refresh-icon { animation: none; }
 
 /* La escena llega hasta arriba en el móvil, detrás de la hora y la batería (D-187): la franja de la zona segura se
    rellena con el color del cielo y la fecha y los botones bajan lo justo para no solaparse con la barra de estado */
@@ -1935,6 +1935,8 @@ html, body { overscroll-behavior-y: contain; }
 h1.h2 { font-size: 1.25rem; text-shadow: none; }
 .settings-cards { list-style: none; margin: 0; padding: 0; }
 .settings-card { padding: var(--s3); gap: var(--s3); color: var(--text); text-decoration: none; }
+/* Sonido es un botón (abre su hoja): como las demás tarjetas, de lado a lado y con el texto a la izquierda (Safari los centra) */
+button.settings-card { width: 100%; text-align: left; font: inherit; cursor: pointer; -webkit-appearance: none; appearance: none; }
 .settings-card-title { font-family: var(--font-pixel); font-size: 1.0625rem; }
 .settings-card-go { font-family: var(--font-pixel); font-size: 1.5rem; color: var(--text-muted); }
 .settings-card:hover .settings-card-go, .settings-card:focus-visible .settings-card-go { color: var(--xp); }
@@ -1961,7 +1963,8 @@ h1.h2 { font-size: 1.25rem; text-shadow: none; }
 .equalizer i:nth-child(4) { animation-delay: 0.1s; }
 .equalizer.small { height: 14px; }
 @keyframes eq-bar { from { height: 20%; } to { height: 100%; } }
-@media (prefers-reduced-motion: reduce) { .equalizer i { animation: none; height: 60%; } }
+/* Sigue el ajuste de la app (Sistema, Activado o Desactivado), no solo el del teléfono */
+[data-motion='reduced'] .equalizer i { animation: none; height: 60%; }
 .sound-heading { font-size: 0.9375rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
 .sound-list { list-style: none; margin: 0 calc(-1 * var(--s2)); padding: 0; }
 .sound-row {
@@ -2151,7 +2154,7 @@ input[type='url']::placeholder { color: var(--text-muted); opacity: 0.7; }
 
 /* Sonido: cabecera y reproductor fijos arriba (2.0.1); la lista pasa por debajo y se funde */
 /* ---------- Hoja de Sonido (2.0.2): sube desde abajo, sin tocar el notch, y se cierra deslizándola ---------- */
-.sound-sheet-backdrop { position: fixed; inset: 0; z-index: 80; background: rgb(0 0 0 / 0.2); }
+.sound-sheet-backdrop { position: fixed; inset: 0; z-index: 80; background: rgb(0 0 0 / 0.2); touch-action: none; overscroll-behavior: contain; }
 .sound-sheet {
   position: absolute;
   left: 0;
@@ -2173,9 +2176,13 @@ input[type='url']::placeholder { color: var(--text-muted); opacity: 0.7; }
   transition: transform 260ms cubic-bezier(0.4, 0, 1, 1);
 }
 .sound-sheet.dragging { transition: none; }
+/* Fuera de la zona que se desplaza, el dedo arrastra la hoja y nunca la página de detrás (2.0.3) */
+.sound-sheet { touch-action: none; user-select: none; -webkit-user-select: none; }
+.sound-sheet img { -webkit-user-drag: none; }
+.sound-sheet .sound-scroll { touch-action: pan-y; }
 .sound-sheet.closing { transform: translateY(100%); }
 @keyframes sheet-up { from { transform: translateY(100%); } }
-.sound-sheet-grip { flex: none; display: grid; place-items: center; padding: var(--s3) 0 var(--s2); touch-action: none; cursor: grab; }
+.sound-sheet-grip { flex: none; display: grid; place-items: center; padding: var(--s3) 0 var(--s2); cursor: grab; }
 .sound-sheet-handle { width: 40px; height: 4px; background: rgb(255 255 255 / 0.3); }
 .sound-sheet-body { flex: 1; min-height: 0; padding: 0 var(--s4); }
 /* En la hoja: arriba el reproductor y «Lista», fijos; debajo, lo único que se desplaza */
@@ -2184,4 +2191,4 @@ input[type='url']::placeholder { color: var(--text-muted); opacity: 0.7; }
 /* Dentro de la hoja: el reproductor y «Lista» (con su línea) fijos arriba; las canciones pasan por debajo */
 .sound-sticky { flex: none; display: grid; gap: var(--s3); padding-top: var(--s1); }
 .sound-list-head { border-top: 1px solid rgb(255 255 255 / 0.07); padding: var(--s3) 0 var(--s2); }
-@media (prefers-reduced-motion: reduce) { .sound-sheet { animation: none; } }
+[data-motion='reduced'] .sound-sheet { animation: none; }

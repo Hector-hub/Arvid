@@ -144,3 +144,19 @@ test('2.0.2: Sonido sube como hoja; el reproductor y «Lista» quedan fijos y se
   await page.keyboard.press('Escape');
   await expect(sheet).toHaveCount(0);
 });
+
+test('2.0.3: arrastrar hacia abajo sobre la portada cierra la hoja de Sonido sin mover la página de detrás', async ({ page }) => {
+  await completeOnboarding(page);
+  await page.goto('/sonido');
+  const sheet = page.getByRole('dialog', { name: 'Sonido' });
+  await expect(sheet).toBeVisible();
+  const scrollBefore = await page.evaluate(() => window.scrollY);
+  const cover = (await page.locator('.sound-player .player-cover').boundingBox())!;
+  await page.mouse.move(cover.x + cover.width / 2, cover.y + cover.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(cover.x + cover.width / 2, cover.y + cover.height / 2 + 80, { steps: 5 });
+  await page.mouse.move(cover.x + cover.width / 2, cover.y + cover.height / 2 + 220, { steps: 5 });
+  await page.mouse.up();
+  await expect(sheet).toHaveCount(0);
+  expect(await page.evaluate(() => window.scrollY)).toBe(scrollBefore);
+});
