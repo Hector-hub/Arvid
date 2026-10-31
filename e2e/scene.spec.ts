@@ -36,7 +36,9 @@ test.describe('escena neón (spec 05)', () => {
     await page.waitForTimeout(400);
     expect(await snapshot(page)).not.toBe(a);
     // La bocina abre la página Sonido (D-195); tachada mientras la música está apagada
-    await expect(page.getByRole('link', { name: 'Música' })).toHaveAttribute('href', '/sonido');
+    // La bocina abre la hoja de Sonido (2.0.2)
+    await page.getByRole('button', { name: 'Música' }).click();
+    await expect(page.getByRole('dialog', { name: 'Sonido' })).toBeVisible();
   });
 
   test('UB-05: al hacer scroll en Hoy, la escena, la fecha y el nivel siguen arriba', async ({ page }) => {

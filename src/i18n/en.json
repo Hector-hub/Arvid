@@ -549,7 +549,8 @@
     "categoryActivities_one": "{count} activity",
     "categoryActivities_other": "{count} activities",
     "categoryHidden": "Not shown when creating or on the radar",
-    "categoryActiveHelp": "Shown when creating activities and on your radar."
+    "categoryActiveHelp": "Shown when creating activities and on your radar.",
+    "musicVolume": "Music volume"
   },
   "backup": {
     "title": "Backup",

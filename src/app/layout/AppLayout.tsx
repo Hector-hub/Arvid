@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import { FriendLanding } from '../friends/FriendLinkScreen';
 import { setPendingLink } from '../friends/friends';
 import { UpdateBanner } from './UpdateBanner';
+import { SoundSheetProvider } from '../music/SoundSheet';
 import { PullToRefresh } from './PullToRefresh';
 import { AnalysisProvider } from '../analysis';
 import { AchievementsWatcher } from '../achievements/AchievementsWatcher';
@@ -78,6 +79,7 @@ export function AppLayout() {
   return (
     <AnalysisProvider>
       <MusicProvider>
+      <SoundSheetProvider>
       <div className="app">
         <main className="main">
           <PullToRefresh />
@@ -105,6 +107,7 @@ export function AppLayout() {
         <MemoryWatcher />
         <ChatLogWatcher />
       </div>
+      </SoundSheetProvider>
       </MusicProvider>
     </AnalysisProvider>
   );

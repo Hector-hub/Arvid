@@ -1,5 +1,4 @@
-import { useEffect, useRef, type CSSProperties } from 'react';
-import { useNavigate } from 'react-router';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { DEFAULT_SOUND, saveSetting, type SoundSettings } from '../../data/repository';
 import { COMPANION_NAME } from '../../domain/arvid/companion';
 import { t } from '../../i18n';
@@ -16,9 +15,8 @@ import { previewSfx } from '../sound/sfx';
  * Página Sonido (D-195): se abre con la bocina de la escena. Arriba el reproductor con la portada, debajo la lista de
  * pistas y al final los ajustes de sonido (seguir sonando fuera de la app, efectos y silenciar todo).
  */
-export function SoundScreen() {
+export function SoundScreen({ onClose }: { onClose?: () => void }) {
   const music = useMusic();
-  const navigate = useNavigate();
   const { db } = useData();
   const settings = useSettings();
   const sound = settings?.sound ?? DEFAULT_SOUND;
@@ -27,6 +25,9 @@ export function SoundScreen() {
   const track = music.track ?? TRACKS.find((tr) => tr.id === settings?.music.track) ?? TRACKS[0]!;
   const iosBackground = music.background && isIOS();
   const muted = !music.enabled && !sound.effects;
+  const scroller = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
+  const [inSettings, setInSettings] = useState(false);
 
   // Silenciar todo apaga la música y los efectos; quitarlo los vuelve a encender
   function muteAll(on: boolean) {
@@ -35,20 +36,11 @@ export function SoundScreen() {
     saveSound({ effects: !on });
   }
 
-  // Vuelve a donde estaba (Hoy, Perfil, Ajustes…); si se abrió directamente, a Hoy
-  const back = () => ((window.history.state as { idx?: number } | null)?.idx ? navigate(-1) : navigate('/hoy'));
-
   return (
     <div className="stack sound-page" style={{ gap: 'var(--s4)' }}>
-      {/* Fijo arriba como la escena de Hoy: solo se desplazan la lista y los ajustes */}
+      {/* Fijos arriba: el reproductor y «Lista»; solo se desplazan las canciones y los ajustes */}
       <div className="sound-sticky">
-        <header className="sound-top">
-          <button type="button" className="btn btn-icon btn-ghost" aria-label={t('common.back')} onClick={back}>
-            <span aria-hidden="true">‹</span>
-          </button>
-          <h1>{t('settings.sound')}</h1>
-        </header>
-
+        {!onClose && <h1 className="sr-only">{t('settings.sound')}</h1>}
         {/* La portada difuminada de fondo y un brillo de su color en los bordes, como el reproductor de antes (D-168) */}
         <section className="player has-cover sound-player" aria-label={t('settings.music')} style={{ '--glow': track.glow } as CSSProperties}>
           <div key={`bg-${track.id}`} className="player-bg" style={{ backgroundImage: `url(${trackCover(track, 192)})` }} aria-hidden="true" />
@@ -87,97 +79,129 @@ export function SoundScreen() {
             </button>
           </div>
         </section>
+        {/* «Lista» va con el reproductor, fija arriba con su línea; las canciones pasan por debajo */}
+        {/* Al llegar a los ajustes, el título fijo pasa de «Lista» a «Ajustes de sonido» */}
+        <h2 className="sound-heading sound-list-head">{inSettings ? t('sound.settings') : t('sound.list')}</h2>
       </div>
-      {music.needsConnection && (
-        <p role="status" className="small field-error">
-          {t('settings.needsConnection')}
-        </p>
-      )}
-
-      <section className="stack sound-tracks" style={{ gap: 'var(--s2)' }}>
-        <h2 className="sound-heading">{t('sound.list')}</h2>
-        <ul className="sound-list">
-          {TRACKS.map((tr) => {
-            const current = tr.id === track.id;
-            return (
-              <li key={tr.id}>
-                <button
-                  type="button"
-                  className={`sound-row${current ? ' on' : ''}`}
-                  style={{ '--glow': tr.glow } as CSSProperties}
-                  aria-current={current && music.playing ? 'true' : undefined}
-                  onClick={() => (current && music.playing ? undefined : music.playTrack(tr.id))}
-                  data-music-control=""
-                >
-                  <img src={trackCover(tr, 96)} alt="" width={48} height={48} />
-                  <span className="grow sound-row-name">
-                    <b>{tr.name}</b>
-                    <span>ARVID</span>
-                  </span>
-                  {current && music.playing ? <Equalizer small /> : <span className="sound-row-time">{clock(tr.seconds)}</span>}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-
-      {/* Plegados por defecto, como un acordeón: la página es la música (D-195) */}
-      <details className="sound-settings">
-        <summary>
-          <h2 className="sound-heading">{t('sound.settings')}</h2>
-          <span className="sound-settings-chevron" aria-hidden="true">
-            ›
-          </span>
-        </summary>
-        <SwitchOption
-          label={t('settings.musicBackground')}
-          help={iosBackground ? t('settings.musicBackgroundIos') : t('settings.musicBackgroundHelp')}
-          checked={music.background}
-          onChange={music.setBackground}
-          musicControl
-        />
-        <SwitchOption
-          label={t('settings.effects')}
-          help={t('settings.effectsNote', { companion: settings ? COMPANION_NAME[settings.companion] : '' })}
-          checked={sound.effects}
-          onChange={(on) => saveSound({ effects: on })}
-        />
-        {sound.effects && (
-          <div className="stack sound-effects">
-            <label className="field">
-              <span className="small muted">{t('settings.effectsVolume')}</span>
-              <input
-                type="range"
-                min={0}
-                max={1}
-                step={0.05}
-                value={sound.volume}
-                style={fill(sound.volume)}
-                onChange={(e) => saveSound({ volume: Number(e.target.value) })}
-              />
-            </label>
-            <fieldset className="stack" style={{ gap: 'var(--s2)' }}>
-              <legend className="small muted">{t('settings.timbre')}</legend>
-              <div className="row" style={{ flexWrap: 'wrap' }}>
-                <div className="segmented">
-                  {(['soft', 'chip'] as const).map((id) => (
-                    <label key={id}>
-                      <input type="radio" name="timbre" checked={sound.timbre === id} onChange={() => saveSound({ timbre: id })} />
-                      <span>{t(id === 'soft' ? 'settings.timbreSoft' : 'settings.timbreChip')}</span>
-                    </label>
-                  ))}
-                </div>
-                <button type="button" className="btn" onClick={() => void resumeAudio().then(() => previewSfx({ ...sound, enabled: true }))}>
-                  {t('settings.listen')}
-                </button>
-              </div>
-              <p className="small muted">{t('settings.timbreHelp')}</p>
-            </fieldset>
-          </div>
+      {/* Solo esto se desplaza: el reproductor y «Lista» quedan fuera, sin nada que pase por debajo */}
+      <div
+        className="sound-scroll"
+        ref={scroller}
+        onScroll={() => {
+          // Cuando las canciones ya han pasado por arriba, lo que se ve son los ajustes
+          const box = scroller.current;
+          const list = listRef.current;
+          if (box && list) setInSettings(list.getBoundingClientRect().bottom <= box.getBoundingClientRect().top + 8);
+        }}
+      >
+        {music.needsConnection && (
+          <p role="status" className="small field-error">
+            {t('settings.needsConnection')}
+          </p>
         )}
-        <SwitchOption label={t('sound.muteAll')} checked={muted} onChange={muteAll} musicControl />
-      </details>
+
+        <section className="sound-tracks">
+          <ul className="sound-list" ref={listRef}>
+            {TRACKS.map((tr) => {
+              const current = tr.id === track.id;
+              return (
+                <li key={tr.id}>
+                  <button
+                    type="button"
+                    className={`sound-row${current ? ' on' : ''}`}
+                    style={{ '--glow': tr.glow } as CSSProperties}
+                    aria-current={current && music.playing ? 'true' : undefined}
+                    onClick={() => (current && music.playing ? undefined : music.playTrack(tr.id))}
+                    data-music-control=""
+                  >
+                    <img src={trackCover(tr, 96)} alt="" width={48} height={48} />
+                    <span className="grow sound-row-name">
+                      <b>{tr.name}</b>
+                      <span>ARVID</span>
+                    </span>
+                    {current && music.playing ? <Equalizer small /> : <span className="sound-row-time">{clock(tr.seconds)}</span>}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+
+        {/* Plegados por defecto, como un acordeón: la página es la música (D-195) */}
+        <details className="sound-settings">
+          <summary>
+            <h2 className="sound-heading">{t('sound.settings')}</h2>
+            <span className="sound-settings-chevron" aria-hidden="true">
+              ›
+            </span>
+          </summary>
+          <SwitchOption
+            label={t('settings.musicBackground')}
+            help={iosBackground ? t('settings.musicBackgroundIos') : t('settings.musicBackgroundHelp')}
+            checked={music.background}
+            onChange={music.setBackground}
+            musicControl
+          />
+          {/* Volumen de la música (2.0.2), como el de los efectos; con la música fuera de la app lo llevan los botones del teléfono */}
+          {!music.background && (
+            <div className="stack sound-effects">
+              <label className="field">
+                <span className="small muted">{t('settings.musicVolume')}</span>
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={music.volume}
+                  style={fill(music.volume)}
+                  onChange={(e) => music.setVolume(Number(e.target.value))}
+                  data-music-control=""
+                />
+              </label>
+            </div>
+          )}
+          <SwitchOption
+            label={t('settings.effects')}
+            help={t('settings.effectsNote', { companion: settings ? COMPANION_NAME[settings.companion] : '' })}
+            checked={sound.effects}
+            onChange={(on) => saveSound({ effects: on })}
+          />
+          {sound.effects && (
+            <div className="stack sound-effects">
+              <label className="field">
+                <span className="small muted">{t('settings.effectsVolume')}</span>
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={sound.volume}
+                  style={fill(sound.volume)}
+                  onChange={(e) => saveSound({ volume: Number(e.target.value) })}
+                />
+              </label>
+              <fieldset className="stack" style={{ gap: 'var(--s2)' }}>
+                <legend className="small muted">{t('settings.timbre')}</legend>
+                <div className="row" style={{ flexWrap: 'wrap' }}>
+                  <div className="segmented">
+                    {(['soft', 'chip'] as const).map((id) => (
+                      <label key={id}>
+                        <input type="radio" name="timbre" checked={sound.timbre === id} onChange={() => saveSound({ timbre: id })} />
+                        <span>{t(id === 'soft' ? 'settings.timbreSoft' : 'settings.timbreChip')}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <button type="button" className="btn" onClick={() => void resumeAudio().then(() => previewSfx({ ...sound, enabled: true }))}>
+                    {t('settings.listen')}
+                  </button>
+                </div>
+                <p className="small muted">{t('settings.timbreHelp')}</p>
+              </fieldset>
+            </div>
+          )}
+          <SwitchOption label={t('sound.muteAll')} checked={muted} onChange={muteAll} musicControl />
+        </details>
+      </div>
     </div>
   );
 }

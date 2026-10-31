@@ -549,7 +549,8 @@
     "categoryActivities_one": "{count} actividad",
     "categoryActivities_other": "{count} actividades",
     "categoryHidden": "No aparece al crear ni en el radar",
-    "categoryActiveHelp": "Aparece al crear actividades y en tu radar."
+    "categoryActiveHelp": "Aparece al crear actividades y en tu radar.",
+    "musicVolume": "Volumen de la música"
   },
   "backup": {
     "title": "Copia de seguridad",

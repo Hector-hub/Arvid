@@ -290,8 +290,8 @@ describe('escena: chat y música (CH, MU)', () => {
 
   it('MU-01, D-195: la bocina abre la página Sonido y se ve apagada por defecto', async () => {
     renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
-    const music = await screen.findByRole('link', { name: 'Música' });
-    expect(music).toHaveAttribute('href', '/sonido');
+    const music = await screen.findByRole('button', { name: 'Música' });
+    expect(music).toBeInTheDocument();
   });
 });
 

@@ -89,7 +89,6 @@ async function auditApp(page: Page, found: Finding[], lang: string) {
     ['Ajustes · Perfil', '/ajustes/perfil'],
     ['Ajustes · Cuenta', '/ajustes/cuenta'],
     ['Ajustes · Categorías', '/ajustes/categorias'],
-    ['Sonido', '/sonido'],
     ['Instalar', '/ajustes/instalar'],
     ['Créditos', '/ajustes/creditos'],
     ['Nueva categoría', '/ajustes/categorias/nueva'],

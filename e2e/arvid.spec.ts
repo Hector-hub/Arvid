@@ -117,13 +117,30 @@ test('2.0.1: volver de «Lo que ARVID sabe de ti» no crea un bucle con el chat'
   await expect(page).toHaveURL(/\/hoy$/);
 });
 
-test('2.0.1: en Sonido el reproductor queda fijo arriba al hacer scroll', async ({ page }) => {
+test('2.0.2: Sonido sube como hoja; el reproductor y «Lista» quedan fijos y se cierra deslizándola', async ({ page }) => {
   await completeOnboarding(page);
   await page.goto('/sonido');
+  const sheet = page.getByRole('dialog', { name: 'Sonido' });
+  await expect(sheet).toBeVisible();
+  // El volumen de la música, en «Ajustes de sonido», solo con «Seguir sonando al salir de la app» desactivado
+  await sheet.locator('summary').click();
+  await expect(sheet.getByRole('slider', { name: 'Volumen de la música' })).toHaveCount(0);
+  const background = sheet.getByRole('checkbox', { name: 'Seguir sonando al salir de la app' });
+  await background.click();
+  await expect(background).not.toBeChecked();
+  await expect(sheet.getByRole('slider', { name: 'Volumen de la música' })).toBeVisible();
+  await sheet.locator('summary').click();
   const player = page.locator('.sound-player');
-  const before = (await player.boundingBox())!.y;
-  // WebKit móvil no admite la rueda: se desplaza la página directamente
-  await page.evaluate(() => window.scrollTo(0, 600));
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
-  await expect.poll(async () => (await player.boundingBox())!.y).toBe(before);
+  const head = page.locator('.sound-list-head');
+  const before = [(await player.boundingBox())!.y, (await head.boundingBox())!.y];
+  await page.locator('.sound-scroll').evaluate((el) => el.scrollTo(0, 400));
+  await expect.poll(() => page.locator('.sound-scroll').evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+  await expect.poll(async () => [(await player.boundingBox())!.y, (await head.boundingBox())!.y]).toEqual(before);
+  // Al llegar a los ajustes, el título fijo cambia de «Lista» a «Ajustes de sonido»
+  await expect(page.locator('.sound-list-head')).toHaveText('Lista');
+  await sheet.locator('summary').click();
+  await page.locator('.sound-scroll').evaluate((el) => el.scrollTo(0, el.scrollHeight));
+  await expect(page.locator('.sound-list-head')).toHaveText('Ajustes de sonido');
+  await page.keyboard.press('Escape');
+  await expect(sheet).toHaveCount(0);
 });

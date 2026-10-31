@@ -14,6 +14,7 @@ import { categoryName } from '../text';
 import { BackupPanel, DeletePanel } from './DataPanels';
 import { AccountPanel } from '../account/AccountPanel';
 import { accountsEnabled } from '../account/account';
+import { useOpenSound } from '../music/soundSheetContext';
 
 const PERSIST_TEXT: Record<PersistState, { title: TKey; body: TKey }> = {
   granted: { title: 'settings.persistGranted', body: 'settings.persistGrantedText' },
@@ -32,6 +33,7 @@ export function SettingsScreen() {
   const ctx = useData();
   const settings = useSettings();
   const categories = useCategories();
+  const openSound = useOpenSound();
 
   if (!settings) return null;
   const activeCategories = categories?.filter((c) => c.active).length ?? 0;
@@ -46,7 +48,7 @@ export function SettingsScreen() {
         <ul className="stack settings-cards" style={{ gap: 'var(--s2)' }}>
           <SettingsCard to="/ajustes/perfil" icon="nav-character" title={t('settings.profile')} text={t('settings.profileCard')} />
           <SettingsCard to="/ajustes/cuenta" icon="cat-key" title={t('settings.account')} text={t(accountsEnabled() ? 'settings.accountCardCloud' : 'settings.accountCard')} />
-          <SettingsCard to="/sonido" icon="cat-music" title={t('settings.sound')} text={t('settings.soundCard')} />
+          <SettingsCard onClick={openSound} icon="cat-music" title={t('settings.sound')} text={t('settings.soundCard')} />
           <SettingsCard to="/ajustes/categorias" icon="cat-gem" title={t('settings.categories')} text={t('settings.categoriesCard', { count: activeCategories })} />
         </ul>
       </nav>
@@ -85,21 +87,33 @@ export function SettingsScreen() {
   );
 }
 
-function SettingsCard({ to, icon, title, text }: { to: string; icon: SpriteName; title: string; text: string }) {
+function SettingsCard({ to, onClick, icon, title, text }: { to?: string; onClick?: () => void; icon: SpriteName; title: string; text: string }) {
+  const content = (
+    <>
+      <span className="settings-card-icon">
+        <Sprite name={icon} color="var(--xp)" />
+      </span>
+      <span className="grow stack" style={{ gap: 2 }}>
+        <span className="settings-card-title">{title}</span>
+        <span className="small muted">{text}</span>
+      </span>
+      <span aria-hidden="true" className="settings-card-go">
+        ›
+      </span>
+    </>
+  );
   return (
     <li>
-      <Link to={to} className="panel row settings-card">
-        <span className="settings-card-icon">
-          <Sprite name={icon} color="var(--xp)" />
-        </span>
-        <span className="grow stack" style={{ gap: 2 }}>
-          <span className="settings-card-title">{title}</span>
-          <span className="small muted">{text}</span>
-        </span>
-        <span aria-hidden="true" className="settings-card-go">
-          ›
-        </span>
-      </Link>
+      {/* Sonido abre su hoja (2.0.2); las demás, su página */}
+      {to ? (
+        <Link to={to} className="panel row settings-card">
+          {content}
+        </Link>
+      ) : (
+        <button type="button" className="panel row settings-card" onClick={onClick}>
+          {content}
+        </button>
+      )}
     </li>
   );
 }

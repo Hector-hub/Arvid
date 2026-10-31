@@ -2023,7 +2023,6 @@ input[type='checkbox'].switch:focus-visible { outline: 2px solid var(--focus); o
 .sound-settings[open] .sound-settings-chevron { transform: rotate(90deg); color: var(--xp); }
 .sound-settings > .sound-option:first-of-type { border-top: 0; }
 /* Línea divisoria entre los botones y la lista, como la de «Ajustes de sonido» */
-.sound-tracks { border-top: 1px solid rgb(255 255 255 / 0.07); padding-top: var(--s4); }
 /* Los tiempos de la barra, con el mismo formato que los de la lista */
 .sound-times .player-time, .player.has-cover .sound-times .player-time { font-family: var(--font-text); font-size: 0.8125rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
@@ -2151,5 +2150,38 @@ input[type='search']::placeholder,
 input[type='url']::placeholder { color: var(--text-muted); opacity: 0.7; }
 
 /* Sonido: cabecera y reproductor fijos arriba (2.0.1); la lista pasa por debajo y se funde */
-.sound-sticky { position: sticky; top: 0; z-index: 5; display: grid; gap: var(--s4); margin-top: calc(-1 * var(--main-top)); padding: var(--main-top) 0 var(--s2); background: var(--bg); }
-.sound-sticky::after { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 12px; pointer-events: none; background: linear-gradient(180deg, var(--bg), transparent); }
+/* ---------- Hoja de Sonido (2.0.2): sube desde abajo, sin tocar el notch, y se cierra deslizándola ---------- */
+.sound-sheet-backdrop { position: fixed; inset: 0; z-index: 80; background: rgb(0 0 0 / 0.2); }
+.sound-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: calc(env(safe-area-inset-top) + var(--s3));
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  /* Cristal neón: transparente y muy desenfocado, con su línea de luz arriba */
+  background: rgb(11 10 21 / 0.4);
+  -webkit-backdrop-filter: blur(40px) saturate(150%);
+  backdrop-filter: blur(40px) saturate(150%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14), inset 0 0 0 1px rgb(255 255 255 / 0.06), 0 -16px 40px rgb(0 0 0 / 0.35);
+  clip-path: polygon(0 6px, 6px 6px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 6px, 100% 6px, 100% 100%, 0 100%);
+  /* Sube suave, sin rebote: rápida al principio y frenando al llegar */
+  animation: sheet-up 460ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 260ms cubic-bezier(0.4, 0, 1, 1);
+}
+.sound-sheet.dragging { transition: none; }
+.sound-sheet.closing { transform: translateY(100%); }
+@keyframes sheet-up { from { transform: translateY(100%); } }
+.sound-sheet-grip { flex: none; display: grid; place-items: center; padding: var(--s3) 0 var(--s2); touch-action: none; cursor: grab; }
+.sound-sheet-handle { width: 40px; height: 4px; background: rgb(255 255 255 / 0.3); }
+.sound-sheet-body { flex: 1; min-height: 0; padding: 0 var(--s4); }
+/* En la hoja: arriba el reproductor y «Lista», fijos; debajo, lo único que se desplaza */
+.sound-sheet-body > .sound-page { height: 100%; display: flex; flex-direction: column; gap: 0 !important; }
+.sound-sheet-body .sound-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: grid; align-content: start; gap: var(--s4); margin-inline: calc(-1 * var(--s4)); padding: 0 var(--s4) calc(var(--s6) + env(safe-area-inset-bottom)); }
+/* Dentro de la hoja: el reproductor y «Lista» (con su línea) fijos arriba; las canciones pasan por debajo */
+.sound-sticky { flex: none; display: grid; gap: var(--s3); padding-top: var(--s1); }
+.sound-list-head { border-top: 1px solid rgb(255 255 255 / 0.07); padding: var(--s3) 0 var(--s2); }
+@media (prefers-reduced-motion: reduce) { .sound-sheet { animation: none; } }

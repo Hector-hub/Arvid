@@ -76,15 +76,15 @@ describe('escena en Hoy', () => {
     await addCaminar();
     renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
     // La bocina abre la página Sonido (D-195) y se ve tachada mientras la música está apagada
-    const music = await screen.findByRole('link', { name: 'Música' });
-    expect(music).toHaveAttribute('href', '/sonido');
+    const music = await screen.findByRole('button', { name: 'Música' });
+    expect(music).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
   });
 
   it('MUS-09: si la música quedó activada, la bocina lo muestra al volver a abrir la app', async () => {
     await saveSetting(ctx.db, 'music', { enabled: true, volume: 0.4, background: true } satisfies Settings['music']);
     renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
-    expect(await screen.findByRole('link', { name: 'Música' })).toHaveAttribute('href', '/sonido');
+    expect(await screen.findByRole('button', { name: 'Música' })).toBeInTheDocument();
   });
 
   it('PAR-01/PAR-04: registrar lanza partículas; deshacer, no', async () => {
@@ -138,7 +138,7 @@ describe('sonido y créditos', () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     try {
       renderRoutes(ctx, [{ path: '/hoy', element: <TodayScreen /> }], '/hoy');
-      await screen.findByRole('link', { name: 'Música' });
+      await screen.findByRole('button', { name: 'Música' });
       const scene = document.querySelector('.scene')!;
       await act(() => vi.advanceTimersByTimeAsync(4100));
       expect(scene).not.toHaveClass('controls-shown');

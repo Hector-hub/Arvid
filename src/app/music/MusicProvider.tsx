@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
+import { useOpenSound } from './soundSheetContext';
 import { DEFAULT_MUSIC, saveSetting } from '../../data/repository';
 import { useT } from '../../i18n';
 import { useData, useSettings } from '../data';
@@ -207,19 +207,15 @@ export function useMusic(): Music {
 
 /**
  * Bocina de la música arriba a la derecha de la escena: con ondas si está activada y tachada si no (MU-01, MUS-09).
- * Abre la página Sonido (D-195); la música se enciende y se apaga allí.
+ * Abre la hoja de Sonido (D-195, 2.0.2); la música se enciende y se apaga allí.
  */
 export function MusicButton() {
   const t = useT();
+  const openSound = useOpenSound();
   return (
-    <Link
-      to="/sonido"
-      className="btn btn-icon scene-icon"
-      aria-label={t('scene.music')}
-      title={t('scene.music')}
-    >
-      {/* Siempre igual, como los demás iconos de la escena: abre Sonido, no muestra si suena (D-195) */}
+    <button type="button" className="btn btn-icon scene-icon" aria-label={t('scene.music')} title={t('scene.music')} onClick={openSound}>
+      {/* Siempre igual, como los demás iconos de la escena: abre la hoja de Sonido (2.0.2) */}
       <SpeakerOnIcon />
-    </Link>
+    </button>
   );
 }
