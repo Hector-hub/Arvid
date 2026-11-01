@@ -13,6 +13,14 @@ export interface Release {
 /** De la más nueva a la más antigua. */
 export const RELEASES: Release[] = [
   {
+    version: '2.2.0',
+    kind: 'feature',
+    items: {
+      es: ['Nueva canción: Night Lift.'],
+      en: ['New track: Night Lift.'],
+    },
+  },
+  {
     version: '2.1.0',
     kind: 'feature',
     items: {

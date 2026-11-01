@@ -1,4 +1,4 @@
-// Pistas incluidas (spec 05 §9). Solo las de licencia verificada (LIC-01): las seis son propias, aportadas por el
+// Pistas incluidas (spec 05 §9). Solo las de licencia verificada (LIC-01): las siete son propias, aportadas por el
 // responsable del producto (generadas con Gemini).
 
 export interface Track {
@@ -19,6 +19,8 @@ export const TRACKS: Track[] = [
   { id: 'rain-on-the-expressway', name: 'Rain on the Expressway', src: '/music/rain-on-the-expressway.m4a', glow: '#3bc2f2', seconds: 173 },
   // Versión corta de «Rain Slicked Boulevard»: de 1:09,95 a 1:44,86 (16 compases a 110 BPM), unida a tempo (D-166)
   { id: 'afterglow-avenue', name: 'Afterglow Avenue', src: '/music/afterglow-avenue.m4a', glow: '#f24876', seconds: 90 },
+  // Editada desde «Velocity of a Setting Sun» (sin la parte dubstep); portada «Neon Moonlit Elevator Terrace» (2.2.0)
+  { id: 'night-lift', name: 'Night Lift', src: '/music/night-lift.m4a', glow: '#b84cf2', seconds: 115 },
 ];
 
 /**
