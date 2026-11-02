@@ -1,4 +1,4 @@
-// Pistas incluidas (spec 05 §9). Solo las de licencia verificada (LIC-01): las siete son propias, aportadas por el
+// Pistas incluidas (spec 05 §9). Solo las de licencia verificada (LIC-01): las ocho son propias, aportadas por el
 // responsable del producto (generadas con Gemini).
 
 export interface Track {
@@ -21,6 +21,8 @@ export const TRACKS: Track[] = [
   { id: 'afterglow-avenue', name: 'Afterglow Avenue', src: '/music/afterglow-avenue.m4a', glow: '#f24876', seconds: 90 },
   // Editada desde «Velocity of a Setting Sun» (sin la parte dubstep); portada «Neon Moonlit Elevator Terrace» (2.2.0)
   { id: 'night-lift', name: 'Night Lift', src: '/music/night-lift.m4a', glow: '#b84cf2', seconds: 115 },
+  // Antes «Asphalt Horizon» (nombre provisional); portada «Drone-Free Neon Cyberpunk Cityscape» (2.2.0)
+  { id: 'second-wind-boulevard', name: 'Second Wind Boulevard', src: '/music/second-wind-boulevard.m4a', glow: '#7c5cff', seconds: 180 },
 ];
 
 /**

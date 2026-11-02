@@ -16,8 +16,8 @@ export const RELEASES: Release[] = [
     version: '2.2.0',
     kind: 'feature',
     items: {
-      es: ['Nueva canción: Night Lift.'],
-      en: ['New track: Night Lift.'],
+      es: ['Nuevas canciones: Night Lift y Second Wind Boulevard.'],
+      en: ['New tracks: Night Lift and Second Wind Boulevard.'],
     },
   },
   {

@@ -112,8 +112,8 @@ describe('sonido y créditos', () => {
     expect(screen.getByRole('button', { name: 'Pista siguiente' })).toBeInTheDocument();
     // Sin sonar no se puede saltar dentro de la pista
     expect(screen.getByRole('slider', { name: 'Progreso de la pista' })).toBeDisabled();
-    // Las siete pistas con su portada y su duración; la guardada, resaltada
-    expect(screen.getAllByRole('button', { name: /ARVID/ })).toHaveLength(7);
+    // Las ocho pistas con su portada y su duración; la guardada, resaltada
+    expect(screen.getAllByRole('button', { name: /ARVID/ })).toHaveLength(8);
     expect(screen.getByRole('button', { name: /^Afterglow Avenue\s*ARVID\s*1:30$/ })).toBeInTheDocument();
     expect(document.querySelector('.sound-row.on')).toHaveTextContent('Rain on the Expressway');
   });
