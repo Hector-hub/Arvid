@@ -16,8 +16,8 @@ export const RELEASES: Release[] = [
     version: '2.2.0',
     kind: 'feature',
     items: {
-      es: ['Nuevas canciones: Night Lift y Static Dreams.'],
-      en: ['New tracks: Night Lift and Static Dreams.'],
+      es: ['Nuevas canciones: Night Lift, Static Dreams y Last Outpost.'],
+      en: ['New tracks: Night Lift, Static Dreams and Last Outpost.'],
     },
   },
   {

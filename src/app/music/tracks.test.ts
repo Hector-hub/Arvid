@@ -4,7 +4,7 @@ import { trackArtwork, TRACKS } from './tracks';
 
 describe('portadas de las pistas (D-167)', () => {
   it('cada pista tiene su portada en 96, 192 y 512 px, y los archivos existen', () => {
-    expect(TRACKS).toHaveLength(8);
+    expect(TRACKS).toHaveLength(9);
     for (const track of TRACKS) {
       const art = trackArtwork(track);
       expect(art.map((a) => a.sizes)).toEqual(['96x96', '192x192', '512x512']);

@@ -1,4 +1,4 @@
-// Pistas incluidas (spec 05 §9). Solo las de licencia verificada (LIC-01): las ocho son propias, aportadas por el
+// Pistas incluidas (spec 05 §9). Solo las de licencia verificada (LIC-01): las nueve son propias, aportadas por el
 // responsable del producto (generadas con Gemini).
 
 export interface Track {
@@ -23,6 +23,8 @@ export const TRACKS: Track[] = [
   { id: 'night-lift', name: 'Night Lift', src: '/music/night-lift.m4a', glow: '#b84cf2', seconds: 115 },
   // Antes «Asphalt Horizon» (nombre provisional); portada «Drone-Free Neon Cyberpunk Cityscape» (2.2.0)
   { id: 'static-dreams', name: 'Static Dreams', src: '/music/static-dreams.m4a', glow: '#7c5cff', seconds: 180 },
+  // «The Last Outpost» editada (sin el clímax, con la subida repetida); portada «Cyberpunk City Under a Red Drone Swarm» (2.2.0)
+  { id: 'last-outpost', name: 'Last Outpost', src: '/music/last-outpost.m4a', glow: '#ff6a3d', seconds: 160 },
 ];
 
 /**
