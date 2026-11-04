@@ -598,7 +598,8 @@
   },
   "update": {
     "available": "Nueva versión disponible",
-    "update": "Actualizar"
+    "update": "Actualizar",
+    "view": "Ver"
   },
   "levelUp": {
     "title": "¡Nivel {level}!",

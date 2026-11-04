@@ -64,7 +64,7 @@ export function AppLayout() {
   if (!settings.onboardingCompletedAt && friendLink && !registering)
     return (
       <main className="main stack" style={{ padding: 'var(--s4)', gap: 'var(--s5)' }}>
-        <UpdateBanner />
+        <UpdateBanner whatsNew={false} />
         <FriendLanding
           id={friendLink}
           onRegister={() => {
@@ -74,7 +74,7 @@ export function AppLayout() {
         />
       </main>
     );
-  if (!settings.onboardingCompletedAt) return <Onboarding banner={<UpdateBanner />} />;
+  if (!settings.onboardingCompletedAt) return <Onboarding banner={<UpdateBanner whatsNew={false} />} />;
 
   return (
     <AnalysisProvider>

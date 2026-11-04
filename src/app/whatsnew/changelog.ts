@@ -13,6 +13,14 @@ export interface Release {
 /** De la más nueva a la más antigua. */
 export const RELEASES: Release[] = [
   {
+    version: '2.3.0',
+    kind: 'feature',
+    items: {
+      es: ['Cuando hay una versión nueva, toca «Ver» en el aviso para actualizar y leer sus novedades.'],
+      en: ['When a new version is available, tap «View» in the notice to update and read what\'s new.'],
+    },
+  },
+  {
     version: '2.2.0',
     kind: 'feature',
     items: {
