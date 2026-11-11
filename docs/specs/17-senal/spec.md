@@ -1,7 +1,7 @@
 # Spec 17 — Programa ORIGEN (historia)
 
 Estado: **aprobada** (2026-11-11) · Incrementos 2.4.0 a 3.0.0 (§8)
-Decisiones que implementa: D-210 a D-244
+Decisiones que implementa: D-210 a D-245
 Historia que implementa: `cimientos.md` (reglas y giros) y `historia.md` (los veinte capítulos, con sus mensajes). Esta spec **no repite la historia**: dice cómo se juega.
 Sustituye a: el borrador del 2026-11-10, que iba por nivel.
 Modifica:
@@ -476,6 +476,7 @@ Son las misiones que manda el programa. En la historia se llaman «pruebas».
 | Función `arvid` | Momento `neighborChat`, con `neighbor` y `chapter`: 3 al día por código y vecino, sin créditos. Momento `origenTest`: una cada 5 días por código, sin créditos. El compañero recibe `chapter` | — |
 
 - El esquema de Dexie pasa a la **versión 6**, con las dos tablas nuevas y vacías. Lo anterior no cambia.
+- **En la 2.5.0** (D-245): las pruebas se guardan dentro del ajuste `origen` (`tests`), que ya viaja en el backup; la tabla `origenTests` y la versión 6 de Dexie llegan cuando haga falta (la conversación libre de `messages`, en la 2.7.0). Los chats de los vecinos no tienen campo de escribir hasta entonces.
 - Lo que se puede calcular no se guarda: los mensajes de la historia, el capítulo actual, las pistas, el porcentaje del Expediente, dónde está Sombra y qué canciones están desbloqueadas salen de `periods` y `steps`.
 - La XP de las pruebas se calcula a partir de `origenTests`, aparte de la de las misiones: no toca la Disciplina.
 - Módulos nuevos:

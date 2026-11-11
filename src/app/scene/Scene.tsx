@@ -8,7 +8,8 @@ import { MusicButton } from '../music/MusicProvider';
 import { TrackName } from '../music/TrackName';
 import { Link } from 'react-router';
 import { FriendsIcon, GameIcon, MessagesIcon } from '../design/icons';
-import { signalUnread, storyOn } from '../../domain/origen/origen';
+import { storyOn } from '../../domain/origen/origen';
+import { anyUnread } from '../../domain/origen/chapters';
 import { accountsEnabled } from '../account/account';
 import { ChatControl } from './Chat';
 import { claimIntro, currentSpeechText, introAvailable, releaseEntrance, subscribeSpeech } from './engine';
@@ -170,7 +171,7 @@ export function Scene({ overlay, controls = true, intro, focus = false }: { over
             <MusicButton />
             {accountsEnabled() && <FriendsButton />}
             {settings?.games !== false && <GameButton />}
-            {storyOn(settings?.origen) && <MessagesButton unread={signalUnread(settings?.origen)} />}
+            {storyOn(settings?.origen) && <MessagesButton unread={anyUnread(settings?.origen)} />}
             <ChatControl />
           </div>
         </>

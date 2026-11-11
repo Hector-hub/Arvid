@@ -9,7 +9,6 @@ import {
   seenSessions,
   SESSION_1,
   setStory,
-  signalUnread,
   sombraHidden,
   storyOn,
   voiceFor,
@@ -60,13 +59,6 @@ describe('la pregunta (DE)', () => {
     expect(sombraHidden(choose(seen, 'investigate'))).toBe(true);
     expect(sombraHidden(choose(seen, 'block'))).toBe(false);
   });
-
-  it('«???» está sin leer hasta abrirlo, y solo con la historia en marcha (CA-03)', () => {
-    const on = choose(finishContact(undefined, new Date('2026-11-11T10:00:00.000Z'), 0), 'investigate');
-    expect(signalUnread(on)).toBe(true);
-    expect(signalUnread({ ...on, read: { signal: '2026-11-11T10:00:00.000Z' } })).toBe(false);
-    expect(signalUnread(choose(on, 'block'))).toBe(false);
-  });
 });
 
 describe('voz (TR-05)', () => {
@@ -88,5 +80,17 @@ describe('voz (TR-05)', () => {
     expect(cueAt(SESSION_1['es-m'], 8.22)).toBe(0);
     expect(cueAt(SESSION_1['es-m'], 8.23)).toBe(1);
     expect(cueAt(SESSION_1['es-m'], 99)).toBe(7);
+  });
+});
+
+describe('tiempo de los textos (CA-07)', () => {
+  it('días, semanas, meses o un año', async () => {
+    const { elapsed } = await import('./origen');
+    expect(elapsed(0)).toEqual({ unit: 'days', count: 1 });
+    expect(elapsed(13)).toEqual({ unit: 'days', count: 13 });
+    expect(elapsed(14)).toEqual({ unit: 'weeks', count: 2 });
+    expect(elapsed(59)).toEqual({ unit: 'weeks', count: 8 });
+    expect(elapsed(60)).toEqual({ unit: 'months', count: 2 });
+    expect(elapsed(365)).toEqual({ unit: 'year', count: 1 });
   });
 });

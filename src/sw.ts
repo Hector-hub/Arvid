@@ -24,6 +24,12 @@ registerRoute(
   }),
 );
 
+// Voces de la señal (spec 17, TR-06): la sesión 1 va en el precache; las demás se guardan al descargarse
+registerRoute(
+  ({ url }) => url.pathname.startsWith('/senal/'),
+  new CacheFirst({ cacheName: 'arvid-senal', plugins: [new CacheableResponsePlugin({ statuses: [200] }), new ExpirationPlugin({ maxEntries: 40 })] }),
+);
+
 // Actualización con aviso (registerType: 'prompt'): el banner pide activar la versión nueva
 self.addEventListener('message', (event) => {
   if ((event.data as { type?: string } | null)?.type === 'SKIP_WAITING') void self.skipWaiting();

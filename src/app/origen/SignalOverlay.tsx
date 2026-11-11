@@ -2,7 +2,7 @@
 // desde «???» (TR-08). Diálogo modal «Señal desconocida» con los subtítulos en una región `aria-live` (PC-10).
 import { useEffect, useEffectEvent, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { SESSION_1, type VoiceId } from '../../domain/origen/origen';
+import { cueKey, SESSIONS, type VoiceId } from '../../domain/origen/origen';
 import { t, tDynamic, useLocale } from '../../i18n';
 import { useMusic } from '../music/MusicProvider';
 import { useSettings } from '../data';
@@ -27,12 +27,14 @@ function regionName(locale: string): string {
 
 export function SignalOverlay({
   mode,
+  session = 1,
   voice,
   assets,
   onVoiceEnd,
   onDone,
 }: {
-  mode: 'first' | 'replay';
+  mode: 'first' | 'chapter' | 'replay' | 'blip';
+  session?: number;
   voice: VoiceId;
   assets: SignalAssets;
   onVoiceEnd?: () => void;
@@ -46,7 +48,6 @@ export function SignalOverlay({
   const voiceEnded = useEffectEvent(() => onVoiceEnd?.());
   const done = useEffectEvent(() => onDone());
   const sound = settings?.sound;
-  const gender = voice === 'es-f' ? 'f' : 'm';
 
   useEffect(() => {
     const el = root.current;
@@ -56,7 +57,8 @@ export function SignalOverlay({
     // La música se calla y los demás efectos también mientras dura (PC-09)
     const resumeMusic = music.hush();
     const resumeSfx = suppressSfx();
-    const cues = Array.from({ length: 8 }, (_, i) => tDynamic(i === 0 ? `origen.session1.0.${gender}` : `origen.session1.${i}`));
+    const data = SESSIONS[session] ?? SESSIONS[1]!;
+    const cues = Array.from({ length: data.cues }, (_, i) => tDynamic(cueKey(session, i, voice)));
     const stop = playSignal(
       {
         root: el,
@@ -72,7 +74,7 @@ export function SignalOverlay({
       {
         query: t('origen.query'),
         cues,
-        track: SESSION_1[voice],
+        track: data.tracks[voice],
         voice: assets.voice,
         volume: sound?.effects === false ? null : (sound?.volume ?? 0.5),
         reduced,

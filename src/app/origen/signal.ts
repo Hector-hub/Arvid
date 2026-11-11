@@ -25,8 +25,12 @@ export interface SignalOptions {
   volume: number | null;
   reduced: boolean;
   figure: HTMLImageElement;
-  /** Primera vez (con buscador) o al volver a verla desde «???» (TR-08). */
-  mode: 'first' | 'replay';
+  /**
+   * `first`: primer contacto, con buscador. `chapter`: un capítulo con sesión (interferencia, 1 s de negro y la sesión,
+   * RI-07). `replay`: al volver a verla desde «???» (TR-08). `blip`: solo la interferencia, para un capítulo sin sesión o
+   * una prueba nueva.
+   */
+  mode: 'first' | 'chapter' | 'replay' | 'blip';
   /** La voz terminó: el primer contacto cuenta como visto (PC-06). */
   onVoiceEnd: () => void;
   onDone: () => void;
@@ -445,7 +449,7 @@ export function playSignal(el: SignalElements, o: SignalOptions): () => void {
 
   // ---------- Fases ----------
   const now = () => performance.now() / 1000;
-  let phase: Phase = o.mode === 'first' && s ? 'in' : 'black';
+  let phase: Phase = o.mode === 'replay' ? 'black' : 'in';
   let t0 = now();
   const flags = new Set<string>();
   let voiceEnded = false;
@@ -499,7 +503,7 @@ export function playSignal(el: SignalElements, o: SignalOptions): () => void {
             ctx.globalAlpha = 1;
           }
         } else glitch(null, 0.2 + 0.8 * clamp(t / IN_S), f);
-        if (t >= IN_S) go('search');
+        if (t >= IN_S) go(s ? 'search' : o.mode === 'blip' ? 'done' : 'black');
         break;
       }
       case 'search': {
@@ -514,7 +518,7 @@ export function playSignal(el: SignalElements, o: SignalOptions): () => void {
       }
       case 'black': {
         const length = o.mode === 'first' ? BLACK_FIRST : BLACK_REPLAY;
-        if (t >= length - 2 || o.mode === 'replay') humStart();
+        if (t >= length - 2 || o.mode !== 'first') humStart();
         if (t >= length) go('entity');
         break;
       }

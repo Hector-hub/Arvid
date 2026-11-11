@@ -29,6 +29,7 @@ import { CloudBackupWatcher } from '../account/CloudBackupWatcher';
 import { ChallengeSync } from '../challenges/ChallengeSync';
 import { MusicProvider } from '../music/MusicProvider';
 import { OrigenWatcher } from '../origen/OrigenWatcher';
+import { ChapterWatcher } from '../origen/ChapterWatcher';
 
 const TABS: { to: string; label: TKey; icon: SpriteName }[] = [
   { to: '/hoy', label: 'nav.today', icon: 'nav-today' },
@@ -108,6 +109,7 @@ export function AppLayout() {
         <MemoryWatcher />
         <ChatLogWatcher />
         <OrigenWatcher />
+        <ChapterWatcher />
       </div>
       </SoundSheetProvider>
       </MusicProvider>

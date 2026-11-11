@@ -1473,6 +1473,110 @@
     "settings": {
       "story": "Historia",
       "storyHelp": "Transmisiones y capítulos del Programa ORIGEN. Apagada, la app funciona como siempre."
+    },
+    "session2": {
+      "0": "Sesión dos. Fase de evaluación.",
+      "1": "Se ha emitido la primera prueba.",
+      "2": "La aceptación es voluntaria.",
+      "3": "El rechazo también será registrado."
+    },
+    "session3": {
+      "0": "Sesión tres.",
+      "1": "Probabilidad de convergencia: doce por ciento.",
+      "2": "Rendimiento dentro de parámetros.",
+      "3": "Nota del registro: históricamente, el participante abandona en la tercera semana.",
+      "4": "Esta vez no lo ha hecho."
+    },
+    "wrote": "{name} te escribió.",
+    "forYou": "{companion}, por ti",
+    "time": {
+      "days_one": "{count} día",
+      "days_other": "{count} días",
+      "weeks_one": "{count} semana",
+      "weeks_other": "{count} semanas",
+      "months_one": "{count} mes",
+      "months_other": "{count} meses",
+      "year": "un año"
+    },
+    "ch": {
+      "2": {
+        "dex0": "Hola, soy Dex, el que toca bajo el farol nuevo. Si molesto a partir de cierta hora, me dices y me muevo.",
+        "you0": "No molestas. Suena bien.",
+        "dex1": "Gracias. Oye, pregunta tonta. ¿Te suena esto? 🎵 (nota de voz, 0:09)",
+        "dex2": "Se me pegó hace unos días y no sé de qué es. No es mía. No la oí en ningún lado. Y no me la puedo sacar de la cabeza.",
+        "say0": "Es el zumbido. El de la señal. Los mismos intervalos, más lentos.",
+        "say1": "Dex no estaba en nuestro canal. Nadie estaba. ¿Cómo lo oyó?",
+        "say2": "Busqué «Programa ORIGEN» en todos los registros a los que llego. Empresas, laboratorios, licencias de emisión. Nada.",
+        "say3": "Una señal que no viene de ningún lado. Eso no existe."
+      },
+      "3": {
+        "say0": "Sabe cosas. Cosas que yo sé porque estoy contigo todo el día.",
+        "omar0": "Buenas. Omar, reparto en esta zona. Tengo una entrega asignada a tu edificio y no hay manera de cerrarla. ¿Es tuya?",
+        "you0": "No pedimos nada. ¿De quién es?",
+        "omar1": "Ese es el tema. Destinatario: «Programa Origen». Remitente: en blanco. Y en el almacén no hay paquete. El sistema no deja crear un envío sin paquete ni remitente. Pero ahí está.",
+        "omar2": "Busqué la empresa para devolverla. No tiene dirección. Y yo me sé todas las direcciones de esta ciudad.",
+        "you1": "Si aparece algo, avísanos.",
+        "omar3": "Hecho. Rarísimo. Bueno, voy apurado. ¡Ánimo con el día!",
+        "say1": "No existe en ningún registro. Salvo en una entrega fantasma a tu puerta.",
+        "say2": "O no viene de ningún lado… o viene de un lugar que todavía no existe."
+      },
+      "4": {
+        "say0": "No me quedo tranquilo. Voy a preguntarle a alguien que sabe de esto.",
+        "you0": "Hola, Lía. Somos del mismo edificio. Perdona la hora: una pregunta de trabajo, de las tuyas. ¿Una interfaz puede mostrarte una página que no abriste? ¿Y una voz que no es de nadie?",
+        "lia0": "Uf. Sí. Se llama phishing neuronal y lo veo veinte veces al día.",
+        "lia1": "Te muestran una pantalla conocida para que te confíes y luego viene la voz seria. Regla de oro: si te pide algo, es estafa. ¿Qué te pide? ¿Créditos? ¿Tus claves?",
+        "you1": "Nada de eso. Que entrene. Que lea. Que me acueste más temprano.",
+        "lia2": "…",
+        "lia3": "Eso no es una estafa. Las estafas no te mandan a dormir temprano.",
+        "lia4": "No sé qué es. Mañana lo reviso en el trabajo. Tú no aceptes nada raro.",
+        "lia5": "Lo revisé. No encaja con nada que tengamos catalogado. No instala nada, no saca nada, no pide nada.",
+        "lia6": "Sigo pensando que tengas cuidado. Pero ya no sé de qué."
+      },
+      "5": {
+        "say0": "¿«Históricamente»? Llevas {tiempo} en esto. Nadie tiene un historial tuyo.",
+        "say1": "¿Cómo sabe lo que sueles hacer?",
+        "say2": "El número. 6174. Nova estudia matemáticas; le voy a preguntar.",
+        "you0": "Nova, tú que estudias matemáticas: ¿el 6174 te dice algo?",
+        "nova0": "¡¿Que si me dice algo?! Es la constante de Kaprekar.",
+        "nova1": "Tomas cualquier número de cuatro cifras que no sean todas iguales. Ordenas las cifras de mayor a menor y de menor a mayor, y restas. Repites. Da igual por dónde empieces: en siete pasos como mucho llegas a 6174.",
+        "nova2": "Y de ahí ya no sales. 7641 − 1467 = 6174. Se queda ahí para siempre.",
+        "nova3": "¿Por qué preguntas?",
+        "you1": "Curiosidad. Lo vi por ahí.",
+        "nova4": "Pues es mi número favorito. Si yo puedo con mis apuntes, tú puedes con tu lista 💪",
+        "pip0": "hola soy pip el que corre",
+        "pip1": "hoy te quedaste sin moverte {segundos} segundos. los conte",
+        "pip2": "yo aguanto 12. ganaste tu",
+        "pip3": "mañana juego otra vez",
+        "say3": "{segundos} segundos. Lo que dura la transmisión.",
+        "say4": "Eso es lo que se ve desde afuera. Tú, sin moverte, mirando a ningún lado."
+      }
+    },
+    "test": {
+      "offer": "Prueba {n}. Objetivo: {objective} Plazo: 7 días. Valor: 100 XP. La aceptación es voluntaria. El rechazo también será registrado.",
+      "accept": "Aceptar",
+      "reject": "Rechazar",
+      "accepted": "Prueba {n}: aceptada. Plazo: hasta el {date}.",
+      "passed": "Prueba {n}: verificada.",
+      "failed": "Prueba {n}: no superada. Registrado.",
+      "rejected": "Rechazo registrado.",
+      "ignored": "Prueba {n}: sin respuesta. Registrado.",
+      "arrived": "Entró una prueba por el canal.",
+      "fragment": "Con la prueba llegó algo cifrado. No puedo leerlo; lo guardo.",
+      "title": "Prueba {n}",
+      "progress": "{done} de {of}",
+      "daysLeft_one": "Queda 1 día",
+      "daysLeft_other": "Quedan {count} días",
+      "lastDay": "Último día",
+      "label": "Prueba del programa",
+      "objective": {
+        "fullDays": "completar todas tus actividades diarias {times} días seguidos.",
+        "hardest": "hacer «{activity}» {times} días de los próximos 7.",
+        "noBlank": "registrar algo cada día, {times} días seguidos.",
+        "roundWeek": "llegar al objetivo de todas tus actividades semanales en una misma semana.",
+        "weakArea": "cumplir todo lo de {category} {times} días de los próximos 7.",
+        "missionsOnTime": "completar a tiempo las {times} misiones que vencen esta semana.",
+        "bestWeek": "superar tu mejor semana: más de {threshold} registros en 7 días."
+      }
     }
   }
 }

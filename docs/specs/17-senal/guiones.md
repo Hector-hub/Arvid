@@ -140,7 +140,7 @@ Session three. <break time="1s"/> Convergence probability: <break time="0.4s"/> 
 
 ---
 
-## Lista de archivos que faltan para la 2.5.0
+## Archivos de la 2.5.0 (generados el 2026-11-11 con Fish Audio, en `public/senal/`)
 | Archivo | Voz |
 |---|---|
 | `sesion-02-es-m` | Española masculina |

@@ -1473,6 +1473,110 @@
     "settings": {
       "story": "Story",
       "storyHelp": "Transmissions and chapters of the ORIGIN Program. Off, the app works as always."
+    },
+    "session2": {
+      "0": "Session two. Evaluation phase.",
+      "1": "The first test has been issued.",
+      "2": "Acceptance is voluntary.",
+      "3": "Refusal will also be recorded."
+    },
+    "session3": {
+      "0": "Session three.",
+      "1": "Convergence probability: twelve percent.",
+      "2": "Performance within parameters.",
+      "3": "Log note: historically, the participant quits in the third week.",
+      "4": "This time, they have not."
+    },
+    "wrote": "{name} wrote to you.",
+    "forYou": "{companion}, for you",
+    "time": {
+      "days_one": "{count} day",
+      "days_other": "{count} days",
+      "weeks_one": "{count} week",
+      "weeks_other": "{count} weeks",
+      "months_one": "{count} month",
+      "months_other": "{count} months",
+      "year": "a year"
+    },
+    "ch": {
+      "2": {
+        "dex0": "Hi, I'm Dex, the one playing under the new street lamp. If I'm too loud after a certain hour, tell me and I'll move.",
+        "you0": "You're not bothering us. Sounds good.",
+        "dex1": "Thanks. Hey, silly question. Does this ring a bell? 🎵 (voice note, 0:09)",
+        "dex2": "It got stuck in my head a few days ago and I don't know where it's from. It's not mine. I haven't heard it anywhere. And I can't shake it.",
+        "say0": "It's the hum. The signal's hum. Same intervals, slower.",
+        "say1": "Dex wasn't on our channel. Nobody was. How did he hear it?",
+        "say2": "I searched for «ORIGIN Program» in every record I can reach. Companies, labs, broadcast licenses. Nothing.",
+        "say3": "A signal that comes from nowhere. That doesn't exist."
+      },
+      "3": {
+        "say0": "It knows things. Things I know because I'm with you all day.",
+        "omar0": "Hey. Omar, deliveries around here. I've got a delivery assigned to your building and there's no way to close it. Is it yours?",
+        "you0": "We didn't order anything. Who's it from?",
+        "omar1": "That's the thing. Recipient: «Origin Program». Sender: blank. And there's no package in the warehouse. The system won't create a shipment with no package and no sender. But there it is.",
+        "omar2": "I looked up the company to send it back. It has no address. And I know every address in this city.",
+        "you1": "If anything turns up, let us know.",
+        "omar3": "Will do. So weird. Anyway, I'm in a rush. Have a good one!",
+        "say1": "It doesn't exist in any record. Except in a ghost delivery to your door.",
+        "say2": "Either it comes from nowhere… or it comes from somewhere that doesn't exist yet."
+      },
+      "4": {
+        "say0": "I'm not at ease. I'm going to ask someone who knows about this.",
+        "you0": "Hi, Lía. We're in the same building. Sorry for the hour: a work question, your kind. Can an interface show you a page you never opened? And a voice that belongs to no one?",
+        "lia0": "Ugh. Yes. It's called neural phishing and I see it twenty times a day.",
+        "lia1": "They show you a familiar screen so you relax, and then comes the serious voice. Golden rule: if it asks for something, it's a scam. What's it asking for? Credits? Your passwords?",
+        "you1": "None of that. To train. To read. To go to bed earlier.",
+        "lia2": "…",
+        "lia3": "That's not a scam. Scams don't send you to bed early.",
+        "lia4": "I don't know what it is. I'll look into it at work tomorrow. Don't accept anything weird.",
+        "lia5": "I looked into it. It doesn't match anything we've catalogued. It installs nothing, takes nothing, asks for nothing.",
+        "lia6": "I still think you should be careful. I just don't know of what anymore."
+      },
+      "5": {
+        "say0": "«Historically»? You've been at this for {tiempo}. Nobody has a record of you.",
+        "say1": "How does it know what you usually do?",
+        "say2": "The number. 6174. Nova studies math; I'll ask her.",
+        "you0": "Nova, you study math: does 6174 mean anything to you?",
+        "nova0": "Does it mean anything?! It's Kaprekar's constant.",
+        "nova1": "Take any four-digit number whose digits aren't all the same. Sort the digits from largest to smallest and from smallest to largest, and subtract. Repeat. Wherever you start, in seven steps at most you reach 6174.",
+        "nova2": "And from there you never leave. 7641 − 1467 = 6174. It stays there forever.",
+        "nova3": "Why do you ask?",
+        "you1": "Just curious. Saw it somewhere.",
+        "nova4": "Well, it's my favorite number. If I can handle my notes, you can handle your list 💪",
+        "pip0": "hi im pip the one who runs",
+        "pip1": "today you stood still for {segundos} seconds. i counted",
+        "pip2": "i can do 12. you win",
+        "pip3": "tomorrow i play again",
+        "say3": "{segundos} seconds. As long as the transmission.",
+        "say4": "That's what it looks like from outside. You, standing still, staring at nothing."
+      }
+    },
+    "test": {
+      "offer": "Test {n}. Objective: {objective} Deadline: 7 days. Value: 100 XP. Acceptance is voluntary. Refusal will also be recorded.",
+      "accept": "Accept",
+      "reject": "Refuse",
+      "accepted": "Test {n}: accepted. Deadline: {date}.",
+      "passed": "Test {n}: verified.",
+      "failed": "Test {n}: not passed. Recorded.",
+      "rejected": "Refusal recorded.",
+      "ignored": "Test {n}: no response. Recorded.",
+      "arrived": "A test came in through the channel.",
+      "fragment": "Something encrypted came with the test. I can't read it; I'm keeping it.",
+      "title": "Test {n}",
+      "progress": "{done} of {of}",
+      "daysLeft_one": "1 day left",
+      "daysLeft_other": "{count} days left",
+      "lastDay": "Last day",
+      "label": "Program test",
+      "objective": {
+        "fullDays": "complete all your daily activities {times} days in a row.",
+        "hardest": "do «{activity}» on {times} of the next 7 days.",
+        "noBlank": "log something every day, {times} days in a row.",
+        "roundWeek": "reach the goal of all your weekly activities in the same week.",
+        "weakArea": "complete everything in {category} on {times} of the next 7 days.",
+        "missionsOnTime": "complete on time the {times} missions due this week.",
+        "bestWeek": "beat your best week: more than {threshold} logs in 7 days."
+      }
     }
   }
 }

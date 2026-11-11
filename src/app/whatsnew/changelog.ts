@@ -13,6 +13,14 @@ export interface Release {
 /** De la más nueva a la más antigua. */
 export const RELEASES: Release[] = [
   {
+    version: '2.5.0',
+    kind: 'feature',
+    items: {
+      es: ['Tus vecinos empiezan a escribirte. Lo que pasa en tu calle llega a Mensajes.', 'A veces llega una prueba. Aceptarla es voluntario; rechazarla, también.'],
+      en: ['Your neighbors start writing to you. What happens on your street arrives in Messages.', 'Sometimes a test arrives. Accepting it is voluntary; so is refusing it.'],
+    },
+  },
+  {
     version: '2.4.0',
     kind: 'feature',
     items: {

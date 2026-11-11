@@ -57,14 +57,25 @@ let waterGoneSince = -Infinity;
 
 /** Peatones que no deben salir aunque el nivel los traiga (Sombra mientras investigas, spec 17 SO-05). */
 let hiddenPeds = new Set<number>();
+/** Peatones que la historia ya necesita aunque el nivel no los haya traído (spec 17, RI-09). */
+let extraPeds = new Set<number>();
+const pedTypesFor = (c: City) => [...new Set([...c.peds, ...extraPeds])].filter((p) => !hiddenPeds.has(p)).sort((a, b) => a - b);
+function applyPeds() {
+  if (!city) return;
+  config.pedTypes = pedTypesFor(city);
+  scene.peds = scene.peds.filter((p) => config.pedTypes!.includes(p.type));
+}
 export function hidePeds(types: readonly number[]): void {
   const next = new Set(types);
   if ([...next].join() === [...hiddenPeds].join()) return;
   hiddenPeds = next;
-  if (city) {
-    config.pedTypes = city.peds.filter((p) => !hiddenPeds.has(p));
-    scene.peds = scene.peds.filter((p) => config.pedTypes!.includes(p.type));
-  }
+  applyPeds();
+}
+export function showPeds(types: readonly number[]): void {
+  const next = new Set(types);
+  if ([...next].sort().join() === [...extraPeds].sort().join()) return;
+  extraPeds = next;
+  applyPeds();
 }
 
 /** Lo que hay en la escena según el nivel (CV-01, CV-02). `fresh`: lo recién llegado, que brilla al aparecer. */
@@ -74,7 +85,7 @@ export function setCity(level: number, fresh: readonly CityItem[] = []): void {
   // Al subir de nivel y dejar atrás el río, se desvanece en lugar de desaparecer de golpe
   if (hadWater && !city.water && fresh.length > 0) waterGoneSince = scene.t;
   config.carModels = city.cars;
-  config.pedTypes = city.peds.filter((p) => !hiddenPeds.has(p));
+  config.pedTypes = pedTypesFor(city);
   config.props = city.props ? PROPS : [];
   config.skyModels = city.sky ? SKY_MODELS : 0;
   // Si el nivel baja (p. ej. al importar un backup) desaparece lo que ya no corresponde

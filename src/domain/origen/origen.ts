@@ -9,8 +9,10 @@ export type OrigenChoice = 'investigate' | 'block';
 export interface OrigenPeriod {
   /** Instante en que se abrió el capítulo que empieza el tramo. */
   openedAt: string;
-  /** XP total (entera) en ese momento: la del tramo es la de ahora menos esta (RI-05). */
+  /** XP (entera, sin la de las pruebas) en ese momento: la del tramo es la de ahora menos esta (RI-05). */
   xpAtOpen: number;
+  /** La vara del tramo (RI-03); sin ella, el mínimo. */
+  target?: number;
 }
 
 /** Ajuste `origen` (spec 17 §4). Viaja en el backup. */
@@ -29,6 +31,10 @@ export interface OrigenState {
   read?: Record<string, string>;
   /** El compañero ya comentó que Sombra se fue de la calle (SO-05). */
   sombraNoticed?: boolean;
+  /** Pasos de los capítulos ya entregados → instante (CA-01, ME-06). */
+  steps?: Record<string, string>;
+  /** Pruebas del programa (PR). */
+  tests?: import('./programTests').ProgramTest[];
 }
 
 export type VoiceId = 'es-m' | 'es-f' | 'en';
@@ -92,13 +98,6 @@ export function seenSessions(state: OrigenState | undefined): { n: number; at: s
     .sort((a, b) => a.n - b.n);
 }
 
-/** Chat de la señal sin leer: alguna sesión llegó después de la última lectura (CA-03). */
-export function signalUnread(state: OrigenState | undefined): boolean {
-  if (!storyOn(state)) return false;
-  const read = state?.read?.signal ?? '';
-  return seenSessions(state).some((s) => s.at > read);
-}
-
 /** A Sombra no se le ve en la calle hasta el capítulo 10 si investigas (SO-01, SO-05). En la 2.4.0 no hay capítulo 10. */
 export const sombraHidden = (state: OrigenState | undefined) => storyOn(state);
 
@@ -116,6 +115,42 @@ export const SESSION_1: Record<VoiceId, VoiceTrack> = {
   'es-f': { end: 43.7, cues: [[0, 0], [8.2, 1], [13.41, 2], [21.75, 3], [29.05, 4], [34.2, 5], [37.91, 6], [40.35, 7]] },
   en: { end: 48.5, cues: [[0, 0], [9.97, 1], [16.28, 2], [26.32, 3], [34.06, 4], [39.32, 5], [43.2, 6], [45.87, 7]] },
 };
+
+/** Sesiones 2 y 3 (voces de Fish Audio, 2026-11-11): marcas medidas en las pausas de cada grabación. */
+const S2: Record<VoiceId, VoiceTrack> = {
+  'es-m': { end: 9.77, cues: [[0, 0], [2.65, 1], [5.32, 2], [7.4, 3]] },
+  'es-f': { end: 8.62, cues: [[0, 0], [2.73, 1], [4.72, 2], [6.76, 3]] },
+  en: { end: 8.99, cues: [[0, 0], [3.05, 1], [4.97, 2], [6.98, 3]] },
+};
+const S3: Record<VoiceId, VoiceTrack> = {
+  'es-m': { end: 14.84, cues: [[0, 0], [1.48, 1], [4.89, 2], [7.24, 3], [13.16, 4]] },
+  'es-f': { end: 12.33, cues: [[0, 0], [1.47, 1], [4.43, 2], [6.3, 3], [11.18, 4]] },
+  en: { end: 11.76, cues: [[0, 0], [1.39, 1], [4.42, 2], [6.52, 3], [10.34, 4]] },
+};
+
+/** Subtítulos de cada sesión: cuántos hay y si el primero cambia con el género de la voz. */
+export const SESSIONS: Record<number, { tracks: Record<VoiceId, VoiceTrack>; cues: number; gendered: number[] }> = {
+  1: { tracks: SESSION_1, cues: 8, gendered: [0] },
+  2: { tracks: S2, cues: 4, gendered: [] },
+  3: { tracks: S3, cues: 5, gendered: [] },
+};
+
+/** Clave i18n del subtítulo `i` de la sesión `n` en la voz `voice`. */
+export function cueKey(n: number, i: number, voice: VoiceId): string {
+  const gendered = SESSIONS[n]?.gendered.includes(i);
+  return `origen.session${n}.${i}${gendered ? (voice === 'es-f' ? '.f' : '.m') : ''}`;
+}
+
+/** Cuánto te quedas quieto en una transmisión (lo que cuenta Pip, cap. 5): negro, aparición, voz y corte. */
+export const sessionSeconds = (n: number, voice: VoiceId) => Math.round(1 + 4.05 + (SESSIONS[n]?.tracks[voice].end ?? 0) + 1.25);
+
+/** `{tiempo}` (CA-07): días hasta 13, semanas hasta 59 días, meses hasta 364 y «un año» después. */
+export function elapsed(days: number): { unit: 'days' | 'weeks' | 'months' | 'year'; count: number } {
+  if (days < 14) return { unit: 'days', count: Math.max(1, days) };
+  if (days < 60) return { unit: 'weeks', count: Math.floor(days / 7) };
+  if (days < 365) return { unit: 'months', count: Math.floor(days / 30) };
+  return { unit: 'year', count: 1 };
+}
 
 /** Subtítulo que toca en el segundo `t` de la voz. */
 export function cueAt(track: VoiceTrack, t: number): number {

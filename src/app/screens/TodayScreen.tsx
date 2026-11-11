@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { TestCard } from '../origen/TestCard';
 import { Link } from 'react-router';
 import { logCompletion, saveSetting, undoCompletion } from '../../data/repository';
 import { playSfx } from '../sound/sfx';
@@ -112,6 +113,9 @@ export function TodayScreen() {
       <BackupReminder records={records ?? []} />
 
       <RestBanner />
+
+      {/* Prueba del programa aceptada (spec 17, PR-07) */}
+      <TestCard />
 
       {view.isEmpty ? (
         <Panel className="stack">
