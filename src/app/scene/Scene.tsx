@@ -7,7 +7,8 @@ import { useSettings } from '../data';
 import { MusicButton } from '../music/MusicProvider';
 import { TrackName } from '../music/TrackName';
 import { Link } from 'react-router';
-import { FriendsIcon, GameIcon } from '../design/icons';
+import { FriendsIcon, GameIcon, MessagesIcon } from '../design/icons';
+import { signalUnread, storyOn } from '../../domain/origen/origen';
 import { accountsEnabled } from '../account/account';
 import { ChatControl } from './Chat';
 import { claimIntro, currentSpeechText, introAvailable, releaseEntrance, subscribeSpeech } from './engine';
@@ -106,6 +107,18 @@ function FriendsButton() {
   );
 }
 
+/** Abre Mensajes (spec 17, ME-01), con un punto rojo si hay algo sin leer (CA-03). Solo con la historia en marcha. */
+function MessagesButton({ unread }: { unread: boolean }) {
+  const t = useT();
+  const label = unread ? t('origen.chats.unread') : t('origen.chats.open');
+  return (
+    <Link to="/mensajes" className="btn chat-button" aria-label={label} title={label} style={{ position: 'relative' }}>
+      <MessagesIcon />
+      {unread && <span className="chats-dot" aria-hidden="true" />}
+    </Link>
+  );
+}
+
 /** Cuánto siguen a la vista los botones de la escena tras tocarla. */
 const CONTROLS_VISIBLE_MS = 4000;
 
@@ -157,6 +170,7 @@ export function Scene({ overlay, controls = true, intro, focus = false }: { over
             <MusicButton />
             {accountsEnabled() && <FriendsButton />}
             {settings?.games !== false && <GameButton />}
+            {storyOn(settings?.origen) && <MessagesButton unread={signalUnread(settings?.origen)} />}
             <ChatControl />
           </div>
         </>

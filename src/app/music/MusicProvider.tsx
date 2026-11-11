@@ -179,7 +179,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     navigator.mediaSession.metadata = new MediaMetadata({
       title: state.track.name,
       artist: 'ARVID',
-      album: 'ARVID',
+      // Nombre del álbum (D-210, spec 17 MU-01)
+      album: 'Our Signal',
       // La portada de la pista (D-167)
       artwork: trackArtwork(state.track),
     });

@@ -2205,3 +2205,64 @@ input[type='url']::placeholder { color: var(--text-muted); opacity: 0.7; }
 .whats-new-release { display: grid; grid-template-columns: 56px 1fr; gap: var(--s3); padding-top: var(--s3); border-top: 1px solid rgb(255 255 255 / 0.07); }
 .whats-new-version { font-family: var(--font-pixel); color: var(--xp); font-size: 0.9375rem; }
 .whats-new-group + .whats-new-group { border-top: 1px solid rgb(255 255 255 / 0.07); }
+
+/* ---------- La señal (spec 17): primer contacto y transmisiones ---------- */
+.signal { position: fixed; inset: 0; z-index: 5000; overflow: hidden; outline: none; user-select: none; -webkit-user-select: none; touch-action: none; }
+.signal.replay { background: #000; }
+.signal [hidden] { display: none !important; }
+.signal-layer { position: absolute; inset: 0; }
+.signal-canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+.signal-search { background: #fff; pointer-events: none; }
+.signal-slice { position: absolute; inset: 0; }
+.signal-bars b { position: absolute; display: block; }
+.signal-dim { background: #000; opacity: 0; }
+.signal-scanlines { background: repeating-linear-gradient(transparent 0 2px, rgb(0 0 0 / 0.08) 2px 3px); opacity: 0; }
+/* Réplica de la portada (PC-03): medidas de un teléfono de 390 px, centrada */
+.sg-page { position: absolute; inset: env(safe-area-inset-top, 0) 0 0; background: #fff; font-family: Arial, Helvetica, sans-serif; color: #16171a; }
+.sg-page > * { position: absolute; margin: 0; }
+.sg-tab { font-size: 12px; font-weight: 700; letter-spacing: 0.2px; color: #656773; line-height: 18px; }
+.sg-tab.on { color: #0b57d0; }
+.sg-ul { height: 3px; background: #0b57d0; border-radius: 3px 3px 0 0; }
+.sg-btn { right: 19px; top: 4px; width: 105px; height: 40px; border-radius: 20px; background: #0b57d0; color: #fff; font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; }
+.sg-logo { left: calc(50% - 195px); top: 0; }
+.sg-box { left: 17px; right: 17px; top: 228px; height: 48px; box-sizing: border-box; border: 1px solid #dadce0; border-radius: 24px; max-width: 560px; margin: 0 auto; }
+.sg-box > * { position: absolute; }
+.sg-q { left: 46px; top: 0; height: 46px; display: flex; align-items: center; font-size: 16px; color: #16171a; white-space: pre; }
+.sg-caret { display: inline-block; width: 2px; height: 20px; background: #0b57d0; margin-left: 1px; visibility: hidden; }
+.sg-avail { left: 0; right: 0; top: 306px; text-align: center; font-size: 13px; color: #4e5059; line-height: 18px; word-spacing: 1px; }
+.sg-avail span { color: #1558d6; margin-left: 10px; }
+.sg-h { font-family: inherit; letter-spacing: normal; text-transform: none; text-shadow: none; left: 24px; top: 354px; font-size: 20px; font-weight: 400; line-height: 26px; color: #16171a; }
+.sg-list { left: 16px; right: 16px; top: 395px; padding: 0; list-style: none; }
+.sg-list li { height: 52.6px; box-sizing: border-box; border-bottom: 1px solid #e3e3e3; display: flex; align-items: center; font-size: 16px; color: #16171a; }
+.sg-list svg { margin: 0 22px 0 15px; flex: none; }
+.sg-foot { left: 0; right: 0; bottom: 0; height: max(56px, calc(100% - 788px)); background: #f4f6f7; font-size: 16px; color: #656773; }
+.sg-foot span { position: absolute; left: 12px; top: 8px; }
+/* Caja de la transmisión (TR-02) */
+.signal-box { position: absolute; left: 16px; right: 16px; top: min(65%, calc(100% - 190px)); max-width: 560px; margin: 0 auto; background: #05060d; border: 3px solid var(--c-lavender); padding: 10px 14px 16px; color: var(--c-white); font-family: var(--font-pixel); transform-origin: center; }
+.signal-box-name { display: flex; justify-content: space-between; align-items: center; margin: 0 0 6px; font-size: 14px; }
+.signal-tag { font-size: 11px; letter-spacing: 0.14em; color: #ff2a47; display: flex; align-items: center; gap: 6px; text-shadow: 0 0 6px rgb(255 31 61 / 0.6); }
+.signal-tag i { width: 7px; height: 7px; background: #ff1f3d; display: inline-block; box-shadow: 0 0 6px rgb(255 31 61 / 0.8); }
+.signal-box-text { font-size: 15px; line-height: 1.35; min-height: 4.05em; }
+.signal-scr { color: #ff2a47; text-shadow: 0 0 6px rgb(255 31 61 / 0.7); }
+.signal-rest { visibility: hidden; }
+.signal-close { position: absolute; right: var(--s4); top: calc(env(safe-area-inset-top, 0px) + var(--s4)); }
+
+/* El compañero reacciona y pregunta (DE) */
+.origen-dialog { position: fixed; inset: 0; z-index: 4000; background: rgb(0 0 0 / 0.55); display: flex; align-items: flex-end; justify-content: center; padding: var(--s4) var(--s4) calc(var(--s7) + env(safe-area-inset-bottom, 0px)); }
+.origen-dialog-box { width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: var(--s3); padding: var(--s3); background: var(--c-ink); border: var(--b) solid var(--c-cyan); box-shadow: var(--glow-cyan); font-family: var(--font-pixel); }
+.origen-dialog-line { display: flex; gap: var(--s3); align-items: flex-start; }
+.origen-dialog-who { color: var(--c-gold); font-size: 14px; margin: 0 0 4px; }
+.origen-dialog-text { font-size: 15px; line-height: 1.35; margin: 0; min-height: 2.7em; }
+.origen-dialog h2 { font-size: 1.1rem; color: #ff2a47; text-shadow: 0 0 6px rgb(255 31 61 / 0.5); margin: 0; }
+
+/* Mensajes (ME): lista de conversaciones y el contacto «???» */
+.chats-row { display: flex; gap: var(--s3); align-items: center; padding: var(--s3); text-decoration: none; color: inherit; }
+.chats-row + .chats-row { border-top: 1px solid var(--border); }
+.chats-row .grow { min-width: 0; }
+.chats-row .chats-last { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chats-unknown { width: 40px; height: 40px; flex: none; display: grid; place-items: center; background: #05060d; border: 2px solid var(--c-lavender); color: #ff2a47; font-family: var(--font-pixel); text-shadow: 0 0 6px rgb(255 31 61 / 0.6); }
+.chats-dot { width: 10px; height: 10px; flex: none; background: #ff1f3d; box-shadow: 0 0 6px rgb(255 31 61 / 0.8); }
+.chat-button .chats-dot { position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; }
+.signal-card { display: flex; justify-content: space-between; align-items: center; gap: var(--s3); padding: var(--s3); background: #05060d; border: 2px solid var(--c-lavender); font-family: var(--font-pixel); color: var(--c-white); width: 100%; text-align: left; cursor: pointer; }
+.signal-card .signal-tag { font-size: 10px; }
+.signal-noreply { text-align: center; padding: var(--s4); border-top: 1px solid var(--border); }

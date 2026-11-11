@@ -319,6 +319,8 @@ export interface Settings {
   introSnoozedUntil?: string;
   /** Los logros ya se evaluaron una vez en este dispositivo (spec 07, LO-05). No va en el backup. */
   achievementsReady?: boolean;
+  /** Historia «Programa ORIGEN» (spec 17 §4): primer contacto, elección, tramos y sesiones vistas. Va en el backup. */
+  origen?: import('../domain/origen/origen').OrigenState;
 }
 
 /** Notificaciones (spec 10, NT, RS, BG): horas locales `HH:MM` o `null` si ese resumen está desactivado. */

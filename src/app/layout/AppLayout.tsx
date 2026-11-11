@@ -28,6 +28,7 @@ import { SoundWatcher } from '../sound/SoundWatcher';
 import { CloudBackupWatcher } from '../account/CloudBackupWatcher';
 import { ChallengeSync } from '../challenges/ChallengeSync';
 import { MusicProvider } from '../music/MusicProvider';
+import { OrigenWatcher } from '../origen/OrigenWatcher';
 
 const TABS: { to: string; label: TKey; icon: SpriteName }[] = [
   { to: '/hoy', label: 'nav.today', icon: 'nav-today' },
@@ -106,6 +107,7 @@ export function AppLayout() {
         <GoalWatcher />
         <MemoryWatcher />
         <ChatLogWatcher />
+        <OrigenWatcher />
       </div>
       </SoundSheetProvider>
       </MusicProvider>

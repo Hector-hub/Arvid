@@ -45,7 +45,8 @@ export default defineConfig({
         ],
       },
       injectManifest: {
-        globPatterns: ['**/*.{js,css,html,png,woff2,svg,webmanifest}'],
+        // La sesión 1 de la señal va con la app, en sus tres voces: el primer contacto funciona sin conexión (spec 17, TR-06)
+        globPatterns: ['**/*.{js,css,html,png,woff2,svg,webmanifest}', 'senal/sesion-01-*.m4a'],
       },
     }),
   ],

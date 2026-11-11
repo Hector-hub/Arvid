@@ -68,6 +68,15 @@ describe('exportar (BAK-01)', () => {
     expect((await loadSettings(db)).sound).toEqual({ effects: true, volume: 0.5, timbre: 'soft' });
   });
 
+  it('UA-03 (spec 17): la historia viaja en el backup y al restaurar no se repite el primer contacto', async () => {
+    const origen = { contactAt: '2026-10-14T09:00:00.000Z', choice: 'investigate' as const, enabled: true, sessions: { '1': '2026-10-14T09:00:00.000Z' } };
+    await saveSetting(db, 'origen', origen);
+    const b = await exported();
+    expect(b.data.settings.find((s) => s.key === 'origen')?.value).toEqual(origen);
+    await replaceAllData(ctx, b);
+    expect((await loadSettings(db)).origen).toEqual(origen);
+  });
+
   it('nombre del archivo con la fecha local', () => {
     expect(backupFileName(new Date('2026-10-14T23:30:00'))).toBe('arvid-backup-2026-10-14.json');
   });

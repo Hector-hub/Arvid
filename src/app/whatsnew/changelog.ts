@@ -16,8 +16,16 @@ export const RELEASES: Release[] = [
     version: '2.4.0',
     kind: 'feature',
     items: {
-      es: ['Los textos de la app ahora usan el español latino.'],
-      en: ['The app\'s Spanish text now uses Latin American Spanish.'],
+      es: [
+        'Los textos de la app ahora usan el español latino.',
+        'Algo nuevo ronda tu calle. No hace falta buscarlo: te va a encontrar.',
+        'La música ya tiene nombre de álbum: «Our Signal».',
+      ],
+      en: [
+        'The app\'s Spanish text now uses Latin American Spanish.',
+        'Something new is lurking on your street. No need to look for it: it will find you.',
+        'The music now has an album name: «Our Signal».',
+      ],
     },
   },
   {

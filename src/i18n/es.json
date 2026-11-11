@@ -1407,5 +1407,72 @@
     "features": "Nuevas funciones",
     "fixes": "Correcciones",
     "open": "ARVID {version}: ver las novedades"
+  },
+  "origen": {
+    "dialog": "Señal desconocida",
+    "name": "???",
+    "tag": "SEÑAL DESCONOCIDA",
+    "query": "Programa Origen",
+    "session1": {
+      "0": {
+        "m": "Has sido seleccionado para participar en el Programa ORIGEN: protocolo experimental de desarrollo del potencial humano.",
+        "f": "Has sido seleccionada para participar en el Programa ORIGEN: protocolo experimental de desarrollo del potencial humano."
+      },
+      "1": "Se te ha identificado como el participante 6174.",
+      "2": "Según el análisis preliminar, se ha detectado una discrepancia entre tus capacidades actuales y tu potencial estimado.",
+      "3": "A partir de este momento, recibirás instrucciones y objetivos diseñados para desarrollar dichas capacidades.",
+      "4": "Cada acción será registrada. Cada resultado será evaluado.",
+      "5": "No intentes rastrear el origen de esta transmisión.",
+      "6": "No interrumpas el proceso.",
+      "7": "Tu participación ya ha comenzado."
+    },
+    "search": {
+      "all": "TODO",
+      "images": "IMÁGENES",
+      "signIn": "Iniciar sesión",
+      "offered": "Google disponible en:",
+      "offeredLang": "English",
+      "trends": "Tendencias de búsquedas",
+      "trend": {
+        "0": "clima mañana",
+        "1": "precio del dólar hoy",
+        "2": "resultados de fútbol",
+        "3": "receta de pan casero",
+        "4": "horóscopo de hoy",
+        "5": "cómo dormir mejor",
+        "6": "estrenos de cine esta semana"
+      }
+    },
+    "reaction": {
+      "0": "…¿Qué fue eso? Algo entró por mi canal. Por nuestro canal.",
+      "1": "«Programa ORIGEN»… No me suena de nada."
+    },
+    "decision": {
+      "title": "Nos hackearon",
+      "text": "Alguien entró por nuestro enlace y no sé quién es. Puedo bloquear la señal y seguimos como siempre. O la dejo pasar y averiguamos qué quiere. ¿Qué hacemos?",
+      "investigate": "Investigar",
+      "block": "Bloquear la señal",
+      "afterInvestigate": "Bien. Lo voy a vigilar.",
+      "afterBlock": "Bloqueada. Si cambias de idea, está en Ajustes.",
+      "next": "Seguir",
+      "close": "Cerrar"
+    },
+    "sombraGone": "¿Y la figura de la capucha? Hace días que no la veo.",
+    "chats": {
+      "title": "Mensajes",
+      "open": "Mensajes",
+      "unread": "Mensajes · hay algo nuevo",
+      "companionRole": "Tu compañero",
+      "signalRole": "Señal desconocida",
+      "noReply": "No puedes responder a este contacto.",
+      "session": "Sesión {n}",
+      "watch": "Ver transmisión",
+      "close": "Cerrar transmisión",
+      "empty": "Todavía no hay conversación."
+    },
+    "settings": {
+      "story": "Historia",
+      "storyHelp": "Transmisiones y capítulos del Programa ORIGEN. Apagada, la app funciona como siempre."
+    }
   }
 }

@@ -11,6 +11,7 @@ import { SwitchOption } from '../design/components';
 import { AiCodeField, AliasField, GenderPicker, LanguagePicker, sameAvatar, useOptimistic, VARIANT_SWATCH } from '../profile/pickers';
 import { ArvidPreview, AvatarPreview, DarisPreview, Scene } from '../scene/Scene';
 import { errorText } from '../text';
+import { setStory, storyOn } from '../../domain/origen/origen';
 
 /**
  * Ajustes → Perfil (D-197), a la altura de la página Sonido. Arriba, fijo, el protagonista y su compañero caminando
@@ -254,6 +255,15 @@ function MoreSettings({ settings }: { settings: Settings }) {
         </div>
       )}
       <SwitchOption label={t('settings.arvidTalks')} help={t('settings.arvidTalksHelp')} checked={settings.arvidTalks} onChange={(on) => void saveSetting(db, 'arvidTalks', on)} />
+      {/* Historia (spec 17, AJ-01): tras el primer contacto; refleja la elección y la cambia (DE-04) */}
+      {settings.origen?.contactAt && (
+        <SwitchOption
+          label={t('origen.settings.story')}
+          help={t('origen.settings.storyHelp')}
+          checked={storyOn(settings.origen)}
+          onChange={(on) => void saveSetting(db, 'origen', setStory(settings.origen, on))}
+        />
+      )}
       <SwitchOption label={t('settings.games')} help={t('settings.gamesHelp')} checked={settings.games} onChange={(on) => void saveSetting(db, 'games', on)} />
     </details>
   );

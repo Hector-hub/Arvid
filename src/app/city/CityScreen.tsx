@@ -2,6 +2,8 @@
 import { CITY_ITEMS, isNeighbor, nextArrivalLevel, type CityItem } from '../../domain/scene/city';
 import { t, useLocale } from '../../i18n';
 import { useAnalysis } from '../analysis';
+import { useSettings } from '../data';
+import { sombraHidden } from '../../domain/origen/origen';
 import { BackLink, Panel } from '../design/components';
 import { CityThumb } from './CityThumb';
 import { itemDescription, itemName } from './labels';
@@ -9,6 +11,8 @@ import { itemDescription, itemName } from './labels';
 export function CityScreen() {
   useLocale();
   const level = useAnalysis()?.progress.level;
+  // Mientras investigas, Sombra no está en la calle (spec 17, SO-05)
+  const hidden = sombraHidden(useSettings()?.origen);
   if (level === undefined) return null;
   const done = CITY_ITEMS.filter((u) => u.level <= level).length;
   const next = nextArrivalLevel(level);
@@ -16,7 +20,7 @@ export function CityScreen() {
   const list = (items: typeof CITY_ITEMS) => (
     <ul className="stack city-list" style={{ gap: 'var(--s2)' }}>
       {items.map(({ item, level: at }) => (
-        <CityRow key={item} item={item} at={at} unlocked={at <= level} />
+        <CityRow key={item} item={item} at={at} unlocked={at <= level && !(hidden && item === 'sombra')} />
       ))}
     </ul>
   );

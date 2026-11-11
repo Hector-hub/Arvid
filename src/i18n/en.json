@@ -1407,5 +1407,72 @@
     "features": "New features",
     "fixes": "Fixes",
     "open": "ARVID {version}: see what's new"
+  },
+  "origen": {
+    "dialog": "Unknown signal",
+    "name": "???",
+    "tag": "UNKNOWN SIGNAL",
+    "query": "Origin Program",
+    "session1": {
+      "0": {
+        "m": "You have been selected to participate in the ORIGIN Program: an experimental protocol for the development of human potential.",
+        "f": "You have been selected to participate in the ORIGIN Program: an experimental protocol for the development of human potential."
+      },
+      "1": "You have been identified as participant 6174.",
+      "2": "According to the preliminary analysis, a discrepancy has been detected between your current capabilities and your estimated potential.",
+      "3": "From this moment on, you will receive instructions and objectives designed to develop those capabilities.",
+      "4": "Every action will be recorded. Every result will be evaluated.",
+      "5": "Do not attempt to trace the origin of this transmission.",
+      "6": "Do not interrupt the process.",
+      "7": "Your participation has already begun."
+    },
+    "search": {
+      "all": "ALL",
+      "images": "IMAGES",
+      "signIn": "Sign in",
+      "offered": "Google offered in:",
+      "offeredLang": "Español (Latinoamérica)",
+      "trends": "Trending searches",
+      "trend": {
+        "0": "weather tomorrow",
+        "1": "dollar exchange rate today",
+        "2": "football scores",
+        "3": "easy homemade bread",
+        "4": "horoscope today",
+        "5": "how to sleep better",
+        "6": "new movies this week"
+      }
+    },
+    "reaction": {
+      "0": "…What was that? Something came in through my channel. Through our channel.",
+      "1": "\"ORIGIN Program\"… Never heard of it."
+    },
+    "decision": {
+      "title": "We've been hacked",
+      "text": "Someone got in through our link and I don't know who. I can block the signal and we carry on as usual. Or I let it through and we find out what it wants. What do we do?",
+      "investigate": "Investigate",
+      "block": "Block the signal",
+      "afterInvestigate": "Good. I'll keep watch.",
+      "afterBlock": "Blocked. If you change your mind, it's in Settings.",
+      "next": "Next",
+      "close": "Close"
+    },
+    "sombraGone": "And the hooded figure? I haven't seen it in days.",
+    "chats": {
+      "title": "Messages",
+      "open": "Messages",
+      "unread": "Messages · something new",
+      "companionRole": "Your companion",
+      "signalRole": "Unknown signal",
+      "noReply": "You can't reply to this contact.",
+      "session": "Session {n}",
+      "watch": "Watch transmission",
+      "close": "Close transmission",
+      "empty": "No conversation yet."
+    },
+    "settings": {
+      "story": "Story",
+      "storyHelp": "Transmissions and chapters of the ORIGIN Program. Off, the app works as always."
+    }
   }
 }
