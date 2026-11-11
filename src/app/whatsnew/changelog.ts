@@ -13,6 +13,14 @@ export interface Release {
 /** De la más nueva a la más antigua. */
 export const RELEASES: Release[] = [
   {
+    version: '2.6.0',
+    kind: 'feature',
+    items: {
+      es: ['Con la IA activada, las pruebas están hechas a tu medida, y algunas te piden algo nuevo. Se marcan con «Hecho hoy».', 'En Mensajes aparece un expediente con todo lo que llevas descifrado.'],
+      en: ['With AI on, tests are tailored to you, and some ask for something new. Mark them with «Done today».', 'A file with everything you have decoded so far appears in Messages.'],
+    },
+  },
+  {
     version: '2.5.0',
     kind: 'feature',
     items: {

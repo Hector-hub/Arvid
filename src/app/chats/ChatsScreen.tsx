@@ -8,6 +8,8 @@ import { DEFAULT_AVATAR } from '../../domain/avatar/catalog';
 import { chatLastAt, chatUnread, neighborContacts, neighborLines, type ChatId } from '../../domain/origen/chapters';
 import { seenSessions, storyOn, voiceFor, type OrigenState, type VoiceId } from '../../domain/origen/origen';
 import { acceptTest, type ProgramTest } from '../../domain/origen/programTests';
+import { dossier, FRAGMENTS_READABLE_FROM, TITLED_CHAPTERS } from '../../domain/origen/dossier';
+import { currentChapter } from '../../domain/origen/periods';
 import { isNeighbor, neighbor, type NeighborId } from '../../domain/scene/city';
 import { toLocalDate } from '../../domain/time/localDate';
 import { getLocale, t, tDynamic, useLocale } from '../../i18n';
@@ -19,7 +21,7 @@ import { CompanionPreview } from '../scene/Scene';
 import { dayMonth } from '../text';
 import { loadSignalAssets, type SignalAssets } from '../origen/assets';
 import { SignalOverlay } from '../origen/SignalOverlay';
-import { originText, testObjective, testNumber, useTestNames } from '../origen/testText';
+import { testObjective, testNumber, useOriginVars, useTestNames } from '../origen/testText';
 
 const time = (at: string) => new Date(at).toLocaleTimeString(getLocale(), { hour: '2-digit', minute: '2-digit' });
 
@@ -57,6 +59,18 @@ export function ChatsScreen() {
             <p className="small muted chats-last">{last?.text ?? t('origen.chats.companionRole')}</p>
           </div>
         </Link>
+        {/* Expediente ORIGEN (EX-01): fila fija desde el capítulo 2 */}
+        {currentChapter(origen) >= 2 && (
+          <Link to="/mensajes/expediente" className="chats-row">
+            <span className="chats-unknown" aria-hidden="true">
+              %
+            </span>
+            <div className="grow">
+              <p className="pixel">{t('origen.dossier.title')}</p>
+              <p className="small muted chats-last">{t('origen.dossier.decoded', { percent: dossier(origen).percent })}</p>
+            </div>
+          </Link>
+        )}
         {rows.map(({ id }) => (
           <ChatRow key={id} id={id} origen={origen} />
         ))}
@@ -66,6 +80,7 @@ export function ChatsScreen() {
 }
 
 function ChatRow({ id, origen }: { id: ChatId; origen: OrigenState | undefined }) {
+  const vars = useOriginVars();
   const unread = chatUnread(origen, id);
   if (id === 'signal') {
     const lastSession = seenSessions(origen).at(-1);
@@ -93,7 +108,7 @@ function ChatRow({ id, origen }: { id: ChatId; origen: OrigenState | undefined }
       </span>
       <div className="grow">
         <p className="pixel">{neighbor(id).name}</p>
-        <p className="small muted chats-last">{lastLine ? tDynamic(lastLine.key, originText()) : itemDescription(id)}</p>
+        <p className="small muted chats-last">{lastLine ? tDynamic(lastLine.key, vars) : itemDescription(id)}</p>
       </div>
       {unread && <span className="chats-dot" role="img" aria-label={t('origen.chats.unread')} />}
     </Link>
@@ -108,10 +123,10 @@ export function NeighborChatScreen() {
   const origen = settings?.origen;
   const id = (chat && isNeighbor(chat as NeighborId) ? chat : 'dex') as NeighborId;
   useMarkRead(id, origen);
+  const vars = useOriginVars();
   if (!settings) return null;
   if (!storyOn(origen) || !chat || !isNeighbor(chat as NeighborId)) return <Navigate to="/mensajes" replace />;
   const lines = neighborLines(origen, id);
-  const vars = originText();
   const companion = COMPANION_NAME[settings.companion];
   return (
     <div className="stack" style={{ gap: 'var(--s4)' }}>
@@ -213,7 +228,8 @@ export function SignalChatScreen() {
                 <i />
                 {t('origen.test.label')}
               </span>
-              <p>{t('origen.test.offer', { n: testNumber(item.test.n), objective: testObjective(item.test, names) })}</p>
+              <p>{t('origen.test.offer', { n: testNumber(item.test.n), objective: testObjective(item.test, names), days: item.test.days ?? 7 })}</p>
+              {item.test.detail && <p className="small muted">{item.test.detail}</p>}
               {!item.test.acceptedOn && !item.test.result && (
                 <div className="row" style={{ gap: 'var(--s2)' }}>
                   <button type="button" className="btn btn-primary grow" onClick={() => answer(item.test, true)}>
@@ -234,6 +250,77 @@ export function SignalChatScreen() {
       </div>
       <p className="signal-noreply small muted">{t('origen.chats.noReply')}</p>
       {playing && <SignalOverlay mode="replay" session={playing.n} voice={playing.voice} assets={playing.assets} onDone={() => setPlaying(undefined)} />}
+    </div>
+  );
+}
+
+/** Expediente ORIGEN (EX-02, EX-03): capítulos, pistas, fragmentos y registro de pruebas, con el porcentaje descifrado. */
+export function DossierScreen() {
+  useLocale();
+  const settings = useSettings();
+  const vars = useOriginVars();
+  if (!settings) return null;
+  const origen = settings.origen;
+  if (!storyOn(origen)) return <Navigate to="/chat" replace />;
+  const d = dossier(origen);
+  const companion = COMPANION_NAME[settings.companion];
+  return (
+    <div className="stack" style={{ gap: 'var(--s4)' }}>
+      <BackLink to="/mensajes" label={t('origen.chats.title')} />
+      <h1>{t('origen.dossier.title')}</h1>
+      <p className="pixel signal-decoded">{t('origen.dossier.decoded', { percent: d.percent })}</p>
+      <div className="xpbar signal-bar" style={{ height: 10 }} role="progressbar" aria-valuenow={d.percent} aria-valuemin={0} aria-valuemax={100} aria-label={t('origen.dossier.decoded', { percent: d.percent })}>
+        <span style={{ width: `${d.percent}%` }} />
+      </div>
+
+      <Panel className="stack">
+        <h2>{t('origen.dossier.chapters')}</h2>
+        <ul className="stack dossier-list">
+          {d.chapters.map((c) =>
+            c.at && c.n <= TITLED_CHAPTERS ? (
+              <li key={c.n}>
+                <p className="pixel">{t('origen.dossier.chapterTitle', { n: c.n, title: tDynamic(`origen.chapter.${c.n}.title`) })}</p>
+                <p className="small muted">
+                  {dayMonth(toLocalDate(new Date(c.at)))} · {tDynamic(`origen.chapter.${c.n}.question`)}
+                </p>
+              </li>
+            ) : (
+              <li key={c.n} className="muted">
+                <p className="pixel">{t('origen.dossier.pending', { n: c.n })}</p>
+              </li>
+            ),
+          )}
+        </ul>
+      </Panel>
+
+      <Panel className="stack">
+        <h2>{t('origen.dossier.clues')}</h2>
+        {d.clues.length === 0 && <p className="muted">{t('origen.dossier.noClues')}</p>}
+        {d.clues.map((c) => (
+          <Link key={c.key} to={`/mensajes/${c.chat}`} className="chats-row" style={{ paddingInline: 0 }}>
+            <span className="chats-face" aria-hidden="true">
+              <CityThumb item={c.chat} unlocked />
+            </span>
+            <p className="grow small">{tDynamic(c.key, vars)}</p>
+          </Link>
+        ))}
+      </Panel>
+
+      <Panel className="stack">
+        <h2>{t('origen.dossier.fragments')}</h2>
+        <p className="muted">
+          {d.fragments === 0
+            ? t('origen.dossier.noFragments')
+            : currentChapter(origen) < FRAGMENTS_READABLE_FROM
+              ? t('origen.dossier.fragmentsHeld', { count: d.fragments, companion })
+              : ''}
+        </p>
+      </Panel>
+
+      <Panel className="stack">
+        <h2>{t('origen.dossier.tests')}</h2>
+        <p className="muted">{t('origen.dossier.testsLog', d.tests)}</p>
+      </Panel>
     </div>
   );
 }

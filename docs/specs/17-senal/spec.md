@@ -1,7 +1,7 @@
 # Spec 17 — Programa ORIGEN (historia)
 
 Estado: **aprobada** (2026-11-11) · Incrementos 2.4.0 a 3.0.0 (§8)
-Decisiones que implementa: D-210 a D-245
+Decisiones que implementa: D-210 a D-246
 Historia que implementa: `cimientos.md` (reglas y giros) y `historia.md` (los veinte capítulos, con sus mensajes). Esta spec **no repite la historia**: dice cómo se juega.
 Sustituye a: el borrador del 2026-11-10, que iba por nivel.
 Modifica:

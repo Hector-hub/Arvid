@@ -4,7 +4,7 @@ import { ActivitiesScreen } from './screens/ActivitiesScreen';
 import { ActivityDetailScreen } from './screens/ActivityDetailScreen';
 import { ActivityFormScreen } from './screens/ActivityFormScreen';
 import { ChatScreen } from './screens/ChatScreen';
-import { ChatsScreen, NeighborChatScreen, SignalChatScreen } from './chats/ChatsScreen';
+import { ChatsScreen, DossierScreen, NeighborChatScreen, SignalChatScreen } from './chats/ChatsScreen';
 import { GameScreen } from './screens/GameScreen';
 import { CityScreen } from './city/CityScreen';
 import { RestsScreen } from './rests/RestsScreen';
@@ -49,6 +49,7 @@ export const routes: RouteObject[] = [
       { path: 'chat/memoria', element: <MemoryScreen /> },
       { path: 'mensajes', element: <ChatsScreen /> },
       { path: 'mensajes/senal', element: <SignalChatScreen /> },
+      { path: 'mensajes/expediente', element: <DossierScreen /> },
       { path: 'mensajes/:chat', element: <NeighborChatScreen /> },
       { path: 'juego', element: <GameScreen /> },
       { path: 'descansos', element: <RestsScreen /> },

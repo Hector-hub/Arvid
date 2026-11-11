@@ -1552,7 +1552,7 @@
       }
     },
     "test": {
-      "offer": "Prueba {n}. Objetivo: {objective} Plazo: 7 días. Valor: 100 XP. La aceptación es voluntaria. El rechazo también será registrado.",
+      "offer": "Prueba {n}. Objetivo: {objective} Plazo: {days} días. Valor: 100 XP. La aceptación es voluntaria. El rechazo también será registrado.",
       "accept": "Aceptar",
       "reject": "Rechazar",
       "accepted": "Prueba {n}: aceptada. Plazo: hasta el {date}.",
@@ -1576,7 +1576,54 @@
         "weakArea": "cumplir todo lo de {category} {times} días de los próximos 7.",
         "missionsOnTime": "completar a tiempo las {times} misiones que vencen esta semana.",
         "bestWeek": "superar tu mejor semana: más de {threshold} registros en 7 días."
+      },
+      "markToday": "Hecho hoy",
+      "unmarkToday": "Deshacer hoy"
+    },
+    "dossier": {
+      "title": "Expediente ORIGEN",
+      "row": "Lo que llevas descifrado",
+      "decoded": "Señal descifrada: {percent} %",
+      "chapters": "Capítulos",
+      "pending": "Capítulo {n} · ???",
+      "chapterTitle": "Capítulo {n} · {title}",
+      "clues": "Pistas",
+      "noClues": "Todavía no hay pistas.",
+      "fragments": "Fragmentos del archivo",
+      "fragmentsHeld_one": "1 fragmento cifrado. {companion} lo guarda: todavía no puede leerlo.",
+      "fragmentsHeld_other": "{count} fragmentos cifrados. {companion} los guarda: todavía no puede leerlos.",
+      "noFragments": "Cada prueba superada descifra un fragmento.",
+      "tests": "Registro de pruebas",
+      "testsLog": "Superadas: {passed} · No superadas: {failed} · Rechazadas o sin respuesta: {refused}"
+    },
+    "chapter": {
+      "1": {
+        "title": "El primer minuto",
+        "question": "¿Quién escribió eso en el buscador? No sonaba como quien habló después."
+      },
+      "2": {
+        "title": "La melodía",
+        "question": "Si nadie la emite, ¿de dónde sale?"
+      },
+      "3": {
+        "title": "Primera prueba",
+        "question": "¿Y si viene de un lugar que todavía no existe?"
+      },
+      "4": {
+        "title": "Lía no se lo cree",
+        "question": "«Cada acción será registrada.» No era una forma de hablar."
+      },
+      "5": {
+        "title": "La tercera semana",
+        "question": "¿Qué historial? Y un número del que no se sale."
       }
+    },
+    "clue": {
+      "dex": "Dex tararea una melodía que no es de nadie. Tiene los intervalos del zumbido.",
+      "omar": "Omar tiene una entrega para «Programa Origen»: sin paquete y sin remitente.",
+      "lia": "Para Lía no es una estafa: no instala nada, no saca nada, no pide nada.",
+      "nova": "6174 es la constante de Kaprekar: siempre se llega y de ahí no se sale.",
+      "pip": "Pip contó {segundos} segundos sin que te movieras, durante la transmisión."
     }
   }
 }

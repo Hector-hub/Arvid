@@ -8,6 +8,7 @@ import { toLocalDate, type LocalDate } from '../../domain/time/localDate';
 import { getLocale, t } from '../../i18n';
 import { getCompanion } from '../scene/engine';
 import type { NeighborId } from '../../domain/scene/city';
+import { checkAiTest, type AiTest } from '../../domain/origen/aiTest';
 
 export interface BrainDeps {
   aiEnabled: boolean;
@@ -161,8 +162,31 @@ export async function neighborLine(neighbor: NeighborId, fallback: string, deps:
 }
 
 /** Lo que dice ARVID por iniciativa propia: con IA si se puede; si no, la frase fija `fallback` (IA-05). */
-export async function momentLine(moment: Exclude<AiMoment, 'chat' | 'neighbor'>, fallback: string, deps: BrainDeps): Promise<string> {
+export async function momentLine(moment: Exclude<AiMoment, 'chat' | 'neighbor' | 'origenTest'>, fallback: string, deps: BrainDeps): Promise<string> {
   if (!deps.aiEnabled) return fallback;
   const result = await askAi(moment, [], deps, MOMENT_TIMEOUT_MS);
   return result.ok ? result.reply : fallback;
+}
+
+/**
+ * Prueba del programa escrita por la IA (spec 17, PR-02): solo con código de acceso (no con los mensajes de prueba) y
+ * sin memoria, alias ni conversaciones (NFR17-04). Se vuelve a validar aquí. Sin IA o si falla, `undefined`: la app usa
+ * la lista fija (PR-05).
+ */
+export async function programTestAi(summary: Record<string, unknown>, activityIds: readonly string[]): Promise<AiTest | undefined> {
+  if (!accessCode || offline()) return undefined;
+  try {
+    const res = await fetch('/api/arvid', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Arvid-Code': accessCode },
+      body: JSON.stringify({ locale: getLocale(), moment: 'origenTest', messages: [], context: summary }),
+      signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
+    });
+    if (!res.ok) return undefined;
+    const data = (await res.json()) as { test?: unknown };
+    const check = checkAiTest(data.test, activityIds);
+    return check.ok ? check.test : undefined;
+  } catch {
+    return undefined;
+  }
 }

@@ -6,7 +6,7 @@ import { addDays, compareDates, diffDays, type LocalDate } from '../time/localDa
 import type { MissionRecord } from '../missions/missions';
 import { createdOn } from '../activities/rules';
 
-export type TestType = 'fullDays' | 'hardest' | 'noBlank' | 'roundWeek' | 'weakArea' | 'missionsOnTime' | 'bestWeek';
+export type TestType = 'fullDays' | 'hardest' | 'noBlank' | 'roundWeek' | 'weakArea' | 'missionsOnTime' | 'bestWeek' | 'ai';
 export type TestResult = 'passed' | 'failed' | 'rejected' | 'ignored';
 
 export interface ProgramTest {
@@ -20,6 +20,12 @@ export interface ProgramTest {
   missionIds?: string[];
   /** «Tu mejor semana»: los registros que hay que superar. */
   threshold?: number;
+  /** Escrita por la IA (2.6.0, PR-03): objetivo, detalle y plazo en días. */
+  title?: string;
+  detail?: string;
+  days?: number;
+  /** Días marcados con «Hecho hoy» (prueba de la IA sin actividad, PR-07). */
+  marks?: LocalDate[];
   /** Tramo (índice) en que llegó: si se supera, es su pase (RI-02). */
   period: number;
   offeredAt: string;
@@ -213,6 +219,12 @@ export function testProgress(test: ProgramTest, records: readonly ActivityRecord
       const done = ids.filter((id) => analysis.byMission.get(id)?.state === 'completedOnTime').length;
       return { done, of: ids.length };
     }
+    case 'ai': {
+      // Con actividad, los días en que la registraste; sin ella, los días marcados con «Hecho hoy»
+      const record = records.find((r) => r.activity.id === test.activityId);
+      const dates = test.activityId ? (record?.completions ?? []).map((c) => c.date) : (test.marks ?? []);
+      return { done: Math.min(of, new Set(dates.filter((x) => days.has(x))).size), of };
+    }
     case 'bestWeek': {
       let count = 0;
       for (const r of records) for (const c of r.completions) if (days.has(c.date)) count++;
@@ -232,7 +244,16 @@ export function resolveTest(test: ProgramTest, records: readonly ActivityRecord[
   return test;
 }
 
-export const acceptTest = (test: ProgramTest, today: LocalDate): ProgramTest => ({ ...test, acceptedOn: today, deadline: addDays(today, TEST_DAYS - 1) });
+export const acceptTest = (test: ProgramTest, today: LocalDate): ProgramTest => ({ ...test, acceptedOn: today, deadline: addDays(today, (test.days ?? TEST_DAYS) - 1) });
+
+/** «Hecho hoy» (PR-07): una vez al día; se puede deshacer ese mismo día. */
+export function toggleMark(test: ProgramTest, today: LocalDate): ProgramTest {
+  const marks = test.marks ?? [];
+  return { ...test, marks: marks.includes(today) ? marks.filter((d) => d !== today) : [...marks, today] };
+}
+
+/** La prueba se marca a mano: la escribió la IA y no se apoya en una actividad. */
+export const markedByHand = (test: ProgramTest) => test.type === 'ai' && !test.activityId;
 
 /** Una prueba nueva no llega con un descanso planificado en los próximos 7 días (PR-01). */
 export function restAhead(rests: readonly Rest[], today: LocalDate): boolean {

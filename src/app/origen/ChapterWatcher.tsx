@@ -5,18 +5,21 @@ import { saveSetting } from '../../data/repository';
 import { chapterDef, deliverStep, neededNeighbors, nextStep, PUBLISHED_CHAPTER, type StepDef } from '../../domain/origen/chapters';
 import { storyOn, voiceFor, type OrigenState, type VoiceId } from '../../domain/origen/origen';
 import { currentChapter, openChapter, readyForNext } from '../../domain/origen/periods';
-import { chooseTest, offerDay, openTest, resolveTest, restAhead, testsXp } from '../../domain/origen/programTests';
+import { chooseTest, offerDay, openTest, resolveTest, restAhead, testsXp, timesForChapter, type ProgramTest } from '../../domain/origen/programTests';
 import { neighbor } from '../../domain/scene/city';
 import { diffDays, toLocalDate } from '../../domain/time/localDate';
 import { DEFAULT_AVATAR } from '../../domain/avatar/catalog';
 import { getLocale, t, tDynamic, useLocale } from '../../i18n';
 import { useAnalysis } from '../analysis';
 import { logChat, speak } from '../arvid/voice';
-import { useData, useMissions, useRecords, useRests, useSettings } from '../data';
+import { useCategories, useData, useGoals, useMissions, useRecords, useRests, useSettings } from '../data';
+import { programTestAi } from '../arvid/brain';
+import { testSummary } from '../../domain/origen/aiTest';
+import { categoryName } from '../text';
 import { isTalking, showPeds } from '../scene/engine';
 import { loadSignalAssets, type SignalAssets } from './assets';
 import { SignalOverlay } from './SignalOverlay';
-import { originText, setOriginText } from './testText';
+import { originVars } from './testText';
 
 const TICK_MS = 1000;
 /** Un capítulo o una prueba llegan entre 5 y 30 s de app a la vista (RI-06). */
@@ -42,22 +45,24 @@ export function ChapterWatcher() {
   const records = useRecords();
   const missions = useMissions();
   const rests = useRests();
+  const goals = useGoals();
+  const categories = useCategories();
   const [running, setRunning] = useState<Running>();
   const origen = settings?.origen;
   const on = storyOn(origen);
   const voice: VoiceId | undefined = settings ? voiceFor(getLocale(), settings.profile?.gender, (settings.avatar ?? DEFAULT_AVATAR).cast) : undefined;
 
   // Lo último, para leerlo desde el reloj sin reiniciarlo
-  const live = useRef({ origen, analysis, records, missions, rests, voice, talks: settings?.arvidTalks !== false, running });
+  const ai = !!settings?.arvidAi && !!settings.aiCode;
+  const live = useRef({ origen, analysis, records, missions, rests, goals, categories, voice, ai, talks: settings?.arvidTalks !== false, running });
   useEffect(() => {
-    live.current = { origen, analysis, records, missions, rests, voice, talks: settings?.arvidTalks !== false, running };
+    live.current = { origen, analysis, records, missions, rests, goals, categories, voice, ai, talks: settings?.arvidTalks !== false, running };
   });
 
   // Variables de los textos ({tiempo}, {segundos}) y vecinos que la historia ya necesita en la calle (RI-09)
   useEffect(() => {
-    if (voice) setOriginText(origen, voice);
     showPeds(on ? neededNeighbors(origen).map((id) => neighbor(id).ped) : []);
-  }, [origen, voice, on]);
+  }, [origen, on]);
 
   useEffect(() => {
     if (!on) return;
@@ -105,7 +110,7 @@ export function ChapterWatcher() {
         return true;
       }
       await save(deliverStep(state, step.id, now));
-      if (step.kind === 'say') say(tDynamic(step.key, originText()));
+      if (step.kind === 'say') say(tDynamic(step.key, originVars(live.current.origen ?? state, live.current.voice ?? 'es-m')));
       else say(t('origen.wrote', { name: neighbor(step.chat).name }));
       return true;
     }
@@ -115,10 +120,30 @@ export function ChapterWatcher() {
       const { analysis: a, records: r, missions: m } = live.current;
       if (!a || !r || !m) return state;
       const tests = state.tests ?? [];
-      const test = chooseTest({
-        n: tests.length + 1,
-        period: currentChapter(state) - 1,
-        chapter: currentChapter(state),
+      const n = tests.length + 1;
+      const chapter = currentChapter(state);
+      const today = toLocalDate(new Date());
+      // Desde la segunda, la escribe la IA si hay código (PR-02); la primera y cualquier fallo, de la lista fija (PR-05)
+      let written: ProgramTest | undefined;
+      if (n > 1 && live.current.ai) {
+        const { goals: g, categories: cats } = live.current;
+        const summary = testSummary({
+          records: r,
+          analysis: a,
+          missions: m,
+          goals: (g ?? []).filter((x) => !x.abandonedOn).map((x) => ({ title: x.title, done: x.milestones.filter((ms) => a.byMission.get(ms.missionId ?? '')?.state.startsWith('completed')).length, total: x.milestones.length })),
+          categoryName: (id) => categoryName(cats?.find((c) => c.id === id)),
+          tests,
+          times: timesForChapter(chapter),
+          today,
+        });
+        const ai = await programTestAi(summary, r.map((x) => x.activity.id));
+        if (ai) written = { n, type: 'ai', ...ai, period: chapter - 1, offeredAt: new Date().toISOString(), offeredOn: today };
+      }
+      const test = written ?? chooseTest({
+        n,
+        period: chapter - 1,
+        chapter,
         records: r,
         missions: m,
         analysis: a,

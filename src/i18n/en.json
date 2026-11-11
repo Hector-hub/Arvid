@@ -1552,7 +1552,7 @@
       }
     },
     "test": {
-      "offer": "Test {n}. Objective: {objective} Deadline: 7 days. Value: 100 XP. Acceptance is voluntary. Refusal will also be recorded.",
+      "offer": "Test {n}. Objective: {objective} Deadline: {days} days. Value: 100 XP. Acceptance is voluntary. Refusal will also be recorded.",
       "accept": "Accept",
       "reject": "Refuse",
       "accepted": "Test {n}: accepted. Deadline: {date}.",
@@ -1576,7 +1576,54 @@
         "weakArea": "complete everything in {category} on {times} of the next 7 days.",
         "missionsOnTime": "complete on time the {times} missions due this week.",
         "bestWeek": "beat your best week: more than {threshold} logs in 7 days."
+      },
+      "markToday": "Done today",
+      "unmarkToday": "Undo today"
+    },
+    "dossier": {
+      "title": "ORIGIN File",
+      "row": "What you've decoded so far",
+      "decoded": "Signal decoded: {percent} %",
+      "chapters": "Chapters",
+      "pending": "Chapter {n} · ???",
+      "chapterTitle": "Chapter {n} · {title}",
+      "clues": "Clues",
+      "noClues": "No clues yet.",
+      "fragments": "Archive fragments",
+      "fragmentsHeld_one": "1 encrypted fragment. {companion} is keeping it: it can't read it yet.",
+      "fragmentsHeld_other": "{count} encrypted fragments. {companion} is keeping them: it can't read them yet.",
+      "noFragments": "Each passed test decodes a fragment.",
+      "tests": "Test log",
+      "testsLog": "Passed: {passed} · Not passed: {failed} · Refused or unanswered: {refused}"
+    },
+    "chapter": {
+      "1": {
+        "title": "The first minute",
+        "question": "Who typed that into the search bar? It didn't sound like whoever spoke next."
+      },
+      "2": {
+        "title": "The melody",
+        "question": "If no one is broadcasting it, where does it come from?"
+      },
+      "3": {
+        "title": "First test",
+        "question": "What if it comes from somewhere that doesn't exist yet?"
+      },
+      "4": {
+        "title": "Lía doesn't buy it",
+        "question": "«Every action will be recorded.» It wasn't a figure of speech."
+      },
+      "5": {
+        "title": "The third week",
+        "question": "What record? And a number you never leave."
       }
+    },
+    "clue": {
+      "dex": "Dex hums a melody that belongs to no one. It has the hum's intervals.",
+      "omar": "Omar has a delivery for «Origin Program»: no package and no sender.",
+      "lia": "To Lía it's not a scam: it installs nothing, takes nothing, asks for nothing.",
+      "nova": "6174 is Kaprekar's constant: you always reach it and never leave.",
+      "pip": "Pip counted {segundos} seconds without you moving, during the transmission."
     }
   }
 }

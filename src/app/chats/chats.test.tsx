@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { loadSettings, saveSetting, type DataContext } from '../../data/repository';
 import { choose, finishContact } from '../../domain/origen/origen';
 import { renderRoutes, setupData } from '../test-utils';
-import { ChatsScreen, NeighborChatScreen, SignalChatScreen } from './ChatsScreen';
+import { ChatsScreen, DossierScreen, NeighborChatScreen, SignalChatScreen } from './ChatsScreen';
 import { deliverStep } from '../../domain/origen/chapters';
 import { openChapter } from '../../domain/origen/periods';
 
@@ -20,6 +20,7 @@ const AT = new Date('2026-11-11T10:00:00.000Z');
 const routes = [
   { path: '/mensajes', element: <ChatsScreen /> },
   { path: '/mensajes/senal', element: <SignalChatScreen /> },
+  { path: '/mensajes/expediente', element: <DossierScreen /> },
   { path: '/mensajes/:chat', element: <NeighborChatScreen /> },
   { path: '/chat', element: <p>chat del compañero</p> },
 ];
@@ -70,5 +71,21 @@ describe('Mensajes (spec 17, ME)', () => {
     await user.click(screen.getByRole('button', { name: 'Rechazar' }));
     await waitFor(async () => expect((await loadSettings(ctx.db)).origen?.tests?.[0]?.result).toBe('rejected'));
     expect(await screen.findByText('Rechazo registrado.')).toBeInTheDocument();
+  });
+
+  it('Expediente: desde el capítulo 2, con capítulos, pistas, pruebas y el porcentaje (EX-01 a EX-03)', async () => {
+    const s = openChapter(choose(finishContact(undefined, AT, 0), 'investigate'), new Date('2026-11-18T10:00:00.000Z'), 80);
+    const passed = { n: 1, type: 'noBlank' as const, times: 3, period: 1, offeredAt: AT.toISOString(), offeredOn: '2026-11-11' as never, result: 'passed' as const, resolvedAt: AT.toISOString() };
+    await saveSetting(ctx.db, 'origen', { ...deliverStep(s, 'c2.dex', new Date('2026-11-18T10:00:05.000Z')), tests: [passed] });
+    renderRoutes(ctx, routes, '/mensajes');
+    expect(await screen.findByText('Expediente ORIGEN')).toBeInTheDocument();
+    renderRoutes(ctx, routes, '/mensajes/expediente');
+    // 2 capítulos × 3,5 + 1 fragmento = 8 %
+    expect((await screen.findAllByText('Señal descifrada: 8 %')).length).toBeGreaterThan(0);
+    expect(await screen.findByText('Capítulo 2 · La melodía')).toBeInTheDocument();
+    expect(screen.getByText('Capítulo 20 · ???')).toBeInTheDocument();
+    expect(screen.getByText(/Dex tararea una melodía/)).toBeInTheDocument();
+    expect(screen.getByText(/1 fragmento cifrado\. ARVID lo guarda/)).toBeInTheDocument();
+    expect(screen.getByText('Superadas: 1 · No superadas: 0 · Rechazadas o sin respuesta: 0')).toBeInTheDocument();
   });
 });

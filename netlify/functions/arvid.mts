@@ -23,6 +23,7 @@ import {
   type AiRequest,
 } from '../../src/domain/arvid/ai';
 import { COMPANIONS } from '../../src/domain/arvid/companion';
+import { AI_TEST_EVERY_DAYS, checkAiTest, parseAiJson } from '../../src/domain/origen/aiTest';
 
 const MISTRAL_URL = 'https://api.mistral.ai/v1/chat/completions';
 /** El plan gratuito de Netlify corta las funciones a los 10 s. */
@@ -51,6 +52,12 @@ export interface Usage {
   takeNeighbor(owner: string, day: string): Promise<boolean>;
   /** Devuelve lo gastado si la generación falla (D-124): un error de Mistral no cuesta un crédito. */
   refund(owner: string, day: string, neighbor: boolean): Promise<void>;
+  /**
+   * Prueba del programa (spec 17, PR-11): sin créditos, una cada 5 días por código. Devuelve si se pudo y el día de la
+   * anterior, para devolverla si la generación falla.
+   */
+  takeTest(owner: string, day: string): Promise<{ ok: boolean; previous?: string }>;
+  refundTest(owner: string, previous: string | undefined): Promise<void>;
 }
 
 /**
@@ -64,7 +71,9 @@ export function usedToday(saved: unknown, day: string): number {
   return entry?.day === day && typeof entry.used === 'number' ? entry.used : 0;
 }
 
-type UsageEntry = { day?: string; used?: number; neighborDay?: string };
+type UsageEntry = { day?: string; used?: number; neighborDay?: string; testDay?: string };
+
+const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86_400_000);
 
 const blobUsage: Usage = {
   async take(owner, day, limit) {
@@ -91,6 +100,18 @@ const blobUsage: Usage = {
     }
     const used = usedToday(saved, day);
     if (used > 0) await store.setJSON(owner, { ...saved, day, used: used - 1 });
+  },
+  async takeTest(owner, day) {
+    const store = getStore('ai-usage');
+    const saved = ((await store.get(owner, { type: 'json' }).catch(() => null)) ?? {}) as UsageEntry;
+    if (saved.testDay && daysBetween(saved.testDay, day) < AI_TEST_EVERY_DAYS) return { ok: false };
+    await store.setJSON(owner, { ...saved, testDay: day });
+    return { ok: true, previous: saved.testDay };
+  },
+  async refundTest(owner, previous) {
+    const store = getStore('ai-usage');
+    const saved = ((await store.get(owner, { type: 'json' }).catch(() => null)) ?? {}) as UsageEntry;
+    await store.setJSON(owner, { ...saved, testDay: previous });
   },
 };
 
@@ -160,6 +181,18 @@ export async function handle(
   const parsed = RequestSchema.safeParse(body);
   if (!parsed.success) return json(400, { error: 'invalid' });
 
+  // Prueba del programa (spec 17, PR-11): con código, sin créditos y una cada 5 días
+  if (parsed.data.moment === 'origenTest') {
+    if (trial) return json(401, { error: 'code' });
+    const today = (deps.now?.() ?? new Date()).toISOString().slice(0, 10);
+    const usage = deps.usage ?? blobUsage;
+    const taken = owner ? await usage.takeTest(owner, today) : { ok: true };
+    if (!taken.ok) return json(429, { error: 'tests' });
+    const response = await generateTest(parsed.data as AiRequest, deps);
+    if (owner && response.status !== 200) await usage.refundTest(owner, taken.previous).catch(() => undefined);
+    return response;
+  }
+
   // El crédito se gasta solo con peticiones válidas; se descuenta antes de llamar a Mistral (así varias peticiones a la
   // vez no se saltan el límite) y se devuelve si la generación falla (D-124)
   const neighbor = parsed.data.moment === 'neighbor';
@@ -196,6 +229,7 @@ async function callMistral(
   deps: { apiKey?: string; fetch: typeof fetch },
   timeoutMs: number,
   withTools: boolean,
+  jsonOut = false,
 ): Promise<{ message: MistralReply } | { error: Response }> {
   let res: Response;
   try {
@@ -208,6 +242,7 @@ async function callMistral(
         max_tokens: AI_MAX_TOKENS,
         messages,
         ...(withTools ? { tools: [...actionTools(), ...memoryTools()], tool_choice: 'auto' } : {}),
+        ...(jsonOut ? { response_format: { type: 'json_object' } } : {}),
       }),
       signal: AbortSignal.timeout(timeoutMs),
     });
@@ -300,6 +335,30 @@ async function generate(req: AiRequest, deps: { apiKey?: string; fetch: typeof f
   const reply = text();
   if (!reply) return json(502, { error: 'empty' });
   return json(200, { reply });
+}
+
+/** Prueba del programa (spec 17, PR-02 a PR-04): JSON validado; si no vale, un reintento con el error. */
+async function generateTest(req: AiRequest, deps: { apiKey?: string; fetch: typeof fetch }): Promise<Response> {
+  const started = Date.now();
+  const messages: MistralMessage[] = buildMessages(req);
+  const activities = (req.context.activities as { id?: unknown }[] | undefined) ?? [];
+  const ids = activities.map((a) => a.id).filter((id): id is string => typeof id === 'string');
+  const first = await callMistral(messages, deps, MISTRAL_TIMEOUT_MS, false, true);
+  if ('error' in first) return first.error;
+  const read = (m: MistralReply) => checkAiTest(parseAiJson(typeof m.content === 'string' ? m.content : ''), ids);
+  let check = read(first.message);
+  const left = MISTRAL_TIMEOUT_MS - (Date.now() - started);
+  if (!check.ok && left > 3_000) {
+    const retry = await callMistral(
+      [...messages, { role: 'assistant', content: String(first.message.content ?? '') }, { role: 'user', content: `Invalid: ${check.error}. Answer again with valid JSON only.` }],
+      deps,
+      left - 500,
+      false,
+      true,
+    );
+    if (!('error' in retry)) check = read(retry.message);
+  }
+  return check.ok ? json(200, { test: check.test }) : json(502, { error: 'invalid' });
 }
 
 export default (req: Request): Promise<Response> =>

@@ -63,4 +63,19 @@ describe('pruebas del programa (PR)', () => {
     expect(restAhead([rest], TODAY)).toBe(true);
     expect(restAhead([rest], d('2026-11-20'))).toBe(false);
   });
+
+  it('la que escribe la IA: con actividad, por tus registros; sin ella, con «Hecho hoy» (PR-07)', async () => {
+    const { toggleMark, markedByHand } = await import('./programTests');
+    const ai: ProgramTest = { n: 2, type: 'ai', title: 'Estirar', times: 2, days: 5, period: 2, offeredAt: NOW.toISOString(), offeredOn: TODAY };
+    const accepted = acceptTest(ai, TODAY);
+    expect(accepted.deadline).toBe('2026-12-04');
+    expect(markedByHand(accepted)).toBe(true);
+    let marked = toggleMark(accepted, TODAY);
+    expect(testProgress(marked, records, analysis, TODAY)).toEqual({ done: 1, of: 2 });
+    marked = toggleMark(marked, TODAY);
+    expect(marked.marks).toEqual([]);
+    const withActivity = acceptTest({ ...ai, activityId: 'a-leer' }, d('2026-11-28'));
+    expect(markedByHand(withActivity)).toBe(false);
+    expect(resolveTest(withActivity, records, analysis, TODAY, NOW).result).toBe('passed');
+  });
 });

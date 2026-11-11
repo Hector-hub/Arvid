@@ -2273,3 +2273,7 @@ input[type='url']::placeholder { color: var(--text-muted); opacity: 0.7; }
 a.signal-card.signal-test { cursor: pointer; }
 .signal-test p { margin: 0; font-family: var(--font-text); font-size: 0.95rem; line-height: 1.4; }
 .signal-line { margin: 0; padding: var(--s1) var(--s3); border-left: 2px solid #ff1f3d; font-family: var(--font-pixel); color: var(--c-white); }
+.dossier-list { list-style: none; padding: 0; margin: 0; gap: var(--s3); }
+.dossier-list p { margin: 0; }
+.signal-decoded { color: #ff2a47; text-shadow: 0 0 6px rgb(255 31 61 / 0.5); margin: 0; }
+.signal-bar > span { background: #ff1f3d; box-shadow: 0 0 6px rgb(255 31 61 / 0.6); }
