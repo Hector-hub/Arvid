@@ -1398,7 +1398,9 @@
   "sound": {
     "list": "Tracks",
     "settings": "Sound settings",
-    "muteAll": "Mute everything"
+    "muteAll": "Mute everything",
+    "locked": "Locked song",
+    "newTrack": "New song: {name}"
   },
   "whatsNew": {
     "title": "What's new",
@@ -1624,6 +1626,18 @@
       "lia": "To Lía it's not a scam: it installs nothing, takes nothing, asks for nothing.",
       "nova": "6174 is Kaprekar's constant: you always reach it and never leave.",
       "pip": "Pip counted {segundos} seconds without you moving, during the transmission."
+    },
+    "neighborChat": {
+      "placeholder": "Write to {name}…",
+      "needsAi": "To talk with {name}, turn on AI with your code in Settings → Companion.",
+      "left_one": "1 message left with {name} today",
+      "left_other": "{count} messages left with {name} today",
+      "none": "{name} won't answer any more today. Pick it up tomorrow.",
+      "offline": "No connection: the message wasn't sent.",
+      "error": "{name} didn't answer. Try again.",
+      "delete": "Delete my message",
+      "typing": "{name} is typing…",
+      "you": "You"
     }
   }
 }

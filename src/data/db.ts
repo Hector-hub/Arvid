@@ -23,7 +23,17 @@ export interface AchievementRow {
   unlockedAt: string;
 }
 
-export const SCHEMA_VERSION = 5;
+/** Conversación libre con un personaje de la historia (spec 17, ME-07): lo que escribes y lo que contesta su IA. */
+export interface MessageRow {
+  id: string;
+  /** Chat: el id del vecino. */
+  chat: string;
+  at: string;
+  from: 'user' | 'character';
+  text: string;
+}
+
+export const SCHEMA_VERSION = 6;
 
 export class ArvidDB extends Dexie {
   categories!: EntityTable<Category, 'id'>;
@@ -43,6 +53,8 @@ export class ArvidDB extends Dexie {
   memories!: EntityTable<Memory, 'id'>;
   /** Copia local de los retos entre amigos y su marcador (spec 15, §4.3). Desde la versión 5 del esquema. */
   challenges!: EntityTable<LocalChallenge, 'id'>;
+  /** Conversación libre con los vecinos (spec 17, ME-07). Desde la versión 6 del esquema. */
+  messages!: EntityTable<MessageRow, 'id'>;
 
   constructor(name = 'arvid') {
     super(name);
@@ -65,5 +77,7 @@ export class ArvidDB extends Dexie {
     this.version(4).stores({ memories: 'id' });
     // Versión 5 (spec 15): retos; las actividades ganan `challengeId` (opcional, sin índice)
     this.version(5).stores({ challenges: 'id' });
+    // Versión 6 (spec 17): conversación libre con los vecinos
+    this.version(6).stores({ messages: 'id, chat, [chat+at]' });
   }
 }

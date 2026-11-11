@@ -30,6 +30,7 @@ import { ChallengeSync } from '../challenges/ChallengeSync';
 import { MusicProvider } from '../music/MusicProvider';
 import { OrigenWatcher } from '../origen/OrigenWatcher';
 import { ChapterWatcher } from '../origen/ChapterWatcher';
+import { TrackUnlockWatcher } from '../music/TrackUnlockWatcher';
 
 const TABS: { to: string; label: TKey; icon: SpriteName }[] = [
   { to: '/hoy', label: 'nav.today', icon: 'nav-today' },
@@ -110,6 +111,7 @@ export function AppLayout() {
         <ChatLogWatcher />
         <OrigenWatcher />
         <ChapterWatcher />
+        <TrackUnlockWatcher />
       </div>
       </SoundSheetProvider>
       </MusicProvider>

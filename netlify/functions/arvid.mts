@@ -24,6 +24,7 @@ import {
 } from '../../src/domain/arvid/ai';
 import { COMPANIONS } from '../../src/domain/arvid/companion';
 import { AI_TEST_EVERY_DAYS, checkAiTest, parseAiJson } from '../../src/domain/origen/aiTest';
+import { NEIGHBOR_DAILY_MESSAGES } from '../../src/domain/origen/neighborChat';
 
 const MISTRAL_URL = 'https://api.mistral.ai/v1/chat/completions';
 /** El plan gratuito de Netlify corta las funciones a los 10 s. */
@@ -39,6 +40,7 @@ const RequestSchema = z.object({
   companion: z.enum(COMPANIONS).optional(),
   neighbor: z.enum(NEIGHBOR_IDS).optional(),
   memory: z.array(z.string().max(MEMORY_TEXT_MAX)).max(MEMORY_MAX).optional(),
+  chapter: z.number().int().min(0).max(20).optional(),
 });
 
 const json = (status: number, body: unknown) =>
@@ -58,6 +60,9 @@ export interface Usage {
    */
   takeTest(owner: string, day: string): Promise<{ ok: boolean; previous?: string }>;
   refundTest(owner: string, previous: string | undefined): Promise<void>;
+  /** Chat con un vecino (spec 17, VI-01): sin créditos, 3 al día por código y vecino. Devuelve los que quedan. */
+  takeNeighborChat(owner: string, day: string, neighbor: string): Promise<number | undefined>;
+  refundNeighborChat(owner: string, day: string, neighbor: string): Promise<void>;
 }
 
 /**
@@ -71,7 +76,7 @@ export function usedToday(saved: unknown, day: string): number {
   return entry?.day === day && typeof entry.used === 'number' ? entry.used : 0;
 }
 
-type UsageEntry = { day?: string; used?: number; neighborDay?: string; testDay?: string };
+type UsageEntry = { day?: string; used?: number; neighborDay?: string; testDay?: string; chatsDay?: string; chats?: Record<string, number> };
 
 const daysBetween = (a: string, b: string) => Math.round((Date.parse(b) - Date.parse(a)) / 86_400_000);
 
@@ -107,6 +112,22 @@ const blobUsage: Usage = {
     if (saved.testDay && daysBetween(saved.testDay, day) < AI_TEST_EVERY_DAYS) return { ok: false };
     await store.setJSON(owner, { ...saved, testDay: day });
     return { ok: true, previous: saved.testDay };
+  },
+  async takeNeighborChat(owner, day, neighbor) {
+    const store = getStore('ai-usage');
+    const saved = ((await store.get(owner, { type: 'json' }).catch(() => null)) ?? {}) as UsageEntry;
+    const chats = saved.chatsDay === day ? { ...saved.chats } : {};
+    const used = chats[neighbor] ?? 0;
+    if (used >= NEIGHBOR_DAILY_MESSAGES) return undefined;
+    chats[neighbor] = used + 1;
+    await store.setJSON(owner, { ...saved, chatsDay: day, chats });
+    return NEIGHBOR_DAILY_MESSAGES - used - 1;
+  },
+  async refundNeighborChat(owner, day, neighbor) {
+    const store = getStore('ai-usage');
+    const saved = ((await store.get(owner, { type: 'json' }).catch(() => null)) ?? {}) as UsageEntry;
+    if (saved.chatsDay !== day || !saved.chats?.[neighbor]) return;
+    await store.setJSON(owner, { ...saved, chats: { ...saved.chats, [neighbor]: saved.chats[neighbor]! - 1 } });
   },
   async refundTest(owner, previous) {
     const store = getStore('ai-usage');
@@ -180,6 +201,22 @@ export async function handle(
   }
   const parsed = RequestSchema.safeParse(body);
   if (!parsed.success) return json(400, { error: 'invalid' });
+
+  // Chat con un vecino (spec 17, VI-01): con código, sin créditos y 3 al día por vecino
+  if (parsed.data.moment === 'neighborChat') {
+    const who = parsed.data.neighbor;
+    if (trial || !who || parsed.data.messages.length === 0) return json(trial ? 401 : 400, { error: trial ? 'code' : 'invalid' });
+    const today = (deps.now?.() ?? new Date()).toISOString().slice(0, 10);
+    const usage = deps.usage ?? blobUsage;
+    const left = owner ? await usage.takeNeighborChat(owner, today, who) : NEIGHBOR_DAILY_MESSAGES - 1;
+    if (left === undefined) return json(429, { error: 'neighbor' });
+    const response = await generate(parsed.data as AiRequest, deps);
+    if (response.status !== 200) {
+      if (owner) await usage.refundNeighborChat(owner, today, who).catch(() => undefined);
+      return response;
+    }
+    return json(200, { ...(await response.json()), left });
+  }
 
   // Prueba del programa (spec 17, PR-11): con código, sin créditos y una cada 5 días
   if (parsed.data.moment === 'origenTest') {

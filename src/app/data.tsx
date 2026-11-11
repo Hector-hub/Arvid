@@ -1,4 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
+import { loadMessages } from '../data/messages';
 import { createContext, useContext, type ReactNode } from 'react';
 import { loadMissions } from '../data/missions';
 import { loadGoals } from '../data/goals';
@@ -71,4 +72,10 @@ export function useChallenges() {
 export function useMemories() {
   const { db } = useData();
   return useLiveQuery(() => loadMemories(db), [db]);
+}
+
+/** Conversación libre con un vecino (spec 17, ME-07). */
+export function useMessages(chat: string) {
+  const { db } = useData();
+  return useLiveQuery(() => loadMessages(db, chat), [db, chat]);
 }

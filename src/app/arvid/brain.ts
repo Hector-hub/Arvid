@@ -162,7 +162,7 @@ export async function neighborLine(neighbor: NeighborId, fallback: string, deps:
 }
 
 /** Lo que dice ARVID por iniciativa propia: con IA si se puede; si no, la frase fija `fallback` (IA-05). */
-export async function momentLine(moment: Exclude<AiMoment, 'chat' | 'neighbor' | 'origenTest'>, fallback: string, deps: BrainDeps): Promise<string> {
+export async function momentLine(moment: Exclude<AiMoment, 'chat' | 'neighbor' | 'origenTest' | 'neighborChat'>, fallback: string, deps: BrainDeps): Promise<string> {
   if (!deps.aiEnabled) return fallback;
   const result = await askAi(moment, [], deps, MOMENT_TIMEOUT_MS);
   return result.ok ? result.reply : fallback;
@@ -188,5 +188,35 @@ export async function programTestAi(summary: Record<string, unknown>, activityId
     return check.ok ? check.test : undefined;
   } catch {
     return undefined;
+  }
+}
+
+/**
+ * Mensaje a un vecino (spec 17, VI): con código de acceso, sin créditos y 3 al día por vecino (los cuenta el servidor).
+ * Lleva su conversación y lo que se ve desde la calle; nada de memoria (VI-02).
+ */
+export async function neighborChatTurn(
+  neighbor: NeighborId,
+  chapter: number,
+  messages: ChatMessage[],
+  context: Record<string, unknown>,
+): Promise<{ ok: true; reply: string; left: number } | { ok: false; reason: 'neighbor' | 'offline' | 'code' | 'error' }> {
+  if (!accessCode) return { ok: false, reason: 'code' };
+  if (offline()) return { ok: false, reason: 'offline' };
+  try {
+    const res = await fetch('/api/arvid', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Arvid-Code': accessCode },
+      body: JSON.stringify({ locale: getLocale(), moment: 'neighborChat', neighbor, chapter, messages, context }),
+      signal: AbortSignal.timeout(CHAT_TIMEOUT_MS),
+    });
+    if (res.status === 429) return { ok: false, reason: 'neighbor' };
+    if (res.status === 401) return { ok: false, reason: 'code' };
+    if (!res.ok) return { ok: false, reason: 'error' };
+    const data = (await res.json()) as { reply?: unknown; left?: unknown };
+    if (typeof data.reply !== 'string' || !data.reply) return { ok: false, reason: 'error' };
+    return { ok: true, reply: data.reply, left: typeof data.left === 'number' ? data.left : 0 };
+  } catch {
+    return { ok: false, reason: offline() ? 'offline' : 'error' };
   }
 }

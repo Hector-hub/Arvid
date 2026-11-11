@@ -104,6 +104,9 @@ describe('escena en Hoy', () => {
 describe('sonido y créditos', () => {
   it('MUS-06, PS-01, D-195: la página Sonido muestra el reproductor apagado en la pista guardada y la lista de pistas', async () => {
     await saveSetting(ctx.db, 'music', { enabled: false, volume: 0.7, track: 'rain-on-the-expressway', background: true } satisfies Settings['music']);
+    // Capítulo 9: seis canciones desbloqueadas (spec 17, MU-04)
+    const period = { openedAt: '2026-10-01T10:00:00.000Z', xpAtOpen: 0 };
+    await saveSetting(ctx.db, 'origen', { contactAt: period.openedAt, choice: 'investigate', enabled: true, periods: Array.from({ length: 9 }, () => period) });
     renderRoutes(ctx, [{ path: '/sonido', element: <SoundScreen /> }], '/sonido');
     expect(await screen.findByRole('button', { name: 'Reproducir' })).toHaveAttribute('aria-pressed', 'false');
     expect(await screen.findByText('Rain on the Expressway', { selector: '.player-track' })).toBeInTheDocument();
@@ -112,9 +115,11 @@ describe('sonido y créditos', () => {
     expect(screen.getByRole('button', { name: 'Pista siguiente' })).toBeInTheDocument();
     // Sin sonar no se puede saltar dentro de la pista
     expect(screen.getByRole('slider', { name: 'Progreso de la pista' })).toBeDisabled();
-    // Las nueve pistas con su portada y su duración; la guardada, resaltada
-    expect(screen.getAllByRole('button', { name: /ARVID/ })).toHaveLength(9);
-    expect(screen.getByRole('button', { name: /^Afterglow Avenue\s*ARVID\s*1:30$/ })).toBeInTheDocument();
+    // Las seis desbloqueadas con su portada y su duración; las otras tres, sin nombre (MU-03); la guardada, resaltada
+    expect(screen.getAllByRole('button', { name: /Our Signal/ })).toHaveLength(6);
+    expect(screen.getByRole('button', { name: /^Afterglow Avenue\s*Our Signal\s*1:30$/ })).toBeInTheDocument();
+    expect(document.querySelectorAll('.sound-row.locked')).toHaveLength(3);
+    expect(screen.queryByText('Last Outpost')).toBeNull();
     expect(document.querySelector('.sound-row.on')).toHaveTextContent('Rain on the Expressway');
   });
 

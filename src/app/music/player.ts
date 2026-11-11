@@ -37,7 +37,7 @@ export class MusicPlayer {
   private state: PlayerState = { playing: false, needsConnection: false, time: 0, duration: 0 };
 
   constructor(
-    private readonly tracks: Track[],
+    private tracks: Track[],
     private level: number,
     private readonly onChange: (state: PlayerState) => void,
     /** Pista por la que seguir (la guardada) y aviso al cambiar de pista, para guardarla (DT-01). */
@@ -105,6 +105,12 @@ export class MusicPlayer {
 
   skip(): void {
     this.change(1);
+  }
+
+  /** Cambia las canciones disponibles (spec 17, MU-03): si la actual ya no está, sigue por la primera. */
+  setTracks(tracks: Track[]): void {
+    this.tracks = tracks;
+    if (this.current && !tracks.some((t) => t.id === this.current)) this.current = tracks[0]?.id;
   }
 
   /** Suena una pista concreta (la lista de la página Sonido, D-195); si ya es la actual, solo la reanuda. */

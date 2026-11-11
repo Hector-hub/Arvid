@@ -35,6 +35,10 @@ export interface OrigenState {
   steps?: Record<string, string>;
   /** Pruebas del programa (PR). */
   tests?: import('./programTests').ProgramTest[];
+  /** Tramos de quien bloqueó la señal (RI-10): el mismo reloj, sin capítulos; solo cuentan para la música. */
+  blockPeriods?: OrigenPeriod[];
+  /** Canciones que ya se anunciaron como nuevas (MU-06). */
+  tracksAnnounced?: number;
 }
 
 export type VoiceId = 'es-m' | 'es-f' | 'en';

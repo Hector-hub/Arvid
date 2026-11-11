@@ -132,6 +132,7 @@ const rest = z.object({
   createdAt: instant,
 });
 const setting = z.object({ key: z.string().min(1).max(60), value: z.unknown() });
+const message = z.object({ id, chat: z.string().min(1).max(20), at: instant, from: z.enum(['user', 'character']), text: z.string().min(1).max(1200) });
 
 const backupSchema = z.object({
   format: z.literal(BACKUP_FORMAT),
@@ -156,6 +157,8 @@ const backupSchema = z.object({
     // Desde el esquema 4 (spec 13)
     memories: z.array(memory).default([]),
     challenges: z.array(challenge).default([]),
+    // Desde el esquema 6 (spec 17)
+    messages: z.array(message).default([]),
   }),
 });
 
@@ -184,6 +187,7 @@ export async function buildBackup(db: ArvidDB, appVersion: string, now: Date): P
       goals: await db.goals.toArray(),
       memories: await db.memories.toArray(),
       challenges: await db.challenges.toArray(),
+      messages: await db.messages.toArray(),
     },
   }));
 }
@@ -261,6 +265,7 @@ function findBrokenReference({ data }: Backup): string | undefined {
     ['goals', data.goals],
     ['memories', data.memories],
     ['challenges', data.challenges],
+    ['messages', data.messages],
   ];
   for (const [name, rows] of tables) {
     if (new Set(rows.map((r) => r.id)).size !== rows.length) return `${name}: IDs duplicados`;
@@ -327,6 +332,7 @@ export async function replaceAllData(ctx: DataContext, backup: Backup): Promise<
     await db.goals.bulkAdd(data.goals as Goal[]);
     await db.memories.bulkAdd(data.memories);
     await db.challenges.bulkAdd(data.challenges);
+    await db.messages.bulkAdd(data.messages);
     await db.settings.bulkPut([
       ...data.settings.filter((s) => exported(s.key)),
       ...device,

@@ -61,7 +61,7 @@ describe('función /api/arvid', () => {
 
   it('D-100: con ARVID_CODE_SECRET, sin código o con uno inventado, 401 y no llama a Mistral', async () => {
     const fetch = mistral(200);
-    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: true })), refundTest: vi.fn(async () => undefined) };
+    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: true })), refundTest: vi.fn(async () => undefined), takeNeighborChat: vi.fn(async () => 2), refundNeighborChat: vi.fn(async () => undefined) };
     expect((await handle(post(body()), { apiKey: 'k', codeSecret: 's', usage, fetch })).status).toBe(401);
     expect((await handle(withCode('ARVID-ANA-AAAAAAAAAA'), { apiKey: 'k', codeSecret: 's', usage, fetch })).status).toBe(401);
     // Firmado con otro secreto
@@ -71,7 +71,7 @@ describe('función /api/arvid', () => {
 
   it('D-100: un código válido (sin importar mayúsculas) gasta un crédito del día de su dueño', async () => {
     const fetch = mistral(200);
-    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: true })), refundTest: vi.fn(async () => undefined) };
+    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: true })), refundTest: vi.fn(async () => undefined), takeNeighborChat: vi.fn(async () => 2), refundNeighborChat: vi.fn(async () => undefined) };
     const code = createCode('ana', 's').toLowerCase();
     const res = await handle(withCode(code), { apiKey: 'k', codeSecret: 's', usage, now: () => new Date('2026-10-23T12:00:00Z'), fetch });
     expect(res.status).toBe(200);
@@ -80,7 +80,7 @@ describe('función /api/arvid', () => {
 
   it('D-100: sin créditos del día, 429 «daily» y no llama a Mistral', async () => {
     const fetch = mistral(200);
-    const res = await handle(withCode(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage: { take: async () => false, takeNeighbor: async () => true, refund: async () => undefined, takeTest: async () => ({ ok: true }), refundTest: async () => undefined }, fetch });
+    const res = await handle(withCode(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage: { take: async () => false, takeNeighbor: async () => true, refund: async () => undefined, takeTest: async () => ({ ok: true }), refundTest: async () => undefined, takeNeighborChat: async () => 2, refundNeighborChat: async () => undefined }, fetch });
     expect(res.status).toBe(429);
     expect(await res.json()).toEqual({ error: 'daily' });
     expect(fetch).not.toHaveBeenCalled();
@@ -102,7 +102,7 @@ describe('función /api/arvid', () => {
 
   it('spec 11, VC-06: la frase de un vecino no gasta créditos y se limita a una al día', async () => {
     const fetch = mistral(200, 'Esta canción va por ti.');
-    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: true })), refundTest: vi.fn(async () => undefined) };
+    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: true })), refundTest: vi.fn(async () => undefined), takeNeighborChat: vi.fn(async () => 2), refundNeighborChat: vi.fn(async () => undefined) };
     const req = new Request('https://x/api/arvid', {
       method: 'POST',
       body: body({ moment: 'neighbor', neighbor: 'dex', messages: [] }),
@@ -125,12 +125,12 @@ describe('función /api/arvid', () => {
       [mistral(200, ''), 502],
       [vi.fn(async () => Promise.reject(new Error('timeout'))) as unknown as typeof globalThis.fetch, 504],
     ] as const) {
-      const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: true })), refundTest: vi.fn(async () => undefined) };
+      const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: true })), refundTest: vi.fn(async () => undefined), takeNeighborChat: vi.fn(async () => 2), refundNeighborChat: vi.fn(async () => undefined) };
       const res = await handle(withCode(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage, now: () => new Date('2026-10-26T12:00:00Z'), fetch: fetchMock });
       expect(res.status).toBe(status);
       expect(usage.refund).toHaveBeenCalledWith('ana', '2026-10-26', false);
     }
-    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: true })), refundTest: vi.fn(async () => undefined) };
+    const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: true })), refundTest: vi.fn(async () => undefined), takeNeighborChat: vi.fn(async () => 2), refundNeighborChat: vi.fn(async () => undefined) };
     expect((await handle(withCode(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage, fetch: mistral(200) })).status).toBe(200);
     expect(usage.refund).not.toHaveBeenCalled();
   });
@@ -287,7 +287,7 @@ describe('función /api/arvid', () => {
 
     it('devuelve la prueba validada, pide JSON y no gasta créditos', async () => {
       const fetch = mistral(200, good);
-      const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: true })), refundTest: vi.fn(async () => undefined) };
+      const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: true })), refundTest: vi.fn(async () => undefined), takeNeighborChat: vi.fn(async () => 2), refundNeighborChat: vi.fn(async () => undefined) };
       const res = await handle(req(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage, fetch });
       expect(res.status).toBe(200);
       expect(await res.json()).toEqual({ test: { title: 'Estirar diez minutos después de correr', detail: 'Ayuda a tu objetivo de 5 km.', times: 3, days: 7 } });
@@ -301,7 +301,7 @@ describe('función /api/arvid', () => {
 
     it('una cada 5 días por código: si no toca, 429 «tests» sin llamar a Mistral', async () => {
       const fetch = mistral(200, good);
-      const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: false })), refundTest: vi.fn(async () => undefined) };
+      const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: false })), refundTest: vi.fn(async () => undefined), takeNeighborChat: vi.fn(async () => 2), refundNeighborChat: vi.fn(async () => undefined) };
       const res = await handle(req(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage, fetch });
       expect(res.status).toBe(429);
       expect(await res.json()).toEqual({ error: 'tests' });
@@ -317,7 +317,7 @@ describe('función /api/arvid', () => {
 
     it('si no vale, reintenta una vez con el error; si sigue sin valer, 502 y se devuelve el turno', async () => {
       const fetch = vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: '{"title":"","times":9}' } }] }), { status: 200 })) as unknown as typeof globalThis.fetch;
-      const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: true, previous: '2026-11-01' })), refundTest: vi.fn(async () => undefined) };
+      const usage = { take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: true, previous: '2026-11-01' })), refundTest: vi.fn(async () => undefined), takeNeighborChat: vi.fn(async () => 2), refundNeighborChat: vi.fn(async () => undefined) };
       const res = await handle(req(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage, fetch });
       expect(res.status).toBe(502);
       expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2);
@@ -328,6 +328,55 @@ describe('función /api/arvid', () => {
       const fetch = mistral(200, JSON.stringify({ title: 'Correr', detail: '', times: 2, days: 5, activityId: 'otra' }));
       const res = await handle(post(testBody()), { apiKey: 'k', fetch });
       expect(res.status).toBe(502);
+    });
+  });
+
+  describe('chat con un vecino (spec 17, VI)', () => {
+    const chatBody = (extra: Record<string, unknown> = {}) =>
+      JSON.stringify({ locale: 'es', moment: 'neighborChat', neighbor: 'dex', chapter: 2, messages: [{ role: 'assistant', content: 'Hola, soy Dex.' }, { role: 'user', content: '¿De dónde sale esa melodía?' }], context: { alias: 'Ana', title: 'Recluta' }, ...extra });
+    const req = (code: string, extra?: Record<string, unknown>) => new Request('https://x/api/arvid', { method: 'POST', body: chatBody(extra), headers: { 'X-Arvid-Code': code } });
+    const usage = () => ({ take: vi.fn(async () => true), takeNeighbor: vi.fn(async () => true), refund: vi.fn(async () => undefined), takeTest: vi.fn(async () => ({ ok: true })), refundTest: vi.fn(async () => undefined), takeNeighborChat: vi.fn(async () => 1 as number | undefined), refundNeighborChat: vi.fn(async () => undefined) });
+
+    it('contesta como el vecino, con lo que sabe en ese capítulo y su conversación; no gasta créditos', async () => {
+      const fetch = mistral(200, 'Ni idea, se me pegó sin más.');
+      const u = usage();
+      const res = await handle(req(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage: u, fetch });
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ reply: 'Ni idea, se me pegó sin más.', left: 1 });
+      expect(u.take).not.toHaveBeenCalled();
+      expect(u.takeNeighborChat).toHaveBeenCalledWith('ana', expect.any(String), 'dex');
+      const sent = JSON.parse(vi.mocked(fetch).mock.calls[0]![1]!.body as string);
+      expect(sent.messages[0].content).toMatch(/You are Dex/);
+      expect(sent.messages[0].content).toMatch(/four low notes/);
+      expect(sent.messages[0].content).toMatch(/Never confirm/);
+      expect(sent.messages.at(-1)).toEqual({ role: 'user', content: '¿De dónde sale esa melodía?' });
+      expect(sent.tools).toBeUndefined();
+    });
+
+    it('no sabe nada de capítulos posteriores (VI-02)', async () => {
+      const fetch = mistral(200, 'Hola.');
+      await handle(req(createCode('ana', 's'), { neighbor: 'omar', chapter: 2 }), { apiKey: 'k', codeSecret: 's', usage: usage(), fetch });
+      const sent = JSON.parse(vi.mocked(fetch).mock.calls[0]![1]!.body as string);
+      expect(sent.messages[0].content).not.toMatch(/Programa Origen/);
+      expect(sent.messages[0].content).toMatch(/know nothing unusual/);
+    });
+
+    it('3 al día por vecino: al cuarto, 429 «neighbor» sin llamar a Mistral; si falla, se devuelve', async () => {
+      const fetch = mistral(200, 'x');
+      const full = usage();
+      full.takeNeighborChat.mockResolvedValue(undefined);
+      const res = await handle(req(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage: full, fetch });
+      expect(res.status).toBe(429);
+      expect(await res.json()).toEqual({ error: 'neighbor' });
+      expect(fetch).not.toHaveBeenCalled();
+      const u = usage();
+      await handle(req(createCode('ana', 's')), { apiKey: 'k', codeSecret: 's', usage: u, fetch: mistral(500) });
+      expect(u.refundNeighborChat).toHaveBeenCalledWith('ana', expect.any(String), 'dex');
+    });
+
+    it('sin código, 401', async () => {
+      const res = await handle(new Request('https://x/api/arvid', { method: 'POST', body: chatBody(), headers: { 'X-Arvid-Device': '123e4567-e89b-12d3-a456-426614174000' } }), { apiKey: 'k', codeSecret: 's', fetch: mistral(200) });
+      expect(res.status).toBe(401);
     });
   });
 });

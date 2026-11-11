@@ -6,6 +6,7 @@ import { useData, useSettings } from '../data';
 import { SpeakerOnIcon } from '../design/icons';
 import { MusicPlayer, type PlayerState } from './player';
 import { trackArtwork, TRACKS } from './tracks';
+import { unlockedTracks } from '../../domain/origen/music';
 
 export interface Music extends PlayerState {
   /** Preferencia guardada (MUS-01: desactivada por defecto). */
@@ -37,7 +38,11 @@ export const MUSIC_CONTROL = 'data-music-control';
 /** Música de fondo opcional (spec 05, MUS). El reproductor se crea con el primer gesto que la activa. */
 export function MusicProvider({ children }: { children: ReactNode }) {
   const { db } = useData();
-  const music = useSettings()?.music ?? DEFAULT_MUSIC;
+  const settings = useSettings();
+  const music = settings?.music ?? DEFAULT_MUSIC;
+  // Canciones desbloqueadas (spec 17, MU-02 a MU-04): las demás no suenan ni se descargan
+  const count = settings ? unlockedTracks(settings.origen, TRACKS.length) : TRACKS.length;
+  const available = useMemo(() => TRACKS.slice(0, count), [count]);
   const player = useRef<MusicPlayer | undefined>(undefined);
   const [state, setState] = useState<PlayerState>({ playing: false, needsConnection: false, time: 0, duration: 0 });
   const volume = music.volume;
@@ -50,17 +55,18 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const create = useCallback(
     (background: boolean) =>
       new MusicPlayer(
-        TRACKS,
+        available,
         volume,
         setState,
-        latest.current.track,
+        available.some((t) => t.id === latest.current.track) ? latest.current.track : available[0]?.id,
         (track) => {
           if (latest.current.track !== track) void saveSetting(db, 'music', { ...latest.current, track });
         },
         background,
       ),
-    [volume, db],
+    [volume, db, available],
   );
+  useEffect(() => player.current?.setTracks(available), [available]);
   const get = useCallback(() => (player.current ??= create(latest.current.background)), [create]);
 
   // Si quedó activada, empieza con la primera interacción de la sesión (los navegadores no permiten autoarranque).
@@ -119,6 +125,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         get().previous();
       },
       playTrack(id) {
+        if (!available.some((t) => t.id === id)) return;
         if (!music.enabled) void saveSetting(db, 'music', { ...latest.current, enabled: true });
         get().playTrack(id);
       },
@@ -140,7 +147,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         void saveSetting(db, 'music', { ...latest.current, background: on });
       },
     };
-  }, [state, music.enabled, music.background, volume, get, create, db, hush]);
+  }, [state, music.enabled, music.background, volume, get, create, db, hush, available]);
 
   // Controles de la pantalla de bloqueo y de la notificación (Media Session, D-163)
   const actions = useRef(value);

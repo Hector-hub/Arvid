@@ -5,6 +5,7 @@ import { saveSetting } from '../../data/repository';
 import { chapterDef, deliverStep, neededNeighbors, nextStep, PUBLISHED_CHAPTER, type StepDef } from '../../domain/origen/chapters';
 import { storyOn, voiceFor, type OrigenState, type VoiceId } from '../../domain/origen/origen';
 import { currentChapter, openChapter, readyForNext } from '../../domain/origen/periods';
+import { advanceBlocked } from '../../domain/origen/music';
 import { chooseTest, offerDay, openTest, resolveTest, restAhead, testsXp, timesForChapter, type ProgramTest } from '../../domain/origen/programTests';
 import { neighbor } from '../../domain/scene/city';
 import { diffDays, toLocalDate } from '../../domain/time/localDate';
@@ -63,6 +64,19 @@ export function ChapterWatcher() {
   useEffect(() => {
     showPeds(on ? neededNeighbors(origen).map((id) => neighbor(id).ped) : []);
   }, [origen, on]);
+
+  // Quien bloqueó la señal también tiene tramos (RI-10): sin capítulos, solo para la música
+  const blocked = !on && !!origen?.contactAt;
+  useEffect(() => {
+    if (!blocked) return;
+    const id = window.setInterval(() => {
+      const { origen: state, analysis: a } = live.current;
+      if (!state || !a || document.visibilityState !== 'visible') return;
+      const next = advanceBlocked(state, new Date(), a.progress.xp - testsXp(state.tests));
+      if (next) void saveSetting(db, 'origen', next);
+    }, 30_000);
+    return () => window.clearInterval(id);
+  }, [db, blocked]);
 
   useEffect(() => {
     if (!on) return;

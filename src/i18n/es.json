@@ -1398,7 +1398,9 @@
   "sound": {
     "list": "Lista",
     "settings": "Ajustes de sonido",
-    "muteAll": "Silenciar todo"
+    "muteAll": "Silenciar todo",
+    "locked": "Canción bloqueada",
+    "newTrack": "Canción nueva: {name}"
   },
   "whatsNew": {
     "title": "Novedades",
@@ -1624,6 +1626,18 @@
       "lia": "Para Lía no es una estafa: no instala nada, no saca nada, no pide nada.",
       "nova": "6174 es la constante de Kaprekar: siempre se llega y de ahí no se sale.",
       "pip": "Pip contó {segundos} segundos sin que te movieras, durante la transmisión."
+    },
+    "neighborChat": {
+      "placeholder": "Escribe a {name}…",
+      "needsAi": "Para hablar con {name}, activa la IA con tu código en Ajustes → Compañero.",
+      "left_one": "Te queda 1 mensaje con {name} hoy",
+      "left_other": "Te quedan {count} mensajes con {name} hoy",
+      "none": "{name} ya no contesta hoy. Mañana siguen la conversación.",
+      "offline": "Sin conexión: el mensaje no se envió.",
+      "error": "{name} no contestó. Prueba otra vez.",
+      "delete": "Eliminar mi mensaje",
+      "typing": "{name} está escribiendo…",
+      "you": "Tú"
     }
   }
 }

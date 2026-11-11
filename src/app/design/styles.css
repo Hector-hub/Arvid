@@ -2277,3 +2277,23 @@ a.signal-card.signal-test { cursor: pointer; }
 .dossier-list p { margin: 0; }
 .signal-decoded { color: #ff2a47; text-shadow: 0 0 6px rgb(255 31 61 / 0.5); margin: 0; }
 .signal-bar > span { background: #ff1f3d; box-shadow: 0 0 6px rgb(255 31 61 / 0.6); }
+.chat-delete { margin-left: var(--s2); background: none; border: 0; color: var(--text-muted); cursor: pointer; font: inherit; padding: 0 var(--s1); }
+.neighbor-composer { position: sticky; bottom: calc(var(--nav-h, 64px) + var(--s2)); gap: var(--s1); }
+.neighbor-composer p { margin: 0; }
+
+/* Canciones bloqueadas (spec 17, MU-03): portada en gris y «???» que a veces hace un glitch */
+.sound-row.locked { cursor: default; opacity: 0.75; }
+.sound-row.locked img { filter: grayscale(1) contrast(0.9) brightness(0.8); }
+.locked-name { display: inline-block; animation: locked-glitch 4.2s steps(1) infinite; }
+@keyframes locked-glitch {
+  0%, 91%, 100% { transform: none; color: inherit; text-shadow: none; }
+  92% { transform: translateX(2px); color: #ff2a47; text-shadow: -2px 0 #73eff7; }
+  94% { transform: translateX(-2px); text-shadow: 2px 0 #ff1f3d; }
+  96% { transform: none; color: inherit; }
+}
+[data-motion='reduced'] .locked-name { animation: none; }
+/* Aviso de canción nueva (MU-06): la portada pasa de gris a color */
+.track-unlock { position: fixed; left: var(--s4); right: var(--s4); bottom: calc(var(--s7) + 40px + env(safe-area-inset-bottom, 0px)); z-index: 70; max-width: 420px; margin: 0 auto; display: flex; gap: var(--s3); align-items: center; padding: var(--s3); background: var(--c-ink); border: var(--b) solid var(--c-lavender); font-family: var(--font-pixel); }
+.track-unlock img { width: 56px; height: 56px; animation: track-color 2.4s ease-out forwards; }
+@keyframes track-color { from { filter: grayscale(1) brightness(0.8); } to { filter: none; } }
+[data-motion='reduced'] .track-unlock img { animation-duration: 0.01s; }

@@ -8,6 +8,7 @@ import { SwitchOption } from '../design/components';
 import { NextTrackIcon, PauseIcon, PlayIcon, PrevTrackIcon } from '../design/icons';
 import { useMusic, type Music } from '../music/MusicProvider';
 import { trackCover, TRACKS } from '../music/tracks';
+import { unlockedTracks } from '../../domain/origen/music';
 import { resumeAudio } from '../sound/audio';
 import { previewSfx } from '../sound/sfx';
 
@@ -22,7 +23,9 @@ export function SoundScreen({ onClose }: { onClose?: () => void }) {
   const sound = settings?.sound ?? DEFAULT_SOUND;
   const saveSound = (patch: Partial<SoundSettings>) => void saveSetting(db, 'sound', { ...sound, ...patch });
   // La pista que se ve: la que suena o, si no, la guardada (o la primera)
-  const track = music.track ?? TRACKS.find((tr) => tr.id === settings?.music.track) ?? TRACKS[0]!;
+  // Canciones bloqueadas (spec 17, MU-03): se ven en gris y sin nombre
+  const unlocked = settings ? unlockedTracks(settings.origen, TRACKS.length) : TRACKS.length;
+  const track = music.track ?? TRACKS.slice(0, unlocked).find((tr) => tr.id === settings?.music.track) ?? TRACKS[0]!;
   const iosBackground = music.background && isIOS();
   const muted = !music.enabled && !sound.effects;
   const scroller = useRef<HTMLDivElement>(null);
@@ -102,8 +105,23 @@ export function SoundScreen({ onClose }: { onClose?: () => void }) {
 
         <section className="sound-tracks">
           <ul className="sound-list" ref={listRef}>
-            {TRACKS.map((tr) => {
+            {TRACKS.map((tr, i) => {
               const current = tr.id === track.id;
+              if (i >= unlocked)
+                return (
+                  <li key={tr.id}>
+                    <div className="sound-row locked" aria-label={t('sound.locked')}>
+                      <img src={trackCover(tr, 96)} alt="" width={48} height={48} />
+                      <span className="grow sound-row-name">
+                        <b className="locked-name" aria-hidden="true">
+                          ???
+                        </b>
+                        <span>Our Signal</span>
+                      </span>
+                      <span className="sound-row-time">--:--</span>
+                    </div>
+                  </li>
+                );
               return (
                 <li key={tr.id}>
                   <button
@@ -117,7 +135,7 @@ export function SoundScreen({ onClose }: { onClose?: () => void }) {
                     <img src={trackCover(tr, 96)} alt="" width={48} height={48} />
                     <span className="grow sound-row-name">
                       <b>{tr.name}</b>
-                      <span>ARVID</span>
+                      <span>Our Signal</span>
                     </span>
                     {current && music.playing ? <Equalizer small /> : <span className="sound-row-time">{clock(tr.seconds)}</span>}
                   </button>

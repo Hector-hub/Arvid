@@ -1,6 +1,7 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { setAccessCode } from '../arvid/brain';
 import { loadSettings, saveSetting, type DataContext } from '../../data/repository';
 import { choose, finishContact } from '../../domain/origen/origen';
 import { renderRoutes, setupData } from '../test-utils';
@@ -88,4 +89,48 @@ describe('Mensajes (spec 17, ME)', () => {
     expect(screen.getByText(/1 fragmento cifrado\. ARVID lo guarda/)).toBeInTheDocument();
     expect(screen.getByText('Superadas: 1 · No superadas: 0 · Rechazadas o sin respuesta: 0')).toBeInTheDocument();
   });
+
+  describe('hablar con un vecino (VI)', () => {
+    const withDex = async () => {
+      const s = openChapter(choose(finishContact(undefined, AT, 0), 'investigate'), new Date('2026-11-18T10:00:00.000Z'), 80);
+      await saveSetting(ctx.db, 'origen', deliverStep(s, 'c2.dex', new Date('2026-11-18T10:00:05.000Z')));
+    };
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      setAccessCode(undefined);
+    });
+
+    it('sin IA activada, en lugar del campo, el aviso (VI-05)', async () => {
+      await withDex();
+      renderRoutes(ctx, routes, '/mensajes/dex');
+      expect(await screen.findByText('Para hablar con Dex, activa la IA con tu código en Ajustes → Compañero.')).toBeInTheDocument();
+      expect(screen.queryByRole('textbox')).toBeNull();
+    });
+
+    it('con código: envía, guarda la respuesta, cuenta los 3 del día y deja borrar solo lo tuyo (VI-01, ME-05)', async () => {
+      const user = userEvent.setup();
+      await withDex();
+      await saveSetting(ctx.db, 'arvidAi', true);
+      await saveSetting(ctx.db, 'aiCode', 'ARVID-ANA-XXXX');
+      setAccessCode('ARVID-ANA-XXXX');
+      const fetch = vi.fn(async () => new Response(JSON.stringify({ reply: 'Ni idea, se me pegó.', left: 2 }), { status: 200 }));
+      vi.stubGlobal('fetch', fetch);
+      renderRoutes(ctx, routes, '/mensajes/dex');
+      expect(await screen.findByText('Te quedan 3 mensajes con Dex hoy')).toBeInTheDocument();
+      await user.type(screen.getByRole('textbox', { name: 'Escribe a Dex…' }), '¿De dónde la sacaste?');
+      await user.click(screen.getByRole('button', { name: 'Enviar' }));
+      expect(await screen.findByText('Ni idea, se me pegó.')).toBeInTheDocument();
+      expect(screen.getByText('Te quedan 2 mensajes con Dex hoy')).toBeInTheDocument();
+      const sent = JSON.parse((fetch.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
+      expect(sent).toMatchObject({ moment: 'neighborChat', neighbor: 'dex', chapter: 2 });
+      expect(sent.messages.at(-1)).toEqual({ role: 'user', content: '¿De dónde la sacaste?' });
+      expect(Object.keys(sent.context).sort()).toEqual(['alias', 'daysInTheNeighborhood', 'didEverythingToday', 'title']);
+      expect(sent.memory).toBeUndefined();
+      expect(screen.getAllByRole('button', { name: 'Eliminar mi mensaje' })).toHaveLength(1);
+      await user.click(screen.getByRole('button', { name: 'Eliminar mi mensaje' }));
+      await waitFor(() => expect(screen.queryByText('¿De dónde la sacaste?')).toBeNull());
+      expect(screen.getByText('Ni idea, se me pegó.')).toBeInTheDocument();
+    });
+  });
 });
+

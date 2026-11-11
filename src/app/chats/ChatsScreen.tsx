@@ -1,6 +1,6 @@
 // Mensajes (spec 17, ME): la lista de conversaciones, el contacto «??? · Señal desconocida» con sus transmisiones y
 // pruebas, y el chat de cada vecino con los mensajes de la historia.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, Navigate, useParams } from 'react-router';
 import { saveSetting } from '../../data/repository';
 import { COMPANION_NAME } from '../../domain/arvid/companion';
@@ -11,14 +11,18 @@ import { acceptTest, type ProgramTest } from '../../domain/origen/programTests';
 import { dossier, FRAGMENTS_READABLE_FROM, TITLED_CHAPTERS } from '../../domain/origen/dossier';
 import { currentChapter } from '../../domain/origen/periods';
 import { isNeighbor, neighbor, type NeighborId } from '../../domain/scene/city';
-import { toLocalDate } from '../../domain/time/localDate';
+import { diffDays, toLocalDate } from '../../domain/time/localDate';
+import { NEIGHBOR_DAILY_MESSAGES, NEIGHBOR_HISTORY } from '../../domain/origen/neighborChat';
+import { addMessages, deleteOwnMessage } from '../../data/messages';
+import { neighborChatTurn } from '../arvid/brain';
+import { useAnalysis } from '../analysis';
 import { getLocale, t, tDynamic, useLocale } from '../../i18n';
-import { useData, useSettings } from '../data';
+import { useData, useMessages, useSettings } from '../data';
 import { BackLink, Panel } from '../design/components';
 import { CityThumb } from '../city/CityThumb';
 import { itemDescription } from '../city/labels';
 import { CompanionPreview } from '../scene/Scene';
-import { dayMonth } from '../text';
+import { dayMonth, levelTitle } from '../text';
 import { loadSignalAssets, type SignalAssets } from '../origen/assets';
 import { SignalOverlay } from '../origen/SignalOverlay';
 import { testObjective, testNumber, useOriginVars, useTestNames } from '../origen/testText';
@@ -115,19 +119,75 @@ function ChatRow({ id, origen }: { id: ChatId; origen: OrigenState | undefined }
   );
 }
 
-/** Chat de un vecino (ME-03, ME-04): lo de la historia, con las respuestas del compañero por ti. Sin campo de escribir hasta la 2.7.0. */
+/** Lo que se ve de ti desde la calle (VI-02): alias, título, días que llevas y si hoy cumpliste. Nada más. */
+function useStreetView(): Record<string, unknown> {
+  const settings = useSettings();
+  const analysis = useAnalysis();
+  const today = toLocalDate(new Date());
+  const daily = [...(analysis?.byActivity.values() ?? [])].flatMap((a) => a.periods.filter((p) => p.period.kind === 'day' && p.period.start === today && p.reason !== 'paused' && p.reason !== 'rest'));
+  const since = settings?.onboardingCompletedAt ? diffDays(toLocalDate(new Date(settings.onboardingCompletedAt)), today) : 0;
+  return {
+    alias: settings?.profile?.alias ?? '',
+    title: analysis ? levelTitle(analysis.progress.level) : '',
+    daysInTheNeighborhood: since,
+    didEverythingToday: daily.length > 0 && daily.every((p) => p.fulfilled),
+  };
+}
+
+type Line = { id: string; at: string; who: 'them' | 'you' | 'user'; text: string; own?: boolean };
+
+/** Chat de un vecino (ME-03 a ME-05, VI): lo de la historia, con las respuestas del compañero por ti, y tu conversación con él. */
 export function NeighborChatScreen() {
   useLocale();
+  const { db } = useData();
   const { chat } = useParams();
   const settings = useSettings();
   const origen = settings?.origen;
   const id = (chat && isNeighbor(chat as NeighborId) ? chat : 'dex') as NeighborId;
   useMarkRead(id, origen);
   const vars = useOriginVars();
+  const free = useMessages(id);
+  const street = useStreetView();
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string>();
+  const end = useRef<HTMLDivElement>(null);
+  const count = free?.length ?? 0;
+  useEffect(() => end.current?.scrollIntoView?.({ block: 'end' }), [count, busy]);
   if (!settings) return null;
   if (!storyOn(origen) || !chat || !isNeighbor(chat as NeighborId)) return <Navigate to="/mensajes" replace />;
-  const lines = neighborLines(origen, id);
+  const name = neighbor(id).name;
   const companion = COMPANION_NAME[settings.companion];
+  const lines: Line[] = [
+    ...neighborLines(origen, id).map((l, i) => ({ id: `story-${i}`, at: l.at, who: l.who, text: tDynamic(l.key, vars) })),
+    ...(free ?? []).map((m): Line => ({ id: m.id, at: m.at, who: m.from === 'user' ? 'user' : 'them', text: m.text, own: m.from === 'user' })),
+  ].sort((a, b) => a.at.localeCompare(b.at));
+  const today = toLocalDate(new Date());
+  const sentToday = (free ?? []).filter((m) => m.from === 'user' && toLocalDate(new Date(m.at)) === today).length;
+  const left = Math.max(0, NEIGHBOR_DAILY_MESSAGES - sentToday);
+  const canTalk = settings.arvidAi && !!settings.aiCode;
+
+  async function send(e: FormEvent) {
+    e.preventDefault();
+    const message = text.trim();
+    if (!message || busy || left === 0) return;
+    setBusy(true);
+    setError(undefined);
+    const history = [...lines.map((l) => ({ role: l.who === 'them' ? ('assistant' as const) : ('user' as const), content: l.text.slice(0, 1000) })), { role: 'user' as const, content: message }];
+    const result = await neighborChatTurn(id, currentChapter(origen), history.slice(-NEIGHBOR_HISTORY), street);
+    setBusy(false);
+    if (!result.ok) {
+      setError(result.reason === 'neighbor' ? t('origen.neighborChat.none', { name }) : result.reason === 'offline' ? t('origen.neighborChat.offline') : t('origen.neighborChat.error', { name }));
+      return;
+    }
+    const sentAt = new Date();
+    await addMessages(db, [
+      { id: crypto.randomUUID(), chat: id, at: sentAt.toISOString(), from: 'user', text: message },
+      { id: crypto.randomUUID(), chat: id, at: new Date(sentAt.getTime() + 1).toISOString(), from: 'character', text: result.reply },
+    ]);
+    setText('');
+  }
+
   return (
     <div className="stack" style={{ gap: 'var(--s4)' }}>
       <BackLink to="/mensajes" label={t('origen.chats.title')} />
@@ -136,20 +196,59 @@ export function NeighborChatScreen() {
           <CityThumb item={id} unlocked />
         </span>
         <div>
-          <h1 style={{ margin: 0 }}>{neighbor(id).name}</h1>
+          <h1 style={{ margin: 0 }}>{name}</h1>
           <p className="small muted">{itemDescription(id)}</p>
         </div>
       </div>
-      <section className="stack" style={{ gap: 'var(--s2)' }} aria-label={neighbor(id).name}>
-        {lines.map((line, i) => (
-          <div key={`${line.key}-${i}`} className={`chat-msg ${line.who === 'you' ? 'user' : 'companion'}`}>
+      <section className="stack" style={{ gap: 'var(--s2)' }} aria-label={name} aria-live="polite">
+        {lines.map((line) => (
+          <div key={line.id} className={`chat-msg ${line.who === 'them' ? 'companion' : 'user'}`}>
             <span className="chat-who small">
-              {line.who === 'you' ? t('origen.forYou', { companion }) : neighbor(id).name} · {time(line.at)}
+              {line.who === 'you' ? t('origen.forYou', { companion }) : line.who === 'user' ? t('origen.neighborChat.you') : name} · {time(line.at)}
+              {line.own && (
+                <button type="button" className="chat-delete" aria-label={t('origen.neighborChat.delete')} onClick={() => void deleteOwnMessage(db, line.id)}>
+                  ×
+                </button>
+              )}
             </span>
-            <p>{tDynamic(line.key, vars)}</p>
+            <p>{line.text}</p>
           </div>
         ))}
+        {busy && (
+          <div className="chat-msg companion">
+            <p className="muted">{t('origen.neighborChat.typing', { name })}</p>
+          </div>
+        )}
+        <div ref={end} />
       </section>
+      {canTalk ? (
+        <form className="chat-composer neighbor-composer stack" onSubmit={(e) => void send(e)}>
+          <div className="chat-terminal">
+            <span className="chat-prompt" aria-hidden="true">
+              &gt;
+            </span>
+            <input
+              className="chat-terminal-input"
+              value={text}
+              maxLength={280}
+              disabled={left === 0}
+              placeholder={t('origen.neighborChat.placeholder', { name })}
+              aria-label={t('origen.neighborChat.placeholder', { name })}
+              autoComplete="off"
+              enterKeyHint="send"
+              onChange={(e) => setText(e.target.value)}
+            />
+            <button type="submit" className="chat-terminal-send" disabled={busy || !text.trim() || left === 0}>
+              {t('scene.send')}
+            </button>
+          </div>
+          <p className="small muted" role="status">
+            {error ?? (left === 0 ? t('origen.neighborChat.none', { name }) : t('origen.neighborChat.left', { count: left, name }))}
+          </p>
+        </form>
+      ) : (
+        <p className="signal-noreply small muted">{t('origen.neighborChat.needsAi', { name })}</p>
+      )}
     </div>
   );
 }
