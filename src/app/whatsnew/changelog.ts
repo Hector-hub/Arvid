@@ -13,6 +13,14 @@ export interface Release {
 /** De la más nueva a la más antigua. */
 export const RELEASES: Release[] = [
   {
+    version: '2.4.0',
+    kind: 'feature',
+    items: {
+      es: ['Los textos de la app ahora usan el español latino.'],
+      en: ['The app\'s Spanish text now uses Latin American Spanish.'],
+    },
+  },
+  {
     version: '2.3.0',
     kind: 'feature',
     items: {

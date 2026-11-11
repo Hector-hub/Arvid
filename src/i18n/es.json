@@ -236,7 +236,7 @@
       "cat-rest": "Cama",
       "cat-mind": "Cara sonriente",
       "cat-learning": "Libro",
-      "cat-relationships": "Bocadillo con corazón",
+      "cat-relationships": "Sándwich con corazón",
       "cat-order": "Casa",
       "cat-key": "Llave",
       "cat-music": "Nota musical",
@@ -518,7 +518,7 @@
     "notifications": {
       "title": "Notificaciones",
       "enable": "Notificaciones en este dispositivo",
-      "help": "{companion} te avisa por la mañana de lo que tienes hoy y por la noche de lo que falta, y con los recordatorios de tus actividades. El servidor solo conoce las horas: el texto se escribe en tu móvil.",
+      "help": "{companion} te avisa por la mañana de lo que tienes hoy y por la noche de lo que falta, y con los recordatorios de tus actividades. El servidor solo conoce las horas: el texto se escribe en tu celular.",
       "morning": "Resumen de la mañana",
       "night": "Resumen de la noche",
       "badge": "Número de pendientes en el icono",
@@ -787,9 +787,9 @@
       },
       "done": {
         "0": {
-          "m": "Todo listo, {alias}. Bienvenido. Vamos a por el primer día.",
-          "f": "Todo listo, {alias}. Bienvenida. Vamos a por el primer día.",
-          "x": "Todo listo, {alias}. Te doy la bienvenida. Vamos a por el primer día."
+          "m": "Todo listo, {alias}. Bienvenido. Empecemos con el primer día.",
+          "f": "Todo listo, {alias}. Bienvenida. Empecemos con el primer día.",
+          "x": "Todo listo, {alias}. Te doy la bienvenida. Empecemos con el primer día."
         }
       },
       "intro": {
@@ -803,7 +803,7 @@
       },
       "notifications": {
         "0": "También puedo avisarte: por la mañana de lo que tienes hoy y por la noche de lo que falta.",
-        "1": "Las horas se pueden cambiar en Ajustes, y tus datos no salen del móvil. ¿Te aviso?"
+        "1": "Las horas se pueden cambiar en Ajustes, y tus datos no salen del celular. ¿Te aviso?"
       },
       "account": {
         "0": "Ahora, guarda tu progreso: lo cifro en la nube para que nadie más pueda leerlo.",
@@ -854,7 +854,7 @@
   "chat": {
     "title": "Conversación con {companion}",
     "expand": "Ver toda la conversación",
-    "empty": "Aún no habéis hablado. Escribe algo para empezar.",
+    "empty": "Todavía no hay conversación. Escribe algo para empezar.",
     "clear": "Borrar conversación",
     "clearConfirm": "¿Borrar toda la conversación? No se puede deshacer.",
     "clearYes": "Borrar",
@@ -899,12 +899,12 @@
     "mission": "Es hora de «{name}».",
     "social": {
       "friend-request": "{alias} quiere ser tu amigo.",
-      "friend-accepted": "{alias} y tú ya sois amigos.",
+      "friend-accepted": "{alias} y tú ya son amigos.",
       "challenge-invite": "{alias} te invita al reto «{name}».",
       "challenge-progress": "{done} de {total} ya cumplieron hoy en «{name}».",
       "challenge-overtaken": "{alias} te adelantó en «{name}».",
-      "coopWon": "¡Lo lograsteis! Reto «{name}» cumplido.",
-      "coopLost": "«{name}» terminó: esta vez no, llegasteis al {percent} %.",
+      "coopWon": "¡Lo lograron! Reto «{name}» cumplido.",
+      "coopLost": "«{name}» terminó: esta vez no, llegaron al {percent} %.",
       "won": "«{name}» terminó: ganó {alias}.",
       "tie": "«{name}» terminó: empate entre {names}.",
       "place": "Quedaste en el puesto {place}."
@@ -924,8 +924,8 @@
     "thingsTitle": "La calle",
     "things": {
       "lamps": {
-        "name": "Farolas",
-        "phrase": "las farolas",
+        "name": "Faroles",
+        "phrase": "los faroles",
         "description": "Iluminan la acera; alguna parpadea."
       },
       "sky": {
@@ -934,8 +934,8 @@
         "description": "Cruzan entre los edificios, a lo lejos."
       },
       "cars": {
-        "name": "Coches",
-        "phrase": "los coches",
+        "name": "Autos",
+        "phrase": "los autos",
         "description": "Tráfico en los dos sentidos."
       },
       "props": {
@@ -944,8 +944,8 @@
         "description": "{companion} se acerca a inspeccionarlas."
       },
       "police": {
-        "name": "Coche de policía",
-        "phrase": "el coche de policía",
+        "name": "Auto de policía",
+        "phrase": "el auto de policía",
         "description": "Patrulla la avenida."
       },
       "skyline": {
@@ -1013,7 +1013,7 @@
         "lines": {
           "0": "Tu racha suena mejor que mi última sesión.",
           "1": "Sube el volumen, que vas bien.",
-          "2": "Esta noche pincho en tu honor."
+          "2": "Esta noche pongo música en tu honor."
         }
       },
       "teo": {
@@ -1027,7 +1027,7 @@
       "pip": {
         "role": "el niño que corre",
         "lines": {
-          "0": "¡Te echo una carrera! …Bueno, mañana.",
+          "0": "¡Te reto a una carrera! …Bueno, mañana.",
           "1": "¡Mi hermana dice que eres muy constante!",
           "2": "¡Hola! ¡Hoy he corrido un montón!"
         }
@@ -1126,7 +1126,7 @@
     "noDate": "sin fecha",
     "reminders": "Recordatorios: {list}",
     "create": "Crear",
-    "failed": "No se pudo crear. Pulsa «Editar» para revisarlo.",
+    "failed": "No se pudo crear. Toca «Editar» para revisarlo.",
     "kinds": {
       "mission": "Misión",
       "goal": "Objetivo",
@@ -1228,7 +1228,7 @@
     "benefits": {
       "restore": {
         "title": "Recupera todo",
-        "text": "Si cambias o pierdes el móvil, entras y vuelve tu progreso."
+        "text": "Si cambias o pierdes el celular, entras y vuelve tu progreso."
       },
       "friends": {
         "title": "Retos con amigos",
@@ -1272,12 +1272,12 @@
     "unblock": "Desbloquear",
     "blocked": "Bloqueados",
     "removeTitle": "¿Eliminar a {alias}?",
-    "removeText": "Dejaréis de ser amigos. No se le avisa y los retos en curso siguen.",
+    "removeText": "Dejarán de ser amigos. No se le avisa y los retos en curso siguen.",
     "blockTitle": "¿Bloquear a {alias}?",
-    "blockText": "Dejaréis de ser amigos y no podrá invitarte ni enviarte solicitudes. Puedes desbloquearlo en Amigos → Bloqueados.",
+    "blockText": "Dejarán de ser amigos y no podrá invitarte ni enviarte solicitudes. Puedes desbloquearlo en Amigos → Bloqueados.",
     "unavailable": "Este enlace no está disponible",
     "ownLink": "Este es tu propio enlace: compártelo con tus amigos.",
-    "nowFriends": "Ahora sois amigos: tú y {alias}",
+    "nowFriends": "Ahora son amigos: tú y {alias}",
     "loading": "Cargando…",
     "openInApp": "¿Tienes ARVID instalada? Copia el enlace, abre ARVID y pégalo en Perfil → Amigos → Tengo un enlace.",
     "copyLink": "Copiar enlace",
@@ -1294,7 +1294,7 @@
     "copyCode": "Copiar código de invitación",
     "landingHint": "¿Ya tienes ARVID instalada? Ábrela y pega el código en Perfil → Amigos → Tengo un enlace o código.",
     "togetherTitle": "Retos juntos",
-    "noTogether": "Aún no tenéis retos juntos.",
+    "noTogether": "Aún no tienen retos juntos.",
     "ownCode": "Tu código",
     "codeCopied": "Copiado",
     "add": "Añadir amigos",
@@ -1360,8 +1360,8 @@
     },
     "locked": "Es la actividad de un reto: el nombre, la frecuencia y la dificultad vienen del reto. Puedes cambiar el área y los recordatorios.",
     "resultPending": "Terminado · resultado el {date}",
-    "coopWon": "¡Lo lograsteis!",
-    "coopLost": "Esta vez no: llegasteis al {percent} %",
+    "coopWon": "¡Lo lograron!",
+    "coopLost": "Esta vez no: llegaron al {percent} %",
     "won": "Ganó {alias}",
     "tie": "Empate entre {names}",
     "noWinner": "Nadie cumplió ningún día",

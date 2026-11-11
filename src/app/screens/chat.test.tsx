@@ -62,7 +62,7 @@ describe('conversación completa (D-098)', () => {
     await user.click(await screen.findByRole('button', { name: 'Opciones' }));
     await user.click(screen.getByRole('menuitem', { name: 'Borrar conversación' }));
     await user.click(screen.getByRole('button', { name: 'Borrar' }));
-    expect(await screen.findByText(/Aún no habéis hablado/)).toBeInTheDocument();
+    expect(await screen.findByText(/Todavía no hay conversación/)).toBeInTheDocument();
     expect((await loadSettings(ctx.db)).chatLog).toBeUndefined();
   });
 });

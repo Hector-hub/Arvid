@@ -40,6 +40,8 @@ describe('traducción (I18N-02)', () => {
   it('cambia <html lang> al cambiar el idioma', () => {
     setLocale('en');
     expect(document.documentElement.lang).toBe('en');
+    setLocale('es');
+    expect(document.documentElement.lang).toBe('es-419');
   });
 });
 

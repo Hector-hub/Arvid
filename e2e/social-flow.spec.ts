@@ -116,7 +116,7 @@ test('2.0 de principio a fin: amistad, reto con invitación, marcador, final y e
   await ariti.goto(`/a/${h.id}`);
   await expect(ariti.getByRole('heading', { name: 'Hector quiere ser tu amigo' })).toBeVisible();
   await ariti.getByRole('button', { name: 'Aceptar' }).click();
-  await expect(ariti.getByRole('heading', { name: 'Ahora sois amigos: tú y Hector' })).toBeVisible();
+  await expect(ariti.getByRole('heading', { name: 'Ahora son amigos: tú y Hector' })).toBeVisible();
   expect(pushes).toContainEqual(expect.objectContaining({ to: h.id, type: 'friend-accepted', alias: 'Ariti' }));
   await hector.goto('/perfil/amigos');
   await expect(hector.getByRole('link', { name: /Ariti/ })).toBeVisible();
@@ -154,7 +154,7 @@ test('2.0 de principio a fin: amistad, reto con invitación, marcador, final y e
   await hector.clock.install({ time: later });
   await hector.goto('/objetivos');
   await hector.getByRole('link', { name: /Leer/ }).click();
-  await expect(hector.getByRole('heading', { name: 'Esta vez no: llegasteis al 33 %' })).toBeVisible();
+  await expect(hector.getByRole('heading', { name: 'Esta vez no: llegaron al 33 %' })).toBeVisible();
   await hector.goto('/perfil');
   await expect(hector.getByRole('heading', { name: 'Retos cumplidos · 0' })).toBeVisible();
   // FN-05: el compañero lo celebra una vez al abrir Hoy

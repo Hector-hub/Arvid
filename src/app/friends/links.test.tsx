@@ -52,7 +52,7 @@ describe('enlaces de amistad (EN-01, AM-02)', () => {
     renderRoutes(ctx, routes, `/a/${ANA}`);
     expect(await screen.findByRole('heading', { name: 'Ana quiere ser tu amigo' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Aceptar' }));
-    expect(await screen.findByRole('heading', { name: 'Ahora sois amigos: tú y Ana' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Ahora son amigos: tú y Ana' })).toBeInTheDocument();
     expect(calls).toContain('POST /api/social/accept');
   });
 

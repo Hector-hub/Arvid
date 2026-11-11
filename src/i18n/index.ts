@@ -10,6 +10,8 @@ import es from './es.json';
 
 export const LOCALES = ['es', 'en'] as const;
 export type Locale = (typeof LOCALES)[number];
+/** Etiqueta BCP 47 que se publica en `<html lang>`: el español de ARVID es el latino (es-419). */
+const HTML_LANG: Record<Locale, string> = { es: 'es-419', en: 'en' };
 
 type Dict = { [key: string]: string | Dict };
 type Leaves<T, P extends string = ''> = {
@@ -53,7 +55,7 @@ export function getLocale(): Locale {
 export function setLocale(locale: Locale): void {
   if (locale === current) return;
   current = locale;
-  if (typeof document !== 'undefined') document.documentElement.lang = locale;
+  if (typeof document !== 'undefined') document.documentElement.lang = HTML_LANG[locale];
   for (const l of listeners) l();
 }
 

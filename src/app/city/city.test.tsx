@@ -54,7 +54,7 @@ describe('anuncios (CV-04, AN-01)', () => {
     await saveSetting(ctx.db, 'cityAnnounced', 3);
     await saveSetting(ctx.db, 'lastCelebratedLevel', 4);
     renderRoutes(ctx, [{ path: '/', element: <CityWatcher /> }], '/');
-    await waitFor(() => expect(speak).toHaveBeenCalledWith('¡Novedades en tu calle! Han llegado los coches y Lía, que vuelve del trabajo.'), { timeout: 4000 });
+    await waitFor(() => expect(speak).toHaveBeenCalledWith('¡Novedades en tu calle! Han llegado los autos y Lía, que vuelve del trabajo.'), { timeout: 4000 });
     expect(engine.city).toHaveBeenCalledWith(4, ['cars', 'lia']);
   });
 
@@ -85,7 +85,7 @@ describe('Tu ciudad (TC)', () => {
     level.value = 3;
     renderRoutes(ctx, [{ path: '/perfil/ciudad', element: <CityScreen /> }], '/perfil/ciudad');
     expect(await screen.findByText(/4 de 17 · Siguiente: nivel 4/)).toBeInTheDocument();
-    expect(screen.getByText('Farolas')).toBeInTheDocument();
+    expect(screen.getByText('Faroles')).toBeInTheDocument();
     expect(screen.getByText('Dex')).toBeInTheDocument();
     expect(screen.queryByText('Sombra')).toBeNull();
     expect(screen.getByText('Nivel 10')).toBeInTheDocument();

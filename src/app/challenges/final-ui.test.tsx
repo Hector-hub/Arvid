@@ -43,7 +43,7 @@ describe('avisos en el dispositivo (AV)', () => {
     expect((await n({ type: 'friend-request', alias: 'Ana' })).body).toBe('Ana quiere ser tu amigo.');
     expect((await n({ type: 'challenge-progress', name: 'Leer', done: 4, total: 5 })).body).toBe('4 de 5 ya cumplieron hoy en «Leer».');
     expect((await n({ type: 'challenge-overtaken', name: 'Leer', alias: 'Eva' })).body).toBe('Eva te adelantó en «Leer».');
-    expect((await n({ type: 'challenge-end', name: 'Leer', success: false, percent: 64 })).body).toBe('«Leer» terminó: esta vez no, llegasteis al 64 %.');
+    expect((await n({ type: 'challenge-end', name: 'Leer', success: false, percent: 64 })).body).toBe('«Leer» terminó: esta vez no, llegaron al 64 %.');
     expect((await n({ type: 'challenge-end', name: 'Leer', winners: ['Ana', 'Luis'], place: 1 })).body).toBe('«Leer» terminó: empate entre Ana, Luis. Quedaste en el puesto 1.');
   });
 
@@ -63,14 +63,14 @@ describe('avisos en el dispositivo (AV)', () => {
 describe('el final (FN)', () => {
   const start = (n: number) => addDays(today, -n);
 
-  it('FN-02/FN-04: el detalle muestra «¡Lo lograsteis!» y el Perfil lo cuenta en Retos cumplidos', async () => {
+  it('FN-02/FN-04: el detalle muestra «¡Lo lograron!» y el Perfil lo cuenta en Retos cumplidos', async () => {
     vi.stubGlobal('fetch', vi.fn(() => reply(503, {})));
     const s = start(12);
     await storeChallenge('r1', { challenge: { id: 'r1', owner: ME, name: 'Leer', difficulty: 'easy', days: 7, start: s, mode: 'coop', createdAt: '' }, participants: [p(ME, 'Luis', days(s, 7)), p('ana', 'Ana', days(s, 6))] });
     const s2 = start(20);
     await storeChallenge('r2', { challenge: { id: 'r2', owner: ME, name: 'Correr', difficulty: 'easy', days: 10, start: s2, mode: 'versus', createdAt: '' }, participants: [p(ME, 'Luis', days(s2, 5)), p('ana', 'Ana', days(s2, 9))] });
     const { unmount } = renderRoutes(ctx, [{ path: '/retos/:id', element: <ChallengeScreen /> }], '/retos/r1');
-    expect(await screen.findByRole('heading', { name: '¡Lo lograsteis!' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: '¡Lo lograron!' })).toBeInTheDocument();
     unmount();
     renderRoutes(ctx, [{ path: '/perfil', element: <ProfileScreen /> }], '/perfil');
     expect(await screen.findByRole('heading', { name: 'Retos cumplidos · 1' })).toBeInTheDocument();
