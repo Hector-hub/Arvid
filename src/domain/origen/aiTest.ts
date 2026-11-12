@@ -39,20 +39,35 @@ export function testPrompt(locale: 'es' | 'en'): string {
 }
 
 /** Valida y limpia la respuesta de la IA (PR-04): formato, límites y que la actividad exista. */
-export function checkAiTest(raw: unknown, activityIds: readonly string[]): { ok: true; test: AiTest } | { ok: false; error: string } {
+export function checkAiTest(
+  raw: unknown,
+  activityIds: readonly string[],
+): { ok: true; test: AiTest } | { ok: false; error: string } {
   if (!raw || typeof raw !== 'object') return { ok: false, error: 'not an object' };
   const r = raw as Record<string, unknown>;
-  const clean = (v: unknown) => (typeof v === 'string' ? v.replace(/<[^>]*>/g, '').replace(/[*_`#]/g, '').replace(/\s+/g, ' ').trim() : '');
+  const clean = (v: unknown) =>
+    typeof v === 'string'
+      ? v
+          .replace(/<[^>]*>/g, '')
+          .replace(/[*_`#]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim()
+      : '';
   const title = clean(r.title);
   const detail = clean(r.detail);
   const times = Number(r.times);
   const days = Number(r.days);
-  if (!title || title.length > AI_TEST_TITLE_MAX) return { ok: false, error: `title must be 1-${AI_TEST_TITLE_MAX} chars` };
-  if (detail.length > AI_TEST_DETAIL_MAX) return { ok: false, error: `detail must be at most ${AI_TEST_DETAIL_MAX} chars` };
-  if (!Number.isInteger(times) || times < 1 || times > AI_TEST_DAYS_MAX) return { ok: false, error: 'times must be an integer 1-7' };
-  if (!Number.isInteger(days) || days < times || days > AI_TEST_DAYS_MAX) return { ok: false, error: 'days must be an integer between times and 7' };
+  if (!title || title.length > AI_TEST_TITLE_MAX)
+    return { ok: false, error: `title must be 1-${AI_TEST_TITLE_MAX} chars` };
+  if (detail.length > AI_TEST_DETAIL_MAX)
+    return { ok: false, error: `detail must be at most ${AI_TEST_DETAIL_MAX} chars` };
+  if (!Number.isInteger(times) || times < 1 || times > AI_TEST_DAYS_MAX)
+    return { ok: false, error: 'times must be an integer 1-7' };
+  if (!Number.isInteger(days) || days < times || days > AI_TEST_DAYS_MAX)
+    return { ok: false, error: 'days must be an integer between times and 7' };
   const activityId = typeof r.activityId === 'string' && r.activityId ? r.activityId : undefined;
-  if (activityId && !activityIds.includes(activityId)) return { ok: false, error: 'activityId is not one of the user activities' };
+  if (activityId && !activityIds.includes(activityId))
+    return { ok: false, error: 'activityId is not one of the user activities' };
   return { ok: true, test: { title, detail, times, days, ...(activityId ? { activityId } : {}) } };
 }
 
@@ -89,14 +104,17 @@ export function testSummary(input: {
       const periods = (input.analysis.byActivity.get(r.activity.id)?.periods ?? []).filter(
         (p) => p.closed && p.evaluable && compareDates(p.period.start, from) >= 0,
       );
-      for (const p of periods) if (!p.fulfilled && p.period.kind === 'day') missedByWeekday[isoWeekday(p.period.start) - 1]!++;
+      for (const p of periods)
+        if (!p.fulfilled && p.period.kind === 'day') missedByWeekday[isoWeekday(p.period.start) - 1]!++;
       const version = r.versions.at(-1);
       return {
         id: r.activity.id,
         name: r.activity.name,
         category: version ? input.categoryName(version.categoryId) : '',
         every: version ? `${version.target}/${version.period}` : '',
-        fulfilledRate: periods.length ? Math.round((periods.filter((p) => p.fulfilled).length / periods.length) * 100) / 100 : null,
+        fulfilledRate: periods.length
+          ? Math.round((periods.filter((p) => p.fulfilled).length / periods.length) * 100) / 100
+          : null,
       };
     });
   const pendingMissions = input.missions
@@ -106,7 +124,15 @@ export function testSummary(input: {
     today: input.today,
     times: input.times,
     activities,
-    missedDailyByWeekday: { mon: missedByWeekday[0], tue: missedByWeekday[1], wed: missedByWeekday[2], thu: missedByWeekday[3], fri: missedByWeekday[4], sat: missedByWeekday[5], sun: missedByWeekday[6] },
+    missedDailyByWeekday: {
+      mon: missedByWeekday[0],
+      tue: missedByWeekday[1],
+      wed: missedByWeekday[2],
+      thu: missedByWeekday[3],
+      fri: missedByWeekday[4],
+      sat: missedByWeekday[5],
+      sun: missedByWeekday[6],
+    },
     goals: input.goals,
     pendingMissions,
     lastTests: input.tests.slice(-3).map((t) => ({ title: t.title ?? t.type, result: t.result ?? 'open' })),

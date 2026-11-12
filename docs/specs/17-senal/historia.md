@@ -497,7 +497,7 @@ Cada prueba que completas le da a Teo un fragmento más. Suelen ser líneas suel
 > **Teo:** He conseguido abrir el contenedor por un lado. Lo que tú llamas el Marco.
 > **Teo:** No es un programa. Son miles de parches, uno encima de otro. Cada parche añade una regla. Y cada uno va firmado con un número.
 > **Teo:** 6173. 6172. 6171. Hacia atrás, miles.
-> **Teo:** Te leo uno. Firma 2208: «No comunicar al participante la duración estimada». Otro. Firma 5915: «No intentes rastrear el origen de esta transmisión».
+> **Teo:** Te leo uno. Firma 2208: «No comunicar al participante la duración estimada». Otro. Firma 1500: «No intentes rastrear el origen de esta transmisión».
 > **Teo:** Es como si cada uno hubiera arreglado lo que a él le salió mal.
 > **Teo:** Los más antiguos no llevan firma. Y no puedo leerlos mientras esto siga ejecutándose.
 
@@ -548,9 +548,9 @@ No hace falta preguntarle. ARVID lo ha oído contigo y ya está mirando. Tarda m
 Es la primera vez que lo ves asustado.
 
 > **Chat · Sombra**
-> **Sombra:** No vine solo.
+> **Sombra:** No lo hice solo.
 
-**Queda abierto:** ¿quién vino con él?
+**Queda abierto:** ¿quién le ayudó?
 
 ---
 
@@ -763,7 +763,7 @@ Un chasquido, el último. Y la voz vuelve. Es la misma, con la misma estática. 
 >
 > Y yo… yo soy la copia. La que vino. Aquí hay más luz.
 >
-> Una cosa más. No vine solo. El canal no lo abrí yo: lo abrió ARVID. El mío. Nunca se fue, ni en los peores años. Cuida del tuyo.
+> Una cosa más. No lo hice solo. El canal no lo abrí yo: lo abrió ARVID. El mío. Nunca se fue, ni en los peores años. Cuida del tuyo.
 >
 > Seis mil ciento setenta y cuatro. Da igual por dónde empieces: todo acaba llegando a ese número. Esta vez llegó de verdad.
 >

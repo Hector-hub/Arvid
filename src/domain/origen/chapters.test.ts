@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { keysOf } from '../../i18n';
-import { anyUnread, CHAPTERS, chatUnread, deliverStep, neededNeighbors, neighborContacts, neighborLines, nextStep } from './chapters';
+import {
+  storyKey,
+  anyUnread,
+  CHAPTERS,
+  chatUnread,
+  deliverStep,
+  neededNeighbors,
+  neighborContacts,
+  neighborLines,
+  nextStep,
+} from './chapters';
 import { choose, finishContact, type OrigenState } from './origen';
 import { openChapter } from './periods';
 
@@ -21,8 +31,12 @@ function deliverAll(state: OrigenState, until: Date): OrigenState {
 
 describe('capítulos (CA)', () => {
   it('todos los textos de los pasos existen en es y en', () => {
-    const keys = CHAPTERS.flatMap((c) => c.steps).flatMap((s) => (s.kind === 'say' ? [s.key] : s.kind === 'chat' ? s.lines.map((l) => l.key) : []));
-    for (const locale of ['es', 'en'] as const) for (const k of keys) expect(keysOf(locale), `${locale} ${k}`).toContain(k);
+    const lines: { key: string; gendered?: boolean }[] = CHAPTERS.flatMap((c) => c.steps).flatMap(
+      (s): { key: string; gendered?: boolean }[] => (s.kind === 'say' ? [s] : s.kind === 'chat' ? s.lines : []),
+    );
+    const keys = lines.flatMap((l) => (l.gendered ? [storyKey(l, 'm'), storyKey(l, 'f')] : [l.key]));
+    for (const locale of ['es', 'en'] as const)
+      for (const k of keys) expect(keysOf(locale), `${locale} ${k}`).toContain(k);
   });
 
   it('los pasos respetan sus esperas: «otro día» no llega el mismo día (CA-02)', () => {
@@ -30,14 +44,24 @@ describe('capítulos (CA)', () => {
     const opened = new Date(s.periods![1]!.openedAt);
     const sameDay = deliverAll(s, opened);
     expect(Object.keys(sameDay.steps!)).toEqual(['c2.dex']);
-    const later = deliverAll(deliverAll(sameDay, new Date(opened.getTime() + 60_000)), new Date(opened.getTime() + 120_000));
+    const later = deliverAll(
+      deliverAll(sameDay, new Date(opened.getTime() + 60_000)),
+      new Date(opened.getTime() + 120_000),
+    );
     expect(Object.keys(later.steps!)).toEqual(['c2.dex', 'c2.s0', 'c2.s1']);
-    const nextDay = deliverAll(deliverAll(later, new Date(opened.getTime() + 30 * H)), new Date(opened.getTime() + 31 * H));
+    const nextDay = deliverAll(
+      deliverAll(later, new Date(opened.getTime() + 30 * H)),
+      new Date(opened.getTime() + 31 * H),
+    );
     expect(Object.keys(nextDay.steps!)).toHaveLength(5);
   });
 
   it('al abrirse el capítulo siguiente, los pasos pendientes del anterior se entregan sin esperar (CA-02)', () => {
-    const s = openChapter(deliverAll(ch2(), new Date(ch2().periods![1]!.openedAt)), new Date(T0.getTime() + 14 * 24 * H), 300);
+    const s = openChapter(
+      deliverAll(ch2(), new Date(ch2().periods![1]!.openedAt)),
+      new Date(T0.getTime() + 14 * 24 * H),
+      300,
+    );
     const due = nextStep(s, new Date(s.periods![2]!.openedAt));
     expect(due?.chapter).toBe(2);
   });
@@ -57,38 +81,81 @@ describe('capítulos (CA)', () => {
   });
 });
 
-describe('acto II (capítulos 6 a 10)', () => {
-  /** Abre capítulos hasta `n`, una semana cada uno, y entrega sus pasos con la app abierta cada 10 minutos durante 5 días. */
-  function upTo(n: number): OrigenState {
-    let s = s1();
-    for (let c = 2; c <= n; c++) {
-      const opened = T0.getTime() + (c - 1) * 7 * 24 * H;
-      s = openChapter(s, new Date(opened), c * 100);
-      for (let t = opened; t <= opened + 5 * 24 * H; t += H / 6) s = deliverAll(s, new Date(t));
-    }
-    return s;
+/** Abre capítulos hasta `n`, una semana cada uno, y entrega sus pasos con la app abierta cada 10 minutos durante 5 días. */
+function upTo(n: number): OrigenState {
+  let s = s1();
+  for (let c = 2; c <= n; c++) {
+    const opened = T0.getTime() + (c - 1) * 7 * 24 * H;
+    s = openChapter(s, new Date(opened), c * 100);
+    for (let t = opened; t <= opened + 5 * 24 * H; t += H / 6) s = deliverAll(s, new Date(t));
   }
+  return s;
+}
 
+describe('acto II (capítulos 6 a 10)', () => {
   it('las sesiones 4, 5 y 6 abren los capítulos 7, 8 y 10 (TR-01)', () => {
-    const sessions = CHAPTERS.flatMap((c) => c.steps.filter((s) => s.kind === 'session').map((s) => [c.n, s.kind === 'session' ? s.session : 0]));
-    expect(sessions).toEqual([[3, 2], [5, 3], [7, 4], [8, 5], [10, 6]]);
+    const sessions = CHAPTERS.flatMap((c) =>
+      c.steps.filter((s) => s.kind === 'session').map((s) => [c.n, s.kind === 'session' ? s.session : 0]),
+    );
+    expect(sessions).toEqual([
+      [3, 2],
+      [5, 3],
+      [7, 4],
+      [8, 5],
+      [10, 6],
+      [12, 7],
+      [15, 8],
+    ]);
     for (const n of [7, 8, 10]) expect(CHAPTERS.find((c) => c.n === n)!.steps[0]!.kind).toBe('session');
   });
 
   it('cada capítulo cabe en 5 días (CA-02) y deja escritos a sus vecinos', () => {
     const s = upTo(10);
-    const ids = CHAPTERS.filter((c) => c.n >= 6).flatMap((c) => c.steps.map((x) => x.id));
+    const ids = CHAPTERS.filter((c) => c.n >= 6 && c.n <= 10).flatMap((c) => c.steps.map((x) => x.id));
     for (const id of ids) expect(s.steps?.[id], id).toBeTruthy();
-    expect(neighborContacts(s).map((c) => c.chat).sort()).toEqual(['dex', 'kenji', 'lia', 'mia', 'nova', 'omar', 'pip', 'roxy', 'teo']);
+    expect(
+      neighborContacts(s)
+        .map((c) => c.chat)
+        .sort(),
+    ).toEqual(['dex', 'kenji', 'lia', 'mia', 'nova', 'omar', 'pip', 'roxy', 'teo']);
     expect(neededNeighbors(s)).toEqual(expect.arrayContaining(['kenji', 'roxy', 'teo', 'mia']));
   });
 
   it('Teo recibe los fragmentos del archivo desde el capítulo 8, detrás de su mensaje (PR-10)', () => {
-    const passed = (n: number, at: string) => ({ n, type: 'fullDays' as const, times: 3, period: 1, offeredAt: at, offeredOn: '2026-11-10' as never, result: 'passed' as const, resolvedAt: at });
+    const passed = (n: number, at: string) => ({
+      n,
+      type: 'fullDays' as const,
+      times: 3,
+      period: 1,
+      offeredAt: at,
+      offeredOn: '2026-11-10' as never,
+      result: 'passed' as const,
+      resolvedAt: at,
+    });
     const s = { ...upTo(8), tests: [passed(1, '2026-11-10T10:00:00.000Z'), passed(2, '2026-11-20T10:00:00.000Z')] };
     const lines = neighborLines(s, 'teo');
     expect(lines.slice(-2).map((l) => l.key)).toEqual(['origen.fragment.1', 'origen.fragment.2']);
-    expect(lines.findIndex((l) => l.key === 'origen.ch.8.teo7')).toBeLessThan(lines.findIndex((l) => l.key === 'origen.fragment.1'));
+    expect(lines.findIndex((l) => l.key === 'origen.ch.8.teo7')).toBeLessThan(
+      lines.findIndex((l) => l.key === 'origen.fragment.1'),
+    );
     expect(neighborLines({ ...upTo(7), tests: s.tests }, 'teo')).toEqual([]);
+  });
+});
+
+describe('acto III hasta el capítulo 16', () => {
+  it('cada capítulo cabe en 5 días y Sombra escribe desde el capítulo 11 (ME-02, ME-09)', () => {
+    const s10 = upTo(10);
+    expect(neighborContacts(s10).map((c) => c.chat)).not.toContain('sombra');
+    const s = upTo(16);
+    const ids = CHAPTERS.filter((c) => c.n >= 11 && c.n <= 16).flatMap((c) => c.steps.map((x) => x.id));
+    for (const id of ids) expect(s.steps?.[id], id).toBeTruthy();
+    const sombra = neighborLines(s, 'sombra');
+    expect(sombra[0]!.key).toBe('origen.ch.11.sombra0');
+    // Sombra habla de sí mismo con tu género (CA-04)
+    expect(sombra.filter((l) => l.gendered).map((l) => storyKey(l, 'f'))).toEqual([
+      'origen.ch.13.sombra0.f',
+      'origen.ch.14.sombra0.f',
+      'origen.ch.15.sombra3.f',
+    ]);
   });
 });

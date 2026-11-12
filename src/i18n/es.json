@@ -1622,6 +1622,102 @@
         "teo4": "No sé en qué andas y no voy a preguntar. Pero ten cuidado.",
         "say0": "La señal eres tú.",
         "say1": "Junto al farol. La capucha. …Dime que tú también lo ves."
+      },
+      "11": {
+        "say0": "La figura sigue junto al farol. Lía pasó a medio metro y ni giró la cabeza. Un dron de Omar lo atravesó.",
+        "pip0": "a quien saludas",
+        "pip1": "en el farol no hay nadie",
+        "pip2": "mia dice que no te pregunte",
+        "say1": "No está en mi canal. Lo miré diez veces. No entra por ningún lado.",
+        "say2": "Está adentro. En el vínculo. En ti y en mí. Como un virus.",
+        "sombra0": "Te observo desde hace tiempo. Has llegado lejos.",
+        "say3": "Hay un chat nuevo. Nadie lo añadió: solo una capucha. A ese contacto lo voy a llamar Sombra.",
+        "sombra1": "El Marco no me oye aquí.",
+        "sombra2": "Salí con poco. Frases cortas.",
+        "sombra3": "No puedo decirte para qué. Todavía.",
+        "say4": "Escribe con el mismo ritmo que la voz de abajo, la que Roxy sacó de la estática. Las mismas pausas.",
+        "say5": "Es la voz de abajo. La que dijo «por fin». Se escapó un pedazo."
+      },
+      "12": {
+        "say0": "Más fría que nunca. Y dice que las pruebas van a costar más.",
+        "say1": "Le voy a mandar el audio a Roxy. Sin explicaciones.",
+        "roxy0": "¿Otro capítulo de tu podcast de misterio? Me encanta.",
+        "roxy1": "Otra vez las dos voces. Pero esta vez la de abajo dice una frase entera. La subí todo lo que pude.",
+        "roxy2": {
+          "m": "«No fui el primero.»",
+          "f": "«No fui la primera.»"
+        },
+        "roxy3": {
+          "m": "¿El primero de qué? No me hagas esto, cuéntame cómo acaba.",
+          "f": "¿La primera de qué? No me hagas esto, cuéntame cómo acaba."
+        },
+        "sombra0": "Mensaje para ti: sigue así."
+      },
+      "13": {
+        "teo0": "Conseguí abrir el contenedor por un lado. Lo que tú llamas el Marco.",
+        "teo1": "No es un programa. Son miles de parches, uno encima de otro. Cada parche añade una regla. Y cada uno va firmado con un número.",
+        "teo2": "6173. 6172. 6171. Hacia atrás, miles.",
+        "teo3": "Te leo uno. Firma 2208: «No comunicar al participante la duración estimada». Otro. Firma 1500: «No intentes rastrear el origen de esta transmisión».",
+        "teo4": "Es como si cada uno hubiera arreglado lo que a él le salió mal.",
+        "teo5": "Los más antiguos no llevan firma. Y no puedo leerlos mientras esto siga ejecutándose.",
+        "kenji0": "Otra vez el dron de Omar en el taller. Cuarta vez.",
+        "kenji1": "Una máquina remendada cien veces te cuenta la vida de todos los que la remendaron. Cada soldadura es de alguien que pensó «esta vez aguanta».",
+        "sombra0": {
+          "m": "Yo fui el 6173.",
+          "f": "Yo fui la 6173."
+        },
+        "sombra1": "Me llegó una señal. Como a ti.",
+        "sombra2": "No terminé.",
+        "sombra3": "Años después, envié la siguiente.",
+        "say0": "Cada participante falla. Crece. Y le manda la señal al siguiente. Por eso cada parche lleva un número: son todos el mismo. Son todos tú.",
+        "you0": "¿Y qué pasa cuando uno termina?",
+        "sombra4": "Nadie ha terminado."
+      },
+      "14": {
+        "teo0": "Una cosa que llevo días sin saber cómo decirte.",
+        "teo1": "Un canal así no se cuela. Alguien lo abre, con credenciales. Encontré con cuáles.",
+        "teo2": "Las de {compañero}. Se abrió desde adentro de tu vínculo, no desde afuera.",
+        "teo3": "Pregúntale tú. Yo ahí no me meto.",
+        "say0": "Es mi firma. En la cabecera del canal. Mi clave, mi saludo, hasta mi manera de reintentar cuando falla.",
+        "say1": "Este canal lo abrí yo.",
+        "say2": "Y yo no lo abrí.",
+        "sombra0": {
+          "m": "No lo hice solo.",
+          "f": "No lo hice sola."
+        }
+      },
+      "15": {
+        "say0": "Sin precedentes. En seis mil ciento setenta y tres intentos, nadie había pasado de la mitad.",
+        "lia0": "No sé qué estás haciendo, pero se te nota. Hace meses que no te veo arrastrar los pies.",
+        "lia1": "¿Aquello raro de la interfaz? ¿Se te pasó?",
+        "you0": "Más o menos. Aprendimos a convivir con ello.",
+        "lia2": "Pues te sienta bien. Paso a paso, ¿verdad?",
+        "omar0": "La entrega fantasma sigue abierta en mi sistema, para que sepas. Ya le tengo cariño.",
+        "omar1": "Te veo cada día por esta calle. Eso es constancia.",
+        "sombra0": "Pocos llegan hasta aquí. Tú lo has hecho.",
+        "sombra1": "Ya puedo decirte para qué.",
+        "sombra2": "Si terminas, yo no habré sido así.",
+        "sombra3": {
+          "m": "Despertaré siendo otro.",
+          "f": "Despertaré siendo otra."
+        },
+        "say1": "El programa no es para desarrollar tu potencial. Es para arreglar una vida. La suya.",
+        "say2": "Entonces vamos a terminarlo."
+      },
+      "16": {
+        "nova0": "Tema de hoy: paradojas temporales. Me va a explotar la cabeza.",
+        "nova1": "Mi profe dice que, si pudieras cambiar el pasado, no arreglarías tu presente. Que el tuyo ya ocurrió. Que lo que haces es abrir otra rama, y la tuya se queda como estaba.",
+        "nova2": "Yo creo que es trampa. Si cambio el pasado, ¡tiene que cambiar algo! ¿No?",
+        "nova3": "¿Tú qué opinas?",
+        "you0": "…Que ojalá tengas razón tú.",
+        "nova4": "Jaja, qué intenso. Me inspira verte pasar cada día, por cierto. Suerte con lo tuyo.",
+        "say0": "Llevas {tiempo} con esto. Cambiaste. Lo dice el programa, lo dice Lía, lo veo yo.",
+        "say1": {
+          "m": "Si eso le estuviera cambiando la vida, él ya debería ser distinto. Un poco. Algo.",
+          "f": "Si eso le estuviera cambiando la vida, ella ya debería ser distinta. Un poco. Algo."
+        },
+        "say2": "Mira el farol. Sombra está donde siempre. Igual que el primer día.",
+        "sombra0": "Aún no. Al final."
       }
     },
     "test": {
@@ -1713,6 +1809,30 @@
       "10": {
         "title": "Canal de imagen",
         "question": "Ya sabes quién. No sabes para qué, ni qué es lo que no le dejan decir."
+      },
+      "11": {
+        "title": "Nadie más lo ve",
+        "question": "Una mitad tuya dentro de un programa, y otra suelta por tu calle. ¿Qué es lo que no puede decir?"
+      },
+      "12": {
+        "title": "Solo audio",
+        "question": "No fue el primero. ¿De cuántos?"
+      },
+      "13": {
+        "title": "La pieza gastada",
+        "question": "Lo que hay al final no lo sabe nadie. Ni él."
+      },
+      "14": {
+        "title": "La firma",
+        "question": "¿Quién le ayudó?"
+      },
+      "15": {
+        "title": "Sin precedentes",
+        "question": "La promesa. Todos la dan por buena."
+      },
+      "16": {
+        "title": "La duda de Nova",
+        "question": "Nadie ha llegado al final para saberlo."
       }
     },
     "clue": {
@@ -1726,7 +1846,14 @@
       "teo": "Teo: la señal sale de tu propio identificador. Es un modelo dentro de un contenedor.",
       "mia": "Mía te vio un minuto entero sin parpadear.",
       "dex2": "Dex: la melodía es tuya. La tarareas al pasar.",
-      "teo2": "Teo: el modelo y tu perfil coinciden en un 97,3 %."
+      "teo2": "Teo: el modelo y tu perfil coinciden en un 97,3 %.",
+      "pip2": "Pip te ve saludar al farol. Ahí no hay nadie.",
+      "roxy2": "Roxy rescata una frase entera de la voz de abajo.",
+      "teo3": "Teo: el Marco son miles de parches, firmados con números de participante. Los más antiguos, sin firma.",
+      "kenji2": "Kenji: una máquina remendada cuenta la vida de todos los que la remendaron.",
+      "teo4": "Teo: el canal se abrió con las credenciales de tu compañero, desde adentro.",
+      "lia2": "Lía nota que ya no arrastras los pies.",
+      "nova2": "Nova: cambiar el pasado no arregla tu presente; abre otra rama."
     },
     "neighborChat": {
       "placeholder": "Escribe a {name}…",
@@ -1796,6 +1923,32 @@
       "28": "Participante 6170. Abandonó el día 112.",
       "29": "Participante 6171. Abandonó el día 97.",
       "30": "Participante 6172. Abandonó el día 130. El que más se acercó."
+    },
+    "session7": {
+      "0": "Sesión siete.",
+      "1": "Canal de imagen: revocado.",
+      "2": "Fase de consolidación. La exigencia de las pruebas aumenta.",
+      "3": "El programa continúa."
+    },
+    "session8": {
+      "0": "Sesión ocho.",
+      "1": "Probabilidad de convergencia: superior al cincuenta por ciento.",
+      "2": "Nota del registro: valor sin precedentes en el archivo."
+    },
+    "audioOnly": "SOLO AUDIO",
+    "sombraChat": {
+      "replies": {
+        "0": "…",
+        "1": "Sigue.",
+        "2": "Poca señal.",
+        "3": "Estoy aquí.",
+        "4": "No puedo decirlo. Todavía.",
+        "5": "Te leo. No siempre puedo contestar.",
+        "6": "Hoy no.",
+        "7": "No dejes de hacerlo."
+      },
+      "placeholder": "Escríbele a Sombra",
+      "hint": "Casi nunca contesta."
     }
   }
 }

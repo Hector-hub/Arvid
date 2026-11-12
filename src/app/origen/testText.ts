@@ -3,7 +3,14 @@
 import { useCategories, useRecords, useSettings } from '../data';
 import { DEFAULT_AVATAR } from '../../domain/avatar/catalog';
 import { COMPANION_NAME, type Companion } from '../../domain/arvid/companion';
-import { elapsed, sessionSeconds, voiceFor, type OrigenState, type VoiceId } from '../../domain/origen/origen';
+import {
+  elapsed,
+  sessionSeconds,
+  storyGender,
+  voiceFor,
+  type OrigenState,
+  type VoiceId,
+} from '../../domain/origen/origen';
 import type { ProgramTest } from '../../domain/origen/programTests';
 import { diffDays, toLocalDate } from '../../domain/time/localDate';
 import { getLocale, t, tDynamic } from '../../i18n';
@@ -39,7 +46,7 @@ export function testObjective(test: ProgramTest, names: TestNames): string {
   });
 }
 
-export type OriginVars = { tiempo: string; segundos: number; compañero: string };
+export type OriginVars = { tiempo: string; segundos: number; compañero: string; gender: 'm' | 'f' };
 
 /**
  * Variables de los textos de la historia con tus datos (CA-04, CA-07): `{tiempo}` desde el primer contacto,
@@ -49,6 +56,7 @@ export function originVars(
   state: OrigenState | undefined,
   voice: VoiceId,
   companion: Companion = 'arvid',
+  gender: 'm' | 'f' = voice === 'es-f' ? 'f' : 'm',
   now = new Date(),
 ): OriginVars {
   const days = state?.contactAt ? diffDays(toLocalDate(new Date(state.contactAt)), toLocalDate(now)) : 0;
@@ -57,6 +65,7 @@ export function originVars(
     tiempo: unit === 'year' ? t('origen.time.year') : tDynamic(`origen.time.${unit}`, { count }),
     segundos: sessionSeconds(3, voice),
     compañero: COMPANION_NAME[companion],
+    gender,
   };
 }
 
@@ -66,5 +75,6 @@ export function useOriginVars(): OriginVars {
   const voice = settings
     ? voiceFor(getLocale(), settings.profile?.gender, (settings.avatar ?? DEFAULT_AVATAR).cast)
     : 'es-m';
-  return originVars(settings?.origen, voice, settings?.companion);
+  const cast = (settings?.avatar ?? DEFAULT_AVATAR).cast;
+  return originVars(settings?.origen, voice, settings?.companion, storyGender(settings?.profile?.gender, cast));
 }

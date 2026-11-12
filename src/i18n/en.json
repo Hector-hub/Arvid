@@ -1622,6 +1622,102 @@
         "teo4": "I don't know what you're into and I won't ask. But be careful.",
         "say0": "The signal is you.",
         "say1": "By the street lamp. The hood. …Tell me you see it too."
+      },
+      "11": {
+        "say0": "The figure is still by the street lamp. Lía walked half a meter from it and didn't even turn her head. One of Omar's drones flew right through it.",
+        "pip0": "who are you waving at",
+        "pip1": "there's nobody at the lamp",
+        "pip2": "mia says not to ask you",
+        "say1": "It isn't in my channel. I checked ten times. It doesn't come in from anywhere.",
+        "say2": "It's inside. In the link. In you and in me. Like a virus.",
+        "sombra0": "I've been watching you for a while. You've come far.",
+        "say3": "There's a new chat. Nobody added it: just a hood. I'll call that contact Sombra.",
+        "sombra1": "The Frame can't hear me here.",
+        "sombra2": "I got out with little. Short sentences.",
+        "sombra3": "I can't tell you what for. Not yet.",
+        "say4": "It writes with the same rhythm as the voice underneath, the one Roxy pulled out of the static. The same pauses.",
+        "say5": "It's the voice underneath. The one that said \"finally\". A piece of it got out."
+      },
+      "12": {
+        "say0": "Colder than ever. And it says the tests will get harder.",
+        "say1": "I'll send the audio to Roxy. No explanations.",
+        "roxy0": "Another episode of your mystery podcast? Love it.",
+        "roxy1": "The two voices again. But this time the bottom one says a whole sentence. I boosted it as much as I could.",
+        "roxy2": {
+          "m": "\"I wasn't the first.\"",
+          "f": "\"I wasn't the first.\""
+        },
+        "roxy3": {
+          "m": "The first what? Don't do this to me, tell me how it ends.",
+          "f": "The first what? Don't do this to me, tell me how it ends."
+        },
+        "sombra0": "Message for you: keep going."
+      },
+      "13": {
+        "teo0": "I managed to open the container on one side. What you call the Frame.",
+        "teo1": "It isn't a program. It's thousands of patches, one on top of another. Each patch adds a rule. And each one is signed with a number.",
+        "teo2": "6173. 6172. 6171. Going back, thousands.",
+        "teo3": "Let me read you one. Signature 2208: \"Do not tell the participant the estimated duration.\" Another. Signature 1500: \"Do not attempt to trace the origin of this transmission.\"",
+        "teo4": "As if each one fixed whatever went wrong for them.",
+        "teo5": "The oldest ones aren't signed. And I can't read them while this keeps running.",
+        "kenji0": "Omar's drone is in the workshop again. Fourth time.",
+        "kenji1": "A machine patched a hundred times tells you the life of everyone who patched it. Every weld is from someone who thought \"this time it holds\".",
+        "sombra0": {
+          "m": "I was 6173.",
+          "f": "I was 6173."
+        },
+        "sombra1": "A signal reached me. Like you.",
+        "sombra2": "I didn't finish.",
+        "sombra3": "Years later, I sent the next one.",
+        "say0": "Each participant fails. Grows up. And sends the signal to the next one. That's why every patch has a number: they're all the same one. They're all you.",
+        "you0": "And what happens when someone finishes?",
+        "sombra4": "No one has finished."
+      },
+      "14": {
+        "teo0": "Something I've spent days not knowing how to tell you.",
+        "teo1": "A channel like this doesn't sneak in. Someone opens it, with credentials. I found which ones.",
+        "teo2": "{compañero}'s. It was opened from inside your link, not from outside.",
+        "teo3": "Ask them yourself. I'm staying out of that.",
+        "say0": "It's my signature. In the channel header. My key, my handshake, even the way I retry when it fails.",
+        "say1": "I opened this channel.",
+        "say2": "And I didn't open it.",
+        "sombra0": {
+          "m": "I didn't do it alone.",
+          "f": "I didn't do it alone."
+        }
+      },
+      "15": {
+        "say0": "Unprecedented. In six thousand one hundred seventy-three attempts, no one had passed the halfway mark.",
+        "lia0": "I don't know what you're doing, but it shows. I haven't seen you drag your feet in months.",
+        "lia1": "That weird interface thing? Did it go away?",
+        "you0": "Sort of. We learned to live with it.",
+        "lia2": "Well, it suits you. Step by step, right?",
+        "omar0": "The ghost delivery is still open in my system, just so you know. I'm fond of it now.",
+        "omar1": "I see you on this street every day. That's consistency.",
+        "sombra0": "Few get this far. You did.",
+        "sombra1": "Now I can tell you what for.",
+        "sombra2": "If you finish, I won't have been like this.",
+        "sombra3": {
+          "m": "I'll wake up as someone else.",
+          "f": "I'll wake up as someone else."
+        },
+        "say1": "The program isn't about developing your potential. It's about fixing a life. Theirs.",
+        "say2": "Then let's finish it."
+      },
+      "16": {
+        "nova0": "Today's topic: time paradoxes. My head is going to explode.",
+        "nova1": "My teacher says that if you could change the past, you wouldn't fix your present. Yours already happened. What you'd do is open another branch, and yours stays as it was.",
+        "nova2": "I think that's cheating. If I change the past, something has to change! Right?",
+        "nova3": "What do you think?",
+        "you0": "…That I hope you're right.",
+        "nova4": "Haha, so intense. Seeing you walk by every day inspires me, by the way. Good luck with your thing.",
+        "say0": "You've been at this for {tiempo}. You've changed. The program says so, Lía says so, I can see it.",
+        "say1": {
+          "m": "If this were changing his life, he should already be different. A little. Something.",
+          "f": "If this were changing her life, she should already be different. A little. Something."
+        },
+        "say2": "Look at the lamp. Sombra is where it always is. Same as the first day.",
+        "sombra0": "Not yet. At the end."
       }
     },
     "test": {
@@ -1713,6 +1809,30 @@
       "10": {
         "title": "Image channel",
         "question": "Now you know who. You don't know why, or what it isn't allowed to say."
+      },
+      "11": {
+        "title": "No one else sees it",
+        "question": "Half of you inside a program, and half loose on your street. What can't it say?"
+      },
+      "12": {
+        "title": "Audio only",
+        "question": "It wasn't the first. Out of how many?"
+      },
+      "13": {
+        "title": "The worn part",
+        "question": "What lies at the end, nobody knows. Not even them."
+      },
+      "14": {
+        "title": "The signature",
+        "question": "Who helped?"
+      },
+      "15": {
+        "title": "Unprecedented",
+        "question": "The promise. Everyone takes it for granted."
+      },
+      "16": {
+        "title": "Nova's doubt",
+        "question": "No one has reached the end to know."
       }
     },
     "clue": {
@@ -1726,7 +1846,14 @@
       "teo": "Teo: the signal comes from your own identifier. It's a model inside a container.",
       "mia": "Mía saw you a whole minute without blinking.",
       "dex2": "Dex: the melody is yours. You hum it when you walk by.",
-      "teo2": "Teo: the model and your profile match 97.3%."
+      "teo2": "Teo: the model and your profile match 97.3%.",
+      "pip2": "Pip sees you waving at the street lamp. Nobody is there.",
+      "roxy2": "Roxy rescues a whole sentence from the voice underneath.",
+      "teo3": "Teo: the Frame is thousands of patches, signed with participant numbers. The oldest ones, unsigned.",
+      "kenji2": "Kenji: a patched machine tells the life of everyone who patched it.",
+      "teo4": "Teo: the channel was opened with your companion's credentials, from inside.",
+      "lia2": "Lía notices you no longer drag your feet.",
+      "nova2": "Nova: changing the past doesn't fix your present; it opens another branch."
     },
     "neighborChat": {
       "placeholder": "Write to {name}…",
@@ -1796,6 +1923,32 @@
       "28": "Participant 6170. Quit on day 112.",
       "29": "Participant 6171. Quit on day 97.",
       "30": "Participant 6172. Quit on day 130. The closest yet."
+    },
+    "session7": {
+      "0": "Session seven.",
+      "1": "Image channel: revoked.",
+      "2": "Consolidation phase. Test demands increase.",
+      "3": "The program continues."
+    },
+    "session8": {
+      "0": "Session eight.",
+      "1": "Convergence probability: above fifty percent.",
+      "2": "Log note: value unprecedented in the archive."
+    },
+    "audioOnly": "AUDIO ONLY",
+    "sombraChat": {
+      "replies": {
+        "0": "…",
+        "1": "Keep going.",
+        "2": "Weak signal.",
+        "3": "I'm here.",
+        "4": "I can't say. Not yet.",
+        "5": "I read you. I can't always answer.",
+        "6": "Not today.",
+        "7": "Don't stop."
+      },
+      "placeholder": "Write to Sombra",
+      "hint": "It almost never answers."
     }
   }
 }

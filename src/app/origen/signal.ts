@@ -37,6 +37,8 @@ export interface SignalOptions {
   volume: number | null;
   reduced: boolean;
   figure: HTMLImageElement;
+  /** Solo audio (TR-03, sesiones 7 a 10): negro, la caja y la voz; sin ojos ni figura. */
+  audioOnly?: boolean;
   /** Para el giro 1 (sesión 6, TR-04): tu protagonista y tu alias, en cuanto estén listos. */
   reveal?: () => { image?: HTMLCanvasElement; name: string };
   /**
@@ -664,7 +666,10 @@ export function playSignal(el: SignalElements, o: SignalOptions): () => void {
               }
             }
           });
-        drawEntity(t);
+        if (o.audioOnly) {
+          black();
+          ctx?.drawImage(scan, 0, 0);
+        } else drawEntity(t);
         k = Math.max(k, scripted(t - T0));
         if (k > 0.02) {
           snap.getContext('2d')?.drawImage(el.canvas, 0, 0);

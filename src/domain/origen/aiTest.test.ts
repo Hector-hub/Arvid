@@ -29,9 +29,21 @@ describe('prueba escrita por la IA (PR-02 a PR-04)', () => {
   it('el resumen lleva actividades, cumplimiento y días flojos, sin alias ni conversaciones (NFR17-04)', () => {
     const run = activity('correr', { period: 'day', target: 1, createdOn: '2026-11-01', logs: days('2026-11-01', 10) });
     const today = d('2026-11-20');
-    const s = testSummary({ records: [run], analysis: analyze([run], today), missions: [], goals: [{ title: '5 km', done: 1, total: 3 }], categoryName: () => 'Cuerpo', tests: [], times: 3, today });
+    const s = testSummary({
+      records: [run],
+      analysis: analyze([run], today),
+      missions: [],
+      goals: [{ title: '5 km', done: 1, total: 3 }],
+      categoryName: () => 'Cuerpo',
+      tests: [],
+      times: 3,
+      today,
+    });
     expect(s).toMatchObject({ times: 3, goals: [{ title: '5 km', done: 1, total: 3 }] });
-    expect((s.activities as { name: string; fulfilledRate: number }[])[0]).toMatchObject({ name: 'correr', category: 'Cuerpo' });
+    expect((s.activities as { name: string; fulfilledRate: number }[])[0]).toMatchObject({
+      name: 'correr',
+      category: 'Cuerpo',
+    });
     expect(JSON.stringify(s)).not.toMatch(/alias|chat/i);
   });
 });

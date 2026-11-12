@@ -53,7 +53,12 @@ export function voiceFor(locale: 'es' | 'en', gender: Gender | undefined, cast: 
   return cast.startsWith('ella') ? 'es-f' : 'es-m';
 }
 
-export const voiceSrc = (session: number, voice: VoiceId) => `/senal/sesion-${String(session).padStart(2, '0')}-${voice}.m4a`;
+/** Tu género en la historia (CA-04): el mismo que elige la voz en español (TR-05), también con la app en inglés. */
+export const storyGender = (gender: Gender | undefined, cast: CastId): 'm' | 'f' =>
+  voiceFor('es', gender, cast) === 'es-f' ? 'f' : 'm';
+
+export const voiceSrc = (session: number, voice: VoiceId) =>
+  `/senal/sesion-${String(session).padStart(2, '0')}-${voice}.m4a`;
 
 /** Momento del primer contacto (PC-01): entre 6 y 55 s de app a la vista. */
 export const CONTACT_MIN_S = 6;
@@ -138,21 +143,108 @@ export interface SignalFx {
 
 /** Marcas medidas sobre las grabaciones aprobadas (prototipo de la señal). El texto está en i18n `origen.session1`. */
 export const SESSION_1: Record<VoiceId, VoiceTrack> = {
-  'es-m': { end: 45.4, cues: [[0, 0], [8.23, 1], [13.39, 2], [22.61, 3], [30.72, 4], [35.87, 5], [39.58, 6], [42.02, 7]] },
-  'es-f': { end: 43.7, cues: [[0, 0], [8.2, 1], [13.41, 2], [21.75, 3], [29.05, 4], [34.2, 5], [37.91, 6], [40.35, 7]] },
-  en: { end: 48.5, cues: [[0, 0], [9.97, 1], [16.28, 2], [26.32, 3], [34.06, 4], [39.32, 5], [43.2, 6], [45.87, 7]] },
+  'es-m': {
+    end: 45.4,
+    cues: [
+      [0, 0],
+      [8.23, 1],
+      [13.39, 2],
+      [22.61, 3],
+      [30.72, 4],
+      [35.87, 5],
+      [39.58, 6],
+      [42.02, 7],
+    ],
+  },
+  'es-f': {
+    end: 43.7,
+    cues: [
+      [0, 0],
+      [8.2, 1],
+      [13.41, 2],
+      [21.75, 3],
+      [29.05, 4],
+      [34.2, 5],
+      [37.91, 6],
+      [40.35, 7],
+    ],
+  },
+  en: {
+    end: 48.5,
+    cues: [
+      [0, 0],
+      [9.97, 1],
+      [16.28, 2],
+      [26.32, 3],
+      [34.06, 4],
+      [39.32, 5],
+      [43.2, 6],
+      [45.87, 7],
+    ],
+  },
 };
 
 /** Sesiones 2 y 3 (voces de Fish Audio, 2026-11-11): marcas medidas en las pausas de cada grabación. */
 const S2: Record<VoiceId, VoiceTrack> = {
-  'es-m': { end: 9.77, cues: [[0, 0], [2.65, 1], [5.32, 2], [7.4, 3]] },
-  'es-f': { end: 8.62, cues: [[0, 0], [2.73, 1], [4.72, 2], [6.76, 3]] },
-  en: { end: 8.99, cues: [[0, 0], [3.05, 1], [4.97, 2], [6.98, 3]] },
+  'es-m': {
+    end: 9.77,
+    cues: [
+      [0, 0],
+      [2.65, 1],
+      [5.32, 2],
+      [7.4, 3],
+    ],
+  },
+  'es-f': {
+    end: 8.62,
+    cues: [
+      [0, 0],
+      [2.73, 1],
+      [4.72, 2],
+      [6.76, 3],
+    ],
+  },
+  en: {
+    end: 8.99,
+    cues: [
+      [0, 0],
+      [3.05, 1],
+      [4.97, 2],
+      [6.98, 3],
+    ],
+  },
 };
 const S3: Record<VoiceId, VoiceTrack> = {
-  'es-m': { end: 14.84, cues: [[0, 0], [1.48, 1], [4.89, 2], [7.24, 3], [13.16, 4]] },
-  'es-f': { end: 12.33, cues: [[0, 0], [1.47, 1], [4.43, 2], [6.3, 3], [11.18, 4]] },
-  en: { end: 11.76, cues: [[0, 0], [1.39, 1], [4.42, 2], [6.52, 3], [10.34, 4]] },
+  'es-m': {
+    end: 14.84,
+    cues: [
+      [0, 0],
+      [1.48, 1],
+      [4.89, 2],
+      [7.24, 3],
+      [13.16, 4],
+    ],
+  },
+  'es-f': {
+    end: 12.33,
+    cues: [
+      [0, 0],
+      [1.47, 1],
+      [4.43, 2],
+      [6.3, 3],
+      [11.18, 4],
+    ],
+  },
+  en: {
+    end: 11.76,
+    cues: [
+      [0, 0],
+      [1.39, 1],
+      [4.42, 2],
+      [6.52, 3],
+      [10.34, 4],
+    ],
+  },
 };
 
 /**
@@ -160,44 +252,154 @@ const S3: Record<VoiceId, VoiceTrack> = {
  * en cada mezcla.
  */
 const S4: Record<VoiceId, VoiceTrack> = {
-  'es-m': { end: 15, cues: [[0, 0], [1.89, 1], [5.23, 2], [9.63, 3], [10.69, 4]], fx: [{ at: 10.69, kind: 'glitch', dur: 0.35 }] },
-  'es-f': { end: 14.29, cues: [[0, 0], [1.96, 1], [5.19, 2], [9.46, 3], [10.68, 4]], fx: [{ at: 10.68, kind: 'glitch', dur: 0.35 }] },
-  en: { end: 14.02, cues: [[0, 0], [2, 1], [5.32, 2], [9.3, 3], [10.53, 4]], fx: [{ at: 10.53, kind: 'glitch', dur: 0.35 }] },
+  'es-m': {
+    end: 15,
+    cues: [
+      [0, 0],
+      [1.89, 1],
+      [5.23, 2],
+      [9.63, 3],
+      [10.69, 4],
+    ],
+    fx: [{ at: 10.69, kind: 'glitch', dur: 0.35 }],
+  },
+  'es-f': {
+    end: 14.29,
+    cues: [
+      [0, 0],
+      [1.96, 1],
+      [5.19, 2],
+      [9.46, 3],
+      [10.68, 4],
+    ],
+    fx: [{ at: 10.68, kind: 'glitch', dur: 0.35 }],
+  },
+  en: {
+    end: 14.02,
+    cues: [
+      [0, 0],
+      [2, 1],
+      [5.32, 2],
+      [9.3, 3],
+      [10.53, 4],
+    ],
+    fx: [{ at: 10.53, kind: 'glitch', dur: 0.35 }],
+  },
 };
 const S5: Record<VoiceId, VoiceTrack> = {
   'es-m': {
     end: 26.92,
-    cues: [[0, 0], [2.14, 1], [7.36, 2], [12.62, 3], [17.61, 4], [23.02, 5]],
-    fx: [{ at: 1.24, kind: 'glitch', dur: 0.4 }, { at: 2.04, kind: 'flicker', dur: 25.4 }],
+    cues: [
+      [0, 0],
+      [2.14, 1],
+      [7.36, 2],
+      [12.62, 3],
+      [17.61, 4],
+      [23.02, 5],
+    ],
+    fx: [
+      { at: 1.24, kind: 'glitch', dur: 0.4 },
+      { at: 2.04, kind: 'flicker', dur: 25.4 },
+    ],
     cut: 'hard',
   },
   'es-f': {
     end: 25.15,
-    cues: [[0, 0], [2.28, 1], [7.12, 2], [11.77, 3], [15.99, 4], [21.37, 5]],
-    fx: [{ at: 1.38, kind: 'glitch', dur: 0.4 }, { at: 2.18, kind: 'flicker', dur: 23.5 }],
+    cues: [
+      [0, 0],
+      [2.28, 1],
+      [7.12, 2],
+      [11.77, 3],
+      [15.99, 4],
+      [21.37, 5],
+    ],
+    fx: [
+      { at: 1.38, kind: 'glitch', dur: 0.4 },
+      { at: 2.18, kind: 'flicker', dur: 23.5 },
+    ],
     cut: 'hard',
   },
   en: {
     end: 27.55,
-    cues: [[0, 0], [2.23, 1], [7.45, 2], [12.5, 3], [17.58, 4], [23.24, 5]],
-    fx: [{ at: 1.33, kind: 'glitch', dur: 0.4 }, { at: 2.13, kind: 'flicker', dur: 25.9 }],
+    cues: [
+      [0, 0],
+      [2.23, 1],
+      [7.45, 2],
+      [12.5, 3],
+      [17.58, 4],
+      [23.24, 5],
+    ],
+    fx: [
+      { at: 1.33, kind: 'glitch', dur: 0.4 },
+      { at: 2.13, kind: 'flicker', dur: 25.9 },
+    ],
     cut: 'hard',
   },
 };
 const S6: Record<VoiceId, VoiceTrack> = {
-  'es-m': { end: 14.04, cues: [[0, 0], [1.82, 1], [6.84, 2], [10.09, 3], [12.3, 4]], fx: [{ at: 5.34, kind: 'reveal', dur: 0.8 }], cut: 'hard' },
-  'es-f': { end: 13.65, cues: [[0, 0], [1.78, 1], [6.68, 2], [9.88, 3], [11.97, 4]], fx: [{ at: 5.18, kind: 'reveal', dur: 0.8 }], cut: 'hard' },
-  en: { end: 13.24, cues: [[0, 0], [1.88, 1], [6.48, 2], [9.47, 3], [11.81, 4]], fx: [{ at: 4.98, kind: 'reveal', dur: 0.8 }], cut: 'hard' },
+  'es-m': {
+    end: 14.04,
+    cues: [
+      [0, 0],
+      [1.82, 1],
+      [6.84, 2],
+      [10.09, 3],
+      [12.3, 4],
+    ],
+    fx: [{ at: 5.34, kind: 'reveal', dur: 0.8 }],
+    cut: 'hard',
+  },
+  'es-f': {
+    end: 13.65,
+    cues: [
+      [0, 0],
+      [1.78, 1],
+      [6.68, 2],
+      [9.88, 3],
+      [11.97, 4],
+    ],
+    fx: [{ at: 5.18, kind: 'reveal', dur: 0.8 }],
+    cut: 'hard',
+  },
+  en: {
+    end: 13.24,
+    cues: [
+      [0, 0],
+      [1.88, 1],
+      [6.48, 2],
+      [9.47, 3],
+      [11.81, 4],
+    ],
+    fx: [{ at: 4.98, kind: 'reveal', dur: 0.8 }],
+    cut: 'hard',
+  },
 };
 
-/** Subtítulos de cada sesión: cuántos hay y cuáles cambian con el género de la voz. */
-export const SESSIONS: Record<number, { tracks: Record<VoiceId, VoiceTrack>; cues: number; gendered: number[] }> = {
+/** Sesiones 7 y 8 (acto III), solo audio (TR-03): marcas medidas en cada mezcla (Fish Audio, 2026-11-12). */
+const S7: Record<VoiceId, VoiceTrack> = {
+  'es-m': { end: 11.23, cues: [[0, 0], [1.94, 1], [5.02, 2], [10.04, 3]] },
+  'es-f': { end: 10.34, cues: [[0, 0], [1.89, 1], [4.7, 2], [9.18, 3]] },
+  en: { end: 10.35, cues: [[0, 0], [1.9, 1], [4.82, 2], [8.92, 3]] },
+};
+const S8: Record<VoiceId, VoiceTrack> = {
+  'es-m': { end: 10.53, cues: [[0, 0], [1.83, 1], [7.05, 2]] },
+  'es-f': { end: 9.46, cues: [[0, 0], [1.86, 1], [6.4, 2]] },
+  en: { end: 8.99, cues: [[0, 0], [1.88, 1], [6.07, 2]] },
+};
+
+/** Subtítulos de cada sesión: cuántos hay, cuáles cambian con el género de la voz y si es solo audio (TR-03). */
+export const SESSIONS: Record<
+  number,
+  { tracks: Record<VoiceId, VoiceTrack>; cues: number; gendered: number[]; audioOnly?: boolean }
+> = {
   1: { tracks: SESSION_1, cues: 8, gendered: [0] },
   2: { tracks: S2, cues: 4, gendered: [] },
   3: { tracks: S3, cues: 5, gendered: [] },
   4: { tracks: S4, cues: 5, gendered: [] },
   5: { tracks: S5, cues: 6, gendered: [] },
   6: { tracks: S6, cues: 5, gendered: [2] },
+  7: { tracks: S7, cues: 4, gendered: [], audioOnly: true },
+  8: { tracks: S8, cues: 3, gendered: [], audioOnly: true },
 };
 
 /** El fallo del Marco que está en marcha en el segundo `t` de la voz, si hay alguno. */
@@ -218,7 +420,8 @@ export function cueKey(n: number, i: number, voice: VoiceId): string {
 }
 
 /** Cuánto te quedas quieto en una transmisión (lo que cuenta Pip, cap. 5): negro, aparición, voz y corte. */
-export const sessionSeconds = (n: number, voice: VoiceId) => Math.round(1 + 4.05 + (SESSIONS[n]?.tracks[voice].end ?? 0) + 1.25);
+export const sessionSeconds = (n: number, voice: VoiceId) =>
+  Math.round(1 + 4.05 + (SESSIONS[n]?.tracks[voice].end ?? 0) + 1.25);
 
 /** `{tiempo}` (CA-07): días hasta 13, semanas hasta 59 días, meses hasta 364 y «un año» después. */
 export function elapsed(days: number): { unit: 'days' | 'weeks' | 'months' | 'year'; count: number } {

@@ -13,6 +13,14 @@ export interface Release {
 /** De la más nueva a la más antigua. */
 export const RELEASES: Release[] = [
   {
+    version: '2.9.0',
+    kind: 'feature',
+    items: {
+      es: ['La historia sigue con nuevos capítulos.', 'Con la IA activada, tu compañero puede comentar contigo lo que va pasando.', 'La voz femenina de las transmisiones suena ahora como las demás.'],
+      en: ['The story continues with new chapters.', 'With AI on, your companion can talk with you about what is happening.', 'The female voice in the transmissions now sounds like the others.'],
+    },
+  },
+  {
     version: '2.8.0',
     kind: 'feature',
     items: {

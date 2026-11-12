@@ -5,7 +5,15 @@ import { Link, Navigate, useParams } from 'react-router';
 import { saveSetting } from '../../data/repository';
 import { COMPANION_NAME } from '../../domain/arvid/companion';
 import { DEFAULT_AVATAR } from '../../domain/avatar/catalog';
-import { chatLastAt, chatUnread, neighborContacts, neighborLines, type ChatId } from '../../domain/origen/chapters';
+import { sombraReply } from '../../domain/origen/sombra';
+import {
+  chatLastAt,
+  chatUnread,
+  neighborContacts,
+  neighborLines,
+  storyKey,
+  type ChatId,
+} from '../../domain/origen/chapters';
 import { seenSessions, storyOn, voiceFor, type OrigenState, type VoiceId } from '../../domain/origen/origen';
 import { acceptTest, type ProgramTest } from '../../domain/origen/programTests';
 import { dossier, TITLED_CHAPTERS } from '../../domain/origen/dossier';
@@ -72,7 +80,9 @@ export function ChatsScreen() {
             </span>
             <div className="grow">
               <p className="pixel">{t('origen.dossier.title')}</p>
-              <p className="small muted chats-last">{t('origen.dossier.decoded', { percent: dossier(origen).percent })}</p>
+              <p className="small muted chats-last">
+                {t('origen.dossier.decoded', { percent: dossier(origen).percent })}
+              </p>
             </div>
           </Link>
         )}
@@ -113,7 +123,9 @@ function ChatRow({ id, origen }: { id: ChatId; origen: OrigenState | undefined }
       </span>
       <div className="grow">
         <p className="pixel">{neighbor(id).name}</p>
-        <p className="small muted chats-last">{lastLine ? tDynamic(lastLine.key, vars) : itemDescription(id)}</p>
+        <p className="small muted chats-last">
+          {lastLine ? tDynamic(storyKey(lastLine, vars.gender), vars) : itemDescription(id)}
+        </p>
       </div>
       {unread && <span className="chats-dot" role="img" aria-label={t('origen.chats.unread')} />}
     </Link>
@@ -125,8 +137,14 @@ function useStreetView(): Record<string, unknown> {
   const settings = useSettings();
   const analysis = useAnalysis();
   const today = toLocalDate(new Date());
-  const daily = [...(analysis?.byActivity.values() ?? [])].flatMap((a) => a.periods.filter((p) => p.period.kind === 'day' && p.period.start === today && p.reason !== 'paused' && p.reason !== 'rest'));
-  const since = settings?.onboardingCompletedAt ? diffDays(toLocalDate(new Date(settings.onboardingCompletedAt)), today) : 0;
+  const daily = [...(analysis?.byActivity.values() ?? [])].flatMap((a) =>
+    a.periods.filter(
+      (p) => p.period.kind === 'day' && p.period.start === today && p.reason !== 'paused' && p.reason !== 'rest',
+    ),
+  );
+  const since = settings?.onboardingCompletedAt
+    ? diffDays(toLocalDate(new Date(settings.onboardingCompletedAt)), today)
+    : 0;
   return {
     alias: settings?.profile?.alias ?? '',
     title: analysis ? levelTitle(analysis.progress.level) : '',
@@ -160,31 +178,87 @@ export function NeighborChatScreen() {
   const name = neighbor(id).name;
   const companion = COMPANION_NAME[settings.companion];
   const lines: Line[] = [
-    ...neighborLines(origen, id).map((l, i) => ({ id: `story-${i}`, at: l.at, who: l.who, text: tDynamic(l.key, vars) })),
-    ...(free ?? []).map((m): Line => ({ id: m.id, at: m.at, who: m.from === 'user' ? 'user' : 'them', text: m.text, own: m.from === 'user' })),
+    ...neighborLines(origen, id).map((l, i) => ({
+      id: `story-${i}`,
+      at: l.at,
+      who: l.who,
+      text: tDynamic(storyKey(l, vars.gender), vars),
+    })),
+    ...(free ?? []).map((m): Line => ({
+      id: m.id,
+      at: m.at,
+      who: m.from === 'user' ? 'user' : 'them',
+      text: m.text,
+      own: m.from === 'user',
+    })),
   ].sort((a, b) => a.at.localeCompare(b.at));
   const today = toLocalDate(new Date());
   const sentToday = (free ?? []).filter((m) => m.from === 'user' && toLocalDate(new Date(m.at)) === today).length;
   const left = Math.max(0, NEIGHBOR_DAILY_MESSAGES - sentToday);
-  const canTalk = settings.arvidAi && !!settings.aiCode;
+  // A Sombra se le puede escribir siempre: no usa IA ni tiene límite (ME-09)
+  const isSombra = id === 'sombra';
+  const canTalk = isSombra || (settings.arvidAi && !!settings.aiCode);
 
   async function send(e: FormEvent) {
     e.preventDefault();
     const message = text.trim();
+    if (isSombra) {
+      if (!message) return;
+      const sentAt = new Date();
+      await addMessages(db, [
+        { id: crypto.randomUUID(), chat: id, at: sentAt.toISOString(), from: 'user', text: message },
+      ]);
+      setText('');
+      // Casi nunca contesta; cuando lo hace, tarda (ME-09)
+      const answer = sombraReply();
+      if (answer)
+        window.setTimeout(
+          () =>
+            void addMessages(db, [
+              {
+                id: crypto.randomUUID(),
+                chat: id,
+                at: new Date().toISOString(),
+                from: 'character',
+                text: tDynamic(`origen.sombraChat.replies.${answer.reply}`),
+              },
+            ]),
+          answer.afterS * 1000,
+        );
+      return;
+    }
     if (!message || busy || left === 0) return;
     setBusy(true);
     setError(undefined);
-    const history = [...lines.map((l) => ({ role: l.who === 'them' ? ('assistant' as const) : ('user' as const), content: l.text.slice(0, 1000) })), { role: 'user' as const, content: message }];
+    const history = [
+      ...lines.map((l) => ({
+        role: l.who === 'them' ? ('assistant' as const) : ('user' as const),
+        content: l.text.slice(0, 1000),
+      })),
+      { role: 'user' as const, content: message },
+    ];
     const result = await neighborChatTurn(id, currentChapter(origen), history.slice(-NEIGHBOR_HISTORY), street);
     setBusy(false);
     if (!result.ok) {
-      setError(result.reason === 'neighbor' ? t('origen.neighborChat.none', { name }) : result.reason === 'offline' ? t('origen.neighborChat.offline') : t('origen.neighborChat.error', { name }));
+      setError(
+        result.reason === 'neighbor'
+          ? t('origen.neighborChat.none', { name })
+          : result.reason === 'offline'
+            ? t('origen.neighborChat.offline')
+            : t('origen.neighborChat.error', { name }),
+      );
       return;
     }
     const sentAt = new Date();
     await addMessages(db, [
       { id: crypto.randomUUID(), chat: id, at: sentAt.toISOString(), from: 'user', text: message },
-      { id: crypto.randomUUID(), chat: id, at: new Date(sentAt.getTime() + 1).toISOString(), from: 'character', text: result.reply },
+      {
+        id: crypto.randomUUID(),
+        chat: id,
+        at: new Date(sentAt.getTime() + 1).toISOString(),
+        from: 'character',
+        text: result.reply,
+      },
     ]);
     setText('');
   }
@@ -205,9 +279,19 @@ export function NeighborChatScreen() {
         {lines.map((line) => (
           <div key={line.id} className={`chat-msg ${line.who === 'them' ? 'companion' : 'user'}`}>
             <span className="chat-who small">
-              {line.who === 'you' ? t('origen.forYou', { companion }) : line.who === 'user' ? t('origen.neighborChat.you') : name} · {time(line.at)}
+              {line.who === 'you'
+                ? t('origen.forYou', { companion })
+                : line.who === 'user'
+                  ? t('origen.neighborChat.you')
+                  : name}{' '}
+              · {time(line.at)}
               {line.own && (
-                <button type="button" className="chat-delete" aria-label={t('origen.neighborChat.delete')} onClick={() => void deleteOwnMessage(db, line.id)}>
+                <button
+                  type="button"
+                  className="chat-delete"
+                  aria-label={t('origen.neighborChat.delete')}
+                  onClick={() => void deleteOwnMessage(db, line.id)}
+                >
                   ×
                 </button>
               )}
@@ -232,19 +316,32 @@ export function NeighborChatScreen() {
               className="chat-terminal-input"
               value={text}
               maxLength={280}
-              disabled={left === 0}
-              placeholder={t('origen.neighborChat.placeholder', { name })}
-              aria-label={t('origen.neighborChat.placeholder', { name })}
+              disabled={!isSombra && left === 0}
+              placeholder={
+                isSombra ? t('origen.sombraChat.placeholder') : t('origen.neighborChat.placeholder', { name })
+              }
+              aria-label={
+                isSombra ? t('origen.sombraChat.placeholder') : t('origen.neighborChat.placeholder', { name })
+              }
               autoComplete="off"
               enterKeyHint="send"
               onChange={(e) => setText(e.target.value)}
             />
-            <button type="submit" className="chat-terminal-send" disabled={busy || !text.trim() || left === 0}>
+            <button
+              type="submit"
+              className="chat-terminal-send"
+              disabled={busy || !text.trim() || (!isSombra && left === 0)}
+            >
               {t('scene.send')}
             </button>
           </div>
           <p className="small muted" role="status">
-            {error ?? (left === 0 ? t('origen.neighborChat.none', { name }) : t('origen.neighborChat.left', { count: left, name }))}
+            {isSombra
+              ? t('origen.sombraChat.hint')
+              : (error ??
+                (left === 0
+                  ? t('origen.neighborChat.none', { name })
+                  : t('origen.neighborChat.left', { count: left, name })))}
           </p>
         </form>
       ) : (
@@ -254,7 +351,9 @@ export function NeighborChatScreen() {
   );
 }
 
-type SignalItem = { at: string } & ({ kind: 'session'; n: number } | { kind: 'offer'; test: ProgramTest } | { kind: 'line'; text: string });
+type SignalItem = { at: string } & (
+  { kind: 'session'; n: number } | { kind: 'offer'; test: ProgramTest } | { kind: 'line'; text: string }
+);
 
 /** «??? · Señal desconocida» (ME-08): sesiones y pruebas, en orden; sin campo de escribir. */
 export function SignalChatScreen() {
@@ -277,15 +376,24 @@ export function SignalChatScreen() {
       const n = testNumber(test.n);
       const out: SignalItem[] = [{ at: test.offeredAt, kind: 'offer', test }];
       if (test.acceptedOn && test.deadline)
-        out.push({ at: `${test.offeredAt}~`, kind: 'line', text: t('origen.test.accepted', { n, date: dayMonth(test.deadline) }) });
-      if (test.result && test.resolvedAt) out.push({ at: test.resolvedAt, kind: 'line', text: t(`origen.test.${test.result}`, { n }) });
+        out.push({
+          at: `${test.offeredAt}~`,
+          kind: 'line',
+          text: t('origen.test.accepted', { n, date: dayMonth(test.deadline) }),
+        });
+      if (test.result && test.resolvedAt)
+        out.push({ at: test.resolvedAt, kind: 'line', text: t(`origen.test.${test.result}`, { n }) });
       return out;
     }),
   ].sort((a, b) => a.at.localeCompare(b.at));
 
   const answer = (test: ProgramTest, accept: boolean) => {
     const tests = (origen?.tests ?? []).map((x) =>
-      x.n !== test.n ? x : accept ? acceptTest(x, today) : { ...x, result: 'rejected' as const, resolvedAt: new Date().toISOString() },
+      x.n !== test.n
+        ? x
+        : accept
+          ? acceptTest(x, today)
+          : { ...x, result: 'rejected' as const, resolvedAt: new Date().toISOString() },
     );
     void saveSetting(db, 'origen', { ...origen, tests });
   };
@@ -310,7 +418,9 @@ export function SignalChatScreen() {
               type="button"
               className="signal-card"
               aria-label={`${t('origen.chats.watch')}: ${t('origen.chats.session', { n: item.n })}`}
-              onClick={() => void loadSignalAssets(item.n, voice).then((assets) => setPlaying({ n: item.n, voice, assets }))}
+              onClick={() =>
+                void loadSignalAssets(item.n, voice).then((assets) => setPlaying({ n: item.n, voice, assets }))
+              }
             >
               <span>
                 {t('origen.chats.session', { n: item.n })}
@@ -328,7 +438,13 @@ export function SignalChatScreen() {
                 <i />
                 {t('origen.test.label')}
               </span>
-              <p>{t('origen.test.offer', { n: testNumber(item.test.n), objective: testObjective(item.test, names), days: item.test.days ?? 7 })}</p>
+              <p>
+                {t('origen.test.offer', {
+                  n: testNumber(item.test.n),
+                  objective: testObjective(item.test, names),
+                  days: item.test.days ?? 7,
+                })}
+              </p>
               {item.test.detail && <p className="small muted">{item.test.detail}</p>}
               {!item.test.acceptedOn && !item.test.result && (
                 <div className="row" style={{ gap: 'var(--s2)' }}>
@@ -349,7 +465,15 @@ export function SignalChatScreen() {
         )}
       </div>
       <p className="signal-noreply small muted">{t('origen.chats.noReply')}</p>
-      {playing && <SignalOverlay mode="replay" session={playing.n} voice={playing.voice} assets={playing.assets} onDone={() => setPlaying(undefined)} />}
+      {playing && (
+        <SignalOverlay
+          mode="replay"
+          session={playing.n}
+          voice={playing.voice}
+          assets={playing.assets}
+          onDone={() => setPlaying(undefined)}
+        />
+      )}
     </div>
   );
 }
@@ -369,7 +493,15 @@ export function DossierScreen() {
       <BackLink to="/mensajes" label={t('origen.chats.title')} />
       <h1>{t('origen.dossier.title')}</h1>
       <p className="pixel signal-decoded">{t('origen.dossier.decoded', { percent: d.percent })}</p>
-      <div className="xpbar signal-bar" style={{ height: 10 }} role="progressbar" aria-valuenow={d.percent} aria-valuemin={0} aria-valuemax={100} aria-label={t('origen.dossier.decoded', { percent: d.percent })}>
+      <div
+        className="xpbar signal-bar"
+        style={{ height: 10 }}
+        role="progressbar"
+        aria-valuenow={d.percent}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={t('origen.dossier.decoded', { percent: d.percent })}
+      >
         <span style={{ width: `${d.percent}%` }} />
       </div>
 
@@ -379,7 +511,9 @@ export function DossierScreen() {
           {d.chapters.map((c) =>
             c.at && c.n <= TITLED_CHAPTERS ? (
               <li key={c.n}>
-                <p className="pixel">{t('origen.dossier.chapterTitle', { n: c.n, title: tDynamic(`origen.chapter.${c.n}.title`) })}</p>
+                <p className="pixel">
+                  {t('origen.dossier.chapterTitle', { n: c.n, title: tDynamic(`origen.chapter.${c.n}.title`) })}
+                </p>
                 <p className="small muted">
                   {dayMonth(toLocalDate(new Date(c.at)))} · {tDynamic(`origen.chapter.${c.n}.question`)}
                 </p>
@@ -424,7 +558,9 @@ export function DossierScreen() {
         ) : !origen?.steps?.[FRAGMENTS_STEP] ? (
           <p className="muted">{t('origen.dossier.fragmentsHeld', { count: d.fragments, companion })}</p>
         ) : (
-          d.fragments > d.readable.length && <p className="muted">{t('origen.dossier.fragmentsLocked', { count: d.fragments - d.readable.length })}</p>
+          d.fragments > d.readable.length && (
+            <p className="muted">{t('origen.dossier.fragmentsLocked', { count: d.fragments - d.readable.length })}</p>
+          )
         )}
       </Panel>
 

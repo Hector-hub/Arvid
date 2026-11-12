@@ -25,6 +25,11 @@ export type Draft = { action: ActionName; args: unknown };
 
 /** Notas de memoria (spec 13, MU-01), en el orden en que las ve la IA (`n1`, `n2`…); las fija la app al cargarlas. */
 let memoryTexts: string[] = [];
+/** Capítulo de la historia (spec 17, VI-06); 0 sin historia. Lo fija ChapterWatcher. */
+let storyChapter = 0;
+export function setStoryChapter(chapter: number): void {
+  storyChapter = chapter;
+}
 export function setMemoryTexts(texts: readonly string[]): void {
   memoryTexts = [...texts];
 }
@@ -67,7 +72,16 @@ async function askAi(
         'Content-Type': 'application/json',
         ...(accessCode ? { 'X-Arvid-Code': accessCode } : trialDevice ? { 'X-Arvid-Device': trialDevice } : {}),
       },
-      body: JSON.stringify({ locale: getLocale(), moment, messages, context: deps.context(), companion: getCompanion(), memory: memoryTexts, ...extra }),
+      body: JSON.stringify({
+        locale: getLocale(),
+        moment,
+        messages,
+        context: deps.context(),
+        companion: getCompanion(),
+        memory: memoryTexts,
+        ...(moment === 'chat' && storyChapter > 0 ? { chapter: storyChapter } : {}),
+        ...extra,
+      }),
       signal: AbortSignal.timeout(timeoutMs),
     });
     // 429: créditos del día de este código agotados (D-100), prueba sin código agotada (D-135) o cuota de Mistral
@@ -78,7 +92,13 @@ async function askAi(
     }
     if (res.status === 401) return { ok: false, reason: 'code' };
     if (!res.ok) return { ok: false, reason: 'error' };
-    const data = (await res.json()) as { reply?: unknown; proposal?: unknown; draft?: unknown; memoryOps?: unknown; trialLeft?: unknown };
+    const data = (await res.json()) as {
+      reply?: unknown;
+      proposal?: unknown;
+      draft?: unknown;
+      memoryOps?: unknown;
+      trialLeft?: unknown;
+    };
     if (typeof data.trialLeft === 'number') onTrialLeft?.(data.trialLeft);
     // Operaciones de memoria (spec 13): se vuelven a validar en la app (MC-05)
     const memoryOps = (Array.isArray(data.memoryOps) ? data.memoryOps : [])
@@ -91,7 +111,10 @@ async function askAi(
     const ctx = deps.context() as { calendar?: { today?: LocalDate }; categories?: { id: string }[] };
     if (data.proposal && typeof data.proposal === 'object') {
       const p = data.proposal as { action?: string; args?: unknown };
-      const check = checkProposal(p.action ?? '', p.args, { today: ctx.calendar?.today ?? toLocalDate(new Date()), categoryIds: ctx.categories?.map((c) => c.id) ?? [] });
+      const check = checkProposal(p.action ?? '', p.args, {
+        today: ctx.calendar?.today ?? toLocalDate(new Date()),
+        categoryIds: ctx.categories?.map((c) => c.id) ?? [],
+      });
       const reply = typeof data.reply === 'string' ? data.reply : '';
       if (check.ok) return { ok: true, reply, proposal: check.proposal, memoryOps };
       if (check.partial) return { ok: true, reply, draft: check.partial, memoryOps };
@@ -101,7 +124,9 @@ async function askAi(
       return { ok: true, reply: typeof data.reply === 'string' ? data.reply : '', draft: d, memoryOps };
     }
     if (memoryOps.length) return { ok: true, reply: typeof data.reply === 'string' ? data.reply : '', memoryOps };
-    return typeof data.reply === 'string' && data.reply ? { ok: true, reply: data.reply } : { ok: false, reason: 'error' };
+    return typeof data.reply === 'string' && data.reply
+      ? { ok: true, reply: data.reply }
+      : { ok: false, reason: 'error' };
   } catch {
     return { ok: false, reason: 'error' };
   }
@@ -128,7 +153,10 @@ export function historyFrom(log: readonly ChatEntry[] | undefined): ChatMessage[
   return (log ?? [])
     .filter((e) => e.kind !== 'memory' && e.text.trim())
     .slice(-HISTORY_MESSAGES)
-    .map((e) => ({ role: e.from === 'user' ? ('user' as const) : ('assistant' as const), content: e.text.slice(0, 1400) }));
+    .map((e) => ({
+      role: e.from === 'user' ? ('user' as const) : ('assistant' as const),
+      content: e.text.slice(0, 1400),
+    }));
 }
 
 /**
@@ -144,7 +172,15 @@ export async function chatTurn(message: string, deps: BrainDeps, log?: readonly 
   if (!result.ok) return { text: t(`arvid.chat.${result.reason}`) };
   const text =
     result.reply ||
-    t(result.proposal ? 'actions.prepared' : result.draft ? 'actions.draft' : result.memoryOps?.length ? 'memory.noted' : 'arvid.chat.error');
+    t(
+      result.proposal
+        ? 'actions.prepared'
+        : result.draft
+          ? 'actions.draft'
+          : result.memoryOps?.length
+            ? 'memory.noted'
+            : 'arvid.chat.error',
+    );
   history = [...asked, { role: 'assistant' as const, content: text }].slice(-AI_MAX_HISTORY);
   return { text, proposal: result.proposal, draft: result.draft, memoryOps: result.memoryOps };
 }
@@ -162,7 +198,11 @@ export async function neighborLine(neighbor: NeighborId, fallback: string, deps:
 }
 
 /** Lo que dice ARVID por iniciativa propia: con IA si se puede; si no, la frase fija `fallback` (IA-05). */
-export async function momentLine(moment: Exclude<AiMoment, 'chat' | 'neighbor' | 'origenTest' | 'neighborChat'>, fallback: string, deps: BrainDeps): Promise<string> {
+export async function momentLine(
+  moment: Exclude<AiMoment, 'chat' | 'neighbor' | 'origenTest' | 'neighborChat'>,
+  fallback: string,
+  deps: BrainDeps,
+): Promise<string> {
   if (!deps.aiEnabled) return fallback;
   const result = await askAi(moment, [], deps, MOMENT_TIMEOUT_MS);
   return result.ok ? result.reply : fallback;
@@ -173,7 +213,10 @@ export async function momentLine(moment: Exclude<AiMoment, 'chat' | 'neighbor' |
  * sin memoria, alias ni conversaciones (NFR17-04). Se vuelve a validar aquí. Sin IA o si falla, `undefined`: la app usa
  * la lista fija (PR-05).
  */
-export async function programTestAi(summary: Record<string, unknown>, activityIds: readonly string[]): Promise<AiTest | undefined> {
+export async function programTestAi(
+  summary: Record<string, unknown>,
+  activityIds: readonly string[],
+): Promise<AiTest | undefined> {
   if (!accessCode || offline()) return undefined;
   try {
     const res = await fetch('/api/arvid', {
@@ -200,7 +243,9 @@ export async function neighborChatTurn(
   chapter: number,
   messages: ChatMessage[],
   context: Record<string, unknown>,
-): Promise<{ ok: true; reply: string; left: number } | { ok: false; reason: 'neighbor' | 'offline' | 'code' | 'error' }> {
+): Promise<
+  { ok: true; reply: string; left: number } | { ok: false; reason: 'neighbor' | 'offline' | 'code' | 'error' }
+> {
   if (!accessCode) return { ok: false, reason: 'code' };
   if (offline()) return { ok: false, reason: 'offline' };
   try {

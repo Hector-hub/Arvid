@@ -7,7 +7,7 @@ import { currentChapter } from './periods';
 import { FRAGMENTS_STEP, readableFragments } from './fragments';
 
 /** Último capítulo que trae esta versión (NFR17-10): más allá, la historia espera sin avisos. */
-export const PUBLISHED_CHAPTER = 10;
+export const PUBLISHED_CHAPTER = 16;
 
 export type ChatId = 'signal' | NeighborId;
 
@@ -15,12 +15,14 @@ export type ChatId = 'signal' | NeighborId;
 export interface ChatLineDef {
   who: 'them' | 'you';
   key: string;
+  /** Cambia con tu género (CA-04): la clave tiene `.m` y `.f`. Sombra habla de sí mismo con tu género. */
+  gendered?: boolean;
 }
 
 export type StepDef =
   | { id: string; kind: 'session'; session: number; wait?: Wait }
   | { id: string; kind: 'test'; wait?: Wait }
-  | { id: string; kind: 'say'; key: string; wait?: Wait }
+  | { id: string; kind: 'say'; key: string; gendered?: boolean; wait?: Wait }
   | { id: string; kind: 'chat'; chat: NeighborId; lines: ChatLineDef[]; wait?: Wait };
 
 /** Espera desde el paso anterior: horas, u «otro día» (a partir de las 8 del día siguiente). */
@@ -31,9 +33,24 @@ const chat = (id: string, chatId: NeighborId, chapter: number, keys: string[], w
   kind: 'chat',
   chat: chatId,
   wait,
-  lines: keys.map((k) => ({ who: k.startsWith('you') ? 'you' : 'them', key: `origen.ch.${chapter}.${k}` })),
+  // `~g` al final: la línea cambia con tu género (CA-04)
+  lines: keys.map((k) => ({
+    who: k.startsWith('you') ? 'you' : 'them',
+    key: `origen.ch.${chapter}.${k.replace(/~g$/, '')}`,
+    ...(k.endsWith('~g') ? { gendered: true } : {}),
+  })),
 });
-const say = (id: string, chapter: number, key: string, wait?: Wait): StepDef => ({ id, kind: 'say', key: `origen.ch.${chapter}.${key}`, wait });
+const say = (id: string, chapter: number, key: string, wait?: Wait): StepDef => ({
+  id,
+  kind: 'say',
+  key: `origen.ch.${chapter}.${key.replace(/~g$/, '')}`,
+  ...(key.endsWith('~g') ? { gendered: true } : {}),
+  wait,
+});
+
+/** Clave i18n de una línea de la historia con tu género (CA-04). */
+export const storyKey = (line: { key: string; gendered?: boolean }, gender: 'm' | 'f') =>
+  line.gendered ? `${line.key}.${gender}` : line.key;
 const SOON: Wait = { hours: 0.01 };
 
 export interface ChapterDef {
@@ -100,7 +117,13 @@ export const CHAPTERS: ChapterDef[] = [
       say('c6.s0', 6, 'say0'),
       chat('c6.kenji', 'kenji', 6, ['you0', 'kenji0'], SOON),
       say('c6.s1', 6, 'say1', { hours: 2 }),
-      chat('c6.kenji2', 'kenji', 6, ['kenji1', 'kenji2', 'kenji3', 'kenji4', 'kenji5', 'you1', 'kenji6', 'kenji7'], 'nextDay'),
+      chat(
+        'c6.kenji2',
+        'kenji',
+        6,
+        ['kenji1', 'kenji2', 'kenji3', 'kenji4', 'kenji5', 'you1', 'kenji6', 'kenji7'],
+        'nextDay',
+      ),
       say('c6.s2', 6, 'say2', SOON),
     ],
   },
@@ -152,6 +175,80 @@ export const CHAPTERS: ChapterDef[] = [
       say('c10.sombra', 10, 'say1', SOON),
     ],
   },
+  // ---------- Acto III · ¿Para qué? ----------
+  {
+    n: 11,
+    needs: ['pip'],
+    steps: [
+      say('c11.s0', 11, 'say0'),
+      chat('c11.pip', 'pip', 11, ['pip0', 'pip1', 'pip2'], SOON),
+      say('c11.s1', 11, 'say1', { hours: 1 }),
+      say('c11.s2', 11, 'say2', SOON),
+      // Sombra escribe por primera vez: su chat aparece sin que lo añadas (ME-02, SO-01)
+      chat('c11.sombra', 'sombra', 11, ['sombra0'], { hours: 1 }),
+      say('c11.s3', 11, 'say3', SOON),
+      chat('c11.sombra2', 'sombra', 11, ['sombra1', 'sombra2', 'sombra3'], { hours: 4 }),
+      say('c11.s4', 11, 'say4', SOON),
+      say('c11.s5', 11, 'say5', SOON),
+    ],
+  },
+  {
+    n: 12,
+    needs: ['roxy'],
+    steps: [
+      { id: 'c12.session', kind: 'session', session: 7 },
+      say('c12.s0', 12, 'say0', SOON),
+      say('c12.s1', 12, 'say1', SOON),
+      chat('c12.roxy', 'roxy', 12, ['roxy0', 'roxy1', 'roxy2~g', 'roxy3~g'], { hours: 2 }),
+      chat('c12.sombra', 'sombra', 12, ['sombra0'], { hours: 6 }),
+    ],
+  },
+  {
+    n: 13,
+    needs: ['teo', 'kenji'],
+    steps: [
+      chat('c13.teo', 'teo', 13, ['teo0', 'teo1', 'teo2', 'teo3', 'teo4', 'teo5']),
+      chat('c13.kenji', 'kenji', 13, ['kenji0', 'kenji1'], { hours: 3 }),
+      chat('c13.sombra', 'sombra', 13, ['sombra0~g', 'sombra1', 'sombra2', 'sombra3'], 'nextDay'),
+      say('c13.s0', 13, 'say0', SOON),
+      chat('c13.sombra2', 'sombra', 13, ['you0', 'sombra4'], SOON),
+    ],
+  },
+  {
+    n: 14,
+    needs: ['teo'],
+    steps: [
+      chat('c14.teo', 'teo', 14, ['teo0', 'teo1', 'teo2', 'teo3']),
+      say('c14.s0', 14, 'say0', { hours: 0.5 }),
+      say('c14.s1', 14, 'say1', SOON),
+      say('c14.s2', 14, 'say2', SOON),
+      chat('c14.sombra', 'sombra', 14, ['sombra0~g'], { hours: 5 }),
+    ],
+  },
+  {
+    n: 15,
+    needs: ['lia', 'omar'],
+    steps: [
+      { id: 'c15.session', kind: 'session', session: 8 },
+      say('c15.s0', 15, 'say0', SOON),
+      chat('c15.lia', 'lia', 15, ['lia0', 'lia1', 'you0', 'lia2'], { hours: 3 }),
+      chat('c15.omar', 'omar', 15, ['omar0', 'omar1'], 'nextDay'),
+      chat('c15.sombra', 'sombra', 15, ['sombra0', 'sombra1', 'sombra2', 'sombra3~g'], { hours: 4 }),
+      say('c15.s1', 15, 'say1', SOON),
+      say('c15.s2', 15, 'say2', SOON),
+    ],
+  },
+  {
+    n: 16,
+    needs: ['nova'],
+    steps: [
+      chat('c16.nova', 'nova', 16, ['nova0', 'nova1', 'nova2', 'nova3', 'you0', 'nova4']),
+      say('c16.s0', 16, 'say0', { hours: 2 }),
+      say('c16.s1', 16, 'say1~g', SOON),
+      say('c16.s2', 16, 'say2', SOON),
+      chat('c16.sombra', 'sombra', 16, ['sombra0'], { hours: 1 }),
+    ],
+  },
 ];
 
 export const chapterDef = (n: number) => CHAPTERS.find((c) => c.n === n);
@@ -170,7 +267,11 @@ export function dueAt(wait: Wait | undefined, from: Date): Date {
  * El siguiente paso que toca entregar, o ninguno (CA-02). Los de capítulos ya pasados se entregan sin esperas;
  * los del capítulo en curso, cuando vence su espera desde el anterior (o desde la apertura, para el primero).
  */
-export function nextStep(state: OrigenState | undefined, now: Date, { noWaits = false } = {}): { chapter: number; step: StepDef } | undefined {
+export function nextStep(
+  state: OrigenState | undefined,
+  now: Date,
+  { noWaits = false } = {},
+): { chapter: number; step: StepDef } | undefined {
   const current = currentChapter(state);
   const delivered = state?.steps ?? {};
   for (const ch of CHAPTERS) {
@@ -210,7 +311,9 @@ export function neighborLines(state: OrigenState | undefined, chatId: NeighborId
   const delivered = state?.steps ?? {};
   const story = CHAPTERS.flatMap((c) => c.steps)
     .filter((s): s is Extract<StepDef, { kind: 'chat' }> => s.kind === 'chat' && s.chat === chatId && !!delivered[s.id])
-    .flatMap((s) => s.lines.map((line, i) => ({ ...line, at: new Date(Date.parse(delivered[s.id]!) + i * 1000).toISOString() })));
+    .flatMap((s) =>
+      s.lines.map((line, i) => ({ ...line, at: new Date(Date.parse(delivered[s.id]!) + i * 1000).toISOString() })),
+    );
   if (chatId !== 'teo') return story;
   // El fragmento llega un segundo después de lo que lo abrió, para que vaya detrás en el chat
   const fragments = readableFragments(state).map((f) => ({
@@ -255,4 +358,3 @@ export const chatUnread = (state: OrigenState | undefined, chatId: ChatId) => {
 
 export const anyUnread = (state: OrigenState | undefined) =>
   chatUnread(state, 'signal') || neighborContacts(state).some((c) => chatUnread(state, c.chat));
-

@@ -1,13 +1,34 @@
 import { describe, expect, it } from 'vitest';
 import { analyze } from '../progress/progress';
 import { activity, d, days } from '../testing/fixtures';
-import { acceptTest, chooseTest, resolveTest, restAhead, testProgress, testsXp, timesForChapter, type ProgramTest } from './programTests';
+import {
+  acceptTest,
+  chooseTest,
+  resolveTest,
+  restAhead,
+  testProgress,
+  testsXp,
+  timesForChapter,
+  type ProgramTest,
+} from './programTests';
 
 const TODAY = d('2026-11-30');
 const NOW = new Date('2026-11-30T10:00:00.000Z');
 // Leer: casi todos los días; Correr: uno de cada cuatro
-const read = activity('leer', { period: 'day', target: 1, createdOn: '2026-10-25', logs: days('2026-10-25', 36), categoryId: 'mind' });
-const run = activity('correr', { period: 'day', target: 1, createdOn: '2026-10-25', logs: days('2026-10-25', 36).filter((_, i) => i % 4 === 0), categoryId: 'body' });
+const read = activity('leer', {
+  period: 'day',
+  target: 1,
+  createdOn: '2026-10-25',
+  logs: days('2026-10-25', 36),
+  categoryId: 'mind',
+});
+const run = activity('correr', {
+  period: 'day',
+  target: 1,
+  createdOn: '2026-10-25',
+  logs: days('2026-10-25', 36).filter((_, i) => i % 4 === 0),
+  categoryId: 'body',
+});
 const records = [read, run];
 const analysis = analyze(records, TODAY);
 const base = { period: 2, chapter: 3, records, missions: [], analysis, today: TODAY, now: NOW };
@@ -36,25 +57,57 @@ describe('pruebas del programa (PR)', () => {
   });
 
   it('se supera sola con los registros justos y no con uno menos (PR-07, PR-08)', () => {
-    const offered: ProgramTest = { n: 1, type: 'hardest', activityId: 'a-correr', times: 3, period: 2, offeredAt: NOW.toISOString(), offeredOn: TODAY };
+    const offered: ProgramTest = {
+      n: 1,
+      type: 'hardest',
+      activityId: 'a-correr',
+      times: 3,
+      period: 2,
+      offeredAt: NOW.toISOString(),
+      offeredOn: TODAY,
+    };
     const accepted = acceptTest(offered, TODAY);
     expect(accepted.deadline).toBe('2026-12-06');
-    const two = activity('correr', { period: 'day', target: 1, createdOn: '2026-10-25', logs: ['2026-11-30', '2026-12-01'], categoryId: 'body' });
+    const two = activity('correr', {
+      period: 'day',
+      target: 1,
+      createdOn: '2026-10-25',
+      logs: ['2026-11-30', '2026-12-01'],
+      categoryId: 'body',
+    });
     const day2 = d('2026-12-01');
     expect(testProgress(accepted, [read, two], analyze([read, two], day2), day2)).toEqual({ done: 2, of: 3 });
     expect(resolveTest(accepted, [read, two], analyze([read, two], day2), day2, NOW).result).toBeUndefined();
-    const three = activity('correr', { period: 'day', target: 1, createdOn: '2026-10-25', logs: ['2026-11-30', '2026-12-01', '2026-12-03'], categoryId: 'body' });
+    const three = activity('correr', {
+      period: 'day',
+      target: 1,
+      createdOn: '2026-10-25',
+      logs: ['2026-11-30', '2026-12-01', '2026-12-03'],
+      categoryId: 'body',
+    });
     const day4 = d('2026-12-03');
     expect(resolveTest(accepted, [read, three], analyze([read, three], day4), day4, NOW).result).toBe('passed');
   });
 
   it('sin contestar en 3 días queda ignorada; aceptada y vencida, no superada; nada resta (PR-09)', () => {
-    const offered: ProgramTest = { n: 1, type: 'noBlank', times: 3, period: 2, offeredAt: NOW.toISOString(), offeredOn: TODAY };
+    const offered: ProgramTest = {
+      n: 1,
+      type: 'noBlank',
+      times: 3,
+      period: 2,
+      offeredAt: NOW.toISOString(),
+      offeredOn: TODAY,
+    };
     expect(resolveTest(offered, [], analyze([], d('2026-12-02')), d('2026-12-02'), NOW).result).toBeUndefined();
     expect(resolveTest(offered, [], analyze([], d('2026-12-03')), d('2026-12-03'), NOW).result).toBe('ignored');
     const accepted = acceptTest(offered, TODAY);
     expect(resolveTest(accepted, [], analyze([], d('2026-12-07')), d('2026-12-07'), NOW).result).toBe('failed');
-    expect(testsXp([{ ...accepted, result: 'failed' }, { ...offered, result: 'rejected' }])).toBe(0);
+    expect(
+      testsXp([
+        { ...accepted, result: 'failed' },
+        { ...offered, result: 'rejected' },
+      ]),
+    ).toBe(0);
     expect(testsXp([{ ...accepted, result: 'passed' }])).toBe(100);
   });
 
@@ -66,7 +119,16 @@ describe('pruebas del programa (PR)', () => {
 
   it('la que escribe la IA: con actividad, por tus registros; sin ella, con «Hecho hoy» (PR-07)', async () => {
     const { toggleMark, markedByHand } = await import('./programTests');
-    const ai: ProgramTest = { n: 2, type: 'ai', title: 'Estirar', times: 2, days: 5, period: 2, offeredAt: NOW.toISOString(), offeredOn: TODAY };
+    const ai: ProgramTest = {
+      n: 2,
+      type: 'ai',
+      title: 'Estirar',
+      times: 2,
+      days: 5,
+      period: 2,
+      offeredAt: NOW.toISOString(),
+      offeredOn: TODAY,
+    };
     const accepted = acceptTest(ai, TODAY);
     expect(accepted.deadline).toBe('2026-12-04');
     expect(markedByHand(accepted)).toBe(true);

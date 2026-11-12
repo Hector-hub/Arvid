@@ -12,6 +12,7 @@ Textos listos para generar la voz de cada sesión, en sus tres versiones. Salen 
   | Español femenina | — | `48b01a5f698a4ef8ae41add88adc8f77` |
   | Inglesa | Analog horror teller | `22eabd36a14647319a4f088d4282e8bf` |
 
+- **La voz femenina de Fish («Femenino») no trae filtro analógico** y suena limpia y más fuerte que las otras dos. Desde la 2.8.0 se le aplica después, con ffmpeg, uno equivalente al de la sesión 1: banda de 140 Hz a ~3 kHz, saturación ligera (`acrusher`, 11 bits, 35 %), siseo rosa tenue, zumbidos de 5,88, 11,76 y 14,7 kHz muy bajos, corte a 15,5 kHz y volumen igualado a −20 dB RMS. No cambia la duración, así que las marcas siguen valiendo. Los originales sin filtro quedan en `material/voces-originales/` (fuera del repositorio).
 - **Sin música ni efectos, y sin otro filtro aparte del de la voz.** La app añade encima el filtro de radio AM, el zumbido y la estática, igual que con la sesión 1 en el prototipo aprobado (TR-05).
 - **Entrega:** un archivo por sesión y voz, mono, 44,1 o 48 kHz, en `wav` o `m4a`, con medio segundo de silencio al principio y al final.
 - **Nombres:** `sesion-02-es-m`, `sesion-02-es-f`, `sesion-02-en` (y así con cada sesión).
@@ -265,6 +266,61 @@ Session six. <break time="0.8s"/> Convergence probability: <break time="0.3s"/> 
 
 ---
 
+## Sesión 7 · Capítulo 12 · «Solo audio»
+**Solo audio** (TR-03): pantalla negra, la caja y la etiqueta «SOLO AUDIO». Duración estimada: 12 a 15 s. Otra vez **dos voces** (Roxy las separa en el capítulo 12).
+
+- **Pista A, el Marco:** las 4 frases, más fría y más lenta que nunca.
+- **Pista B, la Instancia:** debajo de las frases 3 y 4, a −20 dB y con filtro, de modo que no se entiende: «No fui el primero» («la primera», con voz femenina). No lleva subtítulo; la frase la rescata Roxy.
+
+### Español
+| # | Subtítulo | Pausa después |
+|---|---|---|
+| 1 | Sesión siete. | 1 s |
+| 2 | Canal de imagen: revocado. | 1,2 s |
+| 3 | Fase de consolidación. La exigencia de las pruebas aumenta. | 1 s (B empieza debajo) |
+| 4 | El programa continúa. | — |
+
+Toma A: `Sesión siete. Canal de imagen: revocado. Fase de consolidación. La exigencia de las pruebas aumenta. El programa continúa.`
+
+Toma B: `[whispering] No fui el primero.` · femenina: `[whispering] No fui la primera.`
+
+### English
+| # | Subtitle | Pause after |
+|---|---|---|
+| 1 | Session seven. | 1 s |
+| 2 | Image channel: revoked. | 1.2 s |
+| 3 | Consolidation phase. Test demands increase. | 1 s (B starts underneath) |
+| 4 | The program continues. | — |
+
+Take A: `Session seven. Image channel: revoked. Consolidation phase. Test demands increase. The program continues.`
+
+Take B: `[whispering] I wasn't the first.`
+
+---
+
+## Sesión 8 · Capítulo 15 · «Sin precedentes»
+**Solo audio.** Duración estimada: 11 a 14 s. Una sola voz. La frase 3, un poco más lenta: es lo más parecido a una sorpresa que el Marco se permite.
+
+### Español
+| # | Subtítulo | Pausa después |
+|---|---|---|
+| 1 | Sesión ocho. | 1 s |
+| 2 | Probabilidad de convergencia: superior al cincuenta por ciento. | 1,4 s |
+| 3 | Nota del registro: valor sin precedentes en el archivo. | — |
+
+`Sesión ocho. Probabilidad de convergencia: superior al cincuenta por ciento. Nota del registro: valor sin precedentes en el archivo.`
+
+### English
+| # | Subtitle | Pause after |
+|---|---|---|
+| 1 | Session eight. | 1 s |
+| 2 | Convergence probability: above fifty percent. | 1.4 s |
+| 3 | Log note: value unprecedented in the archive. | — |
+
+`Session eight. Convergence probability: above fifty percent. Log note: value unprecedented in the archive.`
+
+---
+
 ## Archivos de la 2.5.0 (generados el 2026-11-11 con Fish Audio, en `public/senal/`)
 | Archivo | Voz |
 |---|---|
@@ -285,4 +341,12 @@ Generados sin marcas de pausa (1 crédito por byte de texto) y montados con ffmp
 | `sesion-06-es-m`, `sesion-06-es-f`, `sesion-06-en` | Las tres | Una, con 2 s de silencio para el giro |
 
 Coste: 2.218 créditos (1 por byte de texto).
+
+## Archivos de la 2.9.0 (generados el 2026-11-12 con Fish Audio, en `public/senal/`)
+| Archivo | Tomas |
+|---|---|
+| `sesion-07-es-m`, `sesion-07-es-f`, `sesion-07-en` | A (el Marco) y B (la Instancia, susurrando «No fui el primero/la primera», debajo de la frase 3 a −18 dB y filtrada) |
+| `sesion-08-es-m`, `sesion-08-es-f`, `sesion-08-en` | Una |
+
+Las femeninas llevan el filtro analógico. Coste: 821 créditos (1 por byte de texto).
 

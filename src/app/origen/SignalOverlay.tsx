@@ -111,6 +111,7 @@ export function SignalOverlay({
         volume: sound?.effects === false ? null : (sound?.volume ?? 0.5),
         reduced,
         figure: assets.figure,
+        audioOnly: data.audioOnly,
         reveal,
         mode,
         onVoiceEnd: voiceEnded,
@@ -153,7 +154,7 @@ export function SignalOverlay({
           <span data-s="boxName">{t('origen.name')}</span>
           <span className="signal-tag">
             <i data-s="boxDot" />
-            {t('origen.tag')}
+            {SESSIONS[session]?.audioOnly ? t('origen.audioOnly') : t('origen.tag')}
           </span>
         </p>
         <div data-s="boxText" className="signal-box-text" aria-live="polite" />

@@ -194,7 +194,7 @@ Sirve para escribir los guiones y, sobre todo, para las instrucciones de la IA d
 | 11 | Nadie más lo ve | — | Sombra te escribe. Pip: «¿A quién saludas?» El compañero: «No está en mi canal. Está dentro» | «No puedo decirte para qué. Todavía» |
 | 12 | Solo audio | 7 | «Canal de imagen: revocado. Fase de consolidación.» Roxy rescata una frase de debajo | «No fui el primero» |
 | 13 | La pieza gastada | — | Teo abre el contenedor: miles de parches firmados con un número de participante; los más antiguos, sin firma. Sombra: «Yo fui el 6173» | ¿Qué pasa cuando alguien termina? Nadie ha terminado |
-| 14 | La firma | — | El canal se abrió con las credenciales de tu compañero. «Y yo no lo he abierto» | Sombra: «No vine solo» |
+| 14 | La firma | — | El canal se abrió con las credenciales de tu compañero. «Y yo no lo he abierto» | Sombra: «No lo hice solo» |
 | 15 | Sin precedentes | 8 | «Probabilidad de convergencia: superior al 50 %. Valor sin precedentes.» Los vecinos notan que has cambiado. Sombra: «Si terminas, yo no habré sido así» | La promesa: acabar le salva |
 | 16 | La duda de Nova | — | Nova estudia paradojas temporales: ¿y si cambiar el pasado solo abre otra rama? El compañero: Sombra sigue igual | Nadie ha llegado al final para saberlo |
 | 17 | Contención | 9 | «Fuga detectada en el vínculo. Localizando.» Sombra desaparece. Teo esconde tu nodo de la patrulla | ¿Lo han encontrado? |
@@ -240,7 +240,7 @@ Transmisión de solo audio, en tres tiempos:
    - Allí no ha cambiado nada. Y descubre que no le importa: tú no vas a ser él.
    - Nadie lo sabía porque nadie había terminado nunca. **Eres el primer resultado del experimento.**
    - No habrá 6175: él ya sabe que no sirve, y tú no vas a necesitar enviarla.
-   - No vino solo: quien abrió el canal fue tu compañero, que nunca se fue de su lado (§7.3).
+   - No lo hizo solo: quien abrió el canal fue tu compañero, que nunca se fue de su lado (§7.3).
    - Gracias. Y felicidades.
 3. **El cierre.** El zumbido se apaga. Vuelve la app. El compañero tarda en hablar.
 

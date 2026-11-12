@@ -5,7 +5,16 @@ import type { OrigenState } from './origen';
 import type { ProgramTest } from './programTests';
 
 const at = (d: number) => new Date(Date.UTC(2026, 10, d, 10)).toISOString();
-const passed = (n: number, d: number): ProgramTest => ({ n, type: 'fullDays', times: 3, period: 1, offeredAt: at(d), offeredOn: '2026-11-01' as never, result: 'passed', resolvedAt: at(d) });
+const passed = (n: number, d: number): ProgramTest => ({
+  n,
+  type: 'fullDays',
+  times: 3,
+  period: 1,
+  offeredAt: at(d),
+  offeredOn: '2026-11-01' as never,
+  result: 'passed',
+  resolvedAt: at(d),
+});
 /** Estado con `chapters` capítulos abiertos, uno por semana. */
 const state = (chapters: number, tests: ProgramTest[], teo = true): OrigenState => ({
   choice: 'investigate',
@@ -22,7 +31,8 @@ describe('fragmentos del archivo (PR-10)', () => {
     // Ninguno sale después de la última prueba posible ni antes de la primera (capítulo 3)
     expect(Math.min(...FRAGMENT_FROM)).toBe(3);
     expect(Math.max(...FRAGMENT_FROM)).toBeLessThan(20);
-    for (const locale of ['es', 'en'] as const) for (let n = 1; n <= FRAGMENTS; n++) expect(keysOf(locale)).toContain(`origen.fragment.${n}`);
+    for (const locale of ['es', 'en'] as const)
+      for (let n = 1; n <= FRAGMENTS; n++) expect(keysOf(locale)).toContain(`origen.fragment.${n}`);
   });
 
   it('antes de que Teo los abra, el compañero los guarda sin leerlos', () => {

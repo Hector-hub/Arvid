@@ -8,9 +8,17 @@ import {
   neededNeighbors,
   nextStep,
   PUBLISHED_CHAPTER,
+  storyKey,
   type StepDef,
 } from '../../domain/origen/chapters';
-import { sombraStill, storyOn, voiceFor, type OrigenState, type VoiceId } from '../../domain/origen/origen';
+import {
+  sombraStill,
+  storyGender,
+  storyOn,
+  voiceFor,
+  type OrigenState,
+  type VoiceId,
+} from '../../domain/origen/origen';
 import { currentChapter, openChapter, readyForNext } from '../../domain/origen/periods';
 import { advanceBlocked } from '../../domain/origen/music';
 import { FRAGMENTS_STEP, readableFragments } from '../../domain/origen/fragments';
@@ -31,7 +39,7 @@ import { getLocale, t, tDynamic, useLocale } from '../../i18n';
 import { useAnalysis } from '../analysis';
 import { logChat, speak } from '../arvid/voice';
 import { useCategories, useData, useGoals, useMissions, useRecords, useRests, useSettings } from '../data';
-import { programTestAi } from '../arvid/brain';
+import { programTestAi, setStoryChapter } from '../arvid/brain';
 import { testSummary } from '../../domain/origen/aiTest';
 import { categoryName } from '../text';
 import { isTalking, setSombraStill, showPeds } from '../scene/engine';
@@ -77,6 +85,7 @@ export function ChapterWatcher() {
   // Lo último, para leerlo desde el reloj sin reiniciarlo
   const ai = !!settings?.arvidAi && !!settings.aiCode;
   const companion = settings?.companion;
+  const gender = storyGender(settings?.profile?.gender, (settings?.avatar ?? DEFAULT_AVATAR).cast);
   const live = useRef({
     origen,
     analysis,
@@ -88,6 +97,7 @@ export function ChapterWatcher() {
     voice,
     ai,
     companion,
+    gender,
     talks: settings?.arvidTalks !== false,
     running,
   });
@@ -103,6 +113,7 @@ export function ChapterWatcher() {
       voice,
       ai,
       companion,
+      gender,
       talks: settings?.arvidTalks !== false,
       running,
     };
@@ -112,6 +123,7 @@ export function ChapterWatcher() {
   useEffect(() => {
     showPeds(on ? neededNeighbors(origen).map((id) => neighbor(id).ped) : []);
     setSombraStill(sombraStill(origen));
+    setStoryChapter(on ? currentChapter(origen) : 0);
   }, [origen, on]);
 
   // Quien bloqueó la señal también tiene tramos (RI-10): sin capítulos, solo para la música
@@ -179,8 +191,13 @@ export function ChapterWatcher() {
       if (step.kind === 'say')
         say(
           tDynamic(
-            step.key,
-            originVars(live.current.origen ?? state, live.current.voice ?? 'es-m', live.current.companion),
+            storyKey(step, live.current.gender),
+            originVars(
+              live.current.origen ?? state,
+              live.current.voice ?? 'es-m',
+              live.current.companion,
+              live.current.gender,
+            ),
           ),
         );
       else say(t('origen.wrote', { name: neighbor(step.chat).name }));

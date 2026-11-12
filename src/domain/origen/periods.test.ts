@@ -35,7 +35,20 @@ describe('tramos (RI)', () => {
   it('superar la prueba del tramo es el pase: basta con los 7 días (RI-02)', () => {
     let s = openChapter(openChapter(start(0), at(7), 300), at(14), 600); // capítulo 3
     expect(readyForNext(s, at(21), 610, 5)).toBe(false);
-    s = { ...s, tests: [{ n: 1, type: 'noBlank', times: 3, period: 2, offeredAt: '', offeredOn: '2026-11-15' as never, result: 'passed' }] };
+    s = {
+      ...s,
+      tests: [
+        {
+          n: 1,
+          type: 'noBlank',
+          times: 3,
+          period: 2,
+          offeredAt: '',
+          offeredOn: '2026-11-15' as never,
+          result: 'passed',
+        },
+      ],
+    };
     expect(periodPassed(s)).toBe(true);
     expect(readyForNext(s, at(20.9), 610, 5)).toBe(false);
     expect(readyForNext(s, at(21), 610, 5)).toBe(true);

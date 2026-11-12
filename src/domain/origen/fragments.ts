@@ -11,7 +11,9 @@ export const FRAGMENTS_STEP = 'c8.teo2';
  * Capítulo desde el que puede salir cada fragmento (§9 de `cimientos.md`), en orden: si toca uno que aún no puede
  * salir, espera a su capítulo. Los textos están en i18n (`origen.fragment.N`).
  */
-export const FRAGMENT_FROM = [3, 3, 3, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 11, 12, 13, 13, 14, 15, 16, 17, 18, 19, 19, 19];
+export const FRAGMENT_FROM = [
+  3, 3, 3, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 11, 12, 13, 13, 14, 15, 16, 17, 18, 19, 19, 19,
+];
 
 /** Pruebas superadas, por orden: la enésima descifra el fragmento enésimo. */
 function passedAt(state: OrigenState | undefined): string[] {

@@ -6,7 +6,8 @@ import { addDays, compareDates, diffDays, type LocalDate } from '../time/localDa
 import type { MissionRecord } from '../missions/missions';
 import { createdOn } from '../activities/rules';
 
-export type TestType = 'fullDays' | 'hardest' | 'noBlank' | 'roundWeek' | 'weakArea' | 'missionsOnTime' | 'bestWeek' | 'ai';
+export type TestType =
+  'fullDays' | 'hardest' | 'noBlank' | 'roundWeek' | 'weakArea' | 'missionsOnTime' | 'bestWeek' | 'ai';
 export type TestResult = 'passed' | 'failed' | 'rejected' | 'ignored';
 
 export interface ProgramTest {
@@ -48,7 +49,8 @@ const LOOKBACK = 28;
 /** N según el acto (PR-02): 3 en el I, 5 en el II y 7 en el III. */
 export const timesForChapter = (chapter: number) => (chapter <= 5 ? 3 : chapter <= 10 ? 5 : 7);
 
-export const passedTests = (tests: readonly ProgramTest[] | undefined) => (tests ?? []).filter((t) => t.result === 'passed').length;
+export const passedTests = (tests: readonly ProgramTest[] | undefined) =>
+  (tests ?? []).filter((t) => t.result === 'passed').length;
 
 /** XP de las pruebas superadas: cuenta para el nivel, no para los atributos, la Disciplina ni la vara (PR-08, RI-05). */
 export const testsXp = (tests: readonly ProgramTest[] | undefined) => passedTests(tests) * TEST_XP;
@@ -64,9 +66,15 @@ interface Day {
   logged: boolean;
 }
 
-function daysOf(records: readonly ActivityRecord[], analysis: Analysis, from: LocalDate, to: LocalDate): Map<LocalDate, Day> {
+function daysOf(
+  records: readonly ActivityRecord[],
+  analysis: Analysis,
+  from: LocalDate,
+  to: LocalDate,
+): Map<LocalDate, Day> {
   const days = new Map<LocalDate, Day>();
-  for (let d = from; compareDates(d, to) <= 0; d = addDays(d, 1)) days.set(d, { full: true, hasDaily: false, logged: false });
+  for (let d = from; compareDates(d, to) <= 0; d = addDays(d, 1))
+    days.set(d, { full: true, hasDaily: false, logged: false });
   for (const a of analysis.byActivity.values())
     for (const p of a.periods) {
       if (p.period.kind !== 'day' || p.reason === 'paused' || p.reason === 'rest' || p.reason === 'truncated') continue;
@@ -99,9 +107,15 @@ function dailyRates(analysis: Analysis, today: LocalDate): { activityId: string;
   const from = addDays(today, -LOOKBACK);
   const out: { activityId: string; categoryId: string; rate: number }[] = [];
   for (const a of analysis.byActivity.values()) {
-    const periods = a.periods.filter((p) => p.period.kind === 'day' && p.closed && p.evaluable && compareDates(p.period.start, from) >= 0);
+    const periods = a.periods.filter(
+      (p) => p.period.kind === 'day' && p.closed && p.evaluable && compareDates(p.period.start, from) >= 0,
+    );
     if (periods.length < 3) continue;
-    out.push({ activityId: a.activityId, categoryId: periods.at(-1)!.categoryId, rate: periods.filter((p) => p.fulfilled).length / periods.length });
+    out.push({
+      activityId: a.activityId,
+      categoryId: periods.at(-1)!.categoryId,
+      rate: periods.filter((p) => p.fulfilled).length / periods.length,
+    });
   }
   return out;
 }
@@ -135,7 +149,10 @@ export function chooseTest(input: ChooseInput): ProgramTest {
   const { records, analysis, today, n } = input;
   const times = timesForChapter(input.chapter);
   const base = { n, period: input.period, offeredAt: input.now.toISOString(), offeredOn: today, times };
-  const firstDay = records.map((r) => createdOn(r.events)).filter((d): d is LocalDate => !!d).sort(compareDates)[0];
+  const firstDay = records
+    .map((r) => createdOn(r.events))
+    .filter((d): d is LocalDate => !!d)
+    .sort(compareDates)[0];
   const history = firstDay ? diffDays(firstDay, today) : 0;
   const rates = dailyRates(analysis, today);
   const lowest = [...rates].sort((a, b) => a.rate - b.rate)[0];
@@ -150,9 +167,20 @@ export function chooseTest(input: ChooseInput): ProgramTest {
   const candidates: ProgramTest[] = [];
   const pending = input.missions.filter((m) => {
     const a = analysis.byMission.get(m.mission.id);
-    return a?.state === 'pending' && a.deadline && diffDays(today, a.deadline) >= 0 && diffDays(today, a.deadline) < TEST_DAYS;
+    return (
+      a?.state === 'pending' &&
+      a.deadline &&
+      diffDays(today, a.deadline) >= 0 &&
+      diffDays(today, a.deadline) < TEST_DAYS
+    );
   });
-  if (pending.length >= 2) candidates.push({ ...base, type: 'missionsOnTime', times: pending.length, missionIds: pending.map((m) => m.mission.id) });
+  if (pending.length >= 2)
+    candidates.push({
+      ...base,
+      type: 'missionsOnTime',
+      times: pending.length,
+      missionIds: pending.map((m) => m.mission.id),
+    });
   if (lowest && rates.length >= 2 && lowest.rate < 0.6 && lowest.rate < average(rates.map((r) => r.rate)) - 0.15)
     candidates.push({ ...base, type: 'hardest', activityId: lowest.activityId });
   const byCategory = new Map<string, number[]>();
@@ -164,10 +192,18 @@ export function chooseTest(input: ChooseInput): ProgramTest {
   }
   const recent = daysOf(records, analysis, addDays(today, -Math.min(LOOKBACK, history)), addDays(today, -1));
   const daily = [...recent.values()].filter((d) => d.hasDaily);
-  if (daily.length >= 7 && daily.filter((d) => d.full).length / daily.length < 0.5) candidates.push({ ...base, type: 'fullDays' });
+  if (daily.length >= 7 && daily.filter((d) => d.full).length / daily.length < 0.5)
+    candidates.push({ ...base, type: 'fullDays' });
   if ([...recent.values()].filter((d) => !d.logged).length >= 4) candidates.push({ ...base, type: 'noBlank' });
   const weekly = [...analysis.byActivity.values()].filter((a) =>
-    a.periods.some((p) => p.period.kind === 'week' && p.closed && p.evaluable && !p.fulfilled && diffDays(p.period.end, today) <= LOOKBACK),
+    a.periods.some(
+      (p) =>
+        p.period.kind === 'week' &&
+        p.closed &&
+        p.evaluable &&
+        !p.fulfilled &&
+        diffDays(p.period.end, today) <= LOOKBACK,
+    ),
   );
   if (weekly.length > 0) candidates.push({ ...base, type: 'roundWeek', times: 1 });
   const best = Math.max(0, ...completionsPerWeek(records, today, 8));
@@ -178,7 +214,12 @@ export function chooseTest(input: ChooseInput): ProgramTest {
 
 // ---------- Comprobación (PR-07, PR-08) ----------
 /** Avance de la prueba aceptada: cuánto lleva de lo que pide. */
-export function testProgress(test: ProgramTest, records: readonly ActivityRecord[], analysis: Analysis, today: LocalDate): { done: number; of: number } {
+export function testProgress(
+  test: ProgramTest,
+  records: readonly ActivityRecord[],
+  analysis: Analysis,
+  today: LocalDate,
+): { done: number; of: number } {
   if (!test.acceptedOn || !test.deadline) return { done: 0, of: test.times };
   const to = compareDates(today, test.deadline) < 0 ? today : test.deadline;
   if (compareDates(to, test.acceptedOn) < 0) return { done: 0, of: test.times };
@@ -191,14 +232,23 @@ export function testProgress(test: ProgramTest, records: readonly ActivityRecord
       return { done: Math.min(of, longestRun([...days.values()].map((d) => d.logged))), of };
     case 'hardest': {
       const a = analysis.byActivity.get(test.activityId ?? '');
-      const done = (a?.periods ?? []).filter((p) => p.fulfilled && days.has(p.period.start) && p.period.kind === 'day').length;
+      const done = (a?.periods ?? []).filter(
+        (p) => p.fulfilled && days.has(p.period.start) && p.period.kind === 'day',
+      ).length;
       return { done: Math.min(of, done), of };
     }
     case 'weakArea': {
       let done = 0;
       for (const date of days.keys()) {
         const periods = [...analysis.byActivity.values()].flatMap((a) =>
-          a.periods.filter((p) => p.period.kind === 'day' && p.period.start === date && p.categoryId === test.categoryId && p.reason !== 'paused' && p.reason !== 'rest'),
+          a.periods.filter(
+            (p) =>
+              p.period.kind === 'day' &&
+              p.period.start === date &&
+              p.categoryId === test.categoryId &&
+              p.reason !== 'paused' &&
+              p.reason !== 'rest',
+          ),
         );
         if (periods.length && periods.every((p) => p.fulfilled)) done++;
       }
@@ -207,9 +257,15 @@ export function testProgress(test: ProgramTest, records: readonly ActivityRecord
     case 'roundWeek': {
       const starts = new Set<LocalDate>();
       for (const a of analysis.byActivity.values())
-        for (const p of a.periods) if (p.period.kind === 'week' && (days.has(p.period.start) || days.has(p.period.end))) starts.add(p.period.start);
+        for (const p of a.periods)
+          if (p.period.kind === 'week' && (days.has(p.period.start) || days.has(p.period.end)))
+            starts.add(p.period.start);
       const done = [...starts].some((start) => {
-        const periods = [...analysis.byActivity.values()].flatMap((a) => a.periods.filter((p) => p.period.kind === 'week' && p.period.start === start && p.reason !== 'paused' && p.reason !== 'rest'));
+        const periods = [...analysis.byActivity.values()].flatMap((a) =>
+          a.periods.filter(
+            (p) => p.period.kind === 'week' && p.period.start === start && p.reason !== 'paused' && p.reason !== 'rest',
+          ),
+        );
         return periods.length > 0 && periods.every((p) => p.fulfilled);
       });
       return { done: done ? 1 : 0, of: 1 };
@@ -234,7 +290,13 @@ export function testProgress(test: ProgramTest, records: readonly ActivityRecord
 }
 
 /** Resuelve lo que toque hoy: superada en cuanto se cumple; ignorada a los 3 días; no superada al vencer (PR-09). */
-export function resolveTest(test: ProgramTest, records: readonly ActivityRecord[], analysis: Analysis, today: LocalDate, now: Date): ProgramTest {
+export function resolveTest(
+  test: ProgramTest,
+  records: readonly ActivityRecord[],
+  analysis: Analysis,
+  today: LocalDate,
+  now: Date,
+): ProgramTest {
   if (test.result) return test;
   const resolved = (result: TestResult): ProgramTest => ({ ...test, result, resolvedAt: now.toISOString() });
   if (!test.acceptedOn) return diffDays(test.offeredOn, today) >= IGNORE_DAYS ? resolved('ignored') : test;
@@ -244,7 +306,11 @@ export function resolveTest(test: ProgramTest, records: readonly ActivityRecord[
   return test;
 }
 
-export const acceptTest = (test: ProgramTest, today: LocalDate): ProgramTest => ({ ...test, acceptedOn: today, deadline: addDays(today, (test.days ?? TEST_DAYS) - 1) });
+export const acceptTest = (test: ProgramTest, today: LocalDate): ProgramTest => ({
+  ...test,
+  acceptedOn: today,
+  deadline: addDays(today, (test.days ?? TEST_DAYS) - 1),
+});
 
 /** «Hecho hoy» (PR-07): una vez al día; se puede deshacer ese mismo día. */
 export function toggleMark(test: ProgramTest, today: LocalDate): ProgramTest {

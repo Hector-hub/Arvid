@@ -52,7 +52,11 @@ describe('Mensajes (spec 17, ME)', () => {
   });
 
   it('el chat de un vecino muestra lo de la historia con las respuestas del compañero por ti (ME-03, ME-04)', async () => {
-    const s = openChapter(choose(finishContact(undefined, AT, 0), 'investigate'), new Date('2026-11-18T10:00:00.000Z'), 80);
+    const s = openChapter(
+      choose(finishContact(undefined, AT, 0), 'investigate'),
+      new Date('2026-11-18T10:00:00.000Z'),
+      80,
+    );
     await saveSetting(ctx.db, 'origen', deliverStep(s, 'c2.dex', new Date('2026-11-18T10:00:05.000Z')));
     renderRoutes(ctx, routes, '/mensajes');
     expect(await screen.findByText('Dex')).toBeInTheDocument();
@@ -65,19 +69,44 @@ describe('Mensajes (spec 17, ME)', () => {
   it('una prueba se acepta o se rechaza desde «???» y queda registrada (PR-06)', async () => {
     const user = userEvent.setup();
     const s = choose(finishContact(undefined, AT, 0), 'investigate');
-    const test = { n: 1, type: 'noBlank' as const, times: 3, period: 0, offeredAt: '2026-11-11T11:00:00.000Z', offeredOn: '2026-11-11' as never };
+    const test = {
+      n: 1,
+      type: 'noBlank' as const,
+      times: 3,
+      period: 0,
+      offeredAt: '2026-11-11T11:00:00.000Z',
+      offeredOn: '2026-11-11' as never,
+    };
     await saveSetting(ctx.db, 'origen', { ...s, tests: [test] });
     renderRoutes(ctx, routes, '/mensajes/senal');
-    expect(await screen.findByText(/Prueba 01\. Objetivo: registrar algo cada día, 3 días seguidos\./)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/Prueba 01\. Objetivo: registrar algo cada día, 3 días seguidos\./),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Rechazar' }));
     await waitFor(async () => expect((await loadSettings(ctx.db)).origen?.tests?.[0]?.result).toBe('rejected'));
     expect(await screen.findByText('Rechazo registrado.')).toBeInTheDocument();
   });
 
   it('Expediente: desde el capítulo 2, con capítulos, pistas, pruebas y el porcentaje (EX-01 a EX-03)', async () => {
-    const s = openChapter(choose(finishContact(undefined, AT, 0), 'investigate'), new Date('2026-11-18T10:00:00.000Z'), 80);
-    const passed = { n: 1, type: 'noBlank' as const, times: 3, period: 1, offeredAt: AT.toISOString(), offeredOn: '2026-11-11' as never, result: 'passed' as const, resolvedAt: AT.toISOString() };
-    await saveSetting(ctx.db, 'origen', { ...deliverStep(s, 'c2.dex', new Date('2026-11-18T10:00:05.000Z')), tests: [passed] });
+    const s = openChapter(
+      choose(finishContact(undefined, AT, 0), 'investigate'),
+      new Date('2026-11-18T10:00:00.000Z'),
+      80,
+    );
+    const passed = {
+      n: 1,
+      type: 'noBlank' as const,
+      times: 3,
+      period: 1,
+      offeredAt: AT.toISOString(),
+      offeredOn: '2026-11-11' as never,
+      result: 'passed' as const,
+      resolvedAt: AT.toISOString(),
+    };
+    await saveSetting(ctx.db, 'origen', {
+      ...deliverStep(s, 'c2.dex', new Date('2026-11-18T10:00:05.000Z')),
+      tests: [passed],
+    });
     renderRoutes(ctx, routes, '/mensajes');
     expect(await screen.findByText('Expediente ORIGEN')).toBeInTheDocument();
     renderRoutes(ctx, routes, '/mensajes/expediente');
@@ -93,9 +122,21 @@ describe('Mensajes (spec 17, ME)', () => {
   it('Expediente: desde que Teo los abre, los fragmentos se leen; los que esperan a su capítulo siguen cifrados (PR-10)', async () => {
     let s = choose(finishContact(undefined, AT, 0), 'investigate');
     for (let c = 2; c <= 8; c++) s = openChapter(s, new Date(AT.getTime() + (c - 1) * 7 * 86_400_000), c * 100);
-    const passed = (n: number) => ({ n, type: 'noBlank' as const, times: 3, period: 1, offeredAt: AT.toISOString(), offeredOn: '2026-11-11' as never, result: 'passed' as const, resolvedAt: AT.toISOString() });
+    const passed = (n: number) => ({
+      n,
+      type: 'noBlank' as const,
+      times: 3,
+      period: 1,
+      offeredAt: AT.toISOString(),
+      offeredOn: '2026-11-11' as never,
+      result: 'passed' as const,
+      resolvedAt: AT.toISOString(),
+    });
     // 16 superadas: en el capítulo 8 salen las 15 primeras; la 16 es del 9
-    s = { ...deliverStep(s, 'c8.teo2', new Date('2027-01-01T10:00:00.000Z')), tests: Array.from({ length: 16 }, (_, i) => passed(i + 1)) };
+    s = {
+      ...deliverStep(s, 'c8.teo2', new Date('2027-01-01T10:00:00.000Z')),
+      tests: Array.from({ length: 16 }, (_, i) => passed(i + 1)),
+    };
     await saveSetting(ctx.db, 'origen', s);
     renderRoutes(ctx, routes, '/mensajes/expediente');
     expect(await screen.findByText('Participante 4012. Abandonó el día 19.')).toBeInTheDocument();
@@ -104,9 +145,27 @@ describe('Mensajes (spec 17, ME)', () => {
     expect(screen.getByText('Capítulo 8 · El archivo')).toBeInTheDocument();
   });
 
+  it('a Sombra se le escribe sin IA y casi nunca contesta (ME-09)', async () => {
+    let s = choose(finishContact(undefined, AT, 0), 'investigate');
+    for (let c = 2; c <= 11; c++) s = openChapter(s, new Date(AT.getTime() + (c - 1) * 7 * 86_400_000), c * 100);
+    await saveSetting(ctx.db, 'origen', deliverStep(s, 'c11.sombra', new Date('2027-01-27T10:00:00.000Z')));
+    vi.spyOn(Math, 'random').mockReturnValue(0.9);
+    renderRoutes(ctx, routes, '/mensajes/sombra');
+    expect(await screen.findByText('Te observo desde hace tiempo. Has llegado lejos.')).toBeInTheDocument();
+    expect(screen.getByText('Casi nunca contesta.')).toBeInTheDocument();
+    await userEvent.type(screen.getByRole('textbox', { name: 'Escríbele a Sombra' }), '¿Quién eres?');
+    await userEvent.click(screen.getByRole('button', { name: 'Enviar' }));
+    expect(await screen.findByText('¿Quién eres?')).toBeInTheDocument();
+    vi.restoreAllMocks();
+  });
+
   describe('hablar con un vecino (VI)', () => {
     const withDex = async () => {
-      const s = openChapter(choose(finishContact(undefined, AT, 0), 'investigate'), new Date('2026-11-18T10:00:00.000Z'), 80);
+      const s = openChapter(
+        choose(finishContact(undefined, AT, 0), 'investigate'),
+        new Date('2026-11-18T10:00:00.000Z'),
+        80,
+      );
       await saveSetting(ctx.db, 'origen', deliverStep(s, 'c2.dex', new Date('2026-11-18T10:00:05.000Z')));
     };
     afterEach(() => {
@@ -117,7 +176,9 @@ describe('Mensajes (spec 17, ME)', () => {
     it('sin IA activada, en lugar del campo, el aviso (VI-05)', async () => {
       await withDex();
       renderRoutes(ctx, routes, '/mensajes/dex');
-      expect(await screen.findByText('Para hablar con Dex, activa la IA con tu código en Ajustes → Compañero.')).toBeInTheDocument();
+      expect(
+        await screen.findByText('Para hablar con Dex, activa la IA con tu código en Ajustes → Compañero.'),
+      ).toBeInTheDocument();
       expect(screen.queryByRole('textbox')).toBeNull();
     });
 
@@ -127,7 +188,9 @@ describe('Mensajes (spec 17, ME)', () => {
       await saveSetting(ctx.db, 'arvidAi', true);
       await saveSetting(ctx.db, 'aiCode', 'ARVID-ANA-XXXX');
       setAccessCode('ARVID-ANA-XXXX');
-      const fetch = vi.fn(async () => new Response(JSON.stringify({ reply: 'Ni idea, se me pegó.', left: 2 }), { status: 200 }));
+      const fetch = vi.fn(
+        async () => new Response(JSON.stringify({ reply: 'Ni idea, se me pegó.', left: 2 }), { status: 200 }),
+      );
       vi.stubGlobal('fetch', fetch);
       renderRoutes(ctx, routes, '/mensajes/dex');
       expect(await screen.findByText('Te quedan 3 mensajes con Dex hoy')).toBeInTheDocument();
@@ -138,7 +201,12 @@ describe('Mensajes (spec 17, ME)', () => {
       const sent = JSON.parse((fetch.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
       expect(sent).toMatchObject({ moment: 'neighborChat', neighbor: 'dex', chapter: 2 });
       expect(sent.messages.at(-1)).toEqual({ role: 'user', content: '¿De dónde la sacaste?' });
-      expect(Object.keys(sent.context).sort()).toEqual(['alias', 'daysInTheNeighborhood', 'didEverythingToday', 'title']);
+      expect(Object.keys(sent.context).sort()).toEqual([
+        'alias',
+        'daysInTheNeighborhood',
+        'didEverythingToday',
+        'title',
+      ]);
       expect(sent.memory).toBeUndefined();
       expect(screen.getAllByRole('button', { name: 'Eliminar mi mensaje' })).toHaveLength(1);
       await user.click(screen.getByRole('button', { name: 'Eliminar mi mensaje' }));
@@ -147,4 +215,3 @@ describe('Mensajes (spec 17, ME)', () => {
     });
   });
 });
-
