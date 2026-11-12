@@ -16,8 +16,8 @@ export const RELEASES: Release[] = [
     version: '2.7.0',
     kind: 'feature',
     items: {
-      es: ['Con la IA activada, ya puedes contestarles a tus vecinos. Cada uno te responde hasta 3 veces al día.', 'Parte de la música quedó bajo llave: al empezar hay tres canciones y las demás vuelven a medida que avanzas.'],
-      en: ['With AI on, you can now reply to your neighbors. Each one answers up to 3 times a day.', 'Part of the music is now locked: you start with three songs and the rest come back as you progress.'],
+      es: ['Con la IA activada, ya puedes contestarles a tus vecinos. Cada uno te responde hasta 3 veces al día.', 'Parte de la música quedó bajo llave: al empezar hay tres canciones y las demás vuelven a medida que avanzas.', 'Last Outpost ahora se llama Our Signal, como el álbum, y tiene portada nueva.'],
+      en: ['With AI on, you can now reply to your neighbors. Each one answers up to 3 times a day.', 'Part of the music is now locked: you start with three songs and the rest come back as you progress.', 'Last Outpost is now called Our Signal, like the album, and has a new cover.'],
     },
   },
   {

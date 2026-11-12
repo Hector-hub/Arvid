@@ -115,11 +115,11 @@ describe('sonido y créditos', () => {
     expect(screen.getByRole('button', { name: 'Pista siguiente' })).toBeInTheDocument();
     // Sin sonar no se puede saltar dentro de la pista
     expect(screen.getByRole('slider', { name: 'Progreso de la pista' })).toBeDisabled();
-    // Las seis desbloqueadas con su portada y su duración; las otras tres, sin nombre (MU-03); la guardada, resaltada
+    // Las seis desbloqueadas con su portada y su duración; las otras cuatro, sin nombre (MU-03); la guardada, resaltada
     expect(screen.getAllByRole('button', { name: /Our Signal/ })).toHaveLength(6);
     expect(screen.getByRole('button', { name: /^Afterglow Avenue\s*Our Signal\s*1:30$/ })).toBeInTheDocument();
-    expect(document.querySelectorAll('.sound-row.locked')).toHaveLength(3);
-    expect(screen.queryByText('Last Outpost')).toBeNull();
+    expect(document.querySelectorAll('.sound-row.locked')).toHaveLength(4);
+    expect(screen.queryByText('Glass and Gravity')).toBeNull();
     expect(document.querySelector('.sound-row.on')).toHaveTextContent('Rain on the Expressway');
   });
 

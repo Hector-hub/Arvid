@@ -39,6 +39,8 @@ export interface OrigenState {
   blockPeriods?: OrigenPeriod[];
   /** Canciones que ya se anunciaron como nuevas (MU-06). */
   tracksAnnounced?: number;
+  /** Terminó el epílogo de la temporada 1 (EP-07): se desbloquea «Glass and Gravity». */
+  seasonEndAt?: string;
 }
 
 export type VoiceId = 'es-m' | 'es-f' | 'en';

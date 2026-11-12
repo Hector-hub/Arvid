@@ -13,9 +13,13 @@ export function storyProgress(state: OrigenState | undefined): number {
   return Math.max(currentChapter(state), blocked);
 }
 
-/** Cuántas canciones de la lista se pueden escuchar (MU-02, MU-04). */
+/**
+ * Cuántas canciones de la lista se pueden escuchar (MU-02, MU-04). La última, «Glass and Gravity», solo al terminar la
+ * temporada (MU-05): hasta entonces se ve bloqueada al final de la lista.
+ */
 export function unlockedTracks(state: OrigenState | undefined, total: number): number {
-  return Math.min(total, FREE_TRACKS + UNLOCK_AT.filter((at) => at <= storyProgress(state)).length);
+  if (state?.seasonEndAt) return total;
+  return Math.min(total - 1, FREE_TRACKS + UNLOCK_AT.filter((at) => at <= storyProgress(state)).length);
 }
 
 /** Tramos de quien bloqueó la señal (RI-10): el mismo reloj, sin capítulos. Abre el siguiente si toca. */

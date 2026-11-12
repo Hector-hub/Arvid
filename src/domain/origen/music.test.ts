@@ -16,7 +16,10 @@ describe('música bloqueada (MU, D-236)', () => {
     s = openChapter(s, at(14), 100);
     expect(storyProgress(s)).toBe(3);
     expect(unlockedTracks(s, 9)).toBe(4);
-    expect(unlockedTracks({ ...s, periods: Array.from({ length: 20 }, () => s.periods![0]!) }, 9)).toBe(9);
+    // Con todo desbloqueado, la última («Glass and Gravity») sigue bloqueada hasta el final de la temporada (MU-05)
+    const all = { ...s, periods: Array.from({ length: 20 }, () => s.periods![0]!) };
+    expect(unlockedTracks(all, 10)).toBe(9);
+    expect(unlockedTracks({ ...all, seasonEndAt: '2027-03-01T10:00:00.000Z' }, 10)).toBe(10);
   });
 
   it('quien bloqueó la señal tiene tramos sin capítulos y desbloquea al mismo ritmo (RI-10)', () => {

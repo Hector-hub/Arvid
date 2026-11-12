@@ -23,8 +23,11 @@ export const TRACKS: Track[] = [
   { id: 'night-lift', name: 'Night Lift', src: '/music/night-lift.m4a', glow: '#b84cf2', seconds: 115 },
   // Antes «Asphalt Horizon» (nombre provisional); portada «Drone-Free Neon Cyberpunk Cityscape» (2.2.0)
   { id: 'static-dreams', name: 'Static Dreams', src: '/music/static-dreams.m4a', glow: '#7c5cff', seconds: 180 },
-  // «The Last Outpost» editada (sin el clímax, con la subida repetida); portada «Cyberpunk City Under a Red Drone Swarm» (2.2.0)
-  { id: 'last-outpost', name: 'Last Outpost', src: '/music/last-outpost.m4a', glow: '#ff6a3d', seconds: 160 },
+  // «The Last Outpost» editada (sin el clímax, con la subida repetida); antes «Last Outpost» (2.2.0). Desde la 2.7.0 se
+  // llama como el álbum, con la portada «Neon Outpost Over the Cyberpunk City»
+  { id: 'our-signal', name: 'Our Signal', src: '/music/our-signal.m4a', glow: '#ff6a3d', seconds: 160 },
+  // La del epílogo «En el futuro» (spec 17, MU-05): siempre la última y bloqueada hasta terminar la temporada
+  { id: 'glass-and-gravity', name: 'Glass and Gravity', src: '/music/glass-and-gravity.m4a', glow: '#9fd8ff', seconds: 173 },
 ];
 
 /**
