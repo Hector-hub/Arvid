@@ -4,9 +4,10 @@ import type { NeighborId } from '../scene/city';
 import type { OrigenState } from './origen';
 import { addDays, toLocalDate } from '../time/localDate';
 import { currentChapter } from './periods';
+import { FRAGMENTS_STEP, readableFragments } from './fragments';
 
 /** Último capítulo que trae esta versión (NFR17-10): más allá, la historia espera sin avisos. */
-export const PUBLISHED_CHAPTER = 5;
+export const PUBLISHED_CHAPTER = 10;
 
 export type ChatId = 'signal' | NeighborId;
 
@@ -91,6 +92,66 @@ export const CHAPTERS: ChapterDef[] = [
       say('c5.s4', 5, 'say4', SOON),
     ],
   },
+  // ---------- Acto II · ¿Quién habla? ----------
+  {
+    n: 6,
+    needs: ['kenji'],
+    steps: [
+      say('c6.s0', 6, 'say0'),
+      chat('c6.kenji', 'kenji', 6, ['you0', 'kenji0'], SOON),
+      say('c6.s1', 6, 'say1', { hours: 2 }),
+      chat('c6.kenji2', 'kenji', 6, ['kenji1', 'kenji2', 'kenji3', 'kenji4', 'kenji5', 'you1', 'kenji6', 'kenji7'], 'nextDay'),
+      say('c6.s2', 6, 'say2', SOON),
+    ],
+  },
+  {
+    n: 7,
+    needs: ['roxy'],
+    steps: [
+      { id: 'c7.session', kind: 'session', session: 4 },
+      say('c7.s0', 7, 'say0', SOON),
+      say('c7.s1', 7, 'say1', SOON),
+      chat('c7.roxy', 'roxy', 7, ['you0', 'roxy0'], { hours: 1 }),
+      chat('c7.roxy2', 'roxy', 7, ['roxy1', 'roxy2', 'roxy3', 'roxy4', 'roxy5'], 'nextDay'),
+      say('c7.s2', 7, 'say2', SOON),
+    ],
+  },
+  {
+    n: 8,
+    needs: ['teo', 'mia'],
+    steps: [
+      { id: 'c8.session', kind: 'session', session: 5 },
+      say('c8.s0', 8, 'say0', SOON),
+      say('c8.s1', 8, 'say1', SOON),
+      chat('c8.teo', 'teo', 8, ['teo0', 'teo1', 'you0', 'teo2', 'teo3', 'teo4', 'teo5', 'you1', 'teo6'], { hours: 3 }),
+      say('c8.s2', 8, 'say2', SOON),
+      chat('c8.mia', 'mia', 8, ['mia0', 'mia1', 'mia2'], { hours: 4 }),
+      chat(FRAGMENTS_STEP, 'teo', 8, ['teo7'], 'nextDay'),
+    ],
+  },
+  {
+    n: 9,
+    needs: ['teo', 'dex'],
+    steps: [
+      say('c9.s0', 9, 'say0'),
+      chat('c9.teo', 'teo', 9, ['teo0', 'teo1', 'teo2', 'you0', 'teo3', 'teo4'], { hours: 1 }),
+      say('c9.s1', 9, 'say1', SOON),
+      chat('c9.dex', 'dex', 9, ['dex0', 'dex1', 'dex2'], 'nextDay'),
+      say('c9.s2', 9, 'say2', SOON),
+      say('c9.s3', 9, 'say3', SOON),
+    ],
+  },
+  {
+    n: 10,
+    needs: ['teo'],
+    steps: [
+      { id: 'c10.session', kind: 'session', session: 6 },
+      chat('c10.teo', 'teo', 10, ['teo0', 'teo1', 'teo2', 'teo3', 'teo4'], SOON),
+      say('c10.s0', 10, 'say0', SOON),
+      // Sombra aparece junto al farol con esta frase (SO-01)
+      say('c10.sombra', 10, 'say1', SOON),
+    ],
+  },
 ];
 
 export const chapterDef = (n: number) => CHAPTERS.find((c) => c.n === n);
@@ -144,12 +205,20 @@ export interface ChatLine extends ChatLineDef {
   at: string;
 }
 
-/** Líneas de la historia en el chat de un vecino, a partir de los pasos entregados. */
+/** Líneas de la historia en el chat de un vecino, a partir de los pasos entregados; en el de Teo, los fragmentos (PR-10). */
 export function neighborLines(state: OrigenState | undefined, chatId: NeighborId): ChatLine[] {
   const delivered = state?.steps ?? {};
-  return CHAPTERS.flatMap((c) => c.steps)
+  const story = CHAPTERS.flatMap((c) => c.steps)
     .filter((s): s is Extract<StepDef, { kind: 'chat' }> => s.kind === 'chat' && s.chat === chatId && !!delivered[s.id])
     .flatMap((s) => s.lines.map((line, i) => ({ ...line, at: new Date(Date.parse(delivered[s.id]!) + i * 1000).toISOString() })));
+  if (chatId !== 'teo') return story;
+  // El fragmento llega un segundo después de lo que lo abrió, para que vaya detrás en el chat
+  const fragments = readableFragments(state).map((f) => ({
+    who: 'them' as const,
+    key: `origen.fragment.${f.n}`,
+    at: new Date(Date.parse(f.at) + (story.length + 1) * 1000 + f.n).toISOString(),
+  }));
+  return [...story, ...fragments].sort((a, b) => a.at.localeCompare(b.at));
 }
 
 /** Vecinos que ya te escribieron, del último mensaje al primero (ME-02). */
@@ -160,6 +229,8 @@ export function neighborContacts(state: OrigenState | undefined): { chat: Neighb
     const at = state?.steps?.[line.id];
     if (at && at > (last.get(line.chat) ?? '')) last.set(line.chat, at);
   }
+  const teo = neighborLines(state, 'teo').at(-1)?.at;
+  if (teo && last.has('teo')) last.set('teo', teo);
   return [...last].map(([chat, lastAt]) => ({ chat, lastAt })).sort((a, b) => b.lastAt.localeCompare(a.lastAt));
 }
 

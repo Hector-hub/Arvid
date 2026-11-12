@@ -7,6 +7,7 @@ import { LOCALES, t, type Locale } from '../../i18n';
 import { COMPANIONS, DARIS_COLORS, DARIS_SWATCH, type Companion, type DarisColor } from '../../domain/arvid/companion';
 import { applyCompanion } from '../companion';
 import { ArvidPreview, AvatarPreview, DarisPreview } from '../scene/Scene';
+import { Portrait } from '../avatar/Portrait';
 import { ARVID_RAMPS } from '../../domain/arvid/arvid';
 
 /**
@@ -39,7 +40,15 @@ export const VARIANT_SWATCH: Record<VariantId, string> = {
  * Carrusel de personajes (CR-01 a CR-04). La accesibilidad la dan dos grupos de `radio` (personaje y color), que
  * además se manejan con las flechas del teclado; la tarjeta es la vista y se desliza con el dedo o con ‹ ›.
  */
-export function CharacterCarousel({ value: saved, order, onChange: save }: { value: Avatar; order: CastId[]; onChange: (a: Avatar) => void }) {
+export function CharacterCarousel({
+  value: saved,
+  order,
+  onChange: save,
+}: {
+  value: Avatar;
+  order: CastId[];
+  onChange: (a: Avatar) => void;
+}) {
   const [value, setValue] = useOptimistic(saved, sameAvatar);
   const onChange = (a: Avatar) => {
     setValue(a);
@@ -81,15 +90,29 @@ export function CharacterCarousel({ value: saved, order, onChange: save }: { val
           if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
         }}
       >
-        <button type="button" className="btn btn-icon btn-ghost carousel-arrow" aria-label={t('common.previous')} onClick={() => go(-1)}>
+        <button
+          type="button"
+          className="btn btn-icon btn-ghost carousel-arrow"
+          aria-label={t('common.previous')}
+          onClick={() => go(-1)}
+        >
           ‹
         </button>
         <div className="carousel-card" key={value.cast} aria-hidden="true">
-          <AvatarPreview avatar={value} scale={3} />
+          {/* Retrato que sonríe al elegirlo y, al lado, cómo camina por la calle (spec 18, RD-02) */}
+          <div className="carousel-figures">
+            <Portrait avatar={value} scale={2} greet />
+            <AvatarPreview avatar={value} scale={2} />
+          </div>
           <p className="pixel carousel-name">{t(`avatar.styles.${value.cast}`)}</p>
           <p className="small muted">{t(`avatar.descriptions.${value.cast}`)}</p>
         </div>
-        <button type="button" className="btn btn-icon btn-ghost carousel-arrow" aria-label={t('common.next')} onClick={() => go(1)}>
+        <button
+          type="button"
+          className="btn btn-icon btn-ghost carousel-arrow"
+          aria-label={t('common.next')}
+          onClick={() => go(1)}
+        >
           ›
         </button>
       </div>
@@ -103,7 +126,12 @@ export function CharacterCarousel({ value: saved, order, onChange: save }: { val
         <legend className="pixel small">{t('avatar.colors')}</legend>
         <div className="swatches">
           {VARIANT_IDS.map((variant) => (
-            <label key={variant} className="swatch" style={{ background: VARIANT_SWATCH[variant] }} title={t(`avatar.variants.${variant}`)}>
+            <label
+              key={variant}
+              className="swatch"
+              style={{ background: VARIANT_SWATCH[variant] }}
+              title={t(`avatar.variants.${variant}`)}
+            >
               <input
                 type="radio"
                 name="variant"
@@ -120,7 +148,13 @@ export function CharacterCarousel({ value: saved, order, onChange: save }: { val
 }
 
 /** Color de ARVID con su vista previa (AV-01). */
-export function ArvidColorPicker({ value: saved, onChange: save }: { value: ArvidColor; onChange: (c: ArvidColor) => void }) {
+export function ArvidColorPicker({
+  value: saved,
+  onChange: save,
+}: {
+  value: ArvidColor;
+  onChange: (c: ArvidColor) => void;
+}) {
   const [value, setValue] = useOptimistic(saved);
   const onChange = (c: ArvidColor) => {
     setValue(c);
@@ -133,7 +167,12 @@ export function ArvidColorPicker({ value: saved, onChange: save }: { value: Arvi
         <legend className="sr-only">{t('settings.arvidColor')}</legend>
         <div className="swatches">
           {ARVID_COLORS.map((color) => (
-            <label key={color} className="swatch" style={{ background: ARVID_RAMPS[color][3] }} title={t(`arvid.colors.${color}`)}>
+            <label
+              key={color}
+              className="swatch"
+              style={{ background: ARVID_RAMPS[color][3] }}
+              title={t(`arvid.colors.${color}`)}
+            >
               <input
                 type="radio"
                 name="arvid-color"
@@ -150,7 +189,13 @@ export function ArvidColorPicker({ value: saved, onChange: save }: { value: Arvi
 }
 
 /** Color de DARIS con su vista previa (spec 08, DC-01). */
-export function DarisColorPicker({ value: saved, onChange: save }: { value: DarisColor; onChange: (c: DarisColor) => void }) {
+export function DarisColorPicker({
+  value: saved,
+  onChange: save,
+}: {
+  value: DarisColor;
+  onChange: (c: DarisColor) => void;
+}) {
   const [value, setValue] = useOptimistic(saved);
   const onChange = (c: DarisColor) => {
     setValue(c);
@@ -163,7 +208,12 @@ export function DarisColorPicker({ value: saved, onChange: save }: { value: Dari
         <legend className="sr-only">{t('settings.arvidColor')}</legend>
         <div className="swatches">
           {DARIS_COLORS.map((color) => (
-            <label key={color} className="swatch" style={{ background: DARIS_SWATCH[color] }} title={t(`daris.colors.${color}`)}>
+            <label
+              key={color}
+              className="swatch"
+              style={{ background: DARIS_SWATCH[color] }}
+              title={t(`daris.colors.${color}`)}
+            >
               <input
                 type="radio"
                 name="daris-color"
@@ -201,7 +251,13 @@ export function CompanionColorPicker({
 }
 
 /** Elección de compañero: ARVID o DARIS, cada uno animado, con su nombre y su frase (spec 08, CO-02, CO-03). */
-export function CompanionPicker({ value: saved, onChange: save }: { value: Companion; onChange: (c: Companion) => void }) {
+export function CompanionPicker({
+  value: saved,
+  onChange: save,
+}: {
+  value: Companion;
+  onChange: (c: Companion) => void;
+}) {
   const [value, setValue] = useOptimistic(saved);
   return (
     <fieldset className="field">

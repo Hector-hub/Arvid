@@ -25,12 +25,18 @@ export function TestCard() {
   const marked = test.marks?.includes(today) ?? false;
   return (
     <div className="signal-card signal-test stack">
-      <Link to="/mensajes/senal" className="row" style={{ justifyContent: 'space-between', textDecoration: 'none', color: 'inherit' }}>
+      <Link
+        to="/mensajes/senal"
+        className="row"
+        style={{ justifyContent: 'space-between', textDecoration: 'none', color: 'inherit' }}
+      >
         <span className="signal-tag">
           <i />
           {t('origen.test.title', { n: testNumber(test.n) })}
         </span>
-        <span className="small muted">{left <= 1 ? t('origen.test.lastDay') : t('origen.test.daysLeft', { count: left })}</span>
+        <span className="small muted">
+          {left <= 1 ? t('origen.test.lastDay') : t('origen.test.daysLeft', { count: left })}
+        </span>
       </Link>
       <span>{testObjective(test, names)}</span>
       <span className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
@@ -40,7 +46,12 @@ export function TestCard() {
             type="button"
             className={marked ? 'btn' : 'btn btn-primary'}
             aria-pressed={marked}
-            onClick={() => void saveSetting(db, 'origen', { ...origen, tests: (origen?.tests ?? []).map((x) => (x.n === test.n ? toggleMark(x, today) : x)) })}
+            onClick={() =>
+              void saveSetting(db, 'origen', {
+                ...origen,
+                tests: (origen?.tests ?? []).map((x) => (x.n === test.n ? toggleMark(x, today) : x)),
+              })
+            }
           >
             {marked ? t('origen.test.unmarkToday') : t('origen.test.markToday')}
           </button>

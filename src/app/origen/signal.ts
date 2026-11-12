@@ -2,14 +2,26 @@
 // prototipo aprobado (D-211), llevado a la app: un bucle de animación que dibuja en un lienzo y mueve el DOM de la
 // portada. Los tiempos son los del prototipo; los textos y la voz llegan desde fuera.
 import { getAudioContext } from '../sound/audio';
-import { cueAt, TYPING_DELAYS, type VoiceTrack } from '../../domain/origen/origen';
+import { cueAt, fxAt, revealOn, TYPING_DELAYS, type VoiceTrack } from '../../domain/origen/origen';
 
 export interface SignalElements {
   root: HTMLElement;
   canvas: HTMLCanvasElement;
   /** Portada del buscador; sin ella (al volver a ver una sesión) la secuencia empieza en negro. */
-  search?: { layer: HTMLElement; wrap: HTMLElement; page: HTMLElement; slices: HTMLElement; bars: HTMLElement; dim: HTMLElement; scan: HTMLElement; text: HTMLElement; caret: HTMLElement };
+  search?: {
+    layer: HTMLElement;
+    wrap: HTMLElement;
+    page: HTMLElement;
+    slices: HTMLElement;
+    bars: HTMLElement;
+    dim: HTMLElement;
+    scan: HTMLElement;
+    text: HTMLElement;
+    caret: HTMLElement;
+  };
   box: HTMLElement;
+  /** Cabecera «???» de la caja: en el giro 1 enseña tu alias (TR-04). */
+  boxName?: HTMLElement;
   boxText: HTMLElement;
   boxDot: HTMLElement;
 }
@@ -25,6 +37,8 @@ export interface SignalOptions {
   volume: number | null;
   reduced: boolean;
   figure: HTMLImageElement;
+  /** Para el giro 1 (sesión 6, TR-04): tu protagonista y tu alias, en cuanto estén listos. */
+  reveal?: () => { image?: HTMLCanvasElement; name: string };
   /**
    * `first`: primer contacto, con buscador. `chapter`: un capítulo con sesión (interferencia, 1 s de negro y la sesión,
    * RI-07). `replay`: al volver a verla desde «???» (TR-08). `blip`: solo la interferencia, para un capítulo sin sesión o
@@ -46,7 +60,11 @@ const rng = (seed: number) => () => {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 };
 const SCRAMBLE = '#%&$@*+=?/<>';
-const BAYER = [0, 32, 8, 40, 2, 34, 10, 42, 48, 16, 56, 24, 50, 18, 58, 26, 12, 44, 4, 36, 14, 46, 6, 38, 60, 28, 52, 20, 62, 30, 54, 22, 3, 35, 11, 43, 1, 33, 9, 41, 51, 19, 59, 27, 49, 17, 57, 25, 15, 47, 7, 39, 13, 45, 5, 37, 63, 31, 55, 23, 61, 29, 53, 21];
+const BAYER = [
+  0, 32, 8, 40, 2, 34, 10, 42, 48, 16, 56, 24, 50, 18, 58, 26, 12, 44, 4, 36, 14, 46, 6, 38, 60, 28, 52, 20, 62, 30, 54,
+  22, 3, 35, 11, 43, 1, 33, 9, 41, 51, 19, 59, 27, 49, 17, 57, 25, 15, 47, 7, 39, 13, 45, 5, 37, 63, 31, 55, 23, 61, 29,
+  53, 21,
+];
 
 /** Tiempos de la portada (PC-02): coletazo, 5 s quieta, escritura, 1,5 s escrita. */
 const CHAR_AT = TYPING_DELAYS.reduce<number[]>((acc, d) => [...acc, (acc.at(-1) ?? 0) + d], []);
@@ -64,10 +82,13 @@ const R1 = R0 + 2;
 const N1 = R1 + 0.8;
 const X0 = N1 + 0.25;
 const T0 = X0 + 0.25;
-const PULSES: [number, number][] = [[R0 + 0.7, 0.17], [R0 + 1.5, 0.12]];
+const PULSES: [number, number][] = [
+  [R0 + 0.7, 0.17],
+  [R0 + 1.5, 0.12],
+];
 const FLICK = [0, 1, 0, 0, 1, 0, 1, 1, 0, 1];
 
-type Phase = 'in' | 'search' | 'black' | 'entity' | 'lost' | 'done';
+type Phase = 'in' | 'search' | 'black' | 'entity' | 'lost' | 'cut' | 'done';
 
 /** Arranca la secuencia; devuelve cómo pararla (al desmontar o al cerrar una repetición). */
 export function playSignal(el: SignalElements, o: SignalOptions): () => void {
@@ -239,7 +260,12 @@ export function playSignal(el: SignalElements, o: SignalOptions): () => void {
     for (let i = 0, n = Math.round(k * 26); i < n; i++) {
       ctx.fillStyle = ['#ff1f3d', '#7a0016', '#f4f4f4', '#000'][Math.floor(R() * 4)]!;
       ctx.globalAlpha = 0.5 + R() * 0.5;
-      ctx.fillRect(Math.floor(R() * cw), Math.floor(R() * ch), Math.floor((4 + R() * 60) * D), Math.floor((2 + R() * 6) * D));
+      ctx.fillRect(
+        Math.floor(R() * cw),
+        Math.floor(R() * ch),
+        Math.floor((4 + R() * 60) * D),
+        Math.floor((2 + R() * 6) * D),
+      );
     }
     ctx.globalAlpha = k * 0.45;
     ctx.fillStyle = '#000';
@@ -277,7 +303,18 @@ export function playSignal(el: SignalElements, o: SignalOptions): () => void {
     const oy = Math.max(0, Math.round((boxTop - dh / D - 24) * D));
     const tmp = mk(dw, dh);
     const tctx = tmp.getContext('2d');
-    const empty = { dw, dh, ox, oy, base: new Uint8ClampedArray(0), eyeC: tmp, accentC: tmp, bodyC: tmp, out: undefined as ImageData | undefined, key: -1 };
+    const empty = {
+      dw,
+      dh,
+      ox,
+      oy,
+      base: new Uint8ClampedArray(0),
+      eyeC: tmp,
+      accentC: tmp,
+      bodyC: tmp,
+      out: undefined as ImageData | undefined,
+      key: -1,
+    };
     if (!tctx || !sp.width) return empty;
     tctx.imageSmoothingEnabled = false;
     tctx.drawImage(sp, 0, 0, dw, dh);
@@ -295,7 +332,7 @@ export function playSignal(el: SignalElements, o: SignalOptions): () => void {
         eyes.set([r, g, b, 255], i);
         base.set([0, 0, 0, 255], i);
       } else if (isAccent) {
-        if (shadow((Math.floor(p / dw)) / dh) > th(p % dw, Math.floor(p / dw))) accent.set([r, g, b, 255], i);
+        if (shadow(Math.floor(p / dw) / dh) > th(p % dw, Math.floor(p / dw))) accent.set([r, g, b, 255], i);
         base.set([30, 26, 36, 255], i);
       } else base.set([r, g, b, 255], i);
     }
@@ -304,7 +341,18 @@ export function playSignal(el: SignalElements, o: SignalOptions): () => void {
       c.getContext('2d')?.putImageData(new ImageData(data as Uint8ClampedArray<ArrayBuffer>, dw, dh), 0, 0);
       return c;
     };
-    return { dw, dh, ox, oy, base, eyeC: toCanvas(eyes), accentC: toCanvas(accent), bodyC: mk(dw, dh), out: new ImageData(dw, dh), key: -1 };
+    return {
+      dw,
+      dh,
+      ox,
+      oy,
+      base,
+      eyeC: toCanvas(eyes),
+      accentC: toCanvas(accent),
+      bodyC: mk(dw, dh),
+      out: new ImageData(dw, dh),
+      key: -1,
+    };
   }
   function th(x: number, y: number) {
     const B = Math.round(4 * D);
@@ -387,6 +435,73 @@ export function playSignal(el: SignalElements, o: SignalOptions): () => void {
     ctx.drawImage(ent.bodyC, ent.ox, ent.oy);
   }
 
+  // ---------- Fallos del Marco del guion (TR-04, M-11) ----------
+  const boxName = el.boxName?.textContent ?? '';
+  let revealed = false;
+  /** Dibuja el fallo que toca en el segundo `e` de la voz y devuelve cuánta interferencia añade. */
+  function scripted(e: number): number {
+    const fx = e >= 0 ? fxAt(o.track, e) : undefined;
+    if (revealed && fx?.kind !== 'reveal') {
+      revealed = false;
+      if (el.boxName) el.boxName.textContent = boxName;
+    }
+    if (!fx) return 0;
+    const key = `fx${fx.at}`;
+    if (fx.kind === 'glitch') {
+      if (o.reduced) return 0;
+      if (!flags.has(key)) {
+        flags.add(key);
+        noise(fx.dur + 0.1, { vol: 0.34, freq: 1600 });
+      }
+      return 0.35 + 0.6 * (1 - (e - fx.at) / fx.dur);
+    }
+    if (fx.kind === 'flicker') {
+      // La figura aparece y se deshace a ráfagas: cada sexto de segundo decide, siempre igual para la misma sesión
+      if (o.reduced) return 0;
+      const slot = Math.floor((e - fx.at) * 6);
+      const r = rng(slot * 97 + 13)();
+      if (r < 0.32) {
+        black();
+        ctx?.drawImage(scan, 0, 0);
+        if (!flags.has(`${key}-${slot}`)) {
+          flags.add(`${key}-${slot}`);
+          noise(0.12, { vol: 0.2, freq: 2400 });
+        }
+        return 0.2;
+      }
+      return r > 0.82 ? 0.5 : 0;
+    }
+    // Giro 1: tu protagonista y tu alias, en tres parpadeos (con movimiento reducido, de una vez)
+    const on = o.reduced || revealOn(fx, e);
+    const who = o.reveal?.();
+    if (!flags.has(key)) {
+      flags.add(key);
+      if (!o.reduced) noise(fx.dur, { vol: 0.26, freq: 2000 });
+    }
+    if (el.boxName) el.boxName.textContent = on && who ? who.name : boxName;
+    revealed = true;
+    if (!on) return 0.3;
+    if (who?.image && ctx) {
+      black();
+      const img = who.image;
+      // El retrato (un busto cuadrado) ocupa el sitio de la figura, centrado; el sprite de cuerpo entero, apoyado abajo
+      const bust = img.width === img.height;
+      const scale = Math.max(1, Math.floor((bust ? ent.dw * 0.75 : ent.dh * 0.8) / (img.height || 1)));
+      const w = img.width * scale;
+      const h = img.height * scale;
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(
+        img,
+        Math.round(ent.ox + ent.dw / 2 - w / 2),
+        Math.round(bust ? ent.oy + ent.dh / 2 - h / 2 : ent.oy + ent.dh - h),
+        w,
+        h,
+      );
+      ctx.drawImage(scan, 0, 0);
+    }
+    return o.reduced ? 0 : 0.18;
+  }
+
   // ---------- Interferencia sobre la portada (es nuestro HTML: se corta en franjas de verdad) ----------
   const s = el.search;
   if (s) {
@@ -414,7 +529,8 @@ export function playSignal(el: SignalElements, o: SignalOptions): () => void {
       slice.hidden = false;
       slice.style.clipPath = `inset(${y}px 0 ${Math.max(0, H - y - h)}px 0)`;
       slice.style.transform = `translateX(${Math.round((R() - 0.5) * 2 * k * 46)}px)`;
-      slice.style.filter = R() < 0.3 * k ? `hue-rotate(${Math.round(R() * 300)}deg) saturate(4)` : R() < 0.2 * k ? 'invert(1)' : 'none';
+      slice.style.filter =
+        R() < 0.3 * k ? `hue-rotate(${Math.round(R() * 300)}deg) saturate(4)` : R() < 0.2 * k ? 'invert(1)' : 'none';
     });
     const bars: string[] = [];
     for (let i = 0, n = on ? Math.round(2 + k * 16) : 0; i < n; i++) {
@@ -424,7 +540,14 @@ export function playSignal(el: SignalElements, o: SignalOptions): () => void {
       const x = full ? 0 : Math.round(R() * W * 0.6);
       const w = full ? W : Math.round(20 + R() * W * 0.6);
       const kind = R();
-      const st = kind < 0.4 ? 'background:#fff;mix-blend-mode:difference' : kind < 0.65 ? 'background:#ff1f3d;opacity:.85' : kind < 0.85 ? 'background:#000' : 'background:#7a0016;mix-blend-mode:screen';
+      const st =
+        kind < 0.4
+          ? 'background:#fff;mix-blend-mode:difference'
+          : kind < 0.65
+            ? 'background:#ff1f3d;opacity:.85'
+            : kind < 0.85
+              ? 'background:#000'
+              : 'background:#7a0016;mix-blend-mode:screen';
       bars.push(`<b style="top:${y}px;left:${x}px;width:${w}px;height:${h}px;${st}"></b>`);
     }
     s.bars.innerHTML = bars.join('');
@@ -472,6 +595,12 @@ export function playSignal(el: SignalElements, o: SignalOptions): () => void {
       show(s?.layer, false);
       show(el.canvas, true);
       black();
+    } else if (phase === 'cut') {
+      // Corte seco (sesiones 5 y 6): negro, sin línea de luz ni ruido
+      humStop();
+      voiceStop();
+      el.box.hidden = true;
+      black();
     } else if (phase === 'lost') {
       if (!o.reduced) noise(0.75, { vol: 0.34, rise: true });
       humStop();
@@ -511,7 +640,8 @@ export function playSignal(el: SignalElements, o: SignalOptions): () => void {
         searchGlitch(o.reduced || t >= G_IN ? 0 : (1 - t / G_IN) ** 1.5, f);
         const n = CHAR_AT.filter((c, i) => i < searchQuery.length && t >= G_TYPE + c).length;
         if (s.text.textContent!.length !== n) s.text.textContent = searchQuery.slice(0, n);
-        s.caret.style.visibility = t >= G_TYPE - 0.35 && (t < typeEnd + 0.1 || Math.floor(t * 2) % 2 === 0) ? 'visible' : 'hidden';
+        s.caret.style.visibility =
+          t >= G_TYPE - 0.35 && (t < typeEnd + 0.1 || Math.floor(t * 2) % 2 === 0) ? 'visible' : 'hidden';
         // Corte seco a negro, sin interferencia ni sonido
         if (t >= holdEnd) go('black');
         break;
@@ -535,6 +665,7 @@ export function playSignal(el: SignalElements, o: SignalOptions): () => void {
             }
           });
         drawEntity(t);
+        k = Math.max(k, scripted(t - T0));
         if (k > 0.02) {
           snap.getContext('2d')?.drawImage(el.canvas, 0, 0);
           glitch(snap, k, f);
@@ -569,7 +700,14 @@ export function playSignal(el: SignalElements, o: SignalOptions): () => void {
           voiceEnded = true;
           o.onVoiceEnd();
         }
-        if (e >= o.track.end + 1.2) go('lost');
+        if (o.track.cut === 'hard' ? e >= o.track.end + 0.35 : e >= o.track.end + 1.2)
+          go(o.track.cut === 'hard' ? 'cut' : 'lost');
+        break;
+      }
+      case 'cut': {
+        black();
+        if (t >= 0.6) el.canvas.style.opacity = String(1 - clamp((t - 0.6) / 0.35));
+        if (t >= 0.95) go('done');
         break;
       }
       case 'lost': {

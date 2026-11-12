@@ -10,6 +10,12 @@ import {
   SESSION_1,
   setStory,
   sombraHidden,
+  sombraStill,
+  SOMBRA_STEP,
+  SESSIONS,
+  cueKey,
+  fxAt,
+  revealOn,
   storyOn,
   voiceFor,
   voiceSrc,
@@ -92,5 +98,47 @@ describe('tiempo de los textos (CA-07)', () => {
     expect(elapsed(59)).toEqual({ unit: 'weeks', count: 8 });
     expect(elapsed(60)).toEqual({ unit: 'months', count: 2 });
     expect(elapsed(365)).toEqual({ unit: 'year', count: 1 });
+  });
+});
+
+describe('fallos del Marco del guion (TR-04) y Sombra junto al farol (SO-01)', () => {
+  it('cada sesión del acto II tiene subtítulos en orden, dentro de la voz, y sus fallos', () => {
+    for (const n of [4, 5, 6]) {
+      const session = SESSIONS[n]!;
+      for (const track of Object.values(session.tracks)) {
+        expect(track.cues).toHaveLength(session.cues);
+        expect(track.cues.map(([at]) => at)).toEqual([...track.cues.map(([at]) => at)].sort((a, b) => a - b));
+        expect(track.cues.at(-1)![0]).toBeLessThan(track.end);
+        expect(track.fx?.length).toBeGreaterThan(0);
+      }
+    }
+    // El corte seco es de las sesiones 5 y 6; la 4 se pierde como siempre
+    expect(SESSIONS[4]!.tracks['es-m'].cut).toBeUndefined();
+    expect(SESSIONS[5]!.tracks.en.cut).toBe('hard');
+    expect(SESSIONS[6]!.tracks['es-f'].cut).toBe('hard');
+  });
+
+  it('en el giro 1 la frase del operador cambia con el género de la voz (CA-04)', () => {
+    expect(cueKey(6, 2, 'es-f')).toBe('origen.session6.2.f');
+    expect(cueKey(6, 2, 'es-m')).toBe('origen.session6.2.m');
+    expect(cueKey(6, 3, 'es-f')).toBe('origen.session6.3');
+  });
+
+  it('el giro 1 enseña tu protagonista en tres parpadeos durante 0,8 s', () => {
+    const fx = SESSIONS[6]!.tracks['es-m'].fx!.find((f) => f.kind === 'reveal')!;
+    expect(fx.dur).toBe(0.8);
+    expect(fxAt(SESSIONS[6]!.tracks['es-m'], fx.at + 0.1)).toBe(fx);
+    expect(fxAt(SESSIONS[6]!.tracks['es-m'], fx.at + 0.9)).toBeUndefined();
+    const samples = Array.from({ length: 80 }, (_, i) => revealOn(fx, fx.at + (i / 80) * fx.dur));
+    const blinks = samples.filter((on, i) => on && !samples[i - 1]).length;
+    expect(blinks).toBe(3);
+  });
+
+  it('Sombra se queda junto al farol desde el final del capítulo 10, solo si investigas', () => {
+    const base = choose(finishContact(undefined, new Date('2026-11-01T10:00:00Z'), 0), 'investigate');
+    expect(sombraStill(base)).toBe(false);
+    const seen = { ...base, steps: { [SOMBRA_STEP]: '2026-12-31T10:00:00.000Z' } };
+    expect(sombraStill(seen)).toBe(true);
+    expect(sombraStill({ ...seen, enabled: false })).toBe(false);
   });
 });

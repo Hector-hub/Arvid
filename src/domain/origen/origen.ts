@@ -104,8 +104,14 @@ export function seenSessions(state: OrigenState | undefined): { n: number; at: s
     .sort((a, b) => a.n - b.n);
 }
 
-/** A Sombra no se le ve en la calle hasta el capítulo 10 si investigas (SO-01, SO-05). En la 2.4.0 no hay capítulo 10. */
+/** Paso tras el que Sombra aparece junto al farol (capítulo 10, SO-01). */
+export const SOMBRA_STEP = 'c10.sombra';
+
+/** A Sombra no se le ve pasear si investigas (SO-01, SO-05): desde el capítulo 10 está quieto junto al farol. */
 export const sombraHidden = (state: OrigenState | undefined) => storyOn(state);
+
+/** Sombra quieto y tenue junto al farol, que solo ven ustedes dos (SO-01, SO-02). */
+export const sombraStill = (state: OrigenState | undefined) => storyOn(state) && !!state?.steps?.[SOMBRA_STEP];
 
 // ---------- Subtítulos de la sesión 1 (segundos desde que empieza la voz, D-212) ----------
 export interface VoiceTrack {
@@ -113,6 +119,21 @@ export interface VoiceTrack {
   end: number;
   /** [inicio, clave del subtítulo] */
   cues: [number, number][];
+  /** Fallos del Marco con su marca de tiempo (TR-04): nunca al azar. */
+  fx?: SignalFx[];
+  /** `hard`: corte seco a negro, sin la línea de luz (sesiones 5 y 6). */
+  cut?: 'hard';
+}
+
+/**
+ * Fallo del Marco en una transmisión (TR-04, M-11): `glitch`, corte de estática y tirón de imagen; `flicker`, la figura
+ * aparece y se deshace a ráfagas; `reveal`, la figura se cambia por tu protagonista y «???» por tu alias, en tres
+ * parpadeos (giro 1).
+ */
+export interface SignalFx {
+  at: number;
+  kind: 'glitch' | 'flicker' | 'reveal';
+  dur: number;
 }
 
 /** Marcas medidas sobre las grabaciones aprobadas (prototipo de la señal). El texto está en i18n `origen.session1`. */
@@ -134,12 +155,61 @@ const S3: Record<VoiceId, VoiceTrack> = {
   en: { end: 11.76, cues: [[0, 0], [1.39, 1], [4.42, 2], [6.52, 3], [10.34, 4]] },
 };
 
-/** Subtítulos de cada sesión: cuántos hay y si el primero cambia con el género de la voz. */
+/**
+ * Sesiones 4 a 6 (acto II, voces de Fish Audio, 2026-11-12), con los fallos del Marco del guion (TR-04): marcas medidas
+ * en cada mezcla.
+ */
+const S4: Record<VoiceId, VoiceTrack> = {
+  'es-m': { end: 15, cues: [[0, 0], [1.89, 1], [5.23, 2], [9.63, 3], [10.69, 4]], fx: [{ at: 10.69, kind: 'glitch', dur: 0.35 }] },
+  'es-f': { end: 14.29, cues: [[0, 0], [1.96, 1], [5.19, 2], [9.46, 3], [10.68, 4]], fx: [{ at: 10.68, kind: 'glitch', dur: 0.35 }] },
+  en: { end: 14.02, cues: [[0, 0], [2, 1], [5.32, 2], [9.3, 3], [10.53, 4]], fx: [{ at: 10.53, kind: 'glitch', dur: 0.35 }] },
+};
+const S5: Record<VoiceId, VoiceTrack> = {
+  'es-m': {
+    end: 26.92,
+    cues: [[0, 0], [2.14, 1], [7.36, 2], [12.62, 3], [17.61, 4], [23.02, 5]],
+    fx: [{ at: 1.24, kind: 'glitch', dur: 0.4 }, { at: 2.04, kind: 'flicker', dur: 25.4 }],
+    cut: 'hard',
+  },
+  'es-f': {
+    end: 25.15,
+    cues: [[0, 0], [2.28, 1], [7.12, 2], [11.77, 3], [15.99, 4], [21.37, 5]],
+    fx: [{ at: 1.38, kind: 'glitch', dur: 0.4 }, { at: 2.18, kind: 'flicker', dur: 23.5 }],
+    cut: 'hard',
+  },
+  en: {
+    end: 27.55,
+    cues: [[0, 0], [2.23, 1], [7.45, 2], [12.5, 3], [17.58, 4], [23.24, 5]],
+    fx: [{ at: 1.33, kind: 'glitch', dur: 0.4 }, { at: 2.13, kind: 'flicker', dur: 25.9 }],
+    cut: 'hard',
+  },
+};
+const S6: Record<VoiceId, VoiceTrack> = {
+  'es-m': { end: 14.04, cues: [[0, 0], [1.82, 1], [6.84, 2], [10.09, 3], [12.3, 4]], fx: [{ at: 5.34, kind: 'reveal', dur: 0.8 }], cut: 'hard' },
+  'es-f': { end: 13.65, cues: [[0, 0], [1.78, 1], [6.68, 2], [9.88, 3], [11.97, 4]], fx: [{ at: 5.18, kind: 'reveal', dur: 0.8 }], cut: 'hard' },
+  en: { end: 13.24, cues: [[0, 0], [1.88, 1], [6.48, 2], [9.47, 3], [11.81, 4]], fx: [{ at: 4.98, kind: 'reveal', dur: 0.8 }], cut: 'hard' },
+};
+
+/** Subtítulos de cada sesión: cuántos hay y cuáles cambian con el género de la voz. */
 export const SESSIONS: Record<number, { tracks: Record<VoiceId, VoiceTrack>; cues: number; gendered: number[] }> = {
   1: { tracks: SESSION_1, cues: 8, gendered: [0] },
   2: { tracks: S2, cues: 4, gendered: [] },
   3: { tracks: S3, cues: 5, gendered: [] },
+  4: { tracks: S4, cues: 5, gendered: [] },
+  5: { tracks: S5, cues: 6, gendered: [] },
+  6: { tracks: S6, cues: 5, gendered: [2] },
 };
+
+/** El fallo del Marco que está en marcha en el segundo `t` de la voz, si hay alguno. */
+export function fxAt(track: VoiceTrack, t: number): SignalFx | undefined {
+  return track.fx?.find((f) => t >= f.at && t < f.at + f.dur);
+}
+
+/** Durante el giro 1 (sesión 6), si en el instante `t` del fallo se ve tu protagonista: tres parpadeos en 0,8 s. */
+export function revealOn(fx: SignalFx, t: number): boolean {
+  const k = (t - fx.at) / fx.dur;
+  return (k >= 0 && k < 0.19) || (k >= 0.38 && k < 0.56) || (k >= 0.75 && k < 1);
+}
 
 /** Clave i18n del subtítulo `i` de la sesión `n` en la voz `voice`. */
 export function cueKey(n: number, i: number, voice: VoiceId): string {

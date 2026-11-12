@@ -9,7 +9,8 @@ import { useSettings } from '../data';
 import { useReducedMotion } from '../motion';
 import { suppressSfx } from '../sound/sfx';
 import { playSignal } from './signal';
-import type { SignalAssets } from './assets';
+import { loadHeroPortrait, type SignalAssets } from './assets';
+import { DEFAULT_AVATAR } from '../../domain/avatar/catalog';
 
 /** Marca del buscador de la portada (R17-1): con 'neutral', sin nombre ni logo. */
 export const SEARCH_BRAND: 'google' | 'neutral' = 'google';
@@ -48,6 +49,24 @@ export function SignalOverlay({
   const voiceEnded = useEffectEvent(() => onVoiceEnd?.());
   const done = useEffectEvent(() => onDone());
   const sound = settings?.sound;
+  // Para el giro 1 (sesión 6): tu alias y tu protagonista, preparados en cuanto se conocen
+  const who = useRef({ alias: '' });
+  const portrait = useRef<HTMLCanvasElement | undefined>(undefined);
+  const alias = settings?.profile?.alias ?? '';
+  const avatar = settings?.avatar;
+  const reveals = !!SESSIONS[session]?.tracks[voice].fx?.some((f) => f.kind === 'reveal');
+  const ready = !!settings;
+  useEffect(() => {
+    who.current = { alias };
+  }, [alias]);
+  useEffect(() => {
+    if (!reveals || !ready) return;
+    let live = true;
+    void loadHeroPortrait(avatar ?? DEFAULT_AVATAR).then((c) => live && (portrait.current = c));
+    return () => {
+      live = false;
+    };
+  }, [reveals, avatar, ready]);
 
   useEffect(() => {
     const el = root.current;
@@ -59,15 +78,28 @@ export function SignalOverlay({
     const resumeSfx = suppressSfx();
     const data = SESSIONS[session] ?? SESSIONS[1]!;
     const cues = Array.from({ length: data.cues }, (_, i) => tDynamic(cueKey(session, i, voice)));
+    // Giro 1 (TR-04): tu protagonista y tu alias, leídos cuando toca (los ajustes pueden llegar después de montar)
+    const reveal = () => ({ image: portrait.current, name: who.current.alias || t('origen.name') });
     const stop = playSignal(
       {
         root: el,
         canvas: q<HTMLCanvasElement>('canvas'),
         search:
           mode === 'first'
-            ? { layer: q('layer'), wrap: q('wrap'), page: q('page'), slices: q('slices'), bars: q('bars'), dim: q('dim'), scan: q('scan'), text: q('text'), caret: q('caret') }
+            ? {
+                layer: q('layer'),
+                wrap: q('wrap'),
+                page: q('page'),
+                slices: q('slices'),
+                bars: q('bars'),
+                dim: q('dim'),
+                scan: q('scan'),
+                text: q('text'),
+                caret: q('caret'),
+              }
             : undefined,
         box: q('box'),
+        boxName: q('boxName'),
         boxText: q('boxText'),
         boxDot: q('boxDot'),
       },
@@ -79,6 +111,7 @@ export function SignalOverlay({
         volume: sound?.effects === false ? null : (sound?.volume ?? 0.5),
         reduced,
         figure: assets.figure,
+        reveal,
         mode,
         onVoiceEnd: voiceEnded,
         onDone: done,
@@ -117,7 +150,7 @@ export function SignalOverlay({
       )}
       <div data-s="box" className="signal-box" hidden>
         <p className="signal-box-name">
-          <span>{t('origen.name')}</span>
+          <span data-s="boxName">{t('origen.name')}</span>
           <span className="signal-tag">
             <i data-s="boxDot" />
             {t('origen.tag')}
@@ -150,7 +183,16 @@ function SearchPage({ locale }: { locale: string }) {
       <span className="sg-tab" style={{ left: 80, top: 65 }}>
         {t('origen.search.images')}
       </span>
-      <svg style={{ right: 195, top: 13 }} width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={gray} strokeWidth="2" strokeLinejoin="round">
+      <svg
+        style={{ right: 195, top: 13 }}
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke={gray}
+        strokeWidth="2"
+        strokeLinejoin="round"
+      >
         <path d="M12 3.2a5.8 5.8 0 0 0-5.8 5.8v4.6L4.4 16.4v.9h15.2v-.9L17.8 13.6V9A5.8 5.8 0 0 0 12 3.2z" />
         <path d="M10 20a2 2 0 0 0 4 0" />
       </svg>
@@ -171,7 +213,15 @@ function SearchPage({ locale }: { locale: string }) {
         </svg>
       )}
       <div className="sg-box">
-        <svg style={{ left: 13, top: 13 }} width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9aa0a6" strokeWidth="2.3">
+        <svg
+          style={{ left: 13, top: 13 }}
+          width="21"
+          height="21"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#9aa0a6"
+          strokeWidth="2.3"
+        >
           <circle cx="10" cy="10" r="6.6" />
           <path d="M15 15l5.6 5.6" />
         </svg>
@@ -203,7 +253,15 @@ function SearchPage({ locale }: { locale: string }) {
       <ul className="sg-list">
         {Array.from({ length: TRENDS }, (_, i) => (
           <li key={i}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4e5059" strokeWidth="2.2" strokeLinejoin="round">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#4e5059"
+              strokeWidth="2.2"
+              strokeLinejoin="round"
+            >
               <path d="M2.5 17.5l6.5-6.5 4 4 7.5-7.5" />
               <path d="M14.5 7.5h6v6" />
             </svg>

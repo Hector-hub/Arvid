@@ -19,6 +19,7 @@ import {
   isTalking,
   lampsState,
   layersState,
+  sombraStillState,
   waterAlpha,
   currentNeighborSpeech,
   currentXpFloats,
@@ -160,6 +161,7 @@ export function SceneCanvas({
         water: waterAlpha(),
         neighbor: quiet ? undefined : currentNeighborSpeech(),
         xp: currentXpFloats(),
+        sombra: sombraStillState(),
       });
     };
 

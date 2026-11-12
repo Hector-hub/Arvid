@@ -13,6 +13,14 @@ export interface Release {
 /** De la más nueva a la más antigua. */
 export const RELEASES: Release[] = [
   {
+    version: '2.8.0',
+    kind: 'feature',
+    items: {
+      es: ['La historia sigue: llegan más capítulos, y con ellos nuevos vecinos que te escriben.', 'Teo puede abrir los fragmentos del archivo que dejan las pruebas superadas. Los encontrarás en su chat y en el expediente.', 'Tu protagonista tiene retrato: parpadea, sonríe y pone caras en tu perfil. Tócalo.'],
+      en: ['The story continues: more chapters arrive, and with them new neighbors who write to you.', 'Teo can open the archive fragments left by passed tests. You will find them in his chat and in the file.', 'Your character has a portrait: it blinks, smiles and makes faces on your profile. Tap it.'],
+    },
+  },
+  {
     version: '2.7.0',
     kind: 'feature',
     items: {

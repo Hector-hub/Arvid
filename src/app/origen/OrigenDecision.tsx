@@ -32,15 +32,29 @@ function useTyped(text: string): [string, boolean, () => void] {
   return [text.slice(0, n), n >= text.length, () => setTyped({ text, n: text.length })];
 }
 
-export function OrigenDecision({ onChoose, onClose }: { onChoose: (choice: OrigenChoice) => void; onClose: () => void }) {
+export function OrigenDecision({
+  onChoose,
+  onClose,
+}: {
+  onChoose: (choice: OrigenChoice) => void;
+  onClose: () => void;
+}) {
   const settings = useSettings();
   const name = settings ? COMPANION_NAME[settings.companion] : '';
   const [index, setIndex] = useState(0);
   const [choice, setChoice] = useState<OrigenChoice>();
-  const steps: Step[] = [...LINES.map((key) => ({ kind: 'line', key }) as Step), { kind: 'question' }, ...(choice ? [{ kind: 'after', choice } as Step] : [])];
+  const steps: Step[] = [
+    ...LINES.map((key) => ({ kind: 'line', key }) as Step),
+    { kind: 'question' },
+    ...(choice ? [{ kind: 'after', choice } as Step] : []),
+  ];
   const step = steps[Math.min(index, steps.length - 1)]!;
   const text =
-    step.kind === 'line' ? t(step.key) : step.kind === 'question' ? t('origen.decision.text') : t(step.choice === 'investigate' ? 'origen.decision.afterInvestigate' : 'origen.decision.afterBlock');
+    step.kind === 'line'
+      ? t(step.key)
+      : step.kind === 'question'
+        ? t('origen.decision.text')
+        : t(step.choice === 'investigate' ? 'origen.decision.afterInvestigate' : 'origen.decision.afterBlock');
   const [typed, done, finish] = useTyped(text);
   const logged = useRef(new Set<number>());
   const action = useRef<HTMLButtonElement>(null);
@@ -61,7 +75,13 @@ export function OrigenDecision({ onChoose, onClose }: { onChoose: (choice: Orige
   };
 
   return createPortal(
-    <div className="origen-dialog" role="dialog" aria-modal="true" aria-labelledby="origen-dialog-who" onClick={() => !done && finish()}>
+    <div
+      className="origen-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="origen-dialog-who"
+      onClick={() => !done && finish()}
+    >
       <div className="origen-dialog-box">
         {step.kind === 'question' && <h2>{t('origen.decision.title')}</h2>}
         <div className="origen-dialog-line">

@@ -90,6 +90,20 @@ describe('Mensajes (spec 17, ME)', () => {
     expect(screen.getByText('Superadas: 1 · No superadas: 0 · Rechazadas o sin respuesta: 0')).toBeInTheDocument();
   });
 
+  it('Expediente: desde que Teo los abre, los fragmentos se leen; los que esperan a su capítulo siguen cifrados (PR-10)', async () => {
+    let s = choose(finishContact(undefined, AT, 0), 'investigate');
+    for (let c = 2; c <= 8; c++) s = openChapter(s, new Date(AT.getTime() + (c - 1) * 7 * 86_400_000), c * 100);
+    const passed = (n: number) => ({ n, type: 'noBlank' as const, times: 3, period: 1, offeredAt: AT.toISOString(), offeredOn: '2026-11-11' as never, result: 'passed' as const, resolvedAt: AT.toISOString() });
+    // 16 superadas: en el capítulo 8 salen las 15 primeras; la 16 es del 9
+    s = { ...deliverStep(s, 'c8.teo2', new Date('2027-01-01T10:00:00.000Z')), tests: Array.from({ length: 16 }, (_, i) => passed(i + 1)) };
+    await saveSetting(ctx.db, 'origen', s);
+    renderRoutes(ctx, routes, '/mensajes/expediente');
+    expect(await screen.findByText('Participante 4012. Abandonó el día 19.')).toBeInTheDocument();
+    expect(screen.getByText('Participante 5603. Probabilidad máxima: 26 %. Abandonó el día 88.')).toBeInTheDocument();
+    expect(screen.getByText('1 fragmento más, todavía cifrado.')).toBeInTheDocument();
+    expect(screen.getByText('Capítulo 8 · El archivo')).toBeInTheDocument();
+  });
+
   describe('hablar con un vecino (VI)', () => {
     const withDex = async () => {
       const s = openChapter(choose(finishContact(undefined, AT, 0), 'investigate'), new Date('2026-11-18T10:00:00.000Z'), 80);

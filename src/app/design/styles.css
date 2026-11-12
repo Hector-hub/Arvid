@@ -2079,6 +2079,16 @@ input[type='checkbox'].switch:focus-visible { outline: 2px solid var(--focus); o
 
 /* ---------- Cabecera de Perfil (D-198): nivel en anillo y enlaces como filas ---------- */
 .profile-head { display: flex; align-items: center; gap: var(--s3); }
+/* Retrato (spec 18, RD-01): el anillo de nivel va de insignia en la esquina */
+.carousel-figures { display: flex; align-items: flex-end; justify-content: center; gap: var(--s3); width: 100%; }
+.carousel-figures > * { flex: 1 1 0; min-width: 0; }
+.carousel-figures .portrait { max-width: 128px; }
+.profile-portrait { position: relative; flex: none; width: 128px; height: 128px; background: rgb(255 255 255 / 0.04); border: 1px solid rgb(115 239 247 / 0.25); }
+.profile-portrait .portrait { display: block; }
+.profile-portrait .level-ring { position: absolute; right: -12px; bottom: -12px; width: 52px; height: 52px; }
+.profile-portrait .level-ring > span { width: 42px; height: 42px; }
+.profile-portrait .level-ring b { font-size: 1.125rem; }
+.profile-portrait .level-ring small { display: none; }
 .profile-alias { font-size: 1.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .level-ring { flex: none; width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--xp) 0 var(--v), rgb(255 255 255 / 0.1) var(--v)); }
 .level-ring > span { width: 68px; height: 68px; border-radius: 50%; background: var(--bg); display: grid; place-content: center; text-align: center; }

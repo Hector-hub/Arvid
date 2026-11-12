@@ -20,3 +20,6 @@ bench-results.json
 # Material de publicación (vídeos para redes): no va al repo
 publishing/
 .mcp.json
+
+# Material de trabajo (originales, previsualizaciones); no va al repositorio
+material/

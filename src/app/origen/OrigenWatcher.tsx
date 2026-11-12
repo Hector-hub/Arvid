@@ -32,7 +32,8 @@ const AFTER_NOTICE_S = 2;
 const TICK_MS = 250;
 
 /** `?origen=contacto` (solo en desarrollo, NFR17-09): el primer contacto a los 2 s, aunque ya se viera. */
-const devContact = () => import.meta.env.DEV && new URLSearchParams(window.location.search).get('origen') === 'contacto';
+const devContact = () =>
+  import.meta.env.DEV && new URLSearchParams(window.location.search).get('origen') === 'contacto';
 
 export function OrigenWatcher() {
   useLocale();
@@ -51,7 +52,9 @@ export function OrigenWatcher() {
     latest.current = origen;
   }, [currentXp, origen]);
 
-  const voice = settings ? voiceFor(getLocale(), settings.profile?.gender, (settings.avatar ?? DEFAULT_AVATAR).cast) : undefined;
+  const voice = settings
+    ? voiceFor(getLocale(), settings.profile?.gender, (settings.avatar ?? DEFAULT_AVATAR).cast)
+    : undefined;
   const wantsContact = !!settings && (needsContact(origen) || forced) && !running;
 
   // ---------- Primer contacto: reloj de app a la vista, primer toque y ningún otro aviso ----------
@@ -71,7 +74,7 @@ export function OrigenWatcher() {
       if (document.visibilityState !== 'visible') return;
       visible += TICK_MS / 1000;
       if (otherNotice()) quietSince = visible;
-      if (visible < target || !touched || !assets || visible - quietSince < AFTER_NOTICE_S && quietSince > 0) return;
+      if (visible < target || !touched || !assets || (visible - quietSince < AFTER_NOTICE_S && quietSince > 0)) return;
       window.clearInterval(id);
       if (cancelled) return;
       // Empezó: si se cierra la app a medias, se repite en la siguiente apertura (PC-06)
@@ -106,7 +109,12 @@ export function OrigenWatcher() {
   const level = analysis?.progress.level ?? 0;
   const talks = settings?.arvidTalks !== false;
   const noticeSombra =
-    storyOn(origen) && !origen?.sombraNoticed && level >= 10 && talks && !!origen?.contactAt && toLocalDate(new Date()) > toLocalDate(new Date(origen.contactAt));
+    storyOn(origen) &&
+    !origen?.sombraNoticed &&
+    level >= 10 &&
+    talks &&
+    !!origen?.contactAt &&
+    toLocalDate(new Date()) > toLocalDate(new Date(origen.contactAt));
   useEffect(() => {
     if (!noticeSombra) return;
     let quiet = 0;
@@ -130,7 +138,8 @@ export function OrigenWatcher() {
           voice={running.voice}
           assets={running.assets}
           onVoiceEnd={() => {
-            if (!forced || needsContact(latest.current)) void saveSetting(db, 'origen', finishContact(latest.current, new Date(), xp.current));
+            if (!forced || needsContact(latest.current))
+              void saveSetting(db, 'origen', finishContact(latest.current, new Date(), xp.current));
           }}
           onDone={() => {
             setRunning(undefined);
@@ -138,12 +147,7 @@ export function OrigenWatcher() {
           }}
         />
       )}
-      {asking && !running && (
-        <OrigenDecision
-          onChoose={decide}
-          onClose={() => setAsking(false)}
-        />
-      )}
+      {asking && !running && <OrigenDecision onChoose={decide} onClose={() => setAsking(false)} />}
     </>
   );
 }

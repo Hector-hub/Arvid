@@ -34,6 +34,9 @@ const C = {
   cyanLight: '#73eff7',
 };
 const PARTICLE_COLORS = [C.cyan, C.lamp, C.magenta];
+/** Sombra es el peatón 1 (spec 11); se queda junto a uno de cada cinco faroles (spec 17, SO-01). */
+const SOMBRA_PED = 1;
+const SOMBRA_EVERY = 5;
 
 const mod = (a: number, n: number) => ((a % n) + n) % n;
 
@@ -181,6 +184,8 @@ export interface SceneExtras {
   snap?: number;
   /** XP ganada o perdida que flota sobre el protagonista (D-158). */
   xp?: readonly { text: string; age: number; minus: boolean }[];
+  /** Sombra, quieto y tenue junto al farol (spec 17, SO-01): solo lo ven ustedes dos. */
+  sombra?: boolean;
 }
 
 export function drawScene(
@@ -233,6 +238,22 @@ export function drawScene(
     if (!type) continue;
     const f = reduced ? 0 : Math.floor((s.t + p.t0) / type.ticks) % type.frames;
     sprite(c, imgs.extras, f * EXTRAS_FRAME, type.row * EXTRAS_FRAME, EXTRAS_FRAME, EXTRAS_FRAME, Math.round(p.wx - off), LAYOUT.backFeet - p.size, p.size, p.size, p.dir < 0);
+  }
+
+  // Sombra (spec 17, SO-01, SO-02): quieto junto a uno de cada cinco faroles, tenue y mirando hacia ti; los peatones
+  // le pasan por encima
+  if (extras.sombra && extras.lamps?.on !== false) {
+    const type = PEDESTRIANS[SOMBRA_PED]!;
+    const size = Math.round(EXTRAS_FRAME * (LAYOUT.heroHeight / type.height));
+    for (const i of visibleLamps(off)) {
+      if (((i % SOMBRA_EVERY) + SOMBRA_EVERY) % SOMBRA_EVERY !== 2) continue;
+      const x = lampScreenX(i, off) + 6;
+      // Parpadea de vez en cuando, como una señal mal sintonizada
+      const blink = !reduced && Math.floor(s.t / 7) % 23 === 0;
+      c.globalAlpha = blink ? 0.12 : 0.42;
+      sprite(c, imgs.extras, 0, type.row * EXTRAS_FRAME, EXTRAS_FRAME, EXTRAS_FRAME, x, LAYOUT.backFeet - size, size, size, x + size / 2 > LAYOUT.heroX);
+      c.globalAlpha = 1;
+    }
   }
 
   // Detalles de la acera que ARVID inspecciona (MV-03), por delante de los peatones

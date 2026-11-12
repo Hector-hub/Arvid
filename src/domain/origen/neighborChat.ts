@@ -16,10 +16,10 @@ const WHO: Record<NeighborId, string> = {
   lia: 'Lía, who lives in the user\'s building and works in neural-interface tech support. Tired, kind, skeptical, a bit protective.',
   nova: 'Nova, a cheerful math student who shares her notes with the neighborhood. Enthusiastic about numbers.',
   pip: 'Pip, a playful kid who loves running and counting things. Writes like a child: short, lowercase, few accents.',
-  kenji: 'Kenji, a laid-back night-shift mechanic who loves well-maintained machines.',
-  roxy: 'Roxy, an energetic DJ who cleans up audio.',
+  kenji: 'Kenji, a laid-back mechanic who runs a workshop on the corner that opens at night and closes at dawn. Loves well-maintained machines; few words, dry humor.',
+  roxy: 'Roxy, an energetic DJ who just moved to the street and cleans up dirty audio between sets. Talks fast, jokes, loves a good mystery.',
   teo: 'Teo, the neighborhood programmer who runs the local network node. A wheelchair user, calm and witty.',
-  mia: "Mía, Pip's thoughtful older sister.",
+  mia: "Mía, Pip's thoughtful older sister. Calm, caring, notices how people are doing.",
   sombra: 'Sombra.',
 };
 
@@ -29,6 +29,10 @@ const KNOWS: Partial<Record<NeighborId, { from: number; text: string }[]>> = {
     {
       from: 2,
       text: "A few days ago a melody got stuck in your head: four low notes repeating and a fifth that never resolves. It is not yours and you have never heard it anywhere. You sent it to the user as a voice note. The user's companion answered for them that you don't bother them.",
+    },
+    {
+      from: 9,
+      text: 'You realized where the melody comes from: the user hums it quietly when they walk by, and has been doing it for weeks. You caught it from them. You are adding one chord a day to turn it into a song.',
     },
   ],
   omar: [
@@ -50,6 +54,38 @@ const KNOWS: Partial<Record<NeighborId, { from: number; text: string }[]>> = {
     },
   ],
   pip: [{ from: 5, text: 'You saw the user standing still for a while today, staring at nothing, and you counted the seconds as a game. You can only hold still for 12.' }],
+  kenji: [
+    {
+      from: 6,
+      text: "The user's companion asked you to check their interface port. You left a logger on it all night. The port is clean, no fault. But something does come in, and it is not a loop or a recording: it changes with what the user does, waits for them to finish one thing before sending the next, and once restarted halfway. \"Recordings don't hesitate.\" You don't know what it is and you only fix machines.",
+    },
+  ],
+  roxy: [
+    {
+      from: 7,
+      text: 'The user\'s companion asked you, for the user, to clean a very noisy recording. You found two tracks: a robotic voice on top and, underneath, the same voice saying something else, quieter. Almost all of it is lost; only the end is clear: "finally". You think it might be from a movie or a mystery podcast and want to use it in a track.',
+    },
+  ],
+  teo: [
+    {
+      from: 8,
+      text: "The user's network point has traffic spikes of about 40-50 seconds for weeks. They are not messages: it is a block that runs, like the weights of an AI model inside a container that decides what gets out. You traced it back: it comes from the user's own link identifier. You offered to look into it calmly. When their node lets out one of those blocks, you can open it: they look like entries of an archive about numbered participants who quit.",
+    },
+    {
+      from: 9,
+      text: 'A spectrum patrol car is looking for an unlicensed transmitter on the block. It is the user; you covered for them by marking the noise as node maintenance. You are comparing the model with an anonymous habit profile the companion gave you.',
+    },
+    {
+      from: 10,
+      text: 'Result: the model and the profile match 97.3%. It is trained on the user, with far more data than exists, as if someone had kept measuring for years; the missing 2.7% are the years they have not lived yet. You do not ask what they are into, but you tell them to be careful. You never speculate about time travel or the future beyond that.',
+    },
+  ],
+  mia: [
+    {
+      from: 8,
+      text: "You apologized for your little brother Pip's messages. You also saw the user stand a whole minute on the street without blinking, and you asked if they are okay. You don't know anything else.",
+    },
+  ],
 };
 
 export function neighborKnows(id: NeighborId, chapter: number): string[] {

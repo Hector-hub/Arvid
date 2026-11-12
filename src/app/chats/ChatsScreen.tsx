@@ -8,7 +8,8 @@ import { DEFAULT_AVATAR } from '../../domain/avatar/catalog';
 import { chatLastAt, chatUnread, neighborContacts, neighborLines, type ChatId } from '../../domain/origen/chapters';
 import { seenSessions, storyOn, voiceFor, type OrigenState, type VoiceId } from '../../domain/origen/origen';
 import { acceptTest, type ProgramTest } from '../../domain/origen/programTests';
-import { dossier, FRAGMENTS_READABLE_FROM, TITLED_CHAPTERS } from '../../domain/origen/dossier';
+import { dossier, TITLED_CHAPTERS } from '../../domain/origen/dossier';
+import { FRAGMENTS_STEP } from '../../domain/origen/fragments';
 import { currentChapter } from '../../domain/origen/periods';
 import { isNeighbor, neighbor, type NeighborId } from '../../domain/scene/city';
 import { diffDays, toLocalDate } from '../../domain/time/localDate';
@@ -407,13 +408,24 @@ export function DossierScreen() {
 
       <Panel className="stack">
         <h2>{t('origen.dossier.fragments')}</h2>
-        <p className="muted">
-          {d.fragments === 0
-            ? t('origen.dossier.noFragments')
-            : currentChapter(origen) < FRAGMENTS_READABLE_FROM
-              ? t('origen.dossier.fragmentsHeld', { count: d.fragments, companion })
-              : ''}
-        </p>
+        {d.readable.length > 0 && (
+          <ul className="stack dossier-list">
+            {d.readable.map((n) => (
+              <li key={n}>
+                <Link to="/mensajes/teo" className="small">
+                  {tDynamic(`origen.fragment.${n}`)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+        {d.fragments === 0 ? (
+          <p className="muted">{t('origen.dossier.noFragments')}</p>
+        ) : !origen?.steps?.[FRAGMENTS_STEP] ? (
+          <p className="muted">{t('origen.dossier.fragmentsHeld', { count: d.fragments, companion })}</p>
+        ) : (
+          d.fragments > d.readable.length && <p className="muted">{t('origen.dossier.fragmentsLocked', { count: d.fragments - d.readable.length })}</p>
+        )}
       </Panel>
 
       <Panel className="stack">

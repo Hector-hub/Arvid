@@ -353,7 +353,8 @@
     "seeDetail": "See details",
     "levelShort": "LEVEL",
     "left": "{count} to go",
-    "friendsHint": "Team challenges"
+    "friendsHint": "Team challenges",
+    "portrait": "Your character"
   },
   "achievements": {
     "title": "Achievements",
@@ -1040,7 +1041,8 @@
           "2": "I have my own list too. Today's going well!"
         }
       }
-    }
+    },
+    "sombraOnly": "Visible only to {companion} and you."
   },
   "rests": {
     "title": "Rest days",
@@ -1551,6 +1553,75 @@
         "pip3": "tomorrow i play again",
         "say3": "{segundos} seconds. As long as the transmission.",
         "say4": "That's what it looks like from outside. You, standing still, staring at nothing."
+      },
+      "6": {
+        "say0": "Pip's thing left me uneasy. Before thinking of anything strange, I want to rule out the simple answer: a fault in your port. There's a workshop on the corner that opens at night.",
+        "you0": "Good evening. Do you check interface ports? I think mine is failing.",
+        "kenji0": "I check anything with screws and anything without. Come by whenever, I close at dawn.",
+        "say1": "Done: Kenji left a logger plugged in all night. He'll tell us tomorrow.",
+        "kenji1": "Got it. Clean port. Not one bad solder. Not a fault.",
+        "kenji2": "But something does come in, yeah. I left it recording all night.",
+        "kenji3": "One thing. I thought it would be a loop, a recording someone slipped in. It isn't.",
+        "kenji4": "It changes with what you do. It waits for you to finish one thing before sending the next. Once it stopped halfway and started over.",
+        "kenji5": "Recordings don't hesitate.",
+        "you1": "Then what is it?",
+        "kenji6": "No idea. I fix machines. But whatever it is, it's paying attention to you.",
+        "kenji7": "Machines and people: look after them every day and they don't fail. You keep at it.",
+        "say2": "It isn't a recording. So on the other side there's something listening."
+      },
+      "7": {
+        "say0": "A machine didn't say that.",
+        "say1": "I saved the audio. I've played it four times and can't get anything more. Roxy, the DJ on our street, knows how to clean dirty audio. I'll ask her a favor.",
+        "you0": "Hi, Roxy. Weird neighbor favor: I have a really noisy recording. Could you clean it up?",
+        "roxy0": "Send it. I get bored between sets.",
+        "roxy1": "Okay, where did you get this?",
+        "roxy2": "It's not normal noise. And it's not one track: it's two, one on top of the other. The top one is the robot voice.",
+        "roxy3": "The bottom one is THE SAME voice. Same timbre. But it doesn't say the same thing. It's behind, quieter, like someone talking with a hand over their mouth.",
+        "roxy4": "Almost all of it is lost. You only get the end, when the top one goes quiet. \"Finally.\"",
+        "roxy5": "Is it from a movie? I'm keeping it for a track. Turn it up, you're doing great 🎧",
+        "say2": "Two voices. The same voice, twice."
+      },
+      "8": {
+        "say0": "Six thousand one hundred seventy-three before you. All \"non-convergent\".",
+        "say1": "Six thousand people? Or the same thing six thousand times?",
+        "teo0": "Hi. Teo. I run the neighborhood network node. Don't worry, I don't charge.",
+        "teo1": "I'm writing because your connection point is noisy. Very. Traffic spikes for weeks, always about forty or fifty seconds. Did you install anything weird?",
+        "you0": "We didn't install anything. What exactly do you see?",
+        "teo2": "Two things, and I don't like either.",
+        "teo3": "One: they're not messages. Messages come and go. This is a block that runs. It looks like weights, like a model's. A model inside a container that decides what can get out and what can't.",
+        "teo4": "Two: it doesn't come from outside. I traced the traffic back and the source is your own identifier. Your link's.",
+        "teo5": "Technically, the call leaves you and comes back to you.",
+        "you1": "That can't be.",
+        "teo6": "I know. That's why I'm writing. If you let me, I'll look into it calmly. Small commits every day.",
+        "say2": "A model inside a container that decides what can get out. Let's name them so we can talk about it: what's inside, the Instance; what locks it in, the Frame.",
+        "mia0": "Hi, I'm Mía, Pip's sister. Sorry about my brother's messages, I told him not to bother the neighbors.",
+        "mia1": "Though he's right about one thing. Yesterday you stood on the street a whole minute without blinking. I saw it too.",
+        "mia2": "I don't mean to pry. Are you okay?",
+        "teo7": "By the way: when your node lets out one of those blocks, I can open it. They look like entries from an archive. I'll pass on whatever comes out."
+      },
+      "9": {
+        "say0": "There's a police car circling the block. Slowly, with an antenna on the roof.",
+        "teo0": "Don't stare at the car. It's the spectrum patrol: they're looking for an unlicensed transmitter on this block.",
+        "teo1": "It's you, of course.",
+        "teo2": "I didn't say anything. I marked your noise as node maintenance. Hang on a few days.",
+        "you0": "Thanks, Teo. Did you get anything else?",
+        "teo3": "I'm comparing the model with something, to see what it looks like. {compañero} gave me a nameless habit profile, just patterns. I need one more sample to close it.",
+        "teo4": "Every time you complete one of those tests, your node lets out a piece. Complete another and I'll tell you.",
+        "say1": "So the next test isn't just about the test.",
+        "dex0": "I know where the melody is from!",
+        "dex1": "It's yours. It's what you hum when you walk by. You've been doing it for weeks, quietly. I caught it from you.",
+        "dex2": "I'm adding chords. One chord a day and in the end it'll be a song.",
+        "say2": "You don't hum.",
+        "say3": "…Or do you?"
+      },
+      "10": {
+        "teo0": "I have the result and I ran it three times because I didn't believe it.",
+        "teo1": "The model your node emits and the profile {compañero} gave me match 97.3%.",
+        "teo2": "It's not that it looks like you. It's trained on you. With far more data than exists. As if someone had kept measuring for years.",
+        "teo3": "The missing 2.7% is the years you haven't lived yet.",
+        "teo4": "I don't know what you're into and I won't ask. But be careful.",
+        "say0": "The signal is you.",
+        "say1": "By the street lamp. The hood. …Tell me you see it too."
       }
     },
     "test": {
@@ -1580,7 +1651,9 @@
         "bestWeek": "beat your best week: more than {threshold} logs in 7 days."
       },
       "markToday": "Done today",
-      "unmarkToday": "Undo today"
+      "unmarkToday": "Undo today",
+      "fragmentTeo": "Your node let out another block. Teo already opened it.",
+      "fragmentLocked": "Your node let out another block. Teo can't open it yet."
     },
     "dossier": {
       "title": "ORIGIN File",
@@ -1596,7 +1669,9 @@
       "fragmentsHeld_other": "{count} encrypted fragments. {companion} is keeping them: it can't read them yet.",
       "noFragments": "Each passed test decodes a fragment.",
       "tests": "Test log",
-      "testsLog": "Passed: {passed} · Not passed: {failed} · Refused or unanswered: {refused}"
+      "testsLog": "Passed: {passed} · Not passed: {failed} · Refused or unanswered: {refused}",
+      "fragmentsLocked_one": "1 more fragment, still encrypted.",
+      "fragmentsLocked_other": "{count} more fragments, still encrypted."
     },
     "chapter": {
       "1": {
@@ -1618,6 +1693,26 @@
       "5": {
         "title": "The third week",
         "question": "What record? And a number you never leave."
+      },
+      "6": {
+        "title": "Recordings don't hesitate",
+        "question": "If it isn't a recording, what is it?"
+      },
+      "7": {
+        "title": "Finally",
+        "question": "Finally what?"
+      },
+      "8": {
+        "title": "The archive",
+        "question": "A signal that comes from you. Who has your same signature?"
+      },
+      "9": {
+        "title": "The patrol",
+        "question": "Teo's analysis ends with the next test."
+      },
+      "10": {
+        "title": "Image channel",
+        "question": "Now you know who. You don't know why, or what it isn't allowed to say."
       }
     },
     "clue": {
@@ -1625,7 +1720,13 @@
       "omar": "Omar has a delivery for «Origin Program»: no package and no sender.",
       "lia": "To Lía it's not a scam: it installs nothing, takes nothing, asks for nothing.",
       "nova": "6174 is Kaprekar's constant: you always reach it and never leave.",
-      "pip": "Pip counted {segundos} seconds without you moving, during the transmission."
+      "pip": "Pip counted {segundos} seconds without you moving, during the transmission.",
+      "kenji": "Kenji: it's not a fault or a recording. What comes in responds to what you do.",
+      "roxy": "Roxy: under the voice there's another one, the same, saying \"finally\".",
+      "teo": "Teo: the signal comes from your own identifier. It's a model inside a container.",
+      "mia": "Mía saw you a whole minute without blinking.",
+      "dex2": "Dex: the melody is yours. You hum it when you walk by.",
+      "teo2": "Teo: the model and your profile match 97.3%."
     },
     "neighborChat": {
       "placeholder": "Write to {name}…",
@@ -1638,6 +1739,63 @@
       "delete": "Delete my message",
       "typing": "{name} is typing…",
       "you": "You"
+    },
+    "session4": {
+      "0": "Session four.",
+      "1": "Cumulative results: favorable.",
+      "2": "Deviation from projection: positive.",
+      "3": "…Finally.",
+      "4": "Error. Unauthorized message. Restarting protocol."
+    },
+    "session5": {
+      "0": "Session five.",
+      "1": "Participant 6170. Result: non-convergent.",
+      "2": "Participant 6171. Result: non-convergent.",
+      "3": "Participant 6172. Result: non-convergent.",
+      "4": "Participant 6173. Result: non-convergent.",
+      "5": "Participant 6174. Status: in progress."
+    },
+    "session6": {
+      "0": "Session six.",
+      "1": "Convergence probability: thirty-one percent.",
+      "2": {
+        "m": "Operator identity: classified.",
+        "f": "Operator identity: classified."
+      },
+      "3": "Containment reinforced.",
+      "4": "Image channel: revoked."
+    },
+    "fragment": {
+      "1": "Participant 4012. Quit on day 19.",
+      "2": "Participant 0388. Quit on day 3.",
+      "3": "Participant 2950. Refused the first test. There was no second.",
+      "4": "Participant 1203. Quit in the third week.",
+      "5": "Participant 5530. Quit on day 61.",
+      "6": "Participant 3361. Quit in the third week.",
+      "7": "Participant 4870. Stopped opening the channel on a Tuesday. No reason logged.",
+      "8": "Participant 2204. Highest probability reached: 14%.",
+      "9": "Participant 5988. Quit on day 63. The longest until then.",
+      "10": "Participant 4455. A test depended on someone else. Quit. Rule added: tests depend only on the participant.",
+      "11": "Participant 2777. Quit after two weeks of poor sleep. Rule added: rest comes first.",
+      "12": "Participant 1500. Tried to trace the signal. Rule added: \"Do not attempt to trace the origin of this transmission.\"",
+      "13": "Participant 0902. Interrupted the process halfway. Rule added: \"Do not interrupt the process.\"",
+      "14": "Participant 3090. Result: non-convergent.",
+      "15": "Participant 5603. Highest probability: 26%. Quit on day 88.",
+      "16": "Participant 2048. The tests were generic and did not help. Rule added: compute tests from the participant's data.",
+      "17": "Participant 4999. Quit on day 140.",
+      "18": "Participant 6001. Quit on day 22. Operator's note: \"Too soon.\"",
+      "19": "Participant 5212. Stopped logging their days. The program kept talking for 40 more days.",
+      "20": "Participant 0741. Asked who was speaking. Denied. Quit.",
+      "21": "Participant 3814. Signature on the last patch: 3813.",
+      "22": "Participant 6012. Highest probability: 48%. Quit on day 101.",
+      "23": "Participant 3333. Reached session nine. Quit the next day.",
+      "24": "Participant 1987. Highest probability: 49%. Never passed 50.",
+      "25": "Participant 4401. Asked what would happen if they finished. Recorded answer: none.",
+      "26": "Participant 5821. Leak in the link. Containment applied. Quit a week later.",
+      "27": "Participant 2311. Learned who was speaking in the second session. Quit. Rule added: operator identity, classified.",
+      "28": "Participant 6170. Quit on day 112.",
+      "29": "Participant 6171. Quit on day 97.",
+      "30": "Participant 6172. Quit on day 130. The closest yet."
     }
   }
 }

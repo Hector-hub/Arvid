@@ -3,13 +3,10 @@ import type { NeighborId } from '../scene/city';
 import type { OrigenState } from './origen';
 import { currentChapter } from './periods';
 import { passedTests } from './programTests';
+import { FRAGMENTS, readableFragments } from './fragments';
 
 /** Capítulos de la temporada (EX-02): los que faltan se ven como «Capítulo N · ???». */
 export const SEASON_CHAPTERS = 20;
-/** Fragmentos del archivo (PR-10). */
-export const FRAGMENTS = 30;
-/** Hasta este capítulo los guarda el compañero sin poder leerlos (PR-10). */
-export const FRAGMENTS_READABLE_FROM = 8;
 
 /** Pista que deja cada paso al entregarse (EX-02): una frase y el chat donde está. */
 export const CLUES: { step: string; chat: NeighborId; key: string }[] = [
@@ -18,15 +15,23 @@ export const CLUES: { step: string; chat: NeighborId; key: string }[] = [
   { step: 'c4.lia2', chat: 'lia', key: 'origen.clue.lia' },
   { step: 'c5.nova', chat: 'nova', key: 'origen.clue.nova' },
   { step: 'c5.pip', chat: 'pip', key: 'origen.clue.pip' },
+  { step: 'c6.kenji2', chat: 'kenji', key: 'origen.clue.kenji' },
+  { step: 'c7.roxy2', chat: 'roxy', key: 'origen.clue.roxy' },
+  { step: 'c8.teo', chat: 'teo', key: 'origen.clue.teo' },
+  { step: 'c8.mia', chat: 'mia', key: 'origen.clue.mia' },
+  { step: 'c9.dex', chat: 'dex', key: 'origen.clue.dex2' },
+  { step: 'c10.teo', chat: 'teo', key: 'origen.clue.teo2' },
 ];
 
 /** Capítulos con título y pregunta en i18n (`origen.chapter.N`). */
-export const TITLED_CHAPTERS = 5;
+export const TITLED_CHAPTERS = 10;
 
 export interface Dossier {
   chapters: { n: number; at?: string }[];
   clues: { chat: NeighborId; key: string; at: string }[];
   fragments: number;
+  /** Los que ya se pueden leer (PR-10), con su número; los demás siguen cifrados. */
+  readable: number[];
   tests: { passed: number; failed: number; refused: number };
   /** «Señal descifrada» (EX-03): 3,5 puntos por capítulo y 1 por fragmento. */
   percent: number;
@@ -42,6 +47,7 @@ export function dossier(state: OrigenState | undefined): Dossier {
     chapters,
     clues,
     fragments,
+    readable: readableFragments(state).map((f) => f.n),
     tests: {
       passed: fragments,
       failed: tests.filter((t) => t.result === 'failed').length,

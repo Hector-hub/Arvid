@@ -325,6 +325,12 @@ No tiene tiempo de darle vueltas. Esa tarde les escribe alguien a quien no busca
 > **ARVID, por ti:** Eso no puede ser.
 > **Teo:** Ya. Por eso te escribo. Si me dejas, lo miro con calma. Pequeños commits cada día.
 
+Al día siguiente, una línea más de Teo:
+
+> **Teo:** Por cierto: cuando tu nodo suelta uno de esos bloques, puedo abrirlo. Parecen entradas de un archivo. Te paso lo que salga.
+
+Si ya habías superado alguna prueba, los fragmentos que guardaba ARVID llegan ahora a su chat (PR-10).
+
 Un modelo. Dentro de un contenedor que decide qué puede salir. ARVID le pone nombre a las dos cosas, para entenderos: lo de dentro, **la Instancia**; lo que la encierra, **el Marco**.
 
 Y por la noche, un mensaje más, de un contacto nuevo.
@@ -878,3 +884,42 @@ Nada más. Nadie escribe después.
 - ¿Qué hace su mundo con un descubrimiento así? Solo sabes lo que le pasó a él.
 - ¿Quién le enseñó a ARVID a abrir un canal así?
 - Si el canal está cerrado, ¿por dónde entró el último mensaje?
+
+---
+
+## Anexo · Fragmentos del archivo (PR-10)
+
+Cada prueba superada descifra el siguiente de la lista. Un fragmento no sale antes de su capítulo (§9 de `cimientos.md`): si toca uno que aún no puede salir, espera. Antes del capítulo 8 los guarda ARVID sin poder leerlos; desde el 8 llegan al chat de Teo.
+
+| # | Desde el cap. | Español | English |
+|---|---|---|---|
+| 1 | 3 | Participante 4012. Abandonó el día 19. | Participant 4012. Quit on day 19. |
+| 2 | 3 | Participante 0388. Abandonó el día 3. | Participant 0388. Quit on day 3. |
+| 3 | 3 | Participante 2950. Rechazó la primera prueba. No hubo segunda. | Participant 2950. Refused the first test. There was no second. |
+| 4 | 3 | Participante 1203. Abandonó en la tercera semana. | Participant 1203. Quit in the third week. |
+| 5 | 3 | Participante 5530. Abandonó el día 61. | Participant 5530. Quit on day 61. |
+| 6 | 4 | Participante 3361. Abandonó en la tercera semana. | Participant 3361. Quit in the third week. |
+| 7 | 4 | Participante 4870. Dejó de abrir el canal un martes. Sin motivo registrado. | Participant 4870. Stopped opening the channel on a Tuesday. No reason logged. |
+| 8 | 5 | Participante 2204. Probabilidad máxima alcanzada: 14 %. | Participant 2204. Highest probability reached: 14%. |
+| 9 | 5 | Participante 5988. Abandonó el día 63. El más largo hasta entonces. | Participant 5988. Quit on day 63. The longest until then. |
+| 10 | 6 | Participante 4455. Una prueba dependía de otra persona. Abandonó. Regla añadida: las pruebas solo dependen del participante. | Participant 4455. A test depended on someone else. Quit. Rule added: tests depend only on the participant. |
+| 11 | 6 | Participante 2777. Abandonó tras dos semanas durmiendo mal. Regla añadida: el descanso es prioritario. | Participant 2777. Quit after two weeks of poor sleep. Rule added: rest comes first. |
+| 12 | 7 | Participante 1500. Intentó rastrear la señal. Regla añadida: «No intentes rastrear el origen de esta transmisión». | Participant 1500. Tried to trace the signal. Rule added: "Do not attempt to trace the origin of this transmission." |
+| 13 | 7 | Participante 0902. Interrumpió el proceso a medias. Regla añadida: «No interrumpas el proceso». | Participant 0902. Interrupted the process halfway. Rule added: "Do not interrupt the process." |
+| 14 | 8 | Participante 3090. Resultado: no convergente. | Participant 3090. Result: non-convergent. |
+| 15 | 8 | Participante 5603. Probabilidad máxima: 26 %. Abandonó el día 88. | Participant 5603. Highest probability: 26%. Quit on day 88. |
+| 16 | 9 | Participante 2048. Las pruebas eran genéricas y no le servían. Regla añadida: calcular las pruebas con los datos del participante. | Participant 2048. The tests were generic and did not help. Rule added: compute tests from the participant's data. |
+| 17 | 9 | Participante 4999. Abandonó el día 140. | Participant 4999. Quit on day 140. |
+| 18 | 10 | Participante 6001. Abandonó el día 22. Nota del operador: «Demasiado pronto». | Participant 6001. Quit on day 22. Operator's note: "Too soon." |
+| 19 | 11 | Participante 5212. Dejó de registrar sus días. El programa siguió hablando 40 días más. | Participant 5212. Stopped logging their days. The program kept talking for 40 more days. |
+| 20 | 12 | Participante 0741. Pidió saber quién hablaba. Se le denegó. Abandonó. | Participant 0741. Asked who was speaking. Denied. Quit. |
+| 21 | 13 | Participante 3814. Firma del último parche: 3813. | Participant 3814. Signature on the last patch: 3813. |
+| 22 | 13 | Participante 6012. Probabilidad máxima: 48 %. Abandonó el día 101. | Participant 6012. Highest probability: 48%. Quit on day 101. |
+| 23 | 14 | Participante 3333. Llegó a la sesión nueve. Abandonó al día siguiente. | Participant 3333. Reached session nine. Quit the next day. |
+| 24 | 15 | Participante 1987. Probabilidad máxima: 49 %. Nunca pasó del 50. | Participant 1987. Highest probability: 49%. Never passed 50. |
+| 25 | 16 | Participante 4401. Preguntó qué pasaría si terminaba. Respuesta registrada: ninguna. | Participant 4401. Asked what would happen if they finished. Recorded answer: none. |
+| 26 | 17 | Participante 5821. Fuga en el vínculo. Contención aplicada. Abandonó una semana después. | Participant 5821. Leak in the link. Containment applied. Quit a week later. |
+| 27 | 18 | Participante 2311. Supo quién hablaba en la segunda sesión. Abandonó. Regla añadida: identidad del operador, clasificada. | Participant 2311. Learned who was speaking in the second session. Quit. Rule added: operator identity, classified. |
+| 28 | 19 | Participante 6170. Abandonó el día 112. | Participant 6170. Quit on day 112. |
+| 29 | 19 | Participante 6171. Abandonó el día 97. | Participant 6171. Quit on day 97. |
+| 30 | 19 | Participante 6172. Abandonó el día 130. El que más se acercó. | Participant 6172. Quit on day 130. The closest yet. |

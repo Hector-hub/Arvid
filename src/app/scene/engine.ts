@@ -78,6 +78,13 @@ export function showPeds(types: readonly number[]): void {
   applyPeds();
 }
 
+/** Sombra quieto y tenue junto al farol, que solo ven ustedes dos (spec 17, SO-01, SO-02). */
+let sombraStill = false;
+export function setSombraStill(on: boolean): void {
+  sombraStill = on;
+}
+export const sombraStillState = (): boolean => sombraStill;
+
 /** Lo que hay en la escena según el nivel (CV-01, CV-02). `fresh`: lo recién llegado, que brilla al aparecer. */
 export function setCity(level: number, fresh: readonly CityItem[] = []): void {
   const hadWater = city?.water ?? false;

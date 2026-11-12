@@ -56,3 +56,39 @@ describe('capítulos (CA)', () => {
     expect(neededNeighbors(ch2())).toEqual(['dex']);
   });
 });
+
+describe('acto II (capítulos 6 a 10)', () => {
+  /** Abre capítulos hasta `n`, una semana cada uno, y entrega sus pasos con la app abierta cada 10 minutos durante 5 días. */
+  function upTo(n: number): OrigenState {
+    let s = s1();
+    for (let c = 2; c <= n; c++) {
+      const opened = T0.getTime() + (c - 1) * 7 * 24 * H;
+      s = openChapter(s, new Date(opened), c * 100);
+      for (let t = opened; t <= opened + 5 * 24 * H; t += H / 6) s = deliverAll(s, new Date(t));
+    }
+    return s;
+  }
+
+  it('las sesiones 4, 5 y 6 abren los capítulos 7, 8 y 10 (TR-01)', () => {
+    const sessions = CHAPTERS.flatMap((c) => c.steps.filter((s) => s.kind === 'session').map((s) => [c.n, s.kind === 'session' ? s.session : 0]));
+    expect(sessions).toEqual([[3, 2], [5, 3], [7, 4], [8, 5], [10, 6]]);
+    for (const n of [7, 8, 10]) expect(CHAPTERS.find((c) => c.n === n)!.steps[0]!.kind).toBe('session');
+  });
+
+  it('cada capítulo cabe en 5 días (CA-02) y deja escritos a sus vecinos', () => {
+    const s = upTo(10);
+    const ids = CHAPTERS.filter((c) => c.n >= 6).flatMap((c) => c.steps.map((x) => x.id));
+    for (const id of ids) expect(s.steps?.[id], id).toBeTruthy();
+    expect(neighborContacts(s).map((c) => c.chat).sort()).toEqual(['dex', 'kenji', 'lia', 'mia', 'nova', 'omar', 'pip', 'roxy', 'teo']);
+    expect(neededNeighbors(s)).toEqual(expect.arrayContaining(['kenji', 'roxy', 'teo', 'mia']));
+  });
+
+  it('Teo recibe los fragmentos del archivo desde el capítulo 8, detrás de su mensaje (PR-10)', () => {
+    const passed = (n: number, at: string) => ({ n, type: 'fullDays' as const, times: 3, period: 1, offeredAt: at, offeredOn: '2026-11-10' as never, result: 'passed' as const, resolvedAt: at });
+    const s = { ...upTo(8), tests: [passed(1, '2026-11-10T10:00:00.000Z'), passed(2, '2026-11-20T10:00:00.000Z')] };
+    const lines = neighborLines(s, 'teo');
+    expect(lines.slice(-2).map((l) => l.key)).toEqual(['origen.fragment.1', 'origen.fragment.2']);
+    expect(lines.findIndex((l) => l.key === 'origen.ch.8.teo7')).toBeLessThan(lines.findIndex((l) => l.key === 'origen.fragment.1'));
+    expect(neighborLines({ ...upTo(7), tests: s.tests }, 'teo')).toEqual([]);
+  });
+});

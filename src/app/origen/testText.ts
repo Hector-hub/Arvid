@@ -2,6 +2,7 @@
 // las variables `{tiempo}` y `{segundos}` de los capítulos (CA-07).
 import { useCategories, useRecords, useSettings } from '../data';
 import { DEFAULT_AVATAR } from '../../domain/avatar/catalog';
+import { COMPANION_NAME, type Companion } from '../../domain/arvid/companion';
 import { elapsed, sessionSeconds, voiceFor, type OrigenState, type VoiceId } from '../../domain/origen/origen';
 import type { ProgramTest } from '../../domain/origen/programTests';
 import { diffDays, toLocalDate } from '../../domain/time/localDate';
@@ -38,16 +39,32 @@ export function testObjective(test: ProgramTest, names: TestNames): string {
   });
 }
 
-/** Variables de los textos de la historia con tus datos (CA-07): `{tiempo}` desde el primer contacto y `{segundos}`. */
-export function originVars(state: OrigenState | undefined, voice: VoiceId, now = new Date()): { tiempo: string; segundos: number } {
+export type OriginVars = { tiempo: string; segundos: number; compañero: string };
+
+/**
+ * Variables de los textos de la historia con tus datos (CA-04, CA-07): `{tiempo}` desde el primer contacto,
+ * `{segundos}` y `{compañero}`.
+ */
+export function originVars(
+  state: OrigenState | undefined,
+  voice: VoiceId,
+  companion: Companion = 'arvid',
+  now = new Date(),
+): OriginVars {
   const days = state?.contactAt ? diffDays(toLocalDate(new Date(state.contactAt)), toLocalDate(now)) : 0;
   const { unit, count } = elapsed(days);
-  return { tiempo: unit === 'year' ? t('origen.time.year') : tDynamic(`origen.time.${unit}`, { count }), segundos: sessionSeconds(3, voice) };
+  return {
+    tiempo: unit === 'year' ? t('origen.time.year') : tDynamic(`origen.time.${unit}`, { count }),
+    segundos: sessionSeconds(3, voice),
+    compañero: COMPANION_NAME[companion],
+  };
 }
 
 /** Las mismas variables, con los ajustes guardados. */
-export function useOriginVars(): { tiempo: string; segundos: number } {
+export function useOriginVars(): OriginVars {
   const settings = useSettings();
-  const voice = settings ? voiceFor(getLocale(), settings.profile?.gender, (settings.avatar ?? DEFAULT_AVATAR).cast) : 'es-m';
-  return originVars(settings?.origen, voice);
+  const voice = settings
+    ? voiceFor(getLocale(), settings.profile?.gender, (settings.avatar ?? DEFAULT_AVATAR).cast)
+    : 'es-m';
+  return originVars(settings?.origen, voice, settings?.companion);
 }

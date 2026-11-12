@@ -13,6 +13,7 @@ import { useData, useSettings } from '../data';
 import { CategoryIcon, Panel, Sprite, categoryColor } from '../design/components';
 import { Radar } from '../profile/Radar';
 import { Scene } from '../scene/Scene';
+import { Portrait } from '../avatar/Portrait';
 import { scoreValueText, trendText } from '../profile/scoreText';
 import { useProfile } from '../profile/useProfile';
 import { categoryName, intText, levelTitle } from '../text';
@@ -41,19 +42,27 @@ export function ProfileScreen() {
       </div>
       {/* Cabecera (D-198): el nivel en un anillo de XP, el alias y el progreso; ciudad y amigos como filas de lista */}
       <header className="profile-head">
-        <div
-          className="level-ring"
-          role="progressbar"
-          aria-label={t('level.xpBar')}
-          aria-valuemin={p.levelStartXp}
-          aria-valuemax={p.nextLevelXp}
-          aria-valuenow={p.xp}
-          style={{ '--v': `${Math.round(Math.max(0, Math.min(1, (p.xp - p.levelStartXp) / Math.max(1, p.nextLevelXp - p.levelStartXp))) * 100)}%` } as CSSProperties}
-        >
-          <span>
-            <b>{p.level}</b>
-            <small>{t('profile.levelShort')}</small>
-          </span>
+        {/* Retrato (spec 18, RD-01) con el nivel en su anillo como insignia */}
+        <div className="profile-portrait">
+          <Portrait scale={2} greet tappable />
+          <div
+            className="level-ring"
+            role="progressbar"
+            aria-label={t('level.xpBar')}
+            aria-valuemin={p.levelStartXp}
+            aria-valuemax={p.nextLevelXp}
+            aria-valuenow={p.xp}
+            style={
+              {
+                '--v': `${Math.round(Math.max(0, Math.min(1, (p.xp - p.levelStartXp) / Math.max(1, p.nextLevelXp - p.levelStartXp))) * 100)}%`,
+              } as CSSProperties
+            }
+          >
+            <span>
+              <b>{p.level}</b>
+              <small>{t('profile.levelShort')}</small>
+            </span>
+          </div>
         </div>
         <div className="grow stack" style={{ gap: 2, minWidth: 0 }}>
           <h1 className="profile-alias">{settings.profile?.alias ?? t('profile.noAlias')}</h1>
@@ -65,13 +74,20 @@ export function ProfileScreen() {
             <span className="muted"> · {t('profile.left', { count: intText(p.nextLevelXp - p.xp) })}</span>
           </p>
         </div>
-        <Link to="/ajustes" className="btn btn-icon btn-ghost" aria-label={t('nav.settings')} style={{ alignSelf: 'flex-start' }}>
+        <Link
+          to="/ajustes"
+          className="btn btn-icon btn-ghost"
+          aria-label={t('nav.settings')}
+          style={{ alignSelf: 'flex-start' }}
+        >
           <span style={{ color: 'var(--xp)', display: 'grid' }}>
             <GearIcon />
           </span>
         </Link>
       </header>
-      <p className="muted small">{p.xpCents === 0 ? t('profile.firstXp') : t('profile.totalXp', { xp: intText(p.xp) })}</p>
+      <p className="muted small">
+        {p.xpCents === 0 ? t('profile.firstXp') : t('profile.totalXp', { xp: intText(p.xp) })}
+      </p>
 
       <nav className="profile-links">
         <Link to="/perfil/ciudad" className="sound-row">
@@ -80,9 +96,16 @@ export function ProfileScreen() {
           </span>
           <span className="grow sound-row-name">
             <b>{t('city.title')}</b>
-            <span>{t('city.progress', { done: CITY_ITEMS.filter((u) => u.level <= p.level).length, total: CITY_ITEMS.length })}</span>
+            <span>
+              {t('city.progress', {
+                done: CITY_ITEMS.filter((u) => u.level <= p.level).length,
+                total: CITY_ITEMS.length,
+              })}
+            </span>
           </span>
-          <span className="settings-card-go" aria-hidden="true">›</span>
+          <span className="settings-card-go" aria-hidden="true">
+            ›
+          </span>
         </Link>
         {/* Amigos (spec 15, AM-01) */}
         {accountsEnabled() && (
@@ -94,7 +117,9 @@ export function ProfileScreen() {
               <b>{t('friends.link')}</b>
               <span>{t('profile.friendsHint')}</span>
             </span>
-            <span className="settings-card-go" aria-hidden="true">›</span>
+            <span className="settings-card-go" aria-hidden="true">
+              ›
+            </span>
           </Link>
         )}
       </nav>
@@ -142,17 +167,32 @@ export function ProfileScreen() {
             ) : (
               <p className="small muted">{t('profile.needThree')}</p>
             )}
-            <ul className="stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 'var(--s3)' }} aria-label={t('profile.attributesList')}>
+            <ul
+              className="stack"
+              style={{ listStyle: 'none', margin: 0, padding: 0, gap: 'var(--s3)' }}
+              aria-label={t('profile.attributesList')}
+            >
               {categories.map((c) => {
                 const score = profile.current.attributes.get(c.id);
                 const tr = trendText(trend(score?.value, profile.previous.attributes.get(c.id)?.value));
                 return (
                   <li key={c.id} className="stack" style={{ gap: 'var(--s1)' }}>
-                    <Link to={`/perfil/atributo/${c.id}`} className="row" style={{ color: 'var(--text)', textDecoration: 'none' }}>
+                    <Link
+                      to={`/perfil/atributo/${c.id}`}
+                      className="row"
+                      style={{ color: 'var(--text)', textDecoration: 'none' }}
+                    >
                       <CategoryIcon category={c} />
                       <span className="grow">{categoryName(c)}</span>
                       {tr && <span className="small muted">{tr}</span>}
-                      <span className="pixel" style={{ minWidth: 32, textAlign: 'right', color: score?.value === undefined ? 'var(--text-muted)' : 'var(--text)' }}>
+                      <span
+                        className="pixel"
+                        style={{
+                          minWidth: 32,
+                          textAlign: 'right',
+                          color: score?.value === undefined ? 'var(--text-muted)' : 'var(--text)',
+                        }}
+                      >
                         {score?.value ?? '—'}
                       </span>
                     </Link>
@@ -197,7 +237,10 @@ function DisciplineMeter({ score, previous }: { score: Score; previous: Score })
         <h2 id="discipline-title" className="grow">
           {t('profile.discipline')}
         </h2>
-        <span className="pixel" style={{ fontSize: '1.5rem', color: score.value === undefined ? 'var(--text-muted)' : 'var(--level)' }}>
+        <span
+          className="pixel"
+          style={{ fontSize: '1.5rem', color: score.value === undefined ? 'var(--text-muted)' : 'var(--level)' }}
+        >
           {score.value ?? '—'}
         </span>
       </div>

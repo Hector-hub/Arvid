@@ -2,11 +2,28 @@
 // sorpresa (RI-06); entrega sus pasos con sus esperas (CA-02); ofrece, comprueba y resuelve las pruebas (PR).
 import { useEffect, useRef, useState } from 'react';
 import { saveSetting } from '../../data/repository';
-import { chapterDef, deliverStep, neededNeighbors, nextStep, PUBLISHED_CHAPTER, type StepDef } from '../../domain/origen/chapters';
-import { storyOn, voiceFor, type OrigenState, type VoiceId } from '../../domain/origen/origen';
+import {
+  chapterDef,
+  deliverStep,
+  neededNeighbors,
+  nextStep,
+  PUBLISHED_CHAPTER,
+  type StepDef,
+} from '../../domain/origen/chapters';
+import { sombraStill, storyOn, voiceFor, type OrigenState, type VoiceId } from '../../domain/origen/origen';
 import { currentChapter, openChapter, readyForNext } from '../../domain/origen/periods';
 import { advanceBlocked } from '../../domain/origen/music';
-import { chooseTest, offerDay, openTest, resolveTest, restAhead, testsXp, timesForChapter, type ProgramTest } from '../../domain/origen/programTests';
+import { FRAGMENTS_STEP, readableFragments } from '../../domain/origen/fragments';
+import {
+  chooseTest,
+  offerDay,
+  openTest,
+  resolveTest,
+  restAhead,
+  testsXp,
+  timesForChapter,
+  type ProgramTest,
+} from '../../domain/origen/programTests';
 import { neighbor } from '../../domain/scene/city';
 import { diffDays, toLocalDate } from '../../domain/time/localDate';
 import { DEFAULT_AVATAR } from '../../domain/avatar/catalog';
@@ -17,7 +34,7 @@ import { useCategories, useData, useGoals, useMissions, useRecords, useRests, us
 import { programTestAi } from '../arvid/brain';
 import { testSummary } from '../../domain/origen/aiTest';
 import { categoryName } from '../text';
-import { isTalking, showPeds } from '../scene/engine';
+import { isTalking, setSombraStill, showPeds } from '../scene/engine';
 import { loadSignalAssets, type SignalAssets } from './assets';
 import { SignalOverlay } from './SignalOverlay';
 import { originVars } from './testText';
@@ -36,7 +53,9 @@ function devFlag(name: 'tramo' | 'prueba' | 'rapido'): boolean {
   return (new URLSearchParams(window.location.search).get('origen') ?? '').split(',').includes(name);
 }
 
-type Running = { kind: 'session'; session: number; voice: VoiceId; assets: SignalAssets; onEnd: () => void } | { kind: 'blip'; onEnd: () => void };
+type Running =
+  | { kind: 'session'; session: number; voice: VoiceId; assets: SignalAssets; onEnd: () => void }
+  | { kind: 'blip'; onEnd: () => void };
 
 export function ChapterWatcher() {
   useLocale();
@@ -51,18 +70,48 @@ export function ChapterWatcher() {
   const [running, setRunning] = useState<Running>();
   const origen = settings?.origen;
   const on = storyOn(origen);
-  const voice: VoiceId | undefined = settings ? voiceFor(getLocale(), settings.profile?.gender, (settings.avatar ?? DEFAULT_AVATAR).cast) : undefined;
+  const voice: VoiceId | undefined = settings
+    ? voiceFor(getLocale(), settings.profile?.gender, (settings.avatar ?? DEFAULT_AVATAR).cast)
+    : undefined;
 
   // Lo último, para leerlo desde el reloj sin reiniciarlo
   const ai = !!settings?.arvidAi && !!settings.aiCode;
-  const live = useRef({ origen, analysis, records, missions, rests, goals, categories, voice, ai, talks: settings?.arvidTalks !== false, running });
+  const companion = settings?.companion;
+  const live = useRef({
+    origen,
+    analysis,
+    records,
+    missions,
+    rests,
+    goals,
+    categories,
+    voice,
+    ai,
+    companion,
+    talks: settings?.arvidTalks !== false,
+    running,
+  });
   useEffect(() => {
-    live.current = { origen, analysis, records, missions, rests, goals, categories, voice, ai, talks: settings?.arvidTalks !== false, running };
+    live.current = {
+      origen,
+      analysis,
+      records,
+      missions,
+      rests,
+      goals,
+      categories,
+      voice,
+      ai,
+      companion,
+      talks: settings?.arvidTalks !== false,
+      running,
+    };
   });
 
   // Variables de los textos ({tiempo}, {segundos}) y vecinos que la historia ya necesita en la calle (RI-09)
   useEffect(() => {
     showPeds(on ? neededNeighbors(origen).map((id) => neighbor(id).ped) : []);
+    setSombraStill(sombraStill(origen));
   }, [origen, on]);
 
   // Quien bloqueó la señal también tiene tramos (RI-10): sin capítulos, solo para la música
@@ -111,7 +160,10 @@ export function ChapterWatcher() {
             onEnd: () => {
               const at = new Date().toISOString();
               const latest = live.current.origen ?? state;
-              void save({ ...deliverStep(latest, step.id, new Date(at)), sessions: { ...latest.sessions, [String(step.session)]: at } });
+              void save({
+                ...deliverStep(latest, step.id, new Date(at)),
+                sessions: { ...latest.sessions, [String(step.session)]: at },
+              });
               resolve();
             },
           }),
@@ -124,7 +176,13 @@ export function ChapterWatcher() {
         return true;
       }
       await save(deliverStep(state, step.id, now));
-      if (step.kind === 'say') say(tDynamic(step.key, originVars(live.current.origen ?? state, live.current.voice ?? 'es-m')));
+      if (step.kind === 'say')
+        say(
+          tDynamic(
+            step.key,
+            originVars(live.current.origen ?? state, live.current.voice ?? 'es-m', live.current.companion),
+          ),
+        );
       else say(t('origen.wrote', { name: neighbor(step.chat).name }));
       return true;
     }
@@ -145,26 +203,46 @@ export function ChapterWatcher() {
           records: r,
           analysis: a,
           missions: m,
-          goals: (g ?? []).filter((x) => !x.abandonedOn).map((x) => ({ title: x.title, done: x.milestones.filter((ms) => a.byMission.get(ms.missionId ?? '')?.state.startsWith('completed')).length, total: x.milestones.length })),
+          goals: (g ?? [])
+            .filter((x) => !x.abandonedOn)
+            .map((x) => ({
+              title: x.title,
+              done: x.milestones.filter((ms) => a.byMission.get(ms.missionId ?? '')?.state.startsWith('completed'))
+                .length,
+              total: x.milestones.length,
+            })),
           categoryName: (id) => categoryName(cats?.find((c) => c.id === id)),
           tests,
           times: timesForChapter(chapter),
           today,
         });
-        const ai = await programTestAi(summary, r.map((x) => x.activity.id));
-        if (ai) written = { n, type: 'ai', ...ai, period: chapter - 1, offeredAt: new Date().toISOString(), offeredOn: today };
+        const ai = await programTestAi(
+          summary,
+          r.map((x) => x.activity.id),
+        );
+        if (ai)
+          written = {
+            n,
+            type: 'ai',
+            ...ai,
+            period: chapter - 1,
+            offeredAt: new Date().toISOString(),
+            offeredOn: today,
+          };
       }
-      const test = written ?? chooseTest({
-        n,
-        period: chapter - 1,
-        chapter,
-        records: r,
-        missions: m,
-        analysis: a,
-        today: toLocalDate(new Date()),
-        now: new Date(),
-        lastType: tests.at(-1)?.type,
-      });
+      const test =
+        written ??
+        chooseTest({
+          n,
+          period: chapter - 1,
+          chapter,
+          records: r,
+          missions: m,
+          analysis: a,
+          today: toLocalDate(new Date()),
+          now: new Date(),
+          lastType: tests.at(-1)?.type,
+        });
       const next = { ...state, tests: [...tests, test] };
       await save(next);
       if (!first) say(t('origen.test.arrived'));
@@ -202,8 +280,15 @@ export function ChapterWatcher() {
         const resolved = resolveTest(open, r, a, today, now);
         if (resolved !== open) {
           busy = true;
-          void save({ ...state, tests: (state.tests ?? []).map((x) => (x.n === open.n ? resolved : x)) })
-            .then(() => resolved.result === 'passed' && say(t('origen.test.fragment')))
+          const next = { ...state, tests: (state.tests ?? []).map((x) => (x.n === open.n ? resolved : x)) };
+          // El fragmento: lo guarda el compañero hasta el capítulo 8; después lo abre Teo, si ya puede salir (PR-10)
+          const fragment = !state.steps?.[FRAGMENTS_STEP]
+            ? 'origen.test.fragment'
+            : readableFragments(next).length > readableFragments(state).length
+              ? 'origen.test.fragmentTeo'
+              : 'origen.test.fragmentLocked';
+          void save(next)
+            .then(() => resolved.result === 'passed' && say(tDynamic(fragment)))
             .finally(() => (busy = false));
           return;
         }
@@ -231,14 +316,23 @@ export function ChapterWatcher() {
           !restAhead(rs ?? [], today) &&
           daysIn >= offerDay(chapter - 1) &&
           (!lastOffer || (lastOffer.period < chapter - 1 ? true : diffDays(lastOffer.offeredOn, today) >= 7)));
-      const want = (forceOpen.current && chapter < PUBLISHED_CHAPTER) || readyForNext(state, now, baseXp, PUBLISHED_CHAPTER) ? 'chapter' : testDue ? 'test' : undefined;
+      const want =
+        (forceOpen.current && chapter < PUBLISHED_CHAPTER) || readyForNext(state, now, baseXp, PUBLISHED_CHAPTER)
+          ? 'chapter'
+          : testDue
+            ? 'test'
+            : undefined;
       if (!want) {
         surpriseAt = undefined;
         return;
       }
       if (surpriseFor !== want || surpriseAt === undefined) {
         surpriseFor = want;
-        surpriseAt = visible + (forceOpen.current || forceTest.current ? 2 : SURPRISE_MIN_S + Math.random() * (SURPRISE_MAX_S - SURPRISE_MIN_S));
+        surpriseAt =
+          visible +
+          (forceOpen.current || forceTest.current
+            ? 2
+            : SURPRISE_MIN_S + Math.random() * (SURPRISE_MAX_S - SURPRISE_MIN_S));
       }
       if (visible < surpriseAt) return;
       surpriseAt = undefined;

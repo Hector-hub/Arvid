@@ -3,7 +3,8 @@ import { CITY_ITEMS, isNeighbor, nextArrivalLevel, type CityItem } from '../../d
 import { t, useLocale } from '../../i18n';
 import { useAnalysis } from '../analysis';
 import { useSettings } from '../data';
-import { sombraHidden } from '../../domain/origen/origen';
+import { sombraHidden, sombraStill } from '../../domain/origen/origen';
+import { COMPANION_NAME } from '../../domain/arvid/companion';
 import { BackLink, Panel } from '../design/components';
 import { CityThumb } from './CityThumb';
 import { itemDescription, itemName } from './labels';
@@ -11,8 +12,10 @@ import { itemDescription, itemName } from './labels';
 export function CityScreen() {
   useLocale();
   const level = useAnalysis()?.progress.level;
-  // Mientras investigas, Sombra no está en la calle (spec 17, SO-05)
-  const hidden = sombraHidden(useSettings()?.origen);
+  // Mientras investigas, Sombra no está en la calle (spec 17, SO-05); desde el capítulo 10, junto al farol (SO-04)
+  const settings = useSettings();
+  const hidden = sombraHidden(settings?.origen);
+  const still = sombraStill(settings?.origen);
   if (level === undefined) return null;
   const done = CITY_ITEMS.filter((u) => u.level <= level).length;
   const next = nextArrivalLevel(level);
@@ -20,7 +23,11 @@ export function CityScreen() {
   const list = (items: typeof CITY_ITEMS) => (
     <ul className="stack city-list" style={{ gap: 'var(--s2)' }}>
       {items.map(({ item, level: at }) => (
-        <CityRow key={item} item={item} at={at} unlocked={at <= level && !(hidden && item === 'sombra')} />
+        item === 'sombra' && still ? (
+          <CityRow key={item} item={item} at={at} unlocked note={t('city.sombraOnly', { companion: COMPANION_NAME[settings?.companion ?? 'arvid'] })} />
+        ) : (
+          <CityRow key={item} item={item} at={at} unlocked={at <= level && !(hidden && item === 'sombra')} />
+        )
       ))}
     </ul>
   );
@@ -44,15 +51,15 @@ export function CityScreen() {
   );
 }
 
-function CityRow({ item, at, unlocked }: { item: CityItem; at: number; unlocked: boolean }) {
+function CityRow({ item, at, unlocked, note }: { item: CityItem; at: number; unlocked: boolean; note?: string }) {
   return (
     <li className="row" style={{ gap: 'var(--s3)' }}>
       <CityThumb item={item} unlocked={unlocked} />
       <div className="grow">
         <p className="pixel">{unlocked ? itemName(item) : t('city.locked')}</p>
-        <p className="small muted">{unlocked ? itemDescription(item) : t('city.level', { level: at })}</p>
+        <p className="small muted">{note ?? (unlocked ? itemDescription(item) : t('city.level', { level: at }))}</p>
       </div>
-      {unlocked && <span className="chip chip-muted">{t('city.level', { level: at })}</span>}
+      {unlocked && !note && <span className="chip chip-muted">{t('city.level', { level: at })}</span>}
     </li>
   );
 }
